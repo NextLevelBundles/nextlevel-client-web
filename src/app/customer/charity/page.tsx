@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -97,7 +98,7 @@ export default function CharityPage() {
   const [sortBy, setSortBy] = React.useState("date");
   const [showCharityModal, setShowCharityModal] = React.useState(false);
   const [selectedCharityDetails, setSelectedCharityDetails] =
-    React.useState(null);
+    useState<any>(null);
 
   const years = ["All Years", "2024", "2023"];
   const charities = [
@@ -111,7 +112,7 @@ export default function CharityPage() {
     { value: "charity", label: "Charity Name" },
   ];
 
-  const handleCharityClick = (charity) => {
+  const handleCharityClick = (charity: any) => {
     setSelectedCharityDetails({
       name: charity,
       description:
@@ -122,7 +123,7 @@ export default function CharityPage() {
     setShowCharityModal(true);
   };
 
-  const handleDownload = (format) => {
+  const handleDownload = (format: string) => {
     toast.success(`Downloading donation history as ${format}...`);
   };
 
@@ -147,7 +148,7 @@ export default function CharityPage() {
       case "charity":
         return a.charity.localeCompare(b.charity);
       default:
-        return new Date(b.date) - new Date(a.date);
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
     }
   });
 
@@ -157,8 +158,8 @@ export default function CharityPage() {
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-bold">Your Charitable Impact</h1>
           <p className="text-muted-foreground">
-            Track your contributions and see how you've helped support causes
-            through your purchases.
+            Track your contributions and see how you&apos;ve helped support
+            causes through your purchases.
           </p>
         </div>
 
@@ -273,7 +274,8 @@ export default function CharityPage() {
                       borderRadius: "8px",
                     }}
                     formatter={(value, name, props) => {
-                      const data = monthlyDonations[props.index];
+                      const data = monthlyDonations[(props as any).index];
+
                       return [
                         <div key="tooltip" className="space-y-1">
                           <div className="font-medium">${value}</div>
