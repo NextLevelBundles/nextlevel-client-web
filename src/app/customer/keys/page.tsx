@@ -2,8 +2,6 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { DashboardShell } from "@/components/dashboard-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,10 +15,8 @@ import {
   CopyIcon,
   GiftIcon,
   SearchIcon,
-  PackageIcon,
-  SparklesIcon,
-  TrophyIcon,
   StarIcon,
+  SparklesIcon,
 } from "lucide-react";
 import {
   Tooltip,
@@ -28,6 +24,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import confetti from "canvas-confetti";
 
 // Progress levels and their requirements
 const PROGRESS_LEVELS = [
@@ -141,7 +138,6 @@ const gameKeys = [
 ];
 
 export default function KeysPage() {
-  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<KeyStatus>("All");
   const [flippingStates, setFlippingStates] = useState<{
@@ -165,11 +161,6 @@ export default function KeysPage() {
   );
 
   const nextLevel = PROGRESS_LEVELS[PROGRESS_LEVELS.indexOf(currentLevel) + 1];
-  const progressToNext = nextLevel
-    ? ((revealedKeys - currentLevel.required) /
-        (nextLevel.required - currentLevel.required)) *
-      100
-    : 100;
 
   const handleCopyKey = (key: string) => {
     navigator.clipboard.writeText(key);
@@ -266,11 +257,8 @@ export default function KeysPage() {
 
   const handleGiftKey = (gameId: number) => {
     // TODO: Implement gifting functionality
+    console.log(gameId);
     toast.info("Gifting feature coming soon!");
-  };
-
-  const handleRefundKey = (gameId: number) => {
-    toast.info("Refund request initiated. Our team will review it shortly.");
   };
 
   const getStatusCount = (status: KeyStatus) => {
@@ -284,239 +272,235 @@ export default function KeysPage() {
   };
 
   return (
-    <DashboardShell>
-      <div className="grid gap-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">My Game Keys</h1>
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:block">
-              <GameLevelProgress
-                currentLevel={currentLevel}
-                nextLevel={nextLevel}
-                revealedKeys={revealedKeys}
-                totalKeys={gameKeys.length}
-              />
-            </div>
+    <div className="grid gap-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">My Game Keys</h1>
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:block">
+            <GameLevelProgress
+              currentLevel={currentLevel}
+              nextLevel={nextLevel}
+              revealedKeys={revealedKeys}
+              totalKeys={gameKeys.length}
+            />
           </div>
         </div>
+      </div>
 
-        <Card className="bg-card border shadow-xs">
-          <CardHeader className="pb-2">
-            <h2 className="text-sm text-muted-foreground font-medium">
-              Filters
-            </h2>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
-            <div className="relative flex-1">
-              <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search by game title..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 bg-background"
-              />
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {statusOptions.map((status) => (
-                <Button
-                  key={status}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setStatusFilter(status)}
-                  className={`transition-all duration-200 ${
-                    statusFilter === status
-                      ? "bg-primary/10 dark:bg-primary/20 text-primary font-semibold"
+      <Card className="bg-card border shadow-xs">
+        <CardHeader className="pb-2">
+          <h2 className="text-sm text-muted-foreground font-medium">Filters</h2>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
+          <div className="relative flex-1">
+            <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search by game title..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 bg-background"
+            />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {statusOptions.map((status) => (
+              <Button
+                key={status}
+                variant="outline"
+                size="sm"
+                onClick={() => setStatusFilter(status)}
+                className={`transition-all duration-200 ${
+                  statusFilter === status
+                    ? "bg-primary/10 dark:bg-primary/20 text-primary font-semibold"
+                    : ""
+                }`}
+              >
+                {status} ({getStatusCount(status)})
+              </Button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-linear-to-br from-card to-card/95 dark:from-[#1a1d2e] dark:to-[#1a1d2e]/95 shadow-md">
+        <CardHeader>
+          <CardTitle>Available Keys</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {gameKeys.length === 0 || filteredKeys.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center justify-center rounded-lg border bg-card/30 p-8 text-center"
+            >
+              <div className="mb-4 rounded-full bg-primary/10 p-3">
+                <KeyIcon className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="mb-2 text-xl font-semibold">
+                {gameKeys.length === 0
+                  ? "No game keys yet"
+                  : "No matches found"}
+              </h3>
+              <p className="mb-6 max-w-md text-muted-foreground">
+                Purchase a bundle to get started with your game collection!
+              </p>
+              <Button className="bg-linear-to-r from-primary to-primary/90">
+                Browse Bundles
+              </Button>
+            </motion.div>
+          ) : (
+            <div className="space-y-4">
+              {filteredKeys.map((game) => (
+                <motion.div
+                  key={game.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  whileHover={{ scale: 1.01 }}
+                  className={`relative flex flex-col gap-4 rounded-lg border bg-card/30 p-4 sm:flex-row sm:items-center sm:justify-between transition-all duration-200 hover:bg-card/50 hover:shadow-lg dark:hover:bg-[#1d2233]/60 dark:hover:shadow-blue-500/5 ${
+                    flippingStates[game.id]?.isFlipping
+                      ? "animate-flip-reveal"
                       : ""
                   }`}
                 >
-                  {status} ({getStatusCount(status)})
-                </Button>
+                  <AnimatePresence>
+                    {flippingStates[game.id]?.isFlipping && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className={`absolute inset-0 flex items-center justify-center rounded-lg ${
+                          flippingStates[game.id]?.showKey
+                            ? "bg-primary/20"
+                            : "bg-primary/10"
+                        } backdrop-blur-xs flip-content`}
+                      >
+                        {flippingStates[game.id]?.showKey ? (
+                          <div className="flex flex-col items-center gap-4">
+                            <div className="text-2xl font-bold text-primary">
+                              XXXX-YYYY-ZZZZ
+                            </div>
+                            <div className="text-sm text-primary/80">
+                              Your new game key!
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 text-lg font-semibold text-primary">
+                            <KeyIcon className="h-6 w-6 animate-bounce" />
+                            <motion.span
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ delay: 0.2 }}
+                            >
+                              Revealing your key...
+                            </motion.span>
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold">{game.name}</h3>
+                      {!game.revealed && (
+                        <Badge
+                          variant="secondary"
+                          className="animate-subtle-pulse"
+                        >
+                          New!
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      From{" "}
+                      <Link
+                        href={`/my-bundles/${game.bundleId}`}
+                        className="hover:text-primary"
+                      >
+                        {game.bundleName}
+                      </Link>{" "}
+                      • Purchased on{" "}
+                      {new Date(game.purchaseDate).toLocaleDateString()}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    {game.revealed ? (
+                      <>
+                        <code className="rounded bg-muted/10 px-2 py-1 font-mono text-muted-foreground">
+                          {game.key}
+                        </code>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <motion.div whileTap={{ scale: 0.95 }}>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-8 w-8 transition-all duration-200"
+                                  onClick={() => handleCopyKey(game.key!)}
+                                >
+                                  <CopyIcon className="h-4 w-4" />
+                                </Button>
+                              </motion.div>
+                            </TooltipTrigger>
+                            <TooltipContent>Copy key</TooltipContent>
+                          </Tooltip>
+
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <motion.div whileTap={{ scale: 0.95 }}>
+                                <Button
+                                  size="icon"
+                                  className="h-8 w-8 transition-all duration-200 bg-linear-to-r from-primary to-primary/90"
+                                  onClick={() =>
+                                    handleActivateOnSteam(game.key!)
+                                  }
+                                >
+                                  <ExternalLinkIcon className="h-4 w-4" />
+                                </Button>
+                              </motion.div>
+                            </TooltipTrigger>
+                            <TooltipContent>Activate on Steam</TooltipContent>
+                          </Tooltip>
+
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <motion.div whileTap={{ scale: 0.95 }}>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 transition-all duration-200"
+                                  onClick={() => handleGiftKey(game.id)}
+                                >
+                                  <GiftIcon className="h-4 w-4" />
+                                </Button>
+                              </motion.div>
+                            </TooltipTrigger>
+                            <TooltipContent>Gift this game</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </>
+                    ) : (
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Button
+                          className="gap-2 bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60"
+                          onClick={() => handleRevealKey(game.id)}
+                        >
+                          <KeyIcon className="h-4 w-4" />
+                          Reveal Key
+                        </Button>
+                      </motion.div>
+                    )}
+                  </div>
+                </motion.div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-linear-to-br from-card to-card/95 dark:from-[#1a1d2e] dark:to-[#1a1d2e]/95 shadow-md">
-          <CardHeader>
-            <CardTitle>Available Keys</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {gameKeys.length === 0 || filteredKeys.length === 0 ? (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col items-center justify-center rounded-lg border bg-card/30 p-8 text-center"
-              >
-                <div className="mb-4 rounded-full bg-primary/10 p-3">
-                  <KeyIcon className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="mb-2 text-xl font-semibold">
-                  {gameKeys.length === 0
-                    ? "No game keys yet"
-                    : "No matches found"}
-                </h3>
-                <p className="mb-6 max-w-md text-muted-foreground">
-                  Purchase a bundle to get started with your game collection!
-                </p>
-                <Button className="bg-linear-to-r from-primary to-primary/90">
-                  Browse Bundles
-                </Button>
-              </motion.div>
-            ) : (
-              <div className="space-y-4">
-                {filteredKeys.map((game, index) => (
-                  <motion.div
-                    key={game.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    whileHover={{ scale: 1.01 }}
-                    className={`relative flex flex-col gap-4 rounded-lg border bg-card/30 p-4 sm:flex-row sm:items-center sm:justify-between transition-all duration-200 hover:bg-card/50 hover:shadow-lg dark:hover:bg-[#1d2233]/60 dark:hover:shadow-blue-500/5 ${
-                      flippingStates[game.id]?.isFlipping
-                        ? "animate-flip-reveal"
-                        : ""
-                    }`}
-                  >
-                    <AnimatePresence>
-                      {flippingStates[game.id]?.isFlipping && (
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.3 }}
-                          className={`absolute inset-0 flex items-center justify-center rounded-lg ${
-                            flippingStates[game.id]?.showKey
-                              ? "bg-primary/20"
-                              : "bg-primary/10"
-                          } backdrop-blur-xs flip-content`}
-                        >
-                          {flippingStates[game.id]?.showKey ? (
-                            <div className="flex flex-col items-center gap-4">
-                              <div className="text-2xl font-bold text-primary">
-                                XXXX-YYYY-ZZZZ
-                              </div>
-                              <div className="text-sm text-primary/80">
-                                Your new game key!
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2 text-lg font-semibold text-primary">
-                              <KeyIcon className="h-6 w-6 animate-bounce" />
-                              <motion.span
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: 0.2 }}
-                              >
-                                Revealing your key...
-                              </motion.span>
-                            </div>
-                          )}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{game.name}</h3>
-                        {!game.revealed && (
-                          <Badge
-                            variant="secondary"
-                            className="animate-subtle-pulse"
-                          >
-                            New!
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        From{" "}
-                        <Link
-                          href={`/my-bundles/${game.bundleId}`}
-                          className="hover:text-primary"
-                        >
-                          {game.bundleName}
-                        </Link>{" "}
-                        • Purchased on{" "}
-                        {new Date(game.purchaseDate).toLocaleDateString()}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2">
-                      {game.revealed ? (
-                        <>
-                          <code className="rounded bg-muted/10 px-2 py-1 font-mono text-muted-foreground">
-                            {game.key}
-                          </code>
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <motion.div whileTap={{ scale: 0.95 }}>
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8 transition-all duration-200"
-                                    onClick={() => handleCopyKey(game.key!)}
-                                  >
-                                    <CopyIcon className="h-4 w-4" />
-                                  </Button>
-                                </motion.div>
-                              </TooltipTrigger>
-                              <TooltipContent>Copy key</TooltipContent>
-                            </Tooltip>
-
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <motion.div whileTap={{ scale: 0.95 }}>
-                                  <Button
-                                    size="icon"
-                                    className="h-8 w-8 transition-all duration-200 bg-linear-to-r from-primary to-primary/90"
-                                    onClick={() =>
-                                      handleActivateOnSteam(game.key!)
-                                    }
-                                  >
-                                    <ExternalLinkIcon className="h-4 w-4" />
-                                  </Button>
-                                </motion.div>
-                              </TooltipTrigger>
-                              <TooltipContent>Activate on Steam</TooltipContent>
-                            </Tooltip>
-
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <motion.div whileTap={{ scale: 0.95 }}>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 transition-all duration-200"
-                                    onClick={() => handleGiftKey(game.id)}
-                                  >
-                                    <GiftIcon className="h-4 w-4" />
-                                  </Button>
-                                </motion.div>
-                              </TooltipTrigger>
-                              <TooltipContent>Gift this game</TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </>
-                      ) : (
-                        <motion.div
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          <Button
-                            className="gap-2 bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60"
-                            onClick={() => handleRevealKey(game.id)}
-                          >
-                            <KeyIcon className="h-4 w-4" />
-                            Reveal Key
-                          </Button>
-                        </motion.div>
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </DashboardShell>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }

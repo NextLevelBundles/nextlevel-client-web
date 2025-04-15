@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { DashboardShell } from "@/components/dashboard-shell";
 import {
   Card,
   CardContent,
@@ -160,65 +159,63 @@ export default function BadgesPage() {
     (userBadges.unlockedBadges / userBadges.totalBadges) * 100;
 
   return (
-    <DashboardShell>
-      <div className="grid gap-6">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold">🏆 Your Achievements</h1>
-          <p className="text-muted-foreground">
-            These badges recognize your support and generosity on the platform.
-          </p>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrophyIcon className="h-5 w-5 text-primary" />
-              Badge Collection Progress
-            </CardTitle>
-            <CardDescription>
-              {userBadges.unlockedBadges === userBadges.totalBadges
-                ? "You've unlocked all available badges!"
-                : `${userBadges.totalBadges - userBadges.unlockedBadges} more ${
-                    userBadges.totalBadges - userBadges.unlockedBadges === 1
-                      ? "badge"
-                      : "badges"
-                  } to unlock`}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-4">
-              <Progress
-                value={progressPercentage}
-                className="flex-1 transition-all duration-700"
-              />
-              <span className="text-sm text-muted-foreground">
-                {userBadges.unlockedBadges} / {userBadges.totalBadges} Unlocked
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {userBadges.badges.map((badge, index) => (
-            <BadgeCard key={badge.id} badge={badge} index={index} />
-          ))}
-        </div>
-
-        <Card className="bg-linear-to-br from-primary/5 to-primary/0 dark:from-primary/20 dark:to-primary/10">
-          <CardContent className="flex items-center gap-4 p-6">
-            <div className="rounded-full bg-primary/10 dark:bg-primary/30 p-3">
-              <HeartIcon className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <h3 className="mb-1 font-semibold">Want to earn more badges?</h3>
-              <p className="text-sm text-muted-foreground">
-                Support amazing causes through bundle purchases to unlock
-                special achievements!
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+    <div className="grid gap-6">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-3xl font-bold">🏆 Your Achievements</h1>
+        <p className="text-muted-foreground">
+          These badges recognize your support and generosity on the platform.
+        </p>
       </div>
-    </DashboardShell>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrophyIcon className="h-5 w-5 text-primary" />
+            Badge Collection Progress
+          </CardTitle>
+          <CardDescription>
+            {userBadges.unlockedBadges === userBadges.totalBadges
+              ? "You've unlocked all available badges!"
+              : `${userBadges.totalBadges - userBadges.unlockedBadges} more ${
+                  userBadges.totalBadges - userBadges.unlockedBadges === 1
+                    ? "badge"
+                    : "badges"
+                } to unlock`}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-4">
+            <Progress
+              value={progressPercentage}
+              className="flex-1 transition-all duration-700"
+            />
+            <span className="text-sm text-muted-foreground">
+              {userBadges.unlockedBadges} / {userBadges.totalBadges} Unlocked
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {userBadges.badges.map((badge, index) => (
+          <BadgeCard key={badge.id} badge={badge} index={index} />
+        ))}
+      </div>
+
+      <Card className="bg-linear-to-br from-primary/5 to-primary/0 dark:from-primary/20 dark:to-primary/10">
+        <CardContent className="flex items-center gap-4 p-6">
+          <div className="rounded-full bg-primary/10 dark:bg-primary/30 p-3">
+            <HeartIcon className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h3 className="mb-1 font-semibold">Want to earn more badges?</h3>
+            <p className="text-sm text-muted-foreground">
+              Support amazing causes through bundle purchases to unlock special
+              achievements!
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

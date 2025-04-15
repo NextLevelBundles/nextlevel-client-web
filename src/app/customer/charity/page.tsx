@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { DashboardShell } from "@/components/dashboard-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -153,7 +152,7 @@ export default function CharityPage() {
   });
 
   return (
-    <DashboardShell>
+    <>
       <div className="grid gap-6">
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-bold">Your Charitable Impact</h1>
@@ -487,6 +486,6 @@ export default function CharityPage() {
           </DialogHeader>
         </DialogContent>
       </Dialog>
-    </DashboardShell>
+    </>
   );
 }
