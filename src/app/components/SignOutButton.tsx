@@ -1,14 +1,25 @@
-import { signOut } from "@/auth";
+"use client";
+
+import { LogOutIcon } from "lucide-react";
+import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function SignOutButton() {
+  const router = useRouter();
+
+  const onSignOut = async () => {
+    const data = await signOut({ redirect: false, callbackUrl: "/" });
+    router.push(data.url);
+  };
+
   return (
-    <form
-      action={async () => {
-        "use server";
-        await signOut();
-      }}
+    <button
+      onClick={onSignOut}
+      type="button"
+      className="flex items-center gap-2 text-sm font-medium text-destructive"
     >
-      <button type="submit">Signout</button>
-    </form>
+      <LogOutIcon className="h-4 w-4" />
+      <span>Log out</span>
+    </button>
   );
 }
