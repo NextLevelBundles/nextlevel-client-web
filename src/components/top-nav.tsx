@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
@@ -21,7 +20,6 @@ import {
   PackageIcon,
   SunIcon,
   MoonIcon,
-  UserIcon,
   SettingsIcon,
   LogOutIcon,
   TrophyIcon,
@@ -33,15 +31,15 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useSession } from "next-auth/react";
+import { signOut } from "@/auth";
 
 export function TopNav() {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
   const xpProgress = 50; // Replace with actual XP progress
 
-  // Prevent hydration mismatch
-  React.useEffect(() => setMounted(true), []);
-  if (!mounted) return null;
+  const session = useSession();
+  console.log(session);
 
   return (
     <div className="sticky top-0 z-50 w-full border-b bg-white dark:bg-[#1a1d2e]/80 backdrop-blur-xs shadow-xs transition-all">
@@ -153,20 +151,20 @@ export function TopNav() {
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium leading-none">
-                          GamerTag123
+                          {session.data?.user?.name ?? "Unknown user"}
                         </p>
                         <p className="text-xs leading-none text-muted-foreground">
-                          user@example.com
+                          {session.data?.user?.email}
                         </p>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem className="rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary">
+                    {/* <DropdownMenuItem className="rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary">
                       <UserIcon className="mr-2 h-4 w-4" />
                       <Link href="profile" className="flex-1">
                         Profile
                       </Link>
-                    </DropdownMenuItem>
+                    </DropdownMenuItem> */}
                     <DropdownMenuItem className="rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary">
                       <SettingsIcon className="mr-2 h-4 w-4" />
                       <Link href="settings" className="flex-1">
@@ -183,7 +181,10 @@ export function TopNav() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-destructive rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-destructive/5 hover:text-destructive dark:hover:bg-destructive/10 dark:hover:text-destructive focus:bg-destructive/5 focus:text-destructive dark:focus:bg-destructive/10 dark:focus:text-destructive">
+                    <DropdownMenuItem
+                      onClick={() => signOut()}
+                      className="text-destructive rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-destructive/5 hover:text-destructive dark:hover:bg-destructive/10 dark:hover:text-destructive focus:bg-destructive/5 focus:text-destructive dark:focus:bg-destructive/10 dark:focus:text-destructive"
+                    >
                       <LogOutIcon className="mr-2 h-4 w-4" />
                       <span>Log out</span>
                     </DropdownMenuItem>

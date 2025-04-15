@@ -3,8 +3,6 @@
 import type { Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 
-// THIS WILL WORK
-
 export default function Providers({
   session,
   children,
