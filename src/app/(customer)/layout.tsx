@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/auth";
+import { ThemeProvider } from "./components/theme-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,11 +23,12 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <SessionProvider session={session}>
-          Home page layout
-          {children}
-          <Toaster position="top-right" expand={true} richColors />
-        </SessionProvider>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+          <SessionProvider session={session}>
+            {children}
+            <Toaster position="top-right" expand={true} richColors />
+          </SessionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
