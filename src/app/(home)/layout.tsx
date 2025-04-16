@@ -25,9 +25,9 @@ export default async function RootLayout({
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <SessionProvider session={session}>
+            Home page layout
             {children}
             <Toaster position="top-right" expand={true} richColors />
-            {children}
           </SessionProvider>
         </ThemeProvider>
       </body>
