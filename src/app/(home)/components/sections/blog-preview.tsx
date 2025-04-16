@@ -3,6 +3,7 @@
 import { Card } from "@/home/components/ui/card";
 import { Button } from "@/home/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import Image from "next/image";
 
 const posts = [
   {
@@ -59,10 +60,11 @@ export function BlogPreview() {
               key={index}
               className="group overflow-hidden border-0 bg-card/90 backdrop-blur-xs transform transition-all duration-300 hover:translate-y-[-4px] hover:shadow-2xl hover:shadow-primary/20 ring-1 ring-white/10 will-change-transform"
             >
-              <div className="aspect-16/9 overflow-hidden">
-                <img
+              <div className="aspect-16/9 overflow-hidden relative">
+                <Image
                   src={post.image}
                   alt={post.title}
+                  fill={true}
                   className="h-full w-full object-cover transition-all duration-300 group-hover:brightness-110 group-hover:scale-105 will-change-transform"
                 />
               </div>
