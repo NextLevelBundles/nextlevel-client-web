@@ -6,15 +6,15 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/customer/components/ui/card";
-import { Button } from "@/customer/components/ui/button";
+} from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
 import {
   KeyIcon,
   ChevronRightIcon,
   DamIcon as SteamIcon,
   PackageIcon,
 } from "lucide-react";
-import { Badge } from "@/customer/components/ui/badge";
+import { Badge } from "@/shared/components/ui/badge";
 import Link from "next/link";
 
 const recentBundles: {

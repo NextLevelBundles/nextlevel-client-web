@@ -6,7 +6,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/customer/components/ui/card";
+} from "@/shared/components/ui/card";
 
 interface StatsCardProps {
   title: string;

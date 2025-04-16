@@ -5,8 +5,8 @@ import {
   SheetTrigger,
   SheetContent,
   Sheet,
-} from "@/customer/components/ui/sheet";
-import { Button } from "@/customer/components/ui/button";
+} from "@/shared/components/ui/sheet";
+import { Button } from "@/shared/components/ui/button";
 import Link from "next/link";
 
 export default function CustomerNavigation({

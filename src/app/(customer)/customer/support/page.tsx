@@ -7,22 +7,22 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/customer/components/ui/card";
-import { Button } from "@/customer/components/ui/button";
-import { Input } from "@/customer/components/ui/input";
+} from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/customer/components/ui/dialog";
+} from "@/shared/components/ui/dialog";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/customer/components/ui/accordion";
+} from "@/shared/components/ui/accordion";
 import { motion } from "framer-motion";
 import {
   HeadphonesIcon,

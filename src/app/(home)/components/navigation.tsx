@@ -1,9 +1,9 @@
 "use client";
 
-import { Button } from "@/home/components/ui/button";
+import { Button } from "@/app/(shared)/components/ui/button";
 import { Gamepad2, Menu } from "lucide-react";
 import { useState, useEffect } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/app/(shared)/utils/tailwind";
 
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);

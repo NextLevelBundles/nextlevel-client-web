@@ -6,13 +6,13 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/customer/components/ui/card";
-import { Button } from "@/customer/components/ui/button";
+} from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/customer/components/ui/avatar";
+} from "@/shared/components/ui/avatar";
 import { DamIcon as SteamIcon } from "lucide-react";
 
 export function SteamStatus() {

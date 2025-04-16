@@ -7,12 +7,12 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/customer/components/ui/card";
-import { Button } from "@/customer/components/ui/button";
-import { Input } from "@/customer/components/ui/input";
-import { Label } from "@/customer/components/ui/label";
-import { Badge } from "@/customer/components/ui/badge";
-import { Switch } from "@/customer/components/ui/switch";
+} from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
+import { Badge } from "@/shared/components/ui/badge";
+import { Switch } from "@/shared/components/ui/switch";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import {
@@ -23,12 +23,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/customer/components/ui/dialog";
+} from "@/shared/components/ui/dialog";
 import {
   Alert,
   AlertDescription,
   AlertTitle,
-} from "@/customer/components/ui/alert";
+} from "@/shared/components/ui/alert";
 import {
   KeyIcon,
   EyeIcon,

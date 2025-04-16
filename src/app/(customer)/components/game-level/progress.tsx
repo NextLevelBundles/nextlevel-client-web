@@ -7,9 +7,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/customer/components/ui/dialog";
-import { Progress } from "@/customer/components/ui/progress";
-import { Badge } from "@/customer/components/ui/badge";
+} from "@/shared/components/ui/dialog";
+import { Progress } from "@/shared/components/ui/progress";
+import { Badge } from "@/shared/components/ui/badge";
 import { TrophyIcon, SparklesIcon } from "lucide-react";
 
 interface GameLevelProgressProps {

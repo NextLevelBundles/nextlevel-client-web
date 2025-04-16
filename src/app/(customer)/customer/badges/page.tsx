@@ -7,8 +7,8 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
-} from "@/customer/components/ui/card";
-import { Progress } from "@/customer/components/ui/progress";
+} from "@/shared/components/ui/card";
+import { Progress } from "@/shared/components/ui/progress";
 import { motion } from "framer-motion";
 import { TrophyIcon, SparklesIcon, HeartIcon, LockIcon } from "lucide-react";
 import {
@@ -16,7 +16,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/customer/components/ui/tooltip";
+} from "@/shared/components/ui/tooltip";
 
 // Mock data - replace with API call
 const userBadges = {

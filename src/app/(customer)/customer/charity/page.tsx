@@ -7,23 +7,23 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/customer/components/ui/card";
-import { Button } from "@/customer/components/ui/button";
-import { Input } from "@/customer/components/ui/input";
+} from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/customer/components/ui/dialog";
+} from "@/shared/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/customer/components/ui/select";
+} from "@/shared/components/ui/select";
 import {
   Table,
   TableBody,
@@ -31,7 +31,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/customer/components/ui/table";
+} from "@/shared/components/ui/table";
 import { motion } from "framer-motion";
 import {
   HeartIcon,

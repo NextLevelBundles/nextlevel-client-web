@@ -16,20 +16,20 @@ import {
   CopyIcon,
   PackageIcon,
 } from "lucide-react";
-import { Button } from "@/customer/components/ui/button";
+import { Button } from "@/shared/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/customer/components/ui/card";
-import { Badge } from "@/customer/components/ui/badge";
+} from "@/shared/components/ui/card";
+import { Badge } from "@/shared/components/ui/badge";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/customer/components/ui/tooltip";
+} from "@/shared/components/ui/tooltip";
 import Image from "next/image";
 
 type BundleDetailsProps = {

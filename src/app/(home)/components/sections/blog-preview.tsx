@@ -1,7 +1,7 @@
 "use client";
 
-import { Card } from "@/home/components/ui/card";
-import { Button } from "@/home/components/ui/button";
+import { Card } from "@/app/(shared)/components/ui/card";
+import { Button } from "@/app/(shared)/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 

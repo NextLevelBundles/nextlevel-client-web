@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@/home/components/ui/button";
-import { Input } from "@/home/components/ui/input";
+import { Button } from "@/app/(shared)/components/ui/button";
+import { Input } from "@/app/(shared)/components/ui/input";
 import { Shield, Mail } from "lucide-react";
 
 export function Newsletter() {

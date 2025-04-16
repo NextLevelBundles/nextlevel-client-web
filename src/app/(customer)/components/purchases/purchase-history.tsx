@@ -8,7 +8,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/customer/components/ui/card";
+} from "@/shared/components/ui/card";
 import { useRouter } from "next/navigation";
 import {
   Select,
@@ -16,8 +16,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/customer/components/ui/select";
-import { Input } from "@/customer/components/ui/input";
+} from "@/shared/components/ui/select";
+import { Input } from "@/shared/components/ui/input";
 import {
   Table,
   TableBody,
@@ -25,9 +25,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/customer/components/ui/table";
-import { Button } from "@/customer/components/ui/button";
-import { Badge } from "@/customer/components/ui/badge";
+} from "@/shared/components/ui/table";
+import { Button } from "@/shared/components/ui/button";
+import { Badge } from "@/shared/components/ui/badge";
 import {
   CalendarIcon,
   TagIcon,

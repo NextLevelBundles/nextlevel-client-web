@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Card } from "@/customer/components/ui/card";
+import { Card } from "@/shared/components/ui/card";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/customer/components/ui/tabs";
+} from "@/shared/components/ui/tabs";
 import { SettingsIcon, BellIcon, ShieldIcon } from "lucide-react";
 
 // Import settings pages

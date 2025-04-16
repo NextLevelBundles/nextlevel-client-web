@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Card } from "@/home/components/ui/card";
-import { Button } from "@/home/components/ui/button";
+import { Card } from "@/app/(shared)/components/ui/card";
+import { Button } from "@/app/(shared)/components/ui/button";
 import { Timer, Users, ArrowRight } from "lucide-react";
 import { bundles } from "@/home/data/bundles";
 import Image from "next/image";

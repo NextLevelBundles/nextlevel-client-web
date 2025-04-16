@@ -1,6 +1,6 @@
 "use client";
 
-import { Card } from "@/home/components/ui/card";
+import { Card } from "@/app/(shared)/components/ui/card";
 import { Award, Flame, Star, Zap, Crown, Heart } from "lucide-react";
 
 const badges = [

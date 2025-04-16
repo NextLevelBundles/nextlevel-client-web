@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/home/components/ui/button";
+import { Button } from "@/app/(shared)/components/ui/button";
 import {
   Gamepad2,
   Twitter,

@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
-import { Button } from "@/customer/components/ui/button";
-import { Progress } from "@/customer/components/ui/progress";
-import { Input } from "@/customer/components/ui/input";
+import { Button } from "@/shared/components/ui/button";
+import { Progress } from "@/shared/components/ui/progress";
+import { Input } from "@/shared/components/ui/input";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/customer/components/ui/avatar";
+} from "@/shared/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,7 +18,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/customer/components/ui/dropdown-menu";
+} from "@/shared/components/ui/dropdown-menu";
 import {
   SearchIcon,
   PackageIcon,
@@ -33,7 +33,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/customer/components/ui/tooltip";
+} from "@/shared/components/ui/tooltip";
 import { useSession } from "next-auth/react";
 import SignOutButton from "@/app/(home)/components/SignOutButton";
 

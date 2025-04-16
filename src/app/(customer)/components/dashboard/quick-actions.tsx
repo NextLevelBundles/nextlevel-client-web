@@ -6,15 +6,15 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/customer/components/ui/card";
-import { Button } from "@/customer/components/ui/button";
+} from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
 import { KeyIcon, GiftIcon, HelpCircleIcon } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/customer/components/ui/tooltip";
+} from "@/shared/components/ui/tooltip";
 
 export function QuickActions() {
   return (
