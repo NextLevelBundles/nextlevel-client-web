@@ -1,0 +1,190 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import { Card } from "@/home/components/ui/card";
+import { Button } from "@/home/components/ui/button";
+import { Timer, Users, ArrowRight } from "lucide-react";
+import { bundles } from "@/home/data/bundles";
+import Image from "next/image";
+
+const BUNDLES_PER_PAGE = 6;
+
+export function CurrentBundles() {
+  const [visibleBundles, setVisibleBundles] = useState(BUNDLES_PER_PAGE);
+  const [loading, setLoading] = useState(false);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (
+          entry.isIntersecting &&
+          !loading &&
+          visibleBundles < bundles.length
+        ) {
+          setLoading(true);
+          setTimeout(() => {
+            setVisibleBundles((prev) =>
+              Math.min(prev + BUNDLES_PER_PAGE, bundles.length)
+            );
+            setLoading(false);
+          }, 500);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [loading, visibleBundles]);
+
+  return (
+    <section className="relative py-24 px-6 md:px-12">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(57,130,245,0.15),transparent_70%),radial-gradient(ellipse_at_bottom,rgba(249,113,20,0.15),transparent_70%)] opacity-40" />
+      <div className="container relative px-4 mx-auto overflow-visible">
+        <div className="mb-12 text-center">
+          <h2 className="font-orbitron mb-4 text-3xl font-bold tracking-tight md:text-4xl bg-linear-to-r from-primary via-white to-secondary bg-clip-text text-transparent animate-glow">
+            Current Bundles
+          </h2>
+          <p className="text-muted-foreground">
+            Choose from our handpicked collection of premium game bundles
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {bundles.slice(0, visibleBundles).map((bundle) => (
+            <div key={bundle.id} className="relative">
+              <div
+                className={`absolute -inset-1 rounded-2xl bg-linear-to-r ${
+                  bundle.tag === "Most Popular"
+                    ? "from-primary/20 to-secondary/20"
+                    : bundle.tag === "New Release"
+                      ? "from-secondary/20 to-primary/20"
+                      : bundle.tag === "Last Chance"
+                        ? "from-destructive/20 to-primary/20"
+                        : bundle.tag === "Best Value"
+                          ? "from-[#22c55e]/20 to-secondary/20"
+                          : bundle.tag === "Staff Pick"
+                            ? "from-[#a855f7]/20 to-primary/20"
+                            : "from-primary/20 to-secondary/20"
+                } blur-xl opacity-60 transition-opacity group-hover:opacity-100`}
+              />
+              <div
+                className={`group relative h-full overflow-hidden rounded-2xl bg-card/70 backdrop-blur-xs transition-all hover:translate-y-[-4px] hover:shadow-2xl ring-1 ring-white/20 hover:ring-primary/50 cursor-pointer animate-fade-up opacity-0 will-change-transform ${bundle.neonClass}`}
+              >
+                <Card className="border-0 bg-transparent h-full">
+                  <div className="flex h-full flex-col">
+                    <div className="relative">
+                      <div className="aspect-4/3 overflow-hidden">
+                        <Image
+                          src={bundle.image}
+                          alt={bundle.title}
+                          fill={true}
+                          className="h-full w-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-125 will-change-transform"
+                        />
+                        <div className="absolute inset-0 bg-linear-to-t from-background/95 via-background/50 to-transparent transition-opacity group-hover:opacity-75" />
+                      </div>
+                      <div
+                        className={`absolute right-3 top-3 text-xs font-semibold rounded-full px-2 py-0.5 backdrop-blur-xs transition-transform group-hover:scale-105 ${
+                          bundle.tag === "Most Popular"
+                            ? "bg-primary/30 text-primary ring-1 ring-primary/50"
+                            : bundle.tag === "New Release"
+                              ? "bg-secondary/30 text-secondary ring-1 ring-secondary/50"
+                              : bundle.tag === "Last Chance"
+                                ? "bg-destructive/30 text-destructive ring-1 ring-destructive/50"
+                                : bundle.tag === "Best Value"
+                                  ? "bg-[#22c55e]/30 text-[#22c55e] ring-1 ring-[#22c55e]/50"
+                                  : bundle.tag === "Staff Pick"
+                                    ? "bg-[#a855f7]/30 text-[#a855f7] ring-1 ring-[#a855f7]/50"
+                                    : "bg-muted/30 text-muted-foreground ring-1 ring-white/30"
+                        }`}
+                      >
+                        {bundle.tag}
+                      </div>
+                    </div>
+                    <div className="flex flex-1 flex-col p-6">
+                      <h3 className="font-rajdhani mb-2 text-xl font-bold text-foreground transition-colors group-hover:text-primary">
+                        {bundle.title}
+                      </h3>
+                      <div className="mb-4 grid grid-cols-2 gap-4">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Timer className="h-4 w-4" />
+                          <span>{bundle.timeLeft}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Users className="h-4 w-4" />
+                          <span>{bundle.keysLeft} keys left</span>
+                        </div>
+                      </div>
+                      <div className="mt-auto flex items-end justify-between">
+                        <div>
+                          <p className="text-xs text-muted-foreground">
+                            Starting at
+                          </p>
+                          <p className="text-2xl font-bold bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">
+                            ${bundle.minPrice}
+                          </p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          className="relative z-10 transition-all hover:bg-primary hover:text-white border-primary/50 hover:border-primary hover:shadow-[0_0_20px_rgba(57,130,245,0.5)] hover:brightness-110 duration-300"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.location.href = `/bundles/${bundle.id}/view`;
+                          }}
+                        >
+                          View Bundle
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="absolute inset-x-0 bottom-0 h-1 bg-linear-to-r from-primary/50 via-secondary/50 to-primary/50 opacity-0 transition-all duration-300 group-hover:opacity-100" />
+                </Card>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div ref={loadMoreRef} className="mt-12 text-center">
+          {visibleBundles < bundles.length ? (
+            <Button
+              variant="outline"
+              size="lg"
+              className="bg-card/50 backdrop-blur-xs hover:bg-primary/20 transition-all hover:shadow-[0_0_30px_rgba(57,130,245,0.2)] ring-1 ring-white/20 relative"
+              onClick={() => {
+                setLoading(true);
+                setTimeout(() => {
+                  setVisibleBundles((prev) =>
+                    Math.min(prev + BUNDLES_PER_PAGE, bundles.length)
+                  );
+                  setLoading(false);
+                }, 500);
+              }}
+              disabled={loading}
+            >
+              {loading ? (
+                <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-primary" />
+              ) : (
+                <>Load More Bundles</>
+              )}
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="lg"
+              className="bg-card/50 backdrop-blur-xs hover:bg-primary/20 transition-all hover:shadow-[0_0_30px_rgba(57,130,245,0.2)] ring-1 ring-white/20"
+              onClick={() => (window.location.href = "/bundles")}
+            >
+              View All Bundles
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
