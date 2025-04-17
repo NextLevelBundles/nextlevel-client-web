@@ -19,6 +19,7 @@ import { Settings, LogOut, MessageCircleIcon, GamepadIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import SignInButton from "./SignInButton";
+import SignUpButton from "./SignUpButton";
 
 export function UserProfile() {
   const session = useSession();
@@ -27,10 +28,7 @@ export function UserProfile() {
     return (
       <div className="flex items-center gap-2">
         <SignInButton />
-
-        <Button className="bg-primary text-white hover:bg-primary/90">
-          Sign Up
-        </Button>
+        <SignUpButton />
       </div>
     );
   }

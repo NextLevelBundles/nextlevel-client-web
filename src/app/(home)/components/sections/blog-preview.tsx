@@ -3,6 +3,7 @@
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import Image from "next/image";
 
 const posts = [
   {
@@ -62,9 +63,11 @@ export function BlogPreview() {
               key={index}
               className="group relative overflow-hidden border border-white/20 dark:border-border bg-white/80 dark:bg-card/90 backdrop-blur-sm transform transition-all duration-300 hover:translate-y-[-4px] hover:bg-white/95 dark:hover:bg-card/95 hover:shadow-[0_4px_20px_rgba(57,130,245,0.2)] dark:hover:shadow-[0_4px_30px_rgba(57,130,245,0.3)] hover:border-primary/50 dark:hover:ring-1 dark:hover:ring-primary/30 will-change-transform rounded-xl ring-1 ring-black/5 dark:ring-white/20 before:absolute before:inset-[1px] before:rounded-xl before:border before:border-black/[0.03] dark:before:border-white/[0.03] before:pointer-events-none"
             >
-              <div className="aspect-[16/9] overflow-hidden">
-                <img
+              <div className="relative aspect-[16/9] overflow-hidden">
+                <Image
                   src={post.image}
+                  fill={true}
+                  sizes="(max-width: 768px) 100vw, (min-width: 768px) 50vw"
                   alt={post.title}
                   className="h-full w-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-110 dark:group-hover:brightness-125 will-change-transform"
                 />

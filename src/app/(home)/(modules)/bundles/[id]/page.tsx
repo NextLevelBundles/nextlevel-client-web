@@ -1,12 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Navigation } from "@/home/components/navigation";
 import { BundleDetail } from "@/home/components/bundles/bundle-detail";
 import { Footer } from "@/home/components/sections/footer";
 
-export default async function BundleDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function BundleDetailPage({ params }: { params: any }) {
   const { id } = await params;
 
   return (

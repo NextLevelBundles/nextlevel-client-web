@@ -8,6 +8,7 @@ import { ThemeToggle } from "../../(shared)/components/theme-toggle";
 import Link from "next/link";
 import { UserProfile } from "./user-profile";
 import SignInButton from "./SignInButton";
+import SignUpButton from "./SignUpButton";
 
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -44,12 +45,12 @@ export function Navigation() {
             >
               Home
             </Link>
-            <a
+            <Link
               href="/bundles"
               className="text-sm font-medium hover:text-primary transition-colors"
             >
               Bundles
-            </a>
+            </Link>
             <a href="#" className="text-sm font-medium hover:text-primary">
               Blog
             </a>
@@ -120,9 +121,7 @@ export function Navigation() {
                 <ThemeToggle />
                 <div className="flex gap-2">
                   <SignInButton />
-                  <Button className="bg-primary text-white hover:bg-primary/90 hover:shadow-[0_0_12px_rgba(57,130,245,0.4)] transition-all duration-200">
-                    Sign Up
-                  </Button>
+                  <SignUpButton />
                 </div>
               </div>
             </div>
