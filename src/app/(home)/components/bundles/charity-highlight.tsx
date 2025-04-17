@@ -42,6 +42,8 @@ export function CharityHighlight({
                 <div className="group relative w-20 h-20 rounded-full overflow-hidden ring-2 ring-white/20 hover:ring-primary/50 transition-all duration-300">
                   <Image
                     fill={true}
+                    sizes="100px"
+                    quality={80}
                     src={charity.logo}
                     alt={charity.name}
                     className="w-full h-full object-cover transition-transform group-hover:scale-110"

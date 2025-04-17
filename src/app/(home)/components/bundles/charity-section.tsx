@@ -29,6 +29,8 @@ export function CharitySection({ charities }: CharitySectionProps) {
           >
             <Image
               fill={true}
+              sizes="100px"
+              quality={80}
               src={charity.logo}
               alt={charity.name}
               className="w-full h-full object-cover transition-transform group-hover:scale-110"

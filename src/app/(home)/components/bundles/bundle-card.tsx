@@ -49,9 +49,11 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
       <Card className="border-0 bg-transparent h-full">
         <div className="flex h-full flex-col">
           <div className="relative">
-            <div className="aspect-4/3 overflow-hidden">
+            <div className="relative aspect-4/3 overflow-hidden">
               <Image
                 fill={true}
+                sizes="550px"
+                quality={80}
                 src={bundle.image}
                 alt={bundle.title}
                 className="h-full w-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-110 dark:group-hover:brightness-125 will-change-transform saturate-[1.02] group-hover:saturate-[1.1]"

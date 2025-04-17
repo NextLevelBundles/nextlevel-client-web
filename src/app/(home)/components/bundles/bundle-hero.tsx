@@ -20,12 +20,16 @@ export function BundleHero({
   return (
     <div className="relative h-[60vh] min-h-[400px] overflow-hidden">
       <div className="absolute inset-0">
-        <Image
-          fill={true}
-          src={bundle.image}
-          alt={bundle.title}
-          className="h-full w-full object-cover"
-        />
+        <div className="relative">
+          <Image
+            fill={true}
+            sizes="100vw"
+            quality={80}
+            src={bundle.image}
+            alt={bundle.title}
+            className="h-full w-full object-cover"
+          />
+        </div>
         <div className="absolute inset-0 bg-linear-to-t from-black/80 dark:from-background dark:via-background/50 to-transparent" />
       </div>
       <div className="absolute inset-0 flex items-center">

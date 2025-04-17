@@ -79,8 +79,10 @@ export function CurrentBundles() {
                 <Card className="border-0 bg-transparent h-full">
                   <div className="flex h-full flex-col">
                     <div className="relative">
-                      <div className="aspect-4/3 overflow-hidden">
+                      <div className="relatvie aspect-4/3 overflow-hidden">
                         <Image
+                          sizes="500px"
+                          quality={80}
                           fill={true}
                           src={bundle.image}
                           alt={bundle.title}

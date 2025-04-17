@@ -134,9 +134,11 @@ export function HeroSection() {
             <div className="absolute -inset-1 rounded-2xl bg-linear-to-r from-primary/50 via-secondary/50 to-primary/50 blur-2xl opacity-40 dark:opacity-30 animate-pulse-slow" />
             <div className="absolute inset-0 rounded-2xl bg-[linear-gradient(135deg,rgba(57,130,245,0.2),rgba(249,113,20,0.2))] animate-pulse-slow" />
             <Card className="group relative overflow-hidden rounded-xl border border-white/20 dark:border-border bg-white/80 dark:bg-card/50 p-2 backdrop-blur-xs lg:mt-0 animate-float shadow-xl dark:shadow-2xl hover:shadow-2xl hover:shadow-primary/20 dark:hover:shadow-primary/30 transition-all duration-300 before:absolute before:inset-[1px] before:rounded-xl before:border before:border-black/[0.03] dark:before:border-white/[0.03] before:pointer-events-none sm:bg-white/70 md:bg-white/75 lg:bg-white/80">
-              <div className="aspect-16/9 overflow-hidden rounded-lg">
+              <div className="relative aspect-16/9 overflow-hidden rounded-lg">
                 <Image
                   fill={true}
+                  sizes="100vw"
+                  quality={80}
                   src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2940&auto=format&fit=crop"
                   alt="Featured Games Collection"
                   className="h-full w-full object-cover transition-all duration-700 group-hover:scale-105 group-hover:brightness-110 group-hover:saturate-[1.1]"

@@ -74,6 +74,8 @@ export function GameDetailDrawer({
                   >
                     <Image
                       fill={true}
+                      sizes="750px"
+                      quality={80}
                       src={game.image}
                       alt={game.name}
                       className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105 brightness-90 group-hover:brightness-75"
@@ -89,6 +91,8 @@ export function GameDetailDrawer({
             ) : (
               <Image
                 fill={true}
+                sizes="750px"
+                quality={80}
                 src={game.image}
                 alt={game.name}
                 className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"

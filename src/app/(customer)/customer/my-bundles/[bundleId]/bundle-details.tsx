@@ -112,9 +112,11 @@ export function BundleDetails({ bundleDetails }: BundleDetailsProps) {
               >
                 <div className="flex flex-col gap-4 group rounded-xl transition-all duration-200 hover:bg-muted/5 dark:hover:bg-[#1d2233]/60">
                   <div className="flex items-start gap-4">
-                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-md bg-muted/50 dark:bg-[#1e2229]">
+                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-muted/50 dark:bg-[#1e2229]">
                       <Image
                         src={`https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&h=400&auto=format&fit=crop`}
+                        sizes="500px"
+                        quality={80}
                         alt={game.name}
                         className="h-full w-full object-cover"
                       />

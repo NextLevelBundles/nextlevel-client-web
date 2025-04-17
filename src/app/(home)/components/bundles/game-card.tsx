@@ -40,6 +40,8 @@ export function GameCard({
         <div className="relative aspect-16/9 overflow-hidden">
           <Image
             fill={true}
+            sizes="400px"
+            quality={80}
             src={image}
             alt={name}
             className="h-full w-full object-cover transition-all duration-300 group-hover:scale-105"

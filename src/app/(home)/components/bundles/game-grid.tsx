@@ -82,6 +82,8 @@ export function GameGrid({
             <div className="relative aspect-16/9 overflow-hidden">
               <Image
                 fill={true}
+                sizes="500px"
+                quality={80}
                 src={game.image}
                 alt={game.name}
                 className="h-full w-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-[1.02] saturate-[1.02] group-hover:saturate-[1.05]"

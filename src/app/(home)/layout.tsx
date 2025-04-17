@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/home/components/theme-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("http://localhost:3000"),
   title: "NextLevel | Gaming Bundles That Make a Difference",
   description:
     "Get amazing game bundles at unbeatable prices while supporting charities. Pay what you want for curated collections of Steam keys.",

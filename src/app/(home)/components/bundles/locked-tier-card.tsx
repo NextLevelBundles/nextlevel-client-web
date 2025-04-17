@@ -46,6 +46,8 @@ export function LockedTierCard({
             >
               <Image
                 fill={true}
+                sizes="500px"
+                quality={80}
                 src={game.image}
                 alt={game.name}
                 className="h-full w-full object-cover blur-[2px] brightness-[0.4] dark:brightness-50 transition-all duration-500 group-hover:blur-0 group-hover:brightness-[0.6] dark:group-hover:brightness-75 will-change-transform"

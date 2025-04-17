@@ -112,6 +112,8 @@ export function CharityStats() {
                     <div className="relative h-16 w-16 overflow-hidden rounded-full bg-white/50 dark:bg-muted/30 backdrop-blur-xs border border-border/40 dark:border-border group-hover:border-primary/50 transition-all">
                       <Image
                         fill={true}
+                        sizes="100px"
+                        quality={80}
                         src={charity}
                         alt={`Charity Partner ${index + 1}`}
                         className="h-full w-full object-cover opacity-90 dark:opacity-75 transition-all group-hover:opacity-100 group-hover:scale-110"
