@@ -4,8 +4,10 @@ import { Button } from "@/shared/components/ui/button";
 import { Gamepad2, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/shared/utils/tailwind";
-import { ThemeToggle } from "./theme-toggle";
+import { ThemeToggle } from "../../(shared)/components/theme-toggle";
 import Link from "next/link";
+import { UserProfile } from "./user-profile";
+import SignInButton from "./SignInButton";
 
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -58,12 +60,8 @@ export function Navigation() {
 
           <div className="hidden md:flex md:items-center md:gap-2">
             <ThemeToggle />
-            <Button variant="ghost" className="hover:text-primary">
-              Login
-            </Button>
-            <Button className="bg-primary text-white hover:bg-primary/90">
-              Sign Up
-            </Button>
+
+            <UserProfile />
           </div>
 
           <Button
@@ -121,12 +119,7 @@ export function Navigation() {
               <div className="flex items-center justify-between pt-4 mt-4 border-t border-black/[0.06] dark:border-white/[0.06]">
                 <ThemeToggle />
                 <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    className="hover:text-primary transition-colors"
-                  >
-                    Login
-                  </Button>
+                  <SignInButton />
                   <Button className="bg-primary text-white hover:bg-primary/90 hover:shadow-[0_0_12px_rgba(57,130,245,0.4)] transition-all duration-200">
                     Sign Up
                   </Button>

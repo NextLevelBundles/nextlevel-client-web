@@ -1,14 +1,20 @@
-import { signIn } from "@/auth";
+"use client";
 
-export default function SignIn() {
+import { Button } from "@/app/(shared)/components/ui/button";
+import { signIn } from "next-auth/react";
+
+export default function SignInButton() {
+  const onSignIn = async () => {
+    await signIn("cognito");
+  };
+
   return (
-    <form
-      action={async () => {
-        "use server";
-        await signIn("cognito");
-      }}
+    <Button
+      onClick={onSignIn}
+      variant="ghost"
+      className="hover:text-primary transition-colors"
     >
-      <button type="submit">Signin with Cognito</button>
-    </form>
+      Login
+    </Button>
   );
 }

@@ -1,10 +1,11 @@
 import "./globals.css";
+import "@fontsource/orbitron/700.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/auth";
-import { ThemeProvider } from "./components/theme-provider";
+import { ThemeProvider } from "../(shared)/components/theme-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 

@@ -13,12 +13,12 @@ import {
 } from "lucide-react";
 
 const navigation = [
-  { name: "Dashboard", href: "dashboard", icon: GamepadIcon },
-  { name: "Purchase History", href: "purchases", icon: ReceiptIcon },
-  { name: "My Keys", href: "keys", icon: KeyIcon },
-  { name: "Charity", href: "charity", icon: HeartIcon },
-  { name: "Badges", href: "badges", icon: AwardIcon },
-  { name: "Support", href: "support", icon: HelpCircleIcon },
+  { name: "Dashboard", href: "/customer/dashboard", icon: GamepadIcon },
+  { name: "Purchase History", href: "/customer/purchases", icon: ReceiptIcon },
+  { name: "My Keys", href: "/customer/keys", icon: KeyIcon },
+  { name: "Charity", href: "/customer/charity", icon: HeartIcon },
+  { name: "Badges", href: "/customer/badges", icon: AwardIcon },
+  { name: "Support", href: "/customer/support", icon: HelpCircleIcon },
 ];
 
 export function MainNav() {
