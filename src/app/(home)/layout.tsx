@@ -28,12 +28,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="en"
-      className="bg-background text-foreground bg-[radial-gradient(ellipse_at_top_left,rgba(57,130,245,0.05),transparent_60%),radial-gradient(ellipse_at_bottom_right,rgba(249,113,20,0.05),transparent_60%)]"
-    >
+    <html lang="en">
       <body className={`${inter.className} antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
         </ThemeProvider>
       </body>

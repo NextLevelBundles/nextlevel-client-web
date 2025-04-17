@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Card } from "@/app/(shared)/components/ui/card";
-import { Button } from "@/app/(shared)/components/ui/button";
+import { Card } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
 import { Timer, Users, ArrowRight } from "lucide-react";
 import { bundles } from "@/home/data/bundles";
 import Image from "next/image";
@@ -44,10 +44,10 @@ export function CurrentBundles() {
 
   return (
     <section className="relative py-24 px-6 md:px-12">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(57,130,245,0.15),transparent_70%),radial-gradient(ellipse_at_bottom,rgba(249,113,20,0.15),transparent_70%)] opacity-40" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(57,130,245,0.15),transparent_70%),radial-gradient(ellipse_at_bottom,rgba(249,113,20,0.1),transparent_70%)] opacity-30 dark:opacity-40" />
       <div className="container relative px-4 mx-auto overflow-visible">
         <div className="mb-12 text-center">
-          <h2 className="font-orbitron mb-4 text-3xl font-bold tracking-tight md:text-4xl bg-linear-to-r from-primary via-white to-secondary bg-clip-text text-transparent animate-glow">
+          <h2 className="font-orbitron mb-4 text-3xl font-bold tracking-tight md:text-4xl bg-linear-to-r from-primary via-foreground to-secondary bg-clip-text text-transparent animate-glow">
             Current Bundles
           </h2>
           <p className="text-muted-foreground">
@@ -71,22 +71,22 @@ export function CurrentBundles() {
                           : bundle.tag === "Staff Pick"
                             ? "from-[#a855f7]/20 to-primary/20"
                             : "from-primary/20 to-secondary/20"
-                } blur-xl opacity-60 transition-opacity group-hover:opacity-100`}
+                } blur-xl opacity-30 dark:opacity-40 transition-opacity group-hover:opacity-100`}
               />
               <div
-                className={`group relative h-full overflow-hidden rounded-2xl bg-card/70 backdrop-blur-xs transition-all hover:translate-y-[-4px] hover:shadow-2xl ring-1 ring-white/20 hover:ring-primary/50 cursor-pointer animate-fade-up opacity-0 will-change-transform ${bundle.neonClass}`}
+                className={`group relative h-full overflow-hidden rounded-2xl bg-white/80 dark:bg-card/70 backdrop-blur-xs transition-all hover:translate-y-[-4px] hover:shadow-[0_4px_20px_rgba(57,130,245,0.2)] dark:hover:shadow-[0_4px_30px_rgba(57,130,245,0.3)] border border-white/20 dark:border-border hover:border-primary/50 cursor-pointer animate-fade-up opacity-0 will-change-transform ring-1 ring-black/5 dark:ring-white/20 before:absolute before:inset-[1px] before:rounded-xl before:border before:border-black/[0.03] dark:before:border-white/[0.03] before:pointer-events-none ${bundle.neonClass}`}
               >
                 <Card className="border-0 bg-transparent h-full">
                   <div className="flex h-full flex-col">
                     <div className="relative">
                       <div className="aspect-4/3 overflow-hidden">
                         <Image
+                          fill={true}
                           src={bundle.image}
                           alt={bundle.title}
-                          fill={true}
-                          className="h-full w-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-125 will-change-transform"
+                          className="h-full w-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-110 dark:group-hover:brightness-125 will-change-transform saturate-[1.02] group-hover:saturate-[1.1]"
                         />
-                        <div className="absolute inset-0 bg-linear-to-t from-background/95 via-background/50 to-transparent transition-opacity group-hover:opacity-75" />
+                        <div className="absolute inset-0 dark:from-background/95 dark:via-background/50 dark:to-transparent transition-opacity group-hover:opacity-75" />
                       </div>
                       <div
                         className={`absolute right-3 top-3 text-xs font-semibold rounded-full px-2 py-0.5 backdrop-blur-xs transition-transform group-hover:scale-105 ${
@@ -134,7 +134,7 @@ export function CurrentBundles() {
                           className="relative z-10 transition-all hover:bg-primary hover:text-white border-primary/50 hover:border-primary hover:shadow-[0_0_20px_rgba(57,130,245,0.5)] hover:brightness-110 duration-300"
                           onClick={(e) => {
                             e.stopPropagation();
-                            window.location.href = `/bundles/${bundle.id}/view`;
+                            window.location.href = `/bundles/${bundle.id}`;
                           }}
                         >
                           View Bundle
@@ -154,7 +154,7 @@ export function CurrentBundles() {
             <Button
               variant="outline"
               size="lg"
-              className="bg-card/50 backdrop-blur-xs hover:bg-primary/20 transition-all hover:shadow-[0_0_30px_rgba(57,130,245,0.2)] ring-1 ring-white/20 relative"
+              className="bg-white/50 dark:bg-card/50 backdrop-blur-xs hover:bg-primary/20 transition-all hover:shadow-[0_4px_20px_rgba(57,130,245,0.2)] border border-white/20 dark:border-border hover:border-primary/50 ring-1 ring-black/5 dark:ring-white/20 relative before:absolute before:inset-[1px] before:rounded-lg before:border before:border-black/[0.03] dark:before:border-white/[0.03] before:pointer-events-none"
               onClick={() => {
                 setLoading(true);
                 setTimeout(() => {

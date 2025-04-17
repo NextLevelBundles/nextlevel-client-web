@@ -11,7 +11,7 @@ import { Footer } from "@/home/components/sections/footer";
 export default function Home() {
   return (
     <main className="min-h-screen bg-background relative">
-      <div className="absolute inset-0 bg-mesh opacity-10" />
+      <div className="absolute inset-0 bg-mesh opacity-20 dark:opacity-10" />
       <Navigation />
       <HeroSection />
       <CurrentBundles />
