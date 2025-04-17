@@ -123,7 +123,7 @@ export function Footer() {
           </Button>
 
           <div className="text-sm text-[#3a3a3a] dark:text-muted-foreground/80">
-            © 2024 NextLevel. All rights reserved.
+            © {new Date().getFullYear()} NextLevel. All rights reserved.
           </div>
         </div>
       </div>

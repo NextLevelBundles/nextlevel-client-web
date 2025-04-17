@@ -20,7 +20,7 @@ export function BundleHero({
   return (
     <div className="relative h-[60vh] min-h-[400px] overflow-hidden">
       <div className="absolute inset-0">
-        <div className="relative">
+        <div className="relative h-full">
           <Image
             fill={true}
             sizes="100vw"

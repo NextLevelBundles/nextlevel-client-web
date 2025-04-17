@@ -1,3 +1,5 @@
+"use server";
+
 import { Navigation } from "@/home/components/navigation";
 import { HeroSection } from "@/home/components/sections/hero";
 import { CurrentBundles } from "@/home/components/sections/current-bundles";
@@ -8,7 +10,7 @@ import { BlogPreview } from "@/home/components/sections/blog-preview";
 import { Newsletter } from "@/home/components/sections/newsletter";
 import { Footer } from "@/home/components/sections/footer";
 
-export default function Home() {
+export default async function Home() {
   return (
     <main className="min-h-screen bg-background relative">
       <div className="absolute inset-0 bg-mesh opacity-20 dark:opacity-10" />

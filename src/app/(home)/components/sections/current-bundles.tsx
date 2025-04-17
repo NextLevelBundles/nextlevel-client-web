@@ -6,6 +6,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Timer, Users, ArrowRight } from "lucide-react";
 import { bundles } from "@/home/data/bundles";
 import Image from "next/image";
+import Link from "next/link";
 
 const BUNDLES_PER_PAGE = 6;
 
@@ -77,7 +78,10 @@ export function CurrentBundles() {
                 className={`group relative h-full overflow-hidden rounded-2xl bg-white/80 dark:bg-card/70 backdrop-blur-xs transition-all hover:translate-y-[-4px] hover:shadow-[0_4px_20px_rgba(57,130,245,0.2)] dark:hover:shadow-[0_4px_30px_rgba(57,130,245,0.3)] border border-white/20 dark:border-border hover:border-primary/50 cursor-pointer animate-fade-up opacity-0 will-change-transform ring-1 ring-black/5 dark:ring-white/20 before:absolute before:inset-[1px] before:rounded-xl before:border before:border-black/[0.03] dark:before:border-white/[0.03] before:pointer-events-none ${bundle.neonClass}`}
               >
                 <Card className="border-0 bg-transparent h-full">
-                  <div className="flex h-full flex-col">
+                  <Link
+                    href={`/bundles/${bundle.id}`}
+                    className="flex h-full flex-col"
+                  >
                     <div className="relative">
                       <div className="relatvie aspect-4/3 overflow-hidden">
                         <Image
@@ -134,16 +138,12 @@ export function CurrentBundles() {
                         <Button
                           variant="outline"
                           className="relative z-10 transition-all hover:bg-primary hover:text-white border-primary/50 hover:border-primary hover:shadow-[0_0_20px_rgba(57,130,245,0.5)] hover:brightness-110 duration-300"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            window.location.href = `/bundles/${bundle.id}`;
-                          }}
                         >
                           View Bundle
                         </Button>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                   <div className="absolute inset-x-0 bottom-0 h-1 bg-linear-to-r from-primary/50 via-secondary/50 to-primary/50 opacity-0 transition-all duration-300 group-hover:opacity-100" />
                 </Card>
               </div>

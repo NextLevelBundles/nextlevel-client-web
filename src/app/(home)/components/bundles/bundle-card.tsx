@@ -6,6 +6,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Timer, Users, ArrowRight } from "lucide-react";
 import { Bundle } from "@/home/data/bundles";
 import Image from "next/image";
+import Link from "next/link";
 
 interface BundleCardProps {
   bundle: Bundle;
@@ -47,7 +48,7 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
       onClick={() => (window.location.href = `/bundles/${bundle.id}`)}
     >
       <Card className="border-0 bg-transparent h-full">
-        <div className="flex h-full flex-col">
+        <Link href={`/bundles/${bundle.id}`} className="flex h-full flex-col">
           <div className="relative">
             <div className="relative aspect-4/3 overflow-hidden">
               <Image
@@ -109,10 +110,6 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
               <Button
                 variant="outline"
                 className="relative z-10 transition-all hover:bg-primary hover:text-white border-primary/50 hover:border-primary hover:shadow-[0_0_20px_rgba(57,130,245,0.5)] hover:brightness-110 duration-300 group-hover:translate-y-[-1px]"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  window.location.href = `/bundles/${bundle.id}`;
-                }}
                 aria-label={`View ${bundle.title} bundle details`}
               >
                 <span className="flex items-center gap-2">
@@ -122,7 +119,7 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
               </Button>
             </div>
           </div>
-        </div>
+        </Link>
         <div className="absolute inset-x-0 bottom-0 h-1 bg-linear-to-r from-primary/50 via-secondary/50 to-primary/50 opacity-0 transition-all duration-300 group-hover:opacity-100" />
       </Card>
     </div>

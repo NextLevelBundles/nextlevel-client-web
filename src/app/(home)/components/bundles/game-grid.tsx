@@ -67,7 +67,7 @@ export function GameGrid({
     <Card
       id={id}
       className={cn(
-        "p-6 bg-gray-50/95 dark:bg-card/70 backdrop-blur-xs border border-gray-100 dark:border-border shadow-xs transition-all duration-500",
+        "cursor-pointer p-6 bg-gray-50/95 dark:bg-card/70 backdrop-blur-xs border border-gray-100 dark:border-border shadow-xs transition-all duration-500",
         isHighlighted &&
           "ring-2 ring-primary/50 shadow-lg shadow-primary/20 dark:shadow-primary/30"
       )}
