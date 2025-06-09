@@ -21,16 +21,16 @@ export function getTimeDifference(startIso: string, endIso: string): string {
 
   const diffInMs = Math.abs(end.getTime() - start.getTime());
 
-  const totalMinutes = Math.floor(diffInMs / (1000 * 60));
-  const days = Math.floor(totalMinutes / (60 * 24));
-  const hours = Math.floor((totalMinutes % (60 * 24)) / 60)
+  const totalSeconds = Math.floor(diffInMs / 1000);
+  const hours = Math.floor(totalSeconds / 3600)
     .toString()
     .padStart(2, "0");
-  const minutes = (totalMinutes % 60).toString().padStart(2, "0");
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+    .toString()
+    .padStart(2, "0");
+  const seconds = (totalSeconds % 60).toString().padStart(2, "0");
 
-  const daysPart = days > 0 ? `${days} day${days !== 1 ? "s" : ""} ` : "";
-
-  return `${daysPart}${hours}:${minutes}`;
+  return `${hours}:${minutes}:${seconds}`;
 }
 
 export function BundleCard({ bundle, index }: BundleCardProps) {
@@ -123,8 +123,10 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
                 <p className="text-xs text-[#64748b] dark:text-muted-foreground group-hover:text-[#4b5563] transition-colors">
                   Starting at
                 </p>
-                <div className="mt-1 inline-flex items-center rounded-lg bg-secondary/10 dark:bg-secondary/20 px-3 py-1">
-                  <p className="text-2xl font-bold text-secondary group-hover:scale-[1.02] transition-transform">
+
+                {/* bg-secondary/10 dark:bg-secondary/20 */}
+                <div className="mt-1 inline-flex items-center rounded-lg  px-3 py-1">
+                  <p className="text-2xl font-bold bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">
                     ${bundle.minPrice}
                   </p>
                 </div>

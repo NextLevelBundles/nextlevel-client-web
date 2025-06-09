@@ -1,47 +1,15 @@
-"use client";
+"use server";
 
-import { useState, useEffect, useRef } from "react";
-import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
-import { Timer, Users, ArrowRight } from "lucide-react";
-import { bundles } from "@/home/data/bundles";
-import Image from "next/image";
+import { ArrowRight } from "lucide-react";
+import { Bundle } from "@/app/(shared)/types/bundle";
+import { BundleCard } from "../bundles/bundle-card";
 import Link from "next/link";
 
-const BUNDLES_PER_PAGE = 6;
-
-export function CurrentBundles() {
-  const [visibleBundles, setVisibleBundles] = useState(BUNDLES_PER_PAGE);
-  const [loading, setLoading] = useState(false);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries;
-        if (
-          entry.isIntersecting &&
-          !loading &&
-          visibleBundles < bundles.length
-        ) {
-          setLoading(true);
-          setTimeout(() => {
-            setVisibleBundles((prev) =>
-              Math.min(prev + BUNDLES_PER_PAGE, bundles.length)
-            );
-            setLoading(false);
-          }, 500);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (loadMoreRef.current) {
-      observer.observe(loadMoreRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [loading, visibleBundles]);
+export async function CurrentBundles() {
+  const response = await fetch(`${process.env.API_URL}/customer/bundles`);
+  const bundles = await response.json();
+  const bundlesTyped = bundles as Bundle[];
 
   return (
     <section className="relative py-24 px-6 md:px-12">
@@ -57,7 +25,10 @@ export function CurrentBundles() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {bundles.slice(0, visibleBundles).map((bundle) => (
+          {bundlesTyped.map((bundle, index) => (
+            <BundleCard key={bundle.id} bundle={bundle} index={index} />
+          ))}
+          {/* {bundles.map((bundle) => (
             <div key={bundle.id} className="relative">
               <div
                 className={`absolute -inset-1 rounded-2xl bg-linear-to-r ${
@@ -148,43 +119,24 @@ export function CurrentBundles() {
                 </Card>
               </div>
             </div>
-          ))}
+          ))} */}
         </div>
 
-        <div ref={loadMoreRef} className="mt-12 text-center">
-          {visibleBundles < bundles.length ? (
+        <div className="mt-12 text-center">
+          <Link
+            href="/bundles"
+            className="inline-flex items-center cursor-pointer"
+          >
             <Button
               variant="outline"
               size="lg"
-              className="bg-white/50 dark:bg-card/50 backdrop-blur-xs hover:bg-primary/20 transition-all hover:shadow-[0_4px_20px_rgba(57,130,245,0.2)] border border-white/20 dark:border-border hover:border-primary/50 ring-1 ring-black/5 dark:ring-white/20 relative before:absolute before:inset-[1px] before:rounded-lg before:border before:border-black/[0.03] dark:before:border-white/[0.03] before:pointer-events-none"
-              onClick={() => {
-                setLoading(true);
-                setTimeout(() => {
-                  setVisibleBundles((prev) =>
-                    Math.min(prev + BUNDLES_PER_PAGE, bundles.length)
-                  );
-                  setLoading(false);
-                }, 500);
-              }}
-              disabled={loading}
-            >
-              {loading ? (
-                <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-primary" />
-              ) : (
-                <>Load More Bundles</>
-              )}
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              size="lg"
-              className="bg-card/50 backdrop-blur-xs hover:bg-primary/20 transition-all hover:shadow-[0_0_30px_rgba(57,130,245,0.2)] ring-1 ring-white/20"
-              onClick={() => (window.location.href = "/bundles")}
+              type="button"
+              className="bg-card/50 backdrop-blur-xs hover:bg-primary/20 cursor-pointer transition-all hover:shadow-[0_0_30px_rgba(57,130,245,0.2)] ring-1 ring-white/20"
             >
               View All Bundles
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-          )}
+          </Link>
         </div>
       </div>
     </section>

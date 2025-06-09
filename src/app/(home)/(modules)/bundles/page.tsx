@@ -10,8 +10,6 @@ export default async function BundlesPage() {
   const bundles = await response.json();
   const bundlesTyped = bundles as Bundle[];
 
-  console.log("Bundles:", bundles);
-
   return (
     <main className="min-h-screen bg-background relative">
       <div className="absolute inset-0 bg-mesh opacity-20 dark:opacity-10" />
