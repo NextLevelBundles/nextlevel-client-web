@@ -6,6 +6,12 @@ const nextConfig: NextConfig = {
       {
         hostname: "images.unsplash.com",
       },
+      {
+        hostname: "shared.akamai.steamstatic.com",
+      },
+      {
+        hostname: "media.nextlevelbundle.com",
+      },
     ],
   },
   async redirects() {

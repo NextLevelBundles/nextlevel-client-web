@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { BundleCard } from "@/home/components/bundles/bundle-card";
-import { bundles as allBundles } from "@/home/data/bundles";
+// import { bundles as allBundles, Bundle } from "@/home/data/bundles";
 import {
   Select,
   SelectContent,
@@ -21,6 +21,7 @@ import {
   X,
 } from "lucide-react";
 import { Badge } from "@/shared/components/ui/badge";
+import { Bundle } from "@/app/(shared)/types/bundle";
 
 const ITEMS_PER_PAGE = 9;
 
@@ -40,13 +41,17 @@ const sortOptions = [
   { label: "Most Popular", value: "popular", icon: Flame },
 ];
 
-export function BundlesGrid() {
+interface BundlesGridProps {
+  bundles: Bundle[];
+}
+
+export function BundlesGrid({ bundles }: BundlesGridProps) {
   const [currentFilter, setCurrentFilter] = useState("all");
   const [currentSort, setCurrentSort] = useState("ending-soon");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const filteredBundles = allBundles
-    .filter((bundle) => currentFilter === "all" || bundle.tag === currentFilter)
+  const filteredBundles = bundles
+    // .filter((bundle) => currentFilter === "all")
     .sort((a, b) => {
       switch (currentSort) {
         case "price-asc":
@@ -54,9 +59,9 @@ export function BundlesGrid() {
         case "price-desc":
           return b.minPrice - a.minPrice;
         case "popular":
-          return b.keysLeft - a.keysLeft;
+          return b.minPrice - a.minPrice;
         default:
-          return parseInt(a.timeLeft) - parseInt(b.timeLeft);
+          return a.minPrice - b.minPrice;
       }
     });
 

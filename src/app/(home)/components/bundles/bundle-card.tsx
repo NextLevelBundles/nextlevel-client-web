@@ -4,13 +4,33 @@ import { useRef, useState, useEffect } from "react";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Timer, Users, ArrowRight } from "lucide-react";
-import { Bundle } from "@/home/data/bundles";
 import Image from "next/image";
 import Link from "next/link";
+import { Bundle } from "@/app/(shared)/types/bundle";
 
 interface BundleCardProps {
   bundle: Bundle;
   index: number;
+}
+
+const neonClasses = ["neon-card-blue", "neon-card-purple", "neon-card-orange"];
+
+export function getTimeDifference(startIso: string, endIso: string): string {
+  const start = new Date(startIso);
+  const end = new Date(endIso);
+
+  const diffInMs = Math.abs(end.getTime() - start.getTime());
+
+  const totalMinutes = Math.floor(diffInMs / (1000 * 60));
+  const days = Math.floor(totalMinutes / (60 * 24));
+  const hours = Math.floor((totalMinutes % (60 * 24)) / 60)
+    .toString()
+    .padStart(2, "0");
+  const minutes = (totalMinutes % 60).toString().padStart(2, "0");
+
+  const daysPart = days > 0 ? `${days} day${days !== 1 ? "s" : ""} ` : "";
+
+  return `${daysPart}${hours}:${minutes}`;
 }
 
 export function BundleCard({ bundle, index }: BundleCardProps) {
@@ -41,7 +61,7 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
       tabIndex={0}
       role="article"
       aria-label={`${bundle.title} bundle`}
-      className={`group relative h-full overflow-hidden rounded-2xl bg-white/80 dark:bg-card/70 backdrop-blur-xs transition-all duration-300 hover:translate-y-[-4px] hover:shadow-[0_8px_30px_rgba(57,130,245,0.2)] dark:hover:shadow-[0_8px_30px_rgba(57,130,245,0.3)] border border-white/20 dark:border-border hover:border-primary/50 cursor-pointer ring-1 ring-black/5 dark:ring-white/20 before:absolute before:inset-[1px] before:rounded-2xl before:border before:border-black/[0.03] dark:before:border-white/[0.03] before:pointer-events-none ${bundle.neonClass} ${
+      className={`group relative h-full overflow-hidden rounded-2xl bg-white/80 dark:bg-card/70 backdrop-blur-xs transition-all duration-300 hover:translate-y-[-4px] hover:shadow-[0_8px_30px_rgba(57,130,245,0.2)] dark:hover:shadow-[0_8px_30px_rgba(57,130,245,0.3)] border border-white/20 dark:border-border hover:border-primary/50 cursor-pointer ring-1 ring-black/5 dark:ring-white/20 before:absolute before:inset-[1px] before:rounded-2xl before:border before:border-black/[0.03] dark:before:border-white/[0.03] before:pointer-events-none ${neonClasses[neonClasses.length % index]} ${
         isVisible ? "animate-fade-up opacity-100" : "opacity-0"
       }`}
       style={{ animationDelay: isVisible ? `${index * 150}ms` : "0ms" }}
@@ -55,7 +75,7 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
                 fill={true}
                 sizes="550px"
                 quality={80}
-                src={bundle.image}
+                src={bundle.coverImageUrl}
                 alt={bundle.title}
                 className="h-full w-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-110 dark:group-hover:brightness-125 will-change-transform saturate-[1.02] group-hover:saturate-[1.1]"
               />
@@ -63,20 +83,22 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
             </div>
             <div
               className={`absolute right-3 top-3 text-xs font-semibold rounded-full px-2 py-0.5 backdrop-blur-xs transition-transform group-hover:scale-105 ${
-                bundle.tag === "Most Popular"
-                  ? "bg-primary/20 text-primary ring-1 ring-primary/50 group-hover:bg-primary/30"
-                  : bundle.tag === "New Release"
-                    ? "bg-secondary/20 text-secondary ring-1 ring-secondary/50 group-hover:bg-secondary/30"
-                    : bundle.tag === "Last Chance"
+                bundle.isFeatured
+                  ? "bg-green-500/20 text-green-500 ring-1 ring-green-500/50 group-hover:bg-green-500/30"
+                  : bundle.isEarlyAccess
+                    ? "bg-purple-500/20 text-purple-500 ring-1 ring-purple-500/50 group-hover:bg-purple-500/30"
+                    : bundle.isLimitedKeys
                       ? "bg-red-500/20 text-red-500 ring-1 ring-red-500/50 group-hover:bg-red-500/30"
-                      : bundle.tag === "Best Value"
-                        ? "bg-green-500/20 text-green-500 ring-1 ring-green-500/50 group-hover:bg-green-500/30"
-                        : bundle.tag === "Staff Pick"
-                          ? "bg-purple-500/20 text-purple-500 ring-1 ring-purple-500/50 group-hover:bg-purple-500/30"
-                          : "bg-muted/30 text-muted-foreground ring-1 ring-white/30"
+                      : "bg-muted/30 text-muted-foreground ring-1 ring-white/30"
               }`}
             >
-              {bundle.tag}
+              {bundle.isFeatured && "Featured"}
+              {bundle.isEarlyAccess && "Early Access"}
+              {bundle.isLimitedKeys && "Limited Keys"}
+              {!bundle.isFeatured &&
+                !bundle.isEarlyAccess &&
+                !bundle.isLimitedKeys &&
+                "New"}
             </div>
           </div>
 
@@ -88,11 +110,11 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
             <div className="mb-4 grid grid-cols-2 gap-6">
               <div className="flex items-center gap-2 text-sm text-[#64748b] dark:text-muted-foreground group-hover:text-[#4b5563] dark:group-hover:text-muted-foreground/80 transition-colors">
                 <Timer className="h-4 w-4" />
-                <span>{bundle.timeLeft}</span>
+                <span>{getTimeDifference(bundle.startsAt, bundle.endsAt)}</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-[#64748b] dark:text-muted-foreground group-hover:text-[#4b5563] dark:group-hover:text-muted-foreground/80 transition-colors">
                 <Users className="h-4 w-4" />
-                <span>{bundle.keysLeft} keys left</span>
+                <span>2532 keys left</span>
               </div>
             </div>
 
