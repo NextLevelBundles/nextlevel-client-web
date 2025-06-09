@@ -12,10 +12,11 @@ import {
   Heart,
 } from "lucide-react";
 import { Slider } from "@/shared/components/ui/slider";
-import { Tier } from "@/home/data/tiers";
 import { cn } from "@/shared/utils/tailwind";
+import { Bundle, Tier } from "@/app/(shared)/types/bundle";
 
 interface PurchaseSummaryProps {
+  bundle: Bundle;
   tiers: Tier[];
   selectedTier: number;
   onTierChange: (tier: number) => void;
@@ -24,6 +25,7 @@ interface PurchaseSummaryProps {
 }
 
 export function PurchaseSummary({
+  bundle,
   tiers,
   selectedTier,
   extraAmount,
@@ -33,17 +35,19 @@ export function PurchaseSummary({
   const [customInputValue, setCustomInputValue] = useState("");
   const [inputTimeout, setInputTimeout] = useState<NodeJS.Timeout>();
 
-  const minimumPrice = tiers[0].minPrice;
+  const minimumPrice = tiers[0].price;
   const selectedTierData = tiers[selectedTier - 1];
-  const totalAmount = extraAmount + selectedTierData.minPrice;
+  const totalAmount = extraAmount + selectedTierData.price;
 
   const charityAmount = Math.round(totalAmount * (charityPercentage / 100));
   const publisherAmount = totalAmount - charityAmount;
 
   const unlockedGamesValue = tiers
     .slice(0, selectedTier)
-    .flatMap((tier) => tier.games)
-    .reduce((sum, game) => sum + game.originalPrice, 0);
+    .flatMap((tier) =>
+      bundle.products.filter((product) => product.bundleTierId === tier.id)
+    )
+    .reduce((sum, game) => sum + game.price, 0);
 
   const predefinedAmounts = [1, 10, 25, 50, 75, 100];
 
@@ -72,7 +76,7 @@ export function PurchaseSummary({
                 variant={totalAmount === amount ? "default" : "outline"}
                 onClick={() => {
                   setCustomInputValue("");
-                  setExtraAmount(amount - selectedTierData.minPrice);
+                  setExtraAmount(amount - selectedTierData.price);
                 }}
                 className={cn(
                   "w-full font-mono transition-all duration-300",
@@ -113,7 +117,7 @@ export function PurchaseSummary({
                   const parsedValue = parseFloat(inputValue);
                   if (!isNaN(parsedValue) && parsedValue >= minimumPrice) {
                     const roundedValue = Math.round(parsedValue);
-                    const newExtra = roundedValue - selectedTierData.minPrice;
+                    const newExtra = roundedValue - selectedTierData.price;
                     setExtraAmount(newExtra);
                   }
                 }, 300);

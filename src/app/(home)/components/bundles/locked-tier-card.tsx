@@ -1,30 +1,35 @@
 "use client";
 
 import { Lock } from "lucide-react";
-import { Game, Tier } from "@/home/data/tiers";
 import { cn } from "@/shared/utils/tailwind";
 import Image from "next/image";
+import { Bundle, Product, Tier } from "@/app/(shared)/types/bundle";
 
 interface LockedTierCardProps {
   tier: Tier;
-  previewGame: Game;
+  bundle: Bundle;
   onSelect: (tierIndex: number) => void;
   tierIndex: number;
   totalGamesToUnlock: number;
 }
 
-function calculateTotalValue(games: Game[]): number {
-  return games.reduce((sum, game) => sum + game.originalPrice, 0);
+function calculateTotalValue(procuts: Product[]): number {
+  return procuts.reduce((sum, product) => sum + product.price, 0);
 }
 
 export function LockedTierCard({
+  bundle,
   tier,
-  previewGame,
   onSelect,
   tierIndex,
   totalGamesToUnlock,
 }: LockedTierCardProps) {
-  const totalValue = calculateTotalValue(tier.games);
+  const tierProducts = bundle.products.filter(
+    (game) => game.bundleTierId === tier.id
+  );
+  const totalValue = calculateTotalValue(tierProducts);
+
+  const previewProduct = tierProducts[0];
 
   return (
     <div
@@ -35,9 +40,9 @@ export function LockedTierCard({
 
       <div className="aspect-16/9 overflow-hidden relative">
         <div className="absolute inset-0 grid grid-cols-2 gap-1">
-          {tier.games.slice(0, 4).map((game, index) => (
+          {tierProducts.slice(0, 4).map((product, index) => (
             <div
-              key={game.name}
+              key={product.id}
               className={cn(
                 "relative overflow-hidden",
                 index === 0 && "col-span-2 row-span-2",
@@ -48,8 +53,8 @@ export function LockedTierCard({
                 fill={true}
                 sizes="500px"
                 quality={80}
-                src={game.image}
-                alt={game.name}
+                src={product.headerImage}
+                alt={product.title}
                 className="h-full w-full object-cover blur-[2px] brightness-[0.4] dark:brightness-50 transition-all duration-500 group-hover:blur-0 group-hover:brightness-[0.6] dark:group-hover:brightness-75 will-change-transform"
               />
             </div>
@@ -83,7 +88,7 @@ export function LockedTierCard({
             style={{ animationDelay: "200ms" }}
           >
             <p className="text-xl text-white/90 font-semibold flex items-center justify-center gap-2">
-              +{totalGamesToUnlock} Games at ${tier.minPrice}
+              +{totalGamesToUnlock} Games at ${tier.price.toFixed(2)}
             </p>
             <p className="text-white/90 text-sm font-semibold bg-linear-to-r from-primary/90 to-secondary/90 bg-clip-text">
               Worth ${totalValue.toFixed(2)} in value
@@ -95,7 +100,7 @@ export function LockedTierCard({
           className="text-sm text-white/70 mt-2 animate-fade-up"
           style={{ animationDelay: "400ms" }}
         >
-          Including {previewGame.name}
+          Including {previewProduct?.title} and more!
         </p>
 
         <div className="absolute inset-x-0 bottom-0 h-1 bg-linear-to-r from-primary/50 via-secondary/50 to-primary/50 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />

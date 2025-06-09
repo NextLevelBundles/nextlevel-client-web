@@ -11,7 +11,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         },
       },
       profile(profile) {
-        console.log("Profile", profile);
         return profile;
       },
     }),
@@ -19,7 +18,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     jwt({ token, user }) {
       if (user) {
-        console.log(user);
         token.id = user.id;
         // token.accessToken = user.access_token;
         // token.idToken = user.id_token;

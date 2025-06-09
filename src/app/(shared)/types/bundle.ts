@@ -34,6 +34,7 @@ export interface Product {
   curatorComment: string;
   type: string;
   publisherId: string | null;
+  bundleTierId?: string | null;
   steamGameMetadata: SteamGameMetadata;
   ebookMetadata: Record<string, never>; // empty object
   audioMetadata: Record<string, never>; // empty object

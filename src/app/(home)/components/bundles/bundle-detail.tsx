@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { bundles } from "@/home/data/bundles";
-import { tiers } from "@/home/data/tiers";
 import { charities } from "@/home/data/charities";
 import { TooltipProvider } from "@/shared/components/ui/tooltip";
 import { BundleHero } from "./bundle-hero";
@@ -11,22 +9,43 @@ import { GameGrid } from "./game-grid";
 import { CharityHighlight } from "./charity-highlight";
 import { PurchaseSummary } from "./purchase-summary";
 import { MobilePurchaseCTA } from "./mobile-purchase-cta";
+import { Bundle } from "@/app/(shared)/types/bundle";
 
-export function BundleDetail({ bundleId }: { bundleId: number }) {
-  const bundle = bundles.find((b) => b.id === bundleId);
+export function getTimeDifference(startIso: string, endIso: string): string {
+  const start = new Date(startIso);
+  const end = new Date(endIso);
+
+  const diffInMs = Math.abs(end.getTime() - start.getTime());
+
+  const totalSeconds = Math.floor(diffInMs / 1000);
+  const hours = Math.floor(totalSeconds / 3600)
+    .toString()
+    .padStart(2, "0");
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+    .toString()
+    .padStart(2, "0");
+  const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+
+  return `${hours}:${minutes}:${seconds}`;
+}
+
+export function BundleDetail({ bundle }: { bundle: Bundle }) {
   const [selectedTier, setSelectedTier] = useState(1);
-  const [timeLeft, setTimeLeft] = useState(bundle?.timeLeft || "00:00:00");
+  const [timeLeft, setTimeLeft] = useState(
+    getTimeDifference(bundle.startsAt, bundle.endsAt) || "00:00:00"
+  );
   const [extraAmount, setExtraAmount] = useState(0);
   const [isGridHighlighted, setIsGridHighlighted] = useState(false);
+  const tiers = bundle.tiers || [];
 
   // Update selected tier when total amount changes
   useEffect(() => {
-    const totalAmount = tiers[selectedTier - 1].minPrice + extraAmount;
+    const totalAmount = tiers[selectedTier - 1].price + extraAmount;
 
     // Find the highest tier that can be unlocked with the total amount
     let newTier = 1;
     for (let i = 0; i < tiers.length; i++) {
-      if (totalAmount >= tiers[i].minPrice) {
+      if (totalAmount >= tiers[i].price) {
         newTier = i + 1;
       }
     }
@@ -34,7 +53,7 @@ export function BundleDetail({ bundleId }: { bundleId: number }) {
     if (newTier !== selectedTier) {
       setSelectedTier(newTier);
     }
-  }, [extraAmount, selectedTier]);
+  }, [bundle.tiers, extraAmount, selectedTier]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -65,12 +84,15 @@ export function BundleDetail({ bundleId }: { bundleId: number }) {
   if (!bundle) return <div>Bundle not found</div>;
 
   const selectedTierData = tiers[selectedTier - 1];
-  const totalAmount = selectedTierData.minPrice + extraAmount;
+  const totalAmount = selectedTierData.price + extraAmount;
 
-  const allGames = tiers.flatMap((tier) => tier.games);
+  const allProducts = bundle.products;
+
   const unlockedGames = tiers
     .slice(0, selectedTier)
-    .flatMap((tier) => tier.games);
+    .flatMap((tier) =>
+      allProducts.filter((product) => product.bundleTierId == tier.id)
+    );
 
   const handleViewContentsClick = () => {
     setIsGridHighlighted(true);
@@ -90,7 +112,7 @@ export function BundleDetail({ bundleId }: { bundleId: number }) {
           <div className="grid gap-8 lg:grid-cols-[1fr_350px]">
             <div id="bundle-progressbar" className="mb-8 space-y-8">
               <BundleProgress
-                tiers={tiers}
+                bundle={bundle}
                 selectedTier={selectedTier}
                 onTierChange={setSelectedTier}
                 totalAmount={totalAmount}
@@ -99,7 +121,8 @@ export function BundleDetail({ bundleId }: { bundleId: number }) {
 
               <GameGrid
                 id="bundle-games"
-                allGames={allGames}
+                bundle={bundle}
+                products={allProducts}
                 unlockedGames={unlockedGames}
                 selectedTier={selectedTier}
                 tiers={tiers}
@@ -114,6 +137,7 @@ export function BundleDetail({ bundleId }: { bundleId: number }) {
             </div>
 
             <PurchaseSummary
+              bundle={bundle}
               tiers={tiers}
               selectedTier={selectedTier}
               onTierChange={setSelectedTier}

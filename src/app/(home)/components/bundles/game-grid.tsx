@@ -2,16 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { Card } from "@/shared/components/ui/card";
-import { Game, Tier } from "@/home/data/tiers";
 import { cn } from "@/shared/utils/tailwind";
 import { LockedTierCard } from "./locked-tier-card";
 import { GameDetailDrawer } from "./game-detail-drawer";
 import Image from "next/image";
+import { Bundle, Product, Tier } from "@/app/(shared)/types/bundle";
 
 interface GameGridProps {
   id?: string;
-  allGames: Game[];
-  unlockedGames: Game[];
+  bundle: Bundle;
+  products: Product[];
+  unlockedGames: Product[];
   selectedTier: number;
   tiers: Tier[];
   onTierChange: (tier: number) => void;
@@ -20,16 +21,18 @@ interface GameGridProps {
 
 export function GameGrid({
   id,
+  bundle,
   selectedTier,
+  products,
   tiers,
   onTierChange,
   isHighlighted,
 }: GameGridProps) {
-  const [selectedGame, setSelectedGame] = useState<Game | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   useEffect(() => {
-    const handleGameNavigation = (event: CustomEvent<Game>) => {
-      setSelectedGame(event.detail);
+    const handleGameNavigation = (event: CustomEvent<Product>) => {
+      setSelectedProduct(event.detail);
     };
 
     window.addEventListener(
@@ -45,9 +48,11 @@ export function GameGrid({
   }, []);
 
   // Get games up to the selected tier
-  const displayedGames = tiers
+  const displayedProducts = tiers
     .slice(0, selectedTier)
-    .flatMap((tier) => tier.games);
+    .flatMap((tier) =>
+      products.filter((product) => product.bundleTierId === tier.id)
+    );
 
   // Get locked tiers
   const lockedTiers = tiers.slice(selectedTier);
@@ -56,7 +61,10 @@ export function GameGrid({
   const lockedTiersWithCumulativeGames = lockedTiers.map((tier, index) => {
     const gamesInCurrentAndPreviousLockedTiers = lockedTiers
       .slice(0, index + 1)
-      .reduce((acc, t) => acc + t.games.length, 0);
+      .reduce(
+        (acc, t) => acc + products.filter((x) => x.bundleTierId == t.id).length,
+        0
+      );
     return {
       ...tier,
       totalGamesToUnlock: gamesInCurrentAndPreviousLockedTiers,
@@ -73,10 +81,10 @@ export function GameGrid({
       )}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {displayedGames.map((game) => (
+        {displayedProducts.map((product) => (
           <div
-            key={game.name}
-            onClick={() => setSelectedGame(game)}
+            key={product.id}
+            onClick={() => setSelectedProduct(product)}
             className="group relative overflow-hidden rounded-xl bg-white dark:bg-card border border-gray-200 dark:border-border shadow-xs hover:shadow-lg transition-all duration-300 hover:border-primary/50 hover:scale-[1.01] hover:bg-white/95"
           >
             <div className="relative aspect-16/9 overflow-hidden">
@@ -84,45 +92,43 @@ export function GameGrid({
                 fill={true}
                 sizes="500px"
                 quality={80}
-                src={game.image}
-                alt={game.name}
+                src={product.headerImage}
+                alt={product.title}
                 className="h-full w-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-[1.02] saturate-[1.02] group-hover:saturate-[1.05]"
               />
             </div>
             <div className="p-5">
               <div className="flex items-start justify-between gap-2">
                 <h3 className="font-rajdhani text-lg font-bold line-clamp-1 text-gray-900 dark:text-foreground">
-                  {game.name}
+                  {product.title}
                 </h3>
                 <span className="text-sm font-medium bg-blue-50 text-blue-700 dark:bg-primary/20 dark:text-primary px-2 py-0.5 rounded-full">
-                  ${game.originalPrice}
+                  ${product.price}
                 </span>
               </div>
               <div className="mt-2 flex flex-wrap gap-2">
-                {game.deckVerified && (
-                  <span className="inline-flex items-center rounded-full bg-green-50 dark:bg-green-500/20 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-500 ring-1 ring-green-500/10">
-                    Deck Verified
-                  </span>
-                )}
-                {game.protonDbRating && (
+                <span className="inline-flex items-center rounded-full bg-green-50 dark:bg-green-500/20 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-500 ring-1 ring-green-500/10">
+                  Deck Verified
+                </span>
+                {/* {product.protonDbRating && (
                   <span
                     className={cn(
                       "inline-flex items-center rounded-full px-2 py-0.5 text-xs",
                       {
                         "bg-purple-50 text-purple-700 ring-1 ring-purple-500/10 dark:bg-purple-500/20 dark:text-purple-500":
-                          game.protonDbRating === "platinum",
+                          product.protonDbRating === "platinum",
                         "bg-yellow-50 text-yellow-700 ring-1 ring-yellow-500/10 dark:bg-yellow-500/20 dark:text-yellow-500":
-                          game.protonDbRating === "gold",
+                          product.protonDbRating === "gold",
                         "bg-gray-50 text-gray-700 ring-1 ring-gray-500/10 dark:bg-gray-500/20 dark:text-gray-500":
-                          game.protonDbRating === "silver",
+                          product.protonDbRating === "silver",
                         "bg-orange-50 text-orange-700 ring-1 ring-orange-500/10 dark:bg-orange-500/20 dark:text-orange-500":
-                          game.protonDbRating === "bronze",
+                          product.protonDbRating === "bronze",
                       }
                     )}
                   >
-                    ProtonDB {game.protonDbRating}
+                    ProtonDB {product.protonDbRating}
                   </span>
-                )}
+                )} */}
               </div>
             </div>
           </div>
@@ -130,9 +136,9 @@ export function GameGrid({
 
         {lockedTiersWithCumulativeGames.map((tier, index) => (
           <LockedTierCard
-            key={tier.name}
+            key={tier.id}
             tier={tier}
-            previewGame={tier.games[0]}
+            bundle={bundle}
             onSelect={() => onTierChange(index + selectedTier + 1)}
             tierIndex={index}
             totalGamesToUnlock={tier.totalGamesToUnlock}
@@ -140,10 +146,11 @@ export function GameGrid({
         ))}
 
         <GameDetailDrawer
-          game={selectedGame}
-          isOpen={selectedGame !== null}
-          onClose={() => setSelectedGame(null)}
-          allGames={displayedGames}
+          bundle={bundle}
+          product={selectedProduct}
+          isOpen={selectedProduct !== null}
+          onClose={() => setSelectedProduct(null)}
+          allProducts={displayedProducts}
         />
       </div>
     </Card>

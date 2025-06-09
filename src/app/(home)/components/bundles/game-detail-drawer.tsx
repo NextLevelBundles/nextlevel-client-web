@@ -1,10 +1,8 @@
 "use client";
 
-import { Game } from "@/home/data/tiers";
 import { Button } from "@/shared/components/ui/button";
 import { Sheet, SheetContent } from "@/shared/components/ui/sheet";
 import {
-  Star,
   ExternalLink,
   ChevronDown,
   ChevronUp,
@@ -16,34 +14,36 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useState } from "react";
-import { tiers } from "@/home/data/tiers";
 import { cn } from "@/shared/utils/tailwind";
 import Image from "next/image";
+import { Bundle, Product } from "@/app/(shared)/types/bundle";
 
 interface GameDetailDrawerProps {
-  game: Game | null;
+  bundle: Bundle;
+  product: Product | null;
   isOpen: boolean;
   onClose: () => void;
-  allGames?: Game[];
+  allProducts?: Product[];
 }
 
 export function GameDetailDrawer({
-  game,
+  bundle,
+  product,
   isOpen,
   onClose,
-  allGames = [],
+  allProducts = [],
 }: GameDetailDrawerProps) {
   const [showRequirements, setShowRequirements] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  if (!game) return null;
+  if (!product) return null;
 
-  const currentIndex = allGames.findIndex((g) => g.name === game.name);
-  const nextGame = allGames[(currentIndex + 1) % allGames.length];
+  const currentIndex = allProducts.findIndex((g) => g.id === product.id);
+  const nextGame = allProducts[(currentIndex + 1) % allProducts.length];
   const prevGame =
-    allGames[(currentIndex - 1 + allGames.length) % allGames.length];
+    allProducts[(currentIndex - 1 + allProducts.length) % allProducts.length];
 
-  const navigateToGame = (targetGame: Game) => {
+  const navigateToGame = (targetGame: Product) => {
     setIsPlaying(false);
     setShowRequirements(true);
     const event = new CustomEvent("navigateToGame", { detail: targetGame });
@@ -58,11 +58,11 @@ export function GameDetailDrawer({
       >
         <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
           <div className="relative aspect-16/9 overflow-hidden rounded-xl">
-            {game.videoUrl ? (
+            {product.steamGameMetadata.trailerUrl ? (
               <div className="relative w-full h-full">
                 {isPlaying ? (
                   <iframe
-                    src={`${game.videoUrl}?autoplay=1&mute=1`}
+                    src={`${product.steamGameMetadata.trailerUrl}?autoplay=1&mute=1`}
                     allow="autoplay; encrypted-media"
                     className="absolute inset-0 w-full h-full"
                     frameBorder="0"
@@ -76,8 +76,8 @@ export function GameDetailDrawer({
                       fill={true}
                       sizes="750px"
                       quality={80}
-                      src={game.image}
-                      alt={game.name}
+                      src={product.headerImage}
+                      alt={product.title}
                       className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105 brightness-90 group-hover:brightness-75"
                     />
                     <div className="absolute inset-0 flex items-center justify-center">
@@ -93,18 +93,18 @@ export function GameDetailDrawer({
                 fill={true}
                 sizes="750px"
                 quality={80}
-                src={game.image}
-                alt={game.name}
+                src={product.headerImage}
+                alt={product.title}
                 className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
               />
             )}
             <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/50 to-transparent" />
             <div className="absolute bottom-6 left-6 flex items-center gap-4">
               <h2 className="font-rajdhani text-3xl font-bold text-white drop-shadow-md">
-                {game.name}
+                {product.title}
               </h2>
               <div className="flex gap-2">
-                {game.platforms.includes("windows") && (
+                {product.steamGameMetadata.platforms.includes("windows") && (
                   <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-xs rounded-full px-3 py-1.5">
                     <Windows className="h-4 w-4 text-white" />
                     <span className="text-sm text-white font-medium">
@@ -112,7 +112,7 @@ export function GameDetailDrawer({
                     </span>
                   </div>
                 )}
-                {game.platforms.includes("mac") && (
+                {product.steamGameMetadata.platforms.includes("mac") && (
                   <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-xs rounded-full px-3 py-1.5">
                     <Apple className="h-4 w-4 text-white" />
                     <span className="text-sm text-white font-medium">
@@ -120,7 +120,7 @@ export function GameDetailDrawer({
                     </span>
                   </div>
                 )}
-                {game.platforms.includes("linux") && (
+                {product.steamGameMetadata.platforms.includes("linux") && (
                   <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-xs rounded-full px-3 py-1.5">
                     <Linux className="h-4 w-4 text-white" />
                     <span className="text-sm text-white font-medium">
@@ -154,9 +154,9 @@ export function GameDetailDrawer({
 
           {/* Progress Indicator */}
           <div className="absolute bottom-4 inset-x-0 flex justify-center gap-1.5">
-            {allGames.map((g, index) => (
+            {allProducts.map((g, index) => (
               <div
-                key={g.name}
+                key={g.title}
                 className={cn(
                   "h-1 rounded-full transition-all duration-300",
                   index === currentIndex
@@ -170,40 +170,39 @@ export function GameDetailDrawer({
 
           <div className="px-8 py-6 space-y-6 max-w-2xl mx-auto">
             <div className="flex flex-wrap gap-3 animate-fade-up">
-              {game.deckVerified && (
+              {/* {product.deckVerified && (
                 <div className="bg-green-500/20 text-green-500 px-3 py-1.5 rounded-full flex items-center gap-2 text-sm font-medium ring-1 ring-green-500/30 hover:bg-green-500/30 transition-colors">
                   <Star className="h-4 w-4" />
                   Steam Deck Verified
                 </div>
-              )}
-              {game.protonDbRating && (
+              )} */}
+              {product.steamGameMetadata.protonDbTier && (
                 <div
                   className={cn(
                     "px-3 py-1.5 rounded-full flex items-center gap-2 text-sm font-medium transition-colors",
                     {
                       "bg-purple-500/20 text-purple-500 ring-1 ring-purple-500/30 hover:bg-purple-500/30":
-                        game.protonDbRating === "platinum",
+                        product.steamGameMetadata.protonDbTier === "platinum",
                       "bg-yellow-500/20 text-yellow-500 ring-1 ring-yellow-500/30 hover:bg-yellow-500/30":
-                        game.protonDbRating === "gold",
+                        product.steamGameMetadata.protonDbTier === "gold",
                       "bg-gray-500/20 text-gray-500 ring-1 ring-gray-500/30 hover:bg-gray-500/30":
-                        game.protonDbRating === "silver",
+                        product.steamGameMetadata.protonDbTier === "silver",
                       "bg-orange-500/20 text-orange-500 ring-1 ring-orange-500/30 hover:bg-orange-500/30":
-                        game.protonDbRating === "bronze",
+                        product.steamGameMetadata.protonDbTier === "bronze",
                     }
                   )}
                 >
-                  ProtonDB {game.protonDbRating}
+                  ProtonDB {product.steamGameMetadata.protonDbTier}
                 </div>
               )}
               <div className="bg-primary/20 text-primary px-3 py-1.5 rounded-full flex items-center gap-2 text-sm font-medium ring-1 ring-primary/30 hover:bg-primary/30 transition-colors">
-                ${game.originalPrice} Value
+                ${product.price} Value
               </div>
               <div className="bg-secondary/20 text-secondary px-3 py-1.5 rounded-full flex items-center gap-2 text-sm font-medium ring-1 ring-secondary/30 hover:bg-secondary/30 transition-colors">
                 Unlocks at $
                 {
-                  tiers.find((tier) =>
-                    tier.games.some((g) => g.name === game.name)
-                  )?.minPrice
+                  bundle.tiers.find((tier) => tier.id == product.bundleTierId)
+                    ?.price
                 }
                 +
               </div>
@@ -213,7 +212,7 @@ export function GameDetailDrawer({
               className="text-muted-foreground text-sm leading-relaxed animate-fade-up"
               style={{ animationDelay: "100ms" }}
             >
-              {game.description}
+              {product.description}
             </p>
 
             <div
@@ -258,7 +257,7 @@ export function GameDetailDrawer({
                 className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-300 border-white/20 dark:border-border hover:border-primary/50"
                 onClick={() =>
                   window.open(
-                    `https://store.steampowered.com/search/?term=${encodeURIComponent(game.name)}`,
+                    `https://store.steampowered.com/search/?term=${encodeURIComponent(product.steamGameMetadata.steamAppId)}`,
                     "_blank"
                   )
                 }

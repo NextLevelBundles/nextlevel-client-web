@@ -3,8 +3,8 @@
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Timer, Users } from "lucide-react";
-import { Bundle } from "@/home/data/bundles";
 import Image from "next/image";
+import { Bundle } from "@/app/(shared)/types/bundle";
 
 interface BundleHeroProps {
   bundle: Bundle;
@@ -25,7 +25,7 @@ export function BundleHero({
             fill={true}
             sizes="100vw"
             quality={80}
-            src={bundle.image}
+            src={bundle.coverImageUrl}
             alt={bundle.title}
             className="h-full w-full object-cover"
           />
@@ -37,14 +37,20 @@ export function BundleHero({
           <div className="max-w-4xl">
             <div
               className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${
-                bundle.tag === "Most Popular"
+                bundle.isEarlyAccess
                   ? "bg-primary/20 text-primary ring-1 ring-primary/50"
-                  : bundle.tag === "New Release"
+                  : bundle.isFeatured
                     ? "bg-secondary/20 text-secondary ring-1 ring-secondary/50"
                     : "bg-muted/20 text-muted-foreground ring-1 ring-white/20"
               } backdrop-blur-xs mb-4`}
             >
-              {bundle.tag}
+              {bundle.isEarlyAccess && "Early Access"}
+              {bundle.isFeatured && "Featured"}
+              {bundle.isLimitedKeys && "Limited Keys"}
+              {!bundle.isFeatured &&
+                !bundle.isEarlyAccess &&
+                !bundle.isLimitedKeys &&
+                "New"}
             </div>
             <h1 className="font-orbitron text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
               {bundle.title}
@@ -68,7 +74,7 @@ export function BundleHero({
                     <span>Keys Left</span>
                   </div>
                   <div className="text-2xl font-mono font-bold text-white">
-                    {bundle.keysLeft}
+                    4512
                   </div>
                 </div>
               </Card>
