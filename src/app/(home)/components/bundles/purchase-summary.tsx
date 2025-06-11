@@ -51,6 +51,31 @@ export function PurchaseSummary({
 
   const predefinedAmounts = [1, 10, 25, 50, 75, 100];
 
+  const checkout = async () => {
+    try {
+      const response = await fetch(
+        `https://localhost:7100/api/publisher/checkout/create-session`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to create checkout session");
+      }
+
+      const responseJson = await response.json();
+      console.log("Checkout session created:", responseJson);
+      window.open(responseJson.url, "_blank");
+    } catch (error) {
+      console.error("Checkout error:", error);
+      alert("Something went wrong while starting checkout.");
+    }
+  };
+
   return (
     <div className="lg:sticky lg:top-20 lg:h-fit space-y-4 w-[350px] animate-fade-up">
       <Card className="p-6 bg-white dark:bg-card/70 backdrop-blur-xs border border-gray-100 dark:border-border shadow-xs hover:shadow-md transition-all duration-300 rounded-xl">
@@ -192,7 +217,10 @@ export function PurchaseSummary({
             <span>Total</span>
             <span>${totalAmount}</span>
           </div>
-          <Button className="w-full bg-primary text-white hover:bg-primary/90 shadow-xs hover:shadow-xl hover:shadow-primary/30 dark:hover:shadow-primary/40 transition-all duration-300 h-14 text-lg font-medium px-8 py-4 rounded-xl ring-1 ring-primary/50 hover:ring-primary hover:scale-[1.02]">
+          <Button
+            onClick={checkout}
+            className="w-full bg-primary text-white hover:bg-primary/90 shadow-xs hover:shadow-xl hover:shadow-primary/30 dark:hover:shadow-primary/40 transition-all duration-300 h-14 text-lg font-medium px-8 py-4 rounded-xl ring-1 ring-primary/50 hover:ring-primary hover:scale-[1.02]"
+          >
             <ShoppingCart className="mr-2 h-5 w-5" />
             Add to Cart
           </Button>
