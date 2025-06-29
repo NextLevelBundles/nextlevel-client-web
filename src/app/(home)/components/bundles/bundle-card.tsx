@@ -56,19 +56,18 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
   }, []);
 
   return (
-    <div
-      ref={cardRef}
-      tabIndex={0}
-      role="article"
-      aria-label={`${bundle.title} bundle`}
-      className={`group relative h-full overflow-hidden rounded-2xl bg-white/80 dark:bg-card/70 backdrop-blur-xs transition-all duration-300 hover:translate-y-[-4px] hover:shadow-[0_8px_30px_rgba(57,130,245,0.2)] dark:hover:shadow-[0_8px_30px_rgba(57,130,245,0.3)] border border-white/20 dark:border-border hover:border-primary/50 cursor-pointer ring-1 ring-black/5 dark:ring-white/20 before:absolute before:inset-[1px] before:rounded-2xl before:border before:border-black/[0.03] dark:before:border-white/[0.03] before:pointer-events-none ${neonClasses[neonClasses.length % index]} ${
-        isVisible ? "animate-fade-up opacity-100" : "opacity-0"
-      }`}
-      style={{ animationDelay: isVisible ? `${index * 150}ms` : "0ms" }}
-      onClick={() => (window.location.href = `/bundles/${bundle.id}`)}
-    >
-      <Card className="border-0 bg-transparent h-full">
-        <Link href={`/bundles/${bundle.id}`} className="flex h-full flex-col">
+    <Link href={`/bundles/${bundle.id}`} className="flex h-full flex-col">
+      <div
+        ref={cardRef}
+        tabIndex={0}
+        role="article"
+        aria-label={`${bundle.title} bundle`}
+        className={`group relative h-full overflow-hidden rounded-2xl bg-white/80 dark:bg-card/70 backdrop-blur-xs transition-all duration-300 hover:translate-y-[-4px] hover:shadow-[0_8px_30px_rgba(57,130,245,0.2)] dark:hover:shadow-[0_8px_30px_rgba(57,130,245,0.3)] border border-white/20 dark:border-border hover:border-primary/50 cursor-pointer ring-1 ring-black/5 dark:ring-white/20 before:absolute before:inset-[1px] before:rounded-2xl before:border before:border-black/[0.03] dark:before:border-white/[0.03] before:pointer-events-none ${neonClasses[neonClasses.length % index]} ${
+          isVisible ? "animate-fade-up opacity-100" : "opacity-0"
+        }`}
+        style={{ animationDelay: isVisible ? `${index * 150}ms` : "0ms" }}
+      >
+        <Card className="border-0 bg-transparent h-full">
           <div className="relative">
             <div className="relative aspect-4/3 overflow-hidden">
               <Image
@@ -133,7 +132,7 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
               </div>
               <Button
                 variant="outline"
-                className="relative z-10 transition-all hover:bg-primary hover:text-white border-primary/50 hover:border-primary hover:shadow-[0_0_20px_rgba(57,130,245,0.5)] hover:brightness-110 duration-300 group-hover:translate-y-[-1px]"
+                className="cursor-pointer relative z-10 transition-all hover:bg-primary hover:text-white border-primary/50 hover:border-primary hover:shadow-[0_0_20px_rgba(57,130,245,0.5)] hover:brightness-110 duration-300 group-hover:translate-y-[-1px]"
                 aria-label={`View ${bundle.title} bundle details`}
               >
                 <span className="flex items-center gap-2">
@@ -143,9 +142,9 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
               </Button>
             </div>
           </div>
-        </Link>
-        <div className="absolute inset-x-0 bottom-0 h-1 bg-linear-to-r from-primary/50 via-secondary/50 to-primary/50 opacity-0 transition-all duration-300 group-hover:opacity-100" />
-      </Card>
-    </div>
+          <div className="absolute inset-x-0 bottom-0 h-1 bg-linear-to-r from-primary/50 via-secondary/50 to-primary/50 opacity-0 transition-all duration-300 group-hover:opacity-100" />
+        </Card>
+      </div>
+    </Link>
   );
 }

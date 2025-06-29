@@ -17,7 +17,6 @@ import {
   Clock,
   ArrowDownAZ,
   ArrowUpAZ,
-  Flame,
   X,
 } from "lucide-react";
 import { Badge } from "@/shared/components/ui/badge";
@@ -27,18 +26,16 @@ const ITEMS_PER_PAGE = 9;
 
 const filters = [
   { label: "All", value: "all" },
-  { label: "Most Popular", value: "Most Popular" },
-  { label: "New Release", value: "New Release" },
-  { label: "Last Chance", value: "Last Chance" },
-  { label: "Best Value", value: "Best Value" },
-  { label: "Staff Pick", value: "Staff Pick" },
+  { label: "Featured", value: "featured" },
+  { label: "Early Access", value: "early_acces" },
+  { label: "Limited Keys", value: "limited_keys" },
+  { label: "Best Value", value: "best_value" },
 ];
 
 const sortOptions = [
   { label: "Ending Soon", value: "ending-soon", icon: Clock },
   { label: "Price: Low to High", value: "price-asc", icon: ArrowDownAZ },
   { label: "Price: High to Low", value: "price-desc", icon: ArrowUpAZ },
-  { label: "Most Popular", value: "popular", icon: Flame },
 ];
 
 interface BundlesGridProps {
@@ -51,14 +48,20 @@ export function BundlesGrid({ bundles }: BundlesGridProps) {
   const [currentPage, setCurrentPage] = useState(1);
 
   const filteredBundles = bundles
-    // .filter((bundle) => currentFilter === "all")
+    .filter((bundle) => {
+      if (currentFilter === "all") return true;
+      if (currentFilter === "featured") return bundle.isFeatured;
+      if (currentFilter === "early_acces") return bundle.isEarlyAccess;
+      if (currentFilter === "limited_keys") return bundle.isLimitedKeys;
+      return false;
+    })
     .sort((a, b) => {
       switch (currentSort) {
+        case "ending-soon":
+          return new Date(a.endsAt).getTime() - new Date(b.endsAt).getTime();
         case "price-asc":
           return a.minPrice - b.minPrice;
         case "price-desc":
-          return b.minPrice - a.minPrice;
-        case "popular":
           return b.minPrice - a.minPrice;
         default:
           return a.minPrice - b.minPrice;
@@ -134,7 +137,7 @@ export function BundlesGrid({ bundles }: BundlesGridProps) {
           <div className="mb-6 flex items-center gap-2">
             <Badge variant="secondary" className="px-3 py-1">
               <span className="flex items-center gap-2">
-                {currentFilter}
+                {filters.find((f) => f.value === currentFilter)?.label}
                 <button
                   onClick={() => setCurrentFilter("all")}
                   className="ml-1 rounded-full hover:bg-secondary/20 p-0.5"
