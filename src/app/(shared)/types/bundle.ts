@@ -1,7 +1,9 @@
+import MediaData from "./media";
+
 export interface Bundle {
   id: string;
   title: string;
-  coverImageUrl: string;
+  imageMedia: MediaData;
   description: string;
   curatorComment: string | null;
   minPrice: number;

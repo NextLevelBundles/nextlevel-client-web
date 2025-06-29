@@ -75,7 +75,7 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
                 fill={true}
                 sizes="550px"
                 quality={80}
-                src={bundle.coverImageUrl}
+                src={bundle.imageMedia.url}
                 alt={bundle.title}
                 className="h-full w-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-110 dark:group-hover:brightness-125 will-change-transform saturate-[1.02] group-hover:saturate-[1.1]"
               />
