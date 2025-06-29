@@ -18,7 +18,7 @@ export async function HeroSection() {
 
   return (
     <section className="relative overflow-hidden py-20 lg:py-32 bg-linear-to-b from-background via-background/95 to-background">
-      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1538481199705-c710c4e965fc?q=80&w=3265&auto=format&fit=crop')] bg-cover bg-center bg-no-repeat opacity-10 scale-105 transition-all duration-1000 ease-out" />
+      <div className="absolute inset-0 bg-[url('/images/hero-background.jpg')] bg-cover bg-center bg-no-repeat opacity-10 scale-105 transition-all duration-1000 ease-out" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(57,130,245,0.15),transparent_50%),radial-gradient(ellipse_at_bottom,rgba(249,113,20,0.1),transparent_50%)]" />
 
       <div className="container relative mx-auto px-4 transition-all duration-700 ease-out opacity-100 translate-y-0">

@@ -7,6 +7,7 @@ import { Timer, Users, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Bundle } from "@/app/(shared)/types/bundle";
+import { useCountdownTimer } from "@/app/(shared)/hooks/useCountdownTimer";
 
 interface BundleCardProps {
   bundle: Bundle;
@@ -15,25 +16,9 @@ interface BundleCardProps {
 
 const neonClasses = ["neon-card-blue", "neon-card-purple", "neon-card-orange"];
 
-export function getTimeDifference(startIso: string, endIso: string): string {
-  const start = new Date(startIso);
-  const end = new Date(endIso);
-
-  const diffInMs = Math.abs(end.getTime() - start.getTime());
-
-  const totalSeconds = Math.floor(diffInMs / 1000);
-  const hours = Math.floor(totalSeconds / 3600)
-    .toString()
-    .padStart(2, "0");
-  const minutes = Math.floor((totalSeconds % 3600) / 60)
-    .toString()
-    .padStart(2, "0");
-  const seconds = (totalSeconds % 60).toString().padStart(2, "0");
-
-  return `${hours}:${minutes}:${seconds}`;
-}
-
 export function BundleCard({ bundle, index }: BundleCardProps) {
+  const timeLeft = useCountdownTimer(bundle.endsAt);
+
   const cardRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -109,7 +94,7 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
             <div className="mb-4 grid grid-cols-2 gap-6">
               <div className="flex items-center gap-2 text-sm text-[#64748b] dark:text-muted-foreground group-hover:text-[#4b5563] dark:group-hover:text-muted-foreground/80 transition-colors">
                 <Timer className="h-4 w-4" />
-                <span>{getTimeDifference(bundle.startsAt, bundle.endsAt)}</span>
+                <span>{timeLeft}</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-[#64748b] dark:text-muted-foreground group-hover:text-[#4b5563] dark:group-hover:text-muted-foreground/80 transition-colors">
                 <Users className="h-4 w-4" />
