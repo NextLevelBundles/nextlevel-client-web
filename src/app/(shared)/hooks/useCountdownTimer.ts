@@ -5,11 +5,16 @@ import { padded } from "@/app/(shared)/utils/numbers";
 
 dayjs.extend(duration);
 
-export function useCountdownTimer(endTime: string) {
+export function useCountdownTimer(endTime?: string) {
   const [timeLeft, setTimeLeft] = useState<string>("");
 
   useEffect(() => {
     function updateCountdown() {
+      if (!endTime) {
+        setTimeLeft("00:00:00");
+        return;
+      }
+
       const future = dayjs(endTime);
       const now = dayjs();
       const diffMs = future.diff(now);

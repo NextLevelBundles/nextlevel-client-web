@@ -1,7 +1,6 @@
 "use client";
 
 import { Card } from "@/shared/components/ui/card";
-import { Button } from "@/shared/components/ui/button";
 import { Timer, Users } from "lucide-react";
 import Image from "next/image";
 import { Bundle } from "@/app/(shared)/types/bundle";
@@ -9,30 +8,26 @@ import { Bundle } from "@/app/(shared)/types/bundle";
 interface BundleHeroProps {
   bundle: Bundle;
   timeLeft: string;
-  onViewContentsClick: () => void;
 }
 
-export function BundleHero({
-  bundle,
-  timeLeft,
-  onViewContentsClick,
-}: BundleHeroProps) {
+export function BundleHero({ bundle, timeLeft }: BundleHeroProps) {
   return (
-    <div className="relative h-[60vh] min-h-[400px] overflow-hidden">
+    <div className="relative h-[40vh] overflow-hidden">
       <div className="absolute inset-0">
         <div className="relative h-full">
           <Image
             fill={true}
             sizes="100vw"
             quality={80}
-            src={bundle.coverImageUrl}
+            src={bundle.imageMedia?.url || ""}
             alt={bundle.title}
             className="h-full w-full object-cover"
           />
         </div>
         <div className="absolute inset-0 bg-linear-to-t from-black/80 dark:from-background dark:via-background/50 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-b from-black/80 dark:from-background dark:via-background/50 to-transparent" />
       </div>
-      <div className="absolute inset-0 flex items-center">
+      <div className="absolute inset-0 flex items-center ">
         <div className="container px-4">
           <div className="max-w-4xl">
             <div
@@ -79,22 +74,6 @@ export function BundleHero({
                 </div>
               </Card>
             </div>
-            <Button
-              className="mt-8 bg-primary/90 hover:bg-primary text-white backdrop-blur-xs"
-              size="lg"
-              onClick={() => {
-                const element = document.getElementById("bundle-games");
-                if (element) {
-                  element.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                  });
-                  onViewContentsClick();
-                }
-              }}
-            >
-              View Bundle Contents
-            </Button>
           </div>
         </div>
       </div>

@@ -23,6 +23,7 @@ interface GameDetailDrawerProps {
   product: Product | null;
   isOpen: boolean;
   onClose: () => void;
+  onNavigateToGame: (targetGame: Product) => void;
   allProducts?: Product[];
 }
 
@@ -31,6 +32,7 @@ export function GameDetailDrawer({
   product,
   isOpen,
   onClose,
+  onNavigateToGame,
   allProducts = [],
 }: GameDetailDrawerProps) {
   const [showRequirements, setShowRequirements] = useState(true);
@@ -46,18 +48,17 @@ export function GameDetailDrawer({
   const navigateToGame = (targetGame: Product) => {
     setIsPlaying(false);
     setShowRequirements(true);
-    const event = new CustomEvent("navigateToGame", { detail: targetGame });
-    window.dispatchEvent(event);
+    onNavigateToGame(targetGame);
   };
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent
-        side="bottom"
-        className="h-[90vh] max-w-[680px] mx-auto rounded-t-2xl border border-gray-200 dark:border-border bg-white dark:bg-neutral-900 shadow-xl dark:shadow-2xl transition-all duration-300"
+        side="left"
+        className="h-[100vh] !max-w-[680px] p-0 w-screen mx-auto border border-gray-200 dark:border-border bg-white dark:bg-neutral-900 shadow-xl dark:shadow-2xl transition-all duration-300"
       >
         <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
-          <div className="relative aspect-16/9 overflow-hidden rounded-xl">
+          <div className="relative aspect-16/9 overflow-hidden">
             {product.steamGameMetadata.trailerUrl ? (
               <div className="relative w-full h-full">
                 {isPlaying ? (
@@ -132,43 +133,7 @@ export function GameDetailDrawer({
             </div>
           </div>
 
-          {/* Navigation Controls */}
-          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 px-4 flex justify-between pointer-events-none -ml-3 -mr-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-12 w-12 rounded-full bg-white/80 dark:bg-black/50 backdrop-blur-xs hover:bg-white/90 dark:hover:bg-black/60 border border-gray-200 dark:border-white/20 text-gray-700 dark:text-white shadow-xs hover:shadow-md pointer-events-auto transition-all duration-300 hover:scale-110"
-              onClick={() => navigateToGame(prevGame)}
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-12 w-12 rounded-full bg-white/80 dark:bg-black/50 backdrop-blur-xs hover:bg-white/90 dark:hover:bg-black/60 border border-gray-200 dark:border-white/20 text-gray-700 dark:text-white shadow-xs hover:shadow-md pointer-events-auto transition-all duration-300 hover:scale-110"
-              onClick={() => navigateToGame(nextGame)}
-            >
-              <ChevronRight className="h-6 w-6" />
-            </Button>
-          </div>
-
-          {/* Progress Indicator */}
-          <div className="absolute bottom-4 inset-x-0 flex justify-center gap-1.5">
-            {allProducts.map((g, index) => (
-              <div
-                key={g.title}
-                className={cn(
-                  "h-1 rounded-full transition-all duration-300",
-                  index === currentIndex
-                    ? "w-6 bg-white"
-                    : "w-1.5 bg-white/30 hover:bg-white/70 cursor-pointer"
-                )}
-                onClick={() => navigateToGame(g)}
-              />
-            ))}
-          </div>
-
-          <div className="px-8 py-6 space-y-6 max-w-2xl mx-auto">
+          <div className="px-6 py-6 space-y-6 max-w-2xl mx-auto">
             <div className="flex flex-wrap gap-3 animate-fade-up">
               {/* {product.deckVerified && (
                 <div className="bg-green-500/20 text-green-500 px-3 py-1.5 rounded-full flex items-center gap-2 text-sm font-medium ring-1 ring-green-500/30 hover:bg-green-500/30 transition-colors">
@@ -204,7 +169,6 @@ export function GameDetailDrawer({
                   bundle.tiers.find((tier) => tier.id == product.bundleTierId)
                     ?.price
                 }
-                +
               </div>
             </div>
 
@@ -267,6 +231,46 @@ export function GameDetailDrawer({
               </Button>
             </div>
           </div>
+        </div>
+
+        {/* Progress Indicator */}
+        <div className="absolute bottom-0 px-4 py-3 inset-x-0 flex items-center justify-between bg-white dark:bg-neutral-900 gap-1.5">
+          {allProducts.length > 1 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="cursor-pointer h-12 w-12 rounded-full bg-white/80 dark:bg-black/50 hover:bg-white/90 dark:hover:bg-black/60 text-gray-700 dark:text-white shadow-xs hover:shadow-md pointer-events-auto transition-all duration-300 hover:scale-110"
+              onClick={() => navigateToGame(prevGame)}
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </Button>
+          )}
+
+          <div className="flex-1 flex items-center justify-center gap-1.5">
+            {allProducts.map((g, index) => (
+              <div
+                key={g.title}
+                className={cn(
+                  "h-2 rounded-full transition-all duration-300",
+                  index === currentIndex
+                    ? "w-6 bg-white"
+                    : "w-2.5 bg-white/30 hover:bg-white/70 cursor-pointer"
+                )}
+                onClick={() => navigateToGame(g)}
+              />
+            ))}
+          </div>
+
+          {allProducts.length > 1 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="cursor-pointer h-12 w-12 rounded-full bg-white/80 dark:bg-black/50 hover:bg-white/90 dark:hover:bg-black/60 text-gray-700 dark:text-white shadow-xs hover:shadow-md pointer-events-auto transition-all duration-300 hover:scale-110"
+              onClick={() => navigateToGame(nextGame)}
+            >
+              <ChevronRight className="h-6 w-6" />
+            </Button>
+          )}
         </div>
       </SheetContent>
     </Sheet>

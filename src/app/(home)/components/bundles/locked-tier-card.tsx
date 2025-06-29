@@ -29,7 +29,7 @@ export function LockedTierCard({
   );
   const totalValue = calculateTotalValue(tierProducts);
 
-  const previewProduct = tierProducts[0];
+  // const previewProduct = tierProducts[0];
 
   return (
     <div
@@ -91,17 +91,17 @@ export function LockedTierCard({
               +{totalGamesToUnlock} Games at ${tier.price.toFixed(2)}
             </p>
             <p className="text-white/90 text-sm font-semibold bg-linear-to-r from-primary/90 to-secondary/90 bg-clip-text">
-              Worth ${totalValue.toFixed(2)} in value
+              Worth ${totalValue.toFixed(2)}
             </p>
           </div>
         </div>
-
+        {/* 
         <p
           className="text-sm text-white/70 mt-2 animate-fade-up"
           style={{ animationDelay: "400ms" }}
         >
           Including {previewProduct?.title} and more!
-        </p>
+        </p> */}
 
         <div className="absolute inset-x-0 bottom-0 h-1 bg-linear-to-r from-primary/50 via-secondary/50 to-primary/50 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
       </div>
