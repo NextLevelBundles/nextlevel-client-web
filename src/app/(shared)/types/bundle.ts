@@ -18,7 +18,7 @@ export interface Bundle {
   updatedAt?: string;
   tiers: Tier[];
   products: Product[];
-  charities: Charity[];
+  charities: BundleCharity[];
   publishers: BundlePublisher[];
 }
 
@@ -66,10 +66,16 @@ export interface Party {
   website: string;
 }
 
-export interface Charity {
+interface BundleCharity {
   charityId: string;
-  charityName: string | null;
-  sharePercentage: number;
+  charity: Charity;
+}
+export interface Charity {
+  id: string;
+  name: string;
+  website?: string;
+  logoMedia: MediaData;
+  description?: string;
 }
 
 export interface BundlePublisher {

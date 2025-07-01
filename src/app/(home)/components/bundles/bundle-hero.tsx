@@ -4,13 +4,15 @@ import { Card } from "@/shared/components/ui/card";
 import { Timer, Users } from "lucide-react";
 import Image from "next/image";
 import { Bundle } from "@/app/(shared)/types/bundle";
+import { useCountdownTimer } from "@/app/(shared)/hooks/useCountdownTimer";
 
 interface BundleHeroProps {
   bundle: Bundle;
-  timeLeft: string;
 }
 
-export function BundleHero({ bundle, timeLeft }: BundleHeroProps) {
+export function BundleHero({ bundle }: BundleHeroProps) {
+  const timeLeft = useCountdownTimer(bundle?.endsAt);
+
   return (
     <div className="relative h-[40vh] overflow-hidden">
       <div className="absolute inset-0">

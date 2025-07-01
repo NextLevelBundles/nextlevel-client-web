@@ -8,33 +8,29 @@ import {
   TooltipTrigger,
 } from "@/shared/components/ui/tooltip";
 import { cn } from "@/shared/utils/tailwind";
-import { Bundle } from "@/app/(shared)/types/bundle";
+import { Bundle, Product, Tier } from "@/app/(shared)/types/bundle";
+import { Fragment } from "react";
 
 interface BundleProgressProps {
   bundle: Bundle;
-  selectedTier: number;
-  onTierChange: (tier: number) => void;
+  selectedTier: Tier;
   totalAmount: number;
+  unlockedProducts: Product[];
   className?: string;
+  setTotalAmount: (amount: number) => void;
 }
 
 export function BundleProgress({
   bundle,
-  selectedTier,
-  onTierChange,
+  unlockedProducts,
   totalAmount,
   className,
+  setTotalAmount,
 }: BundleProgressProps) {
   const tiers = bundle.tiers || [];
   const allProducts = bundle.products;
 
-  const unlockedGames = tiers
-    .slice(0, selectedTier)
-    .flatMap((tier) =>
-      allProducts.filter((product) => product.bundleTierId == tier.id)
-    );
-
-  const progress = (unlockedGames.length / allProducts.length) * 100;
+  const progress = (unlockedProducts.length / allProducts.length) * 100;
   const isComplete = progress === 100;
 
   const handleProgressClick = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -43,17 +39,22 @@ export function BundleProgress({
     const percentage = (x / rect.width) * 100;
 
     // Find the appropriate tier based on click position
-    const targetTier =
+    const targetTierIndex =
       tiers.findIndex((tier) => {
         const tierGames = tiers
-          .slice(0, tiers.indexOf(tier) + 1)
+          .slice(0, tiers.findIndex((x) => x.id == tier.id) + 1)
           .flatMap((t) =>
             allProducts.filter((product) => product.bundleTierId == t.id)
           );
         return (tierGames.length / allProducts.length) * 100 >= percentage;
       }) + 1;
 
-    if (targetTier > 0) onTierChange(targetTier);
+    const targetTier =
+      targetTierIndex > -1 && targetTierIndex <= tiers.length
+        ? tiers[targetTierIndex - 1]
+        : null;
+
+    if (targetTier != null) setTotalAmount(targetTier.price);
   };
 
   const calculateTierValue = (tierId: string) => {
@@ -80,7 +81,7 @@ export function BundleProgress({
           ) : (
             <span className="text-sm text-muted-foreground">
               <span className="text-primary font-semibold">
-                {unlockedGames.length}
+                {unlockedProducts.length}
               </span>{" "}
               of {allProducts.length} games unlocked
             </span>
@@ -128,40 +129,43 @@ export function BundleProgress({
             const tierValue = calculateTierValue(tier.id);
 
             return (
-              <TooltipProvider key={tier.id}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div
-                      key={tier.id}
-                      className={cn(
-                        "absolute top-1/2 -translate-y-1/2 h-5 w-0.5 bg-border transition-colors duration-300",
-                        totalAmount >= tier.price && "bg-primary"
-                      )}
-                      style={{ left: `${position}%` }}
-                    >
+              <Fragment key={tier.id}>
+                <TooltipProvider key={tier.id}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
                       <div
                         className={cn(
-                          "absolute top-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-medium text-gray-600 dark:text-muted-foreground transition-colors duration-300",
-                          totalAmount >= tier.price && "text-primary"
+                          "absolute top-1/2 -translate-y-1/2 h-5 w-0.5 bg-border transition-colors duration-300",
+                          totalAmount >= tier.price
+                            ? "bg-primary"
+                            : "bg-primary/50"
                         )}
+                        style={{ left: `${position}%` }}
                       >
-                        ${tier.price}
+                        <div
+                          className={cn(
+                            "absolute top-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-medium text-gray-600 dark:text-muted-foreground transition-colors duration-300",
+                            totalAmount >= tier.price && "text-primary"
+                          )}
+                        >
+                          ${tier.price}
+                        </div>
                       </div>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent className="flex items-center gap-2">
-                    <Gift className="h-4 w-4" />
-                    <span>
-                      Unlocks{" "}
-                      {
-                        allProducts.filter((x) => x.bundleTierId == tier.id)
-                          .length
-                      }{" "}
-                      games worth ${tierValue.toFixed(2)}
-                    </span>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                    </TooltipTrigger>
+                    <TooltipContent className="flex items-center gap-2">
+                      <Gift className="h-4 w-4" />
+                      <span>
+                        Unlocks{" "}
+                        {
+                          allProducts.filter((x) => x.bundleTierId == tier.id)
+                            .length
+                        }{" "}
+                        games worth ${tierValue.toFixed(2)}
+                      </span>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </Fragment>
             );
           })}
         </div>

@@ -24,7 +24,7 @@ interface GameDetailDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onNavigateToGame: (targetGame: Product) => void;
-  allProducts?: Product[];
+  unlockedProducts?: Product[];
 }
 
 export function GameDetailDrawer({
@@ -33,17 +33,20 @@ export function GameDetailDrawer({
   isOpen,
   onClose,
   onNavigateToGame,
-  allProducts = [],
+  unlockedProducts = [],
 }: GameDetailDrawerProps) {
   const [showRequirements, setShowRequirements] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
 
   if (!product) return null;
 
-  const currentIndex = allProducts.findIndex((g) => g.id === product.id);
-  const nextGame = allProducts[(currentIndex + 1) % allProducts.length];
+  const currentIndex = unlockedProducts.findIndex((g) => g.id === product.id);
+  const nextGame =
+    unlockedProducts[(currentIndex + 1) % unlockedProducts.length];
   const prevGame =
-    allProducts[(currentIndex - 1 + allProducts.length) % allProducts.length];
+    unlockedProducts[
+      (currentIndex - 1 + unlockedProducts.length) % unlockedProducts.length
+    ];
 
   const navigateToGame = (targetGame: Product) => {
     setIsPlaying(false);
@@ -235,7 +238,7 @@ export function GameDetailDrawer({
 
         {/* Progress Indicator */}
         <div className="absolute bottom-0 px-4 py-3 inset-x-0 flex items-center justify-between bg-white dark:bg-neutral-900 gap-1.5">
-          {allProducts.length > 1 && (
+          {unlockedProducts.length > 1 && (
             <Button
               variant="ghost"
               size="icon"
@@ -247,7 +250,7 @@ export function GameDetailDrawer({
           )}
 
           <div className="flex-1 flex items-center justify-center gap-1.5">
-            {allProducts.map((g, index) => (
+            {unlockedProducts.map((g, index) => (
               <div
                 key={g.title}
                 className={cn(
@@ -261,7 +264,7 @@ export function GameDetailDrawer({
             ))}
           </div>
 
-          {allProducts.length > 1 && (
+          {unlockedProducts.length > 1 && (
             <Button
               variant="ghost"
               size="icon"

@@ -8,8 +8,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/shared/components/ui/tooltip";
-import { Charity } from "@/home/data/charities";
 import Image from "next/image";
+import { Charity } from "@/app/(shared)/types/bundle";
 
 interface CharityHighlightProps {
   charities: Charity[];
@@ -20,6 +20,8 @@ export function CharityHighlight({
   charities,
   charityAmount,
 }: CharityHighlightProps) {
+  if (charities.length === 0) return null;
+
   return (
     <Card className="p-6 bg-white/80 dark:bg-card/70 backdrop-blur-xs">
       <div className="flex items-center justify-between mb-6">
@@ -44,7 +46,7 @@ export function CharityHighlight({
                     fill={true}
                     sizes="100px"
                     quality={80}
-                    src={charity.logo}
+                    src={charity.logoMedia.url}
                     alt={charity.name}
                     className="w-full h-full object-cover transition-transform group-hover:scale-110"
                   />

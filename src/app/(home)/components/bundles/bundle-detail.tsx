@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { charities } from "@/home/data/charities";
+import { useState, useMemo } from "react";
 import { TooltipProvider } from "@/shared/components/ui/tooltip";
 import { BundleHero } from "./bundle-hero";
 import { BundleProgress } from "./bundle-progress";
@@ -10,82 +9,79 @@ import { CharityHighlight } from "./charity-highlight";
 import { PurchaseSummary } from "./purchase-summary";
 import { MobilePurchaseCTA } from "./mobile-purchase-cta";
 import { Bundle } from "@/app/(shared)/types/bundle";
-import { useCountdownTimer } from "@/app/(shared)/hooks/useCountdownTimer";
 
 export function BundleDetail({ bundle }: { bundle: Bundle }) {
-  const timeLeft = useCountdownTimer(bundle?.endsAt);
-  const [selectedTier, setSelectedTier] = useState(1);
-  const [extraAmount, setExtraAmount] = useState(0);
+  const [totalAmount, setTotalAmount] = useState(bundle.minPrice);
   const tiers = useMemo(() => bundle.tiers || [], [bundle]);
-
-  // Update selected tier when total amount changes
-  useEffect(() => {
-    const totalAmount = tiers[selectedTier - 1].price + extraAmount;
-
-    // Find the highest tier that can be unlocked with the total amount
-    let newTier = 1;
-    for (let i = 0; i < tiers.length; i++) {
-      if (totalAmount >= tiers[i].price) {
-        newTier = i + 1;
-      }
-    }
-
-    if (newTier !== selectedTier) {
-      setSelectedTier(newTier);
-    }
-  }, [tiers, extraAmount, selectedTier]);
-
-  const selectedTierData = tiers[selectedTier - 1];
-  const totalAmount = selectedTierData.price + extraAmount;
-
   const allProducts = bundle.products;
 
-  const unlockedGames = tiers
-    .slice(0, selectedTier)
+  const unlockedTiers = tiers.filter((tier) => tier.price <= totalAmount) ?? [];
+
+  const currentTier =
+    unlockedTiers.length > 0 ? unlockedTiers[unlockedTiers.length - 1] : null;
+
+  const currentTierIndex = tiers.findIndex(
+    (tier) => tier.id === currentTier?.id
+  );
+
+  const unlockedProducts = tiers
+    .slice(0, currentTierIndex + 1)
     .flatMap((tier) =>
       allProducts.filter((product) => product.bundleTierId == tier.id)
     );
 
+  const unlockedProductsValue = tiers
+    .slice(0, currentTierIndex)
+    .flatMap((tier) =>
+      bundle.products.filter((product) => product.bundleTierId === tier.id)
+    )
+    .reduce((sum, game) => sum + game.price, 0);
+
   return (
     <TooltipProvider>
       <div className="relative">
-        <BundleHero bundle={bundle} timeLeft={timeLeft} />
+        <BundleHero bundle={bundle} />
 
         <div className="container max-w-[1600px] px-4 py-12">
           <div className="grid gap-8 lg:grid-cols-[1fr_350px]">
             <div id="bundle-progressbar" className="mb-8 space-y-8">
-              <BundleProgress
-                bundle={bundle}
-                selectedTier={selectedTier}
-                onTierChange={setSelectedTier}
-                totalAmount={totalAmount}
-                className="dark:ring-1 dark:ring-primary/30 dark:shadow-[0_0_30px_rgba(57,130,245,0.2)]"
-              />
+              {currentTier && (
+                <BundleProgress
+                  bundle={bundle}
+                  selectedTier={currentTier}
+                  totalAmount={totalAmount}
+                  unlockedProducts={unlockedProducts}
+                  setTotalAmount={setTotalAmount}
+                  className="dark:ring-1 dark:ring-primary/30 dark:shadow-[0_0_30px_rgba(57,130,245,0.2)]"
+                />
+              )}
 
-              <GameGrid
-                id="bundle-games"
-                bundle={bundle}
-                products={allProducts}
-                unlockedGames={unlockedGames}
-                selectedTier={selectedTier}
-                tiers={tiers}
-                onTierChange={setSelectedTier}
-              />
+              {currentTier && (
+                <GameGrid
+                  bundle={bundle}
+                  products={allProducts}
+                  unlockedProducts={unlockedProducts}
+                  selectedTier={currentTier}
+                  tiers={tiers}
+                  setTotalAmount={setTotalAmount}
+                />
+              )}
 
               <CharityHighlight
-                charities={charities}
+                charities={bundle.charities.map((c) => c.charity)}
                 charityAmount={totalAmount * 0.8} // Maximum possible charity amount (80%)
               />
             </div>
 
-            <PurchaseSummary
-              bundle={bundle}
-              tiers={tiers}
-              selectedTier={selectedTier}
-              onTierChange={setSelectedTier}
-              extraAmount={extraAmount}
-              setExtraAmount={setExtraAmount}
-            />
+            {currentTier && (
+              <PurchaseSummary
+                tiers={tiers}
+                currentTier={currentTier}
+                totalAmount={totalAmount}
+                unlockedProductsValue={unlockedProductsValue}
+                setTotalAmount={setTotalAmount}
+              />
+            )}
           </div>
 
           <div className="lg:hidden">

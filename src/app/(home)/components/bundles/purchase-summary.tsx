@@ -13,43 +13,30 @@ import {
 } from "lucide-react";
 import { Slider } from "@/shared/components/ui/slider";
 import { cn } from "@/shared/utils/tailwind";
-import { Bundle, Tier } from "@/app/(shared)/types/bundle";
+import { Tier } from "@/app/(shared)/types/bundle";
 
 interface PurchaseSummaryProps {
-  bundle: Bundle;
   tiers: Tier[];
-  selectedTier: number;
-  onTierChange: (tier: number) => void;
-  extraAmount: number;
-  setExtraAmount: (amount: number) => void;
+  currentTier: Tier;
+  totalAmount: number;
+  unlockedProductsValue: number;
+  setTotalAmount: (amount: number) => void;
 }
 
 export function PurchaseSummary({
-  bundle,
   tiers,
-  selectedTier,
-  extraAmount,
-  setExtraAmount,
+  totalAmount,
+  currentTier,
+  unlockedProductsValue,
+  setTotalAmount,
 }: PurchaseSummaryProps) {
   const [charityPercentage, setCharityPercentage] = useState(40);
   const [customInputValue, setCustomInputValue] = useState("");
   const [inputTimeout, setInputTimeout] = useState<NodeJS.Timeout>();
 
   const minimumPrice = tiers[0].price;
-  const selectedTierData = tiers[selectedTier - 1];
-  const totalAmount = extraAmount + selectedTierData.price;
-
   const charityAmount = Math.round(totalAmount * (charityPercentage / 100));
   const publisherAmount = totalAmount - charityAmount;
-
-  const unlockedGamesValue = tiers
-    .slice(0, selectedTier)
-    .flatMap((tier) =>
-      bundle.products.filter((product) => product.bundleTierId === tier.id)
-    )
-    .reduce((sum, game) => sum + game.price, 0);
-
-  const predefinedAmounts = [1, 10, 25, 50, 75, 100];
 
   const checkout = async () => {
     try {
@@ -85,7 +72,7 @@ export function PurchaseSummary({
           <div className="flex items-center gap-2 mb-2">
             <Gift className="h-4 w-4 text-primary" />
             <span className="text-sm font-medium">
-              You&apos;re getting ${unlockedGamesValue.toFixed(2)} worth of
+              You&apos;re getting ${unlockedProductsValue.toFixed(2)} worth of
               games
             </span>
           </div>
@@ -95,22 +82,21 @@ export function PurchaseSummary({
           </p>
 
           <div className="grid grid-cols-3 gap-2">
-            {predefinedAmounts.map((amount) => (
+            {tiers.map((tier) => (
               <Button
-                key={amount}
-                variant={totalAmount === amount ? "default" : "outline"}
+                key={tier.id}
+                variant={currentTier?.id === tier.id ? "default" : "outline"}
                 onClick={() => {
                   setCustomInputValue("");
-                  setExtraAmount(amount - selectedTierData.price);
+                  setTotalAmount(tier.price);
                 }}
                 className={cn(
                   "w-full font-mono transition-all duration-300",
-                  totalAmount === amount &&
-                    "bg-primary text-white font-semibold shadow-md shadow-primary/20 dark:shadow-primary/30 hover:shadow-lg hover:shadow-primary/30 dark:hover:shadow-primary/40 border-primary hover:scale-[1.02]",
-                  amount === 100 && "relative"
+                  totalAmount === tier.price &&
+                    "bg-primary text-white font-semibold shadow-md shadow-primary/20 dark:shadow-primary/30 hover:shadow-lg hover:shadow-primary/30 dark:hover:shadow-primary/40 border-primary hover:scale-[1.02]"
                 )}
               >
-                ${amount}
+                ${tier.price}
               </Button>
             ))}
           </div>
@@ -135,15 +121,14 @@ export function PurchaseSummary({
                 // Set new timeout
                 const timeout = setTimeout(() => {
                   if (inputValue === "") {
-                    setExtraAmount(0);
+                    setTotalAmount(0);
                     return;
                   }
 
                   const parsedValue = parseFloat(inputValue);
                   if (!isNaN(parsedValue) && parsedValue >= minimumPrice) {
                     const roundedValue = Math.round(parsedValue);
-                    const newExtra = roundedValue - selectedTierData.price;
-                    setExtraAmount(newExtra);
+                    setTotalAmount(roundedValue);
                   }
                 }, 300);
 

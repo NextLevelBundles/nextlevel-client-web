@@ -12,10 +12,10 @@ interface GameGridProps {
   id?: string;
   bundle: Bundle;
   products: Product[];
-  unlockedGames: Product[];
-  selectedTier: number;
+  selectedTier: Tier;
   tiers: Tier[];
-  onTierChange: (tier: number) => void;
+  unlockedProducts: Product[];
+  setTotalAmount: (amount: number) => void;
 }
 
 export function GameGrid({
@@ -23,20 +23,19 @@ export function GameGrid({
   bundle,
   selectedTier,
   products,
+  unlockedProducts,
   tiers,
-  onTierChange,
+  setTotalAmount,
 }: GameGridProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  // Get games up to the selected tier
-  const displayedProducts = tiers
-    .slice(0, selectedTier)
-    .flatMap((tier) =>
-      products.filter((product) => product.bundleTierId === tier.id)
-    );
-
   // Get locked tiers
-  const lockedTiers = tiers.slice(selectedTier);
+  const selectedTierIndex = tiers.findIndex(
+    (tier) => tier.id === selectedTier.id
+  );
+
+  console.log("Selected Tier Index:", selectedTierIndex);
+  const lockedTiers = tiers.slice(selectedTierIndex + 1);
 
   // Calculate cumulative games for each locked tier
   const lockedTiersWithCumulativeGames = lockedTiers.map((tier, index) => {
@@ -61,7 +60,7 @@ export function GameGrid({
       )}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-6">
-        {displayedProducts.map((product) => (
+        {unlockedProducts.map((product) => (
           <div
             key={product.id}
             onClick={() => setSelectedProduct(product)}
@@ -120,7 +119,7 @@ export function GameGrid({
             key={tier.id}
             tier={tier}
             bundle={bundle}
-            onSelect={() => onTierChange(index + selectedTier + 1)}
+            onSelect={() => setTotalAmount(tier.price)}
             tierIndex={index}
             totalGamesToUnlock={tier.totalGamesToUnlock}
           ></LockedTierCard>
@@ -132,7 +131,7 @@ export function GameGrid({
           isOpen={selectedProduct !== null}
           onClose={() => setSelectedProduct(null)}
           onNavigateToGame={setSelectedProduct}
-          allProducts={displayedProducts}
+          unlockedProducts={unlockedProducts}
         />
       </div>
     </Card>
