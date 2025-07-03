@@ -1,34 +1,34 @@
 import Cognito from "next-auth/providers/cognito";
-
 import NextAuth from "next-auth";
+import { cookies } from "next/headers";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Cognito({
       authorization: {
         params: {
-          scope: "openid email phone",
+          scope: "aws.cognito.signin.user.admin email openid phone profile",
         },
       },
       profile(profile) {
+        console.log("Cognito profile:", profile);
         return profile;
       },
     }),
   ],
+  session: {
+    strategy: 'jwt',  // <-- make sure to use jwt here
+  },
   callbacks: {
     jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        // token.accessToken = user.access_token;
-        // token.idToken = user.id_token;
       }
-      return token;
+      return {...token, ...user };
     },
     session({ session, token }) {
       session.user.id = token.id as string;
-      // session.accessToken = token.accessToken;
-      // session.idToken = token.idToken;
-      return session;
+      return { ...session, ...token }
     },
     authorized: async ({ auth }) => {
       return !!auth;
@@ -39,18 +39,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
 });
 
-// declare module "next-auth" {
-//   /**
-//    * Returned by `auth`, `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context
-//    */
-//   interface Session {
-//     user: {
-//       /**
-//        * By default, TypeScript merges new interface properties and overwrites existing ones.
-//        * In this case, the default session user properties will be overwritten,
-//        * with the new ones defined above. To keep the default session user properties,
-//        * you need to add them back into the newly declared interface.
-//        */
-//     } & DefaultSession["user"];
-//   }
-// }
+export async function getAccessToken() {
+  const sessionTokenName = 'authjs.session-token'; // or 'next-auth.session-token' if using next-auth
+  const sessionToken = (await cookies()).getAll().find(c => c.name.includes(sessionTokenName));
+ 
+  console.log("Session token found:", sessionToken);
+
+  // console.log("Decoded token:", sessionToken?.value);
+}
