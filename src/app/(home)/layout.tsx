@@ -5,6 +5,7 @@ import "@fontsource/rajdhani/600.css";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/app/(shared)/components/theme-provider";
 import { SessionProvider } from "next-auth/react";
+
 import { auth } from "@/auth";
 
 const inter = Inter({ subsets: ["latin"] });
