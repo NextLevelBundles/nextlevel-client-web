@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/app/(shared)/components/theme-provider";
 import { SessionProvider } from "next-auth/react";
 
 import { auth } from "@/auth";
+import { redirect, RedirectType } from "next/navigation";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -31,8 +32,15 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
-  console.log("Session Data:", session?.id_token);
+   const session = await auth();
+
+    const groups = session?.['cognito:groups'] || [];
+    const customerId = session?.['custom:customerId'];
+
+    if(!customerId || !groups.includes('Customer')) {
+        redirect('/onboarding', RedirectType.push)
+    }
+
   return (
     <html lang="en">
       <body className={`${inter.className} antialiased`}>

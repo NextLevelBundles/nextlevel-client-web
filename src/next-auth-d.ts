@@ -17,6 +17,7 @@ declare module "next-auth" {
     "cognito:username"?: string;
     "custom:publisherId"?: string;
     "custom:userId"?: string;
+    "custom:customerId"?: string;
     user: {
     } & DefaultSession["user"];
   }
