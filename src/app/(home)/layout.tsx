@@ -1,4 +1,3 @@
-import { auth } from "@/auth";
 import requireOnboarding from "../(shared)/utils/onboarding";
 
 export default async function RootLayout({

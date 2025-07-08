@@ -8,6 +8,6 @@ export default async function requireOnboarding(): Promise<void> {
   const customerId = session?.["custom:customerId"];
 
   if (!customerId || !groups.includes("Customer")) {
-    redirect("/onboarding", RedirectType.push);
+    // redirect("/onboarding", RedirectType.push);
   }
 }
