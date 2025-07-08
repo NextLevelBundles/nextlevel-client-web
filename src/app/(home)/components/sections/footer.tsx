@@ -1,13 +1,7 @@
 "use client";
 
 import { Button } from "@/shared/components/ui/button";
-import {
-  Gamepad2,
-  Twitter,
-  Github,
-  Disc as Discord,
-  ArrowUp,
-} from "lucide-react";
+import { Twitter, Github, Disc as Discord, ArrowUp } from "lucide-react";
 import Image from "next/image";
 
 const footerLinks = {

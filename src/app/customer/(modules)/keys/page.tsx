@@ -262,7 +262,6 @@ export default function KeysPage() {
 
   const handleGiftKey = (gameId: number) => {
     // TODO: Implement gifting functionality
-    console.log(gameId);
     toast.info("Gifting feature coming soon!");
   };
 

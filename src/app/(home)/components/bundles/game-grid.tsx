@@ -34,7 +34,6 @@ export function GameGrid({
     (tier) => tier.id === selectedTier.id
   );
 
-  console.log("Selected Tier Index:", selectedTierIndex);
   const lockedTiers = tiers.slice(selectedTierIndex + 1);
 
   // Calculate cumulative games for each locked tier

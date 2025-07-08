@@ -10,23 +10,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         },
       },
       profile(profile) {
-        console.log("Cognito profile:", profile);
         return profile;
       },
     }),
   ],
   session: {
-    strategy: 'jwt'
+    strategy: "jwt",
   },
   callbacks: {
     jwt(jwtData) {
       const { token, user, account } = jwtData;
-      return {...token, ...user, ...account };
+      return { ...token, ...user, ...account };
     },
     session(sessionData) {
       const { session, token } = sessionData;
       session.user.id = token.id as string;
-      return { ...session, ...token }
+      return { ...session, ...token };
     },
     authorized: async (authorizedData) => {
       const { auth } = authorizedData;

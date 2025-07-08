@@ -1,4 +1,4 @@
-import { Gamepad2, MenuIcon } from "lucide-react";
+import { MenuIcon } from "lucide-react";
 import {
   SheetTrigger,
   SheetContent,

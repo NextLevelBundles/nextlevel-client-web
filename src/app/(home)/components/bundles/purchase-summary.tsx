@@ -55,7 +55,6 @@ export function PurchaseSummary({
       }
 
       const responseJson = await response.json();
-      console.log("Checkout session created:", responseJson);
       window.open(responseJson.url, "_blank");
     } catch (error) {
       console.error("Checkout error:", error);

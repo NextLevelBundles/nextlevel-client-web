@@ -39,7 +39,7 @@ export default async function BundleDetailPage({ params }: { params: any }) {
     const response = await fetch(
       `${process.env.API_URL}/customer/bundles/${id}`
     );
-    console.log(response);
+
     if (response.status === 404) {
       errorType = "notfound";
     } else if (!response.ok) {

@@ -13,7 +13,6 @@ export default async function Onboarding() {
     redirect("/", RedirectType.replace);
   }
 
-  console.log(session);
   return (
     <main className="min-h-screen bg-background relative">
       <Navigation />
