@@ -74,7 +74,7 @@ const formSections = [
   {
     id: "gaming",
     title: "Gaming Details",
-    description: "Connect your Steam account for a personalized experience",
+    description: "Set your Digiphile handle and connect your Steam account.",
     icon: Gamepad2,
     color: "from-primary/20 to-primary/10",
   },
