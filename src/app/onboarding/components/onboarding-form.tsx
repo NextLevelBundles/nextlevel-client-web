@@ -725,10 +725,10 @@ export function OnboardingForm() {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating Account...
+                      Creating Profile...
                     </>
                   ) : (
-                    "Create Account"
+                    "Create Profile"
                   )}
                 </Button>
               )}

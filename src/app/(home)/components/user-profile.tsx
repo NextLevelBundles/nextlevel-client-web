@@ -15,11 +15,12 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/shared/components/ui/avatar";
-import { Settings, LogOut, MessageCircleIcon, GamepadIcon } from "lucide-react";
+import { Settings, MessageCircleIcon, GamepadIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import SignInButton from "./SignInButton";
 import SignUpButton from "./SignUpButton";
+import SignOutButton from "./SignOutButton";
 
 export function UserProfile() {
   const session = useSession();
@@ -98,8 +99,7 @@ export function UserProfile() {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="text-red-600 dark:text-red-400">
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
+          <SignOutButton />
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
