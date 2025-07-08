@@ -13,7 +13,6 @@ import { Input } from "@/shared/components/ui/input";
 import { Badge } from "@/shared/components/ui/badge";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { GameLevelProgress } from "@/customer/components/game-level/progress";
 import {
   KeyIcon,
   ExternalLinkIcon,
@@ -30,6 +29,7 @@ import {
   TooltipTrigger,
 } from "@/shared/components/ui/tooltip";
 import confetti from "canvas-confetti";
+import { GameLevelProgress } from "../../components/game-level/progress";
 
 // Progress levels and their requirements
 const PROGRESS_LEVELS = [

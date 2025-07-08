@@ -1,19 +1,17 @@
 import { auth } from "@/auth";
-import { redirect, RedirectType } from "next/navigation";
+import requireOnboarding from "../(shared)/utils/onboarding";
 
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
+  await requireOnboarding();
 
-  const groups = session?.["cognito:groups"] || [];
-  const customerId = session?.["custom:customerId"];
-
-  if (!customerId || !groups.includes("Customer")) {
-    redirect("/onboarding", RedirectType.push);
-  }
-
-  return <>{children}</>;
+  return (
+    <main className="min-h-screen bg-background relative">
+      <div className="absolute inset-0 bg-mesh opacity-20 dark:opacity-10" />
+      {children}
+    </main>
+  );
 }

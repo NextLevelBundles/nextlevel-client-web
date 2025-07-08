@@ -12,8 +12,7 @@ import { Footer } from "@/home/components/sections/footer";
 
 export default async function Home() {
   return (
-    <main className="min-h-screen bg-background relative">
-      <div className="absolute inset-0 bg-mesh opacity-20 dark:opacity-10" />
+    <>
       <Navigation />
       <HeroSection />
       <CurrentBundles />
@@ -23,6 +22,6 @@ export default async function Home() {
       <BlogPreview />
       <Newsletter />
       <Footer />
-    </main>
+    </>
   );
 }

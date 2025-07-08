@@ -11,13 +11,10 @@ export default async function BundlesPage() {
   const bundlesTyped = bundles as Bundle[];
 
   return (
-    <main className="min-h-screen bg-background relative">
-      <div className="absolute inset-0 bg-mesh opacity-20 dark:opacity-10" />
+    <>
       <Navigation />
-      <div className="pt-24 pb-12">
-        <BundlesGrid bundles={bundlesTyped} />
-      </div>
+      <BundlesGrid bundles={bundlesTyped} />
       <Footer />
-    </main>
+    </>
   );
 }

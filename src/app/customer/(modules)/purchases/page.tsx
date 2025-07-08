@@ -1,4 +1,4 @@
-import { PurchaseHistory } from "@/customer/components/purchases/purchase-history";
+import { PurchaseHistory } from "../../components/purchases/purchase-history";
 
 export default function PurchasesPage() {
   return (

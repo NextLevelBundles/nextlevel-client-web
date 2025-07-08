@@ -54,8 +54,7 @@ export default async function BundleDetailPage({ params }: { params: any }) {
   }
 
   return (
-    <main className="min-h-screen bg-background relative">
-      <div className="absolute inset-0 bg-mesh opacity-20 dark:opacity-10" />
+    <>
       <Navigation />
       <div className="pt-16">
         {errorType === "notfound" && <NotFoundError />}
@@ -63,6 +62,6 @@ export default async function BundleDetailPage({ params }: { params: any }) {
         {!errorType && bundleTyped && <BundleDetail bundle={bundleTyped} />}
       </div>
       <Footer />
-    </main>
+    </>
   );
 }

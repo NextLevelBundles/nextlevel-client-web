@@ -1,6 +1,4 @@
 import { Gamepad2, MenuIcon } from "lucide-react";
-import { MainNav } from "@/customer/components/main-nav";
-import { TopNav } from "@/customer/components/top-nav";
 import {
   SheetTrigger,
   SheetContent,
@@ -8,12 +6,17 @@ import {
 } from "@/shared/components/ui/sheet";
 import { Button } from "@/shared/components/ui/button";
 import Link from "next/link";
+import { MainNav } from "./components/main-nav";
+import { TopNav } from "./components/top-nav";
+import requireOnboarding from "../(shared)/utils/onboarding";
 
-export default function CustomerNavigation({
+export default async function CustomerNavigation({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  await requireOnboarding();
+
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
