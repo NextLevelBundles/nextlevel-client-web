@@ -8,7 +8,7 @@ import { Button } from "@/shared/components/ui/button";
 import Link from "next/link";
 import { MainNav } from "./components/main-nav";
 import { TopNav } from "./components/top-nav";
-import requireOnboarding from "../(shared)/utils/onboarding";
+import requireOnboarding from "@/shared/utils/onboarding";
 
 export default async function CustomerNavigation({
   children,

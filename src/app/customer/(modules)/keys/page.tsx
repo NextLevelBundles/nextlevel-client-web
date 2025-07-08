@@ -29,7 +29,7 @@ import {
   TooltipTrigger,
 } from "@/shared/components/ui/tooltip";
 import confetti from "canvas-confetti";
-import { GameLevelProgress } from "../../components/game-level/progress";
+import { GameLevelProgress } from "@/customer/components/game-level/progress";
 
 // Progress levels and their requirements
 const PROGRESS_LEVELS = [

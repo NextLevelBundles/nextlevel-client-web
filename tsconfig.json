@@ -21,7 +21,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "@/home/*": ["./src/app/(home)/*"],
-      "@/customer/*": ["./src/app/(customer)/*"],
+      "@/customer/*": ["./src/app/customer/*"],
       "@/shared/*": ["./src/app/(shared)/*"]
     }
   },

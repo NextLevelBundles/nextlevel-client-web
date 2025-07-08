@@ -1,8 +1,8 @@
 import { PackageIcon, KeyIcon, HeartIcon } from "lucide-react";
-import { QuickActions } from "../../components/dashboard/quick-actions";
-import { RecentBundles } from "../../components/dashboard/recent-bundles";
-import { StatsCard } from "../../components/dashboard/stats-card";
-import { SteamStatus } from "../../components/dashboard/steam-status";
+import { QuickActions } from "@/customer/components/dashboard/quick-actions";
+import { RecentBundles } from "@/customer/components/dashboard/recent-bundles";
+import { StatsCard } from "@/customer/components/dashboard/stats-card";
+import { SteamStatus } from "@/customer/components/dashboard/steam-status";
 
 export default function Home() {
   return (

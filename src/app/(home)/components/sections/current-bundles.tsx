@@ -3,7 +3,7 @@
 import { Button } from "@/shared/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Bundle } from "@/app/(shared)/types/bundle";
-import { BundleCard } from "../bundles/bundle-card";
+import { BundleCard } from "@/home/components/bundles/bundle-card";
 import Link from "next/link";
 
 export async function CurrentBundles() {

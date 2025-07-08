@@ -4,7 +4,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Gamepad2, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/shared/utils/tailwind";
-import { ThemeToggle } from "../../(shared)/components/theme-toggle";
+import { ThemeToggle } from "@/shared/components/theme-toggle";
 import Link from "next/link";
 import { UserProfile } from "./user-profile";
 import SignInButton from "./SignInButton";
