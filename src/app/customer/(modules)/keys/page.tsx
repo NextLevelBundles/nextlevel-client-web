@@ -262,7 +262,7 @@ export default function KeysPage() {
 
   const handleGiftKey = (gameId: number) => {
     // TODO: Implement gifting functionality
-    toast.info("Gifting feature coming soon!");
+    toast.info(`Gifting feature coming soon! Game ID: ${gameId}`);
   };
 
   const getStatusCount = (status: KeyStatus) => {

@@ -41,7 +41,9 @@ export default async function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <Toaster position="top-right" expand={true} richColors />
 
-          <SessionProvider session={session}>{children}</SessionProvider>
+          <SessionProvider session={session} refetchOnWindowFocus={false}>
+            {children}
+          </SessionProvider>
         </ThemeProvider>
       </body>
     </html>
