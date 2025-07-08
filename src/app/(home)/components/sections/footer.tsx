@@ -8,6 +8,7 @@ import {
   Disc as Discord,
   ArrowUp,
 } from "lucide-react";
+import Image from "next/image";
 
 const footerLinks = {
   Company: [
@@ -69,10 +70,14 @@ export function Footer() {
 
         <div className="flex flex-col items-center justify-between gap-6 border-t border-[#e5e5e5]/50 dark:border-border/50 pt-8 sm:flex-row">
           <div className="flex items-center gap-2">
-            <Gamepad2 className="h-6 w-6 text-primary" />
-            <span className="font-orbitron text-xl font-bold text-[#1a1a1a] dark:text-foreground">
-              NextLevel
-            </span>
+            <div className="p-3">
+              <Image
+                src="/logo/digiphile-logo-rectangle.png"
+                alt="Digiphile Logo"
+                width="120"
+                height="0"
+              />
+            </div>
           </div>
 
           <div className="flex items-center gap-4 text-sm text-[#4b5563] dark:text-muted-foreground">
@@ -123,7 +128,7 @@ export function Footer() {
           </Button>
 
           <div className="text-sm text-[#3a3a3a] dark:text-muted-foreground/80">
-            © {new Date().getFullYear()} NextLevel. All rights reserved.
+            © {new Date().getFullYear()} Digiphile. All rights reserved.
           </div>
         </div>
       </div>

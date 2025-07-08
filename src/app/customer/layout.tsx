@@ -9,6 +9,7 @@ import Link from "next/link";
 import { MainNav } from "./components/main-nav";
 import { TopNav } from "./components/top-nav";
 import requireOnboarding from "@/shared/utils/onboarding";
+import Image from "next/image";
 
 export default async function CustomerNavigation({
   children,
@@ -25,8 +26,14 @@ export default async function CustomerNavigation({
           href="/"
           className="flex items-center gap-2 pl-3 hover:opacity-80 transition-all"
         >
-          <Gamepad2 className="h-6 w-6 text-primary" />
-          <span className="font-orbitron text-xl font-bold">NextLevel</span>
+          <div className="mb-3">
+            <Image
+              src="/logo/digiphile-logo-rectangle.png"
+              alt="Digiphile Logo"
+              width="160"
+              height="0"
+            />
+          </div>
         </Link>
         <MainNav />
       </div>
@@ -34,8 +41,14 @@ export default async function CustomerNavigation({
       {/* Mobile header */}
       <div className="fixed top-0 z-50 flex w-full items-center justify-between border-b bg-white dark:bg-[#1a1d2e]/80 backdrop-blur-xs shadow-xs p-4 lg:hidden">
         <Link href="/" className="flex items-center gap-2">
-          <Gamepad2 className="h-6 w-6 text-primary" />
-          <span className="font-orbitron text-xl font-bold">NextLevel</span>
+          <div className="">
+            <Image
+              src="/logo/digiphile-logo-rectangle.png"
+              alt="Digiphile Logo"
+              width="160"
+              height="0"
+            />
+          </div>
         </Link>
         <Sheet>
           <SheetTrigger asChild>

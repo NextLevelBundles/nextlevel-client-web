@@ -54,21 +54,23 @@ const formSections = [
   {
     id: "profile",
     title: "Profile & Contact",
-    description: "Tell us about yourself and how we can reach you",
+    description:
+      "Help us personalize your experience and get in touch if needed.",
     icon: User,
     color: "from-primary/20 to-primary/10",
   },
   {
     id: "billing",
     title: "Billing Address",
-    description: "Where should we send your receipts and important documents",
+    description:
+      "This is where we’ll send purchase receipts and any official communication.",
     icon: MapPin,
     color: "from-secondary/20 to-secondary/10",
   },
   {
     id: "gaming",
     title: "Gaming Details",
-    description: "Connect your gaming accounts for a personalized experience",
+    description: "Connect your Steam account for a personalized experience",
     icon: Gamepad2,
     color: "from-primary/20 to-primary/10",
   },
@@ -240,7 +242,7 @@ export function OnboardingForm() {
               <CheckCircle className="h-8 w-8" />
             </div>
             <h1 className="font-orbitron mb-4 text-3xl font-bold text-foreground">
-              Welcome to NextLevel!
+              Welcome to Digiphile!
             </h1>
             <p className="text-muted-foreground mb-8">
               Your account has been successfully created. You can now start
@@ -265,11 +267,11 @@ export function OnboardingForm() {
       <div className="container relative px-4 max-w-4xl mx-auto">
         <div className="mb-12 text-center">
           <h1 className="font-orbitron mb-4 text-3xl font-bold tracking-tight md:text-4xl text-foreground">
-            Join NextLevel
+            Welcome to Digiphile!
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Create your account to start getting amazing game bundles while
-            supporting developers and charities worldwide.
+            Your account has been created — now let’s set up your profile so you
+            can start exploring amazing game bundles.
           </p>
         </div>
 
@@ -771,7 +773,7 @@ export function OnboardingForm() {
                   disabled={!isCurrentSectionValid()}
                   className="bg-primary text-white hover:bg-primary/90"
                 >
-                  Next
+                  Continue
                 </Button>
               ) : (
                 <Button

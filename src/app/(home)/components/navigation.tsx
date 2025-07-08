@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/shared/components/ui/button";
-import { Gamepad2, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/shared/utils/tailwind";
 import { ThemeToggle } from "@/shared/components/theme-toggle";
@@ -9,6 +9,7 @@ import Link from "next/link";
 import { UserProfile } from "./user-profile";
 import SignInButton from "./SignInButton";
 import SignUpButton from "./SignUpButton";
+import Image from "next/image";
 
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -34,8 +35,14 @@ export function Navigation() {
       <div className="container px-4">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
-            <Gamepad2 className="h-6 w-6 text-primary" />
-            <span className="font-orbitron text-xl font-bold">NextLevel</span>
+            <div className="p-3">
+              <Image
+                src="/logo/digiphile-logo-rectangle.png"
+                alt="Digiphile Logo"
+                width="140"
+                height="0"
+              />
+            </div>
           </div>
 
           <div className="hidden md:flex md:items-center md:gap-8">
