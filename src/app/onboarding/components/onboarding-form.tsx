@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/app/(shared)/components/ui/button";
 import { Input } from "@/app/(shared)/components/ui/input";
 import { Label } from "@/app/(shared)/components/ui/label";
@@ -11,7 +11,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/app/(shared)/components/ui/select";
-import { User, MapPin, Gamepad2, CheckCircle, Loader2 } from "lucide-react";
+import {
+  User,
+  MapPin,
+  Gamepad2,
+  CheckCircle,
+  Loader2,
+  Check,
+  X,
+} from "lucide-react";
 import { Card } from "@/app/(shared)/components/ui/card";
 import { cn } from "@/app/(shared)/utils/tailwind";
 import SteamConnection from "./steam-connection";
@@ -88,6 +96,13 @@ export function OnboardingForm() {
   const [steamUserInfo, setSteamUserInfo] = useState<SteamUserInfo | null>(
     null
   );
+  const [handleVerified, setHandleVerified] = useState(false);
+  const [verifiedHandle, setVerifiedHandle] = useState("");
+  const [isCheckingHandle, setIsCheckingHandle] = useState(false);
+  const [handleCheckResult, setHandleCheckResult] = useState<boolean | null>(
+    null
+  );
+  const [handleInput, setHandleInput] = useState("");
   const [formData, setFormData] = useState<FormData>({
     name: "",
     handle: "",
@@ -119,19 +134,81 @@ export function OnboardingForm() {
     }));
   };
 
-  const updateFormData = (
-    section: keyof FormData,
-    field: string,
-    value: string
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [section]:
-        typeof prev[section] === "object"
-          ? { ...prev[section], [field]: value }
-          : value,
-    }));
+  const handleHandleChange = (value: string) => {
+    setHandleInput(value);
+    // If the user changes the handle after verification, reset verification
+    if (verifiedHandle && value !== verifiedHandle) {
+      setHandleVerified(false);
+      setVerifiedHandle("");
+      setHandleCheckResult(null);
+      // Clear the handle from form data until re-verified
+      setFormData((prev) => ({
+        ...prev,
+        handle: "",
+      }));
+    }
   };
+
+  // Debounced handle availability check
+  useEffect(() => {
+    if (!handleInput.trim()) {
+      setHandleCheckResult(null);
+      setIsCheckingHandle(false);
+      return;
+    }
+
+    // If the current input matches the verified handle, no need to check again
+    if (handleInput === verifiedHandle && handleVerified) {
+      return;
+    }
+
+    setIsCheckingHandle(true);
+    setHandleCheckResult(null);
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/customer/check-handle?handle=${encodeURIComponent(handleInput)}`
+        );
+        if (response.ok) {
+          const isAvailable = await response.json();
+          setHandleCheckResult(isAvailable);
+          if (isAvailable) {
+            setHandleVerified(true);
+            setVerifiedHandle(handleInput);
+            // Only set the form value if handle is available
+            setFormData((prev) => ({
+              ...prev,
+              handle: handleInput,
+            }));
+          } else {
+            setHandleVerified(false);
+            setVerifiedHandle("");
+            // Clear form data handle if not available
+            setFormData((prev) => ({
+              ...prev,
+              handle: "",
+            }));
+          }
+        } else {
+          throw new Error("Failed to check handle availability");
+        }
+      } catch (error) {
+        console.error("Error checking handle availability:", error);
+        setHandleCheckResult(null);
+        setHandleVerified(false);
+        setVerifiedHandle("");
+        setFormData((prev) => ({
+          ...prev,
+          handle: "",
+        }));
+      } finally {
+        setIsCheckingHandle(false);
+      }
+    }, 350);
+
+    return () => clearTimeout(timeoutId);
+  }, [handleInput, verifiedHandle, handleVerified]);
 
   const updateNestedFormData = (
     section: "billingAddress" | "contact",
@@ -221,7 +298,12 @@ export function OnboardingForm() {
           formData.billingAddress.country.trim() !== ""
         );
       case 2: // Gaming
-        return formData.handle.trim() !== "";
+        return (
+          handleVerified &&
+          verifiedHandle === handleInput &&
+          formData.handle === verifiedHandle &&
+          formData.steamId
+        );
       default:
         return true;
     }
@@ -519,18 +601,77 @@ export function OnboardingForm() {
                     <Label htmlFor="handle" className="text-sm font-medium">
                       Gaming Handle *
                     </Label>
-                    <Input
-                      id="handle"
-                      value={formData.handle}
-                      onChange={(e) =>
-                        updateFormData("handle", "", e.target.value)
-                      }
-                      placeholder="Your preferred gaming username"
-                      className="mt-1"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      This will be displayed on your profile and leaderboards
-                    </p>
+                    <div className="space-y-3">
+                      <div className="relative">
+                        <Input
+                          id="handle"
+                          value={handleInput}
+                          onChange={(e) => handleHandleChange(e.target.value)}
+                          placeholder="Your preferred gaming username"
+                          className="mt-1"
+                        />
+                        {isCheckingHandle && (
+                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+
+                      <p className="text-xs text-muted-foreground">
+                        This will be displayed on your profile and leaderboards
+                      </p>
+
+                      {/* Checking indicator */}
+                      {isCheckingHandle && (
+                        <div className="flex items-center gap-2 text-sm p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>
+                            Checking availability for &ldquo;{handleInput}
+                            &rdquo;...
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Verification Status Display */}
+                      {handleCheckResult !== null && (
+                        <div
+                          className={cn(
+                            "flex items-center gap-2 text-sm p-3 rounded-lg",
+                            handleCheckResult
+                              ? "bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
+                              : "bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
+                          )}
+                        >
+                          {handleCheckResult ? (
+                            <>
+                              <Check className="h-4 w-4" />
+                              <span>
+                                Handle &ldquo;{verifiedHandle}&rdquo; is
+                                available.
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <X className="h-4 w-4" />
+                              <span>
+                                Handle &ldquo;{handleInput}&rdquo; is already
+                                taken. Please try another one.
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      )}
+
+                      {verifiedHandle && verifiedHandle !== handleInput && (
+                        <div className="flex items-center gap-2 text-sm p-3 rounded-lg bg-yellow-50 dark:bg-yellow-950/30 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800">
+                          <X className="h-4 w-4" />
+                          <span>
+                            Handle has been modified. Please verify the new
+                            handle to continue.
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Steam Integration Section */}
