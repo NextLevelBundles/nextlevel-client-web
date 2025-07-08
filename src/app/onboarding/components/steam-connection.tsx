@@ -1,7 +1,29 @@
 import { Label } from "@/app/(shared)/components/ui/label";
-import { Gamepad2 } from "lucide-react";
+import { Gamepad2, Loader2 } from "lucide-react";
 import { SteamUserInfo } from "./onboarding-form";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import Image from "next/image";
+
+interface SteamProfile {
+  steamid: string;
+  communityvisibilitystate: number;
+  profilestate: number;
+  personaname: string;
+  profileurl: string;
+  avatar: string;
+  avatarmedium: string;
+  avatarfull: string;
+  avatarhash: string;
+  lastlogoff: number;
+  personastate: number;
+  realname?: string;
+  primaryclanid?: string;
+  timecreated?: number;
+  personastateflags?: number;
+  loccountrycode?: string;
+  locstatecode?: string;
+  loccityid?: number;
+}
 
 interface SteamConnectionProps {
   steamConnected: boolean;
@@ -13,6 +35,32 @@ export default function SteamConnection({
   steamUserInfo,
   onSteamInfoReceived,
 }: SteamConnectionProps) {
+  const [steamProfile, setSteamProfile] = useState<SteamProfile | null>(null);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+
+  // Load Steam profile when we have a Steam ID
+  useEffect(() => {
+    const loadSteamProfile = async (steamId: string) => {
+      setIsLoadingProfile(true);
+      try {
+        const response = await fetch(`/api/steam/profile?steamid=${steamId}`);
+        if (response.ok) {
+          const profile = await response.json();
+          setSteamProfile(profile);
+        }
+      } catch (error) {
+        console.error("Failed to load Steam profile:", error);
+        // Fail silently as requested
+      } finally {
+        setIsLoadingProfile(false);
+      }
+    };
+
+    if (steamUserInfo?.steamId && !steamProfile) {
+      loadSteamProfile(steamUserInfo.steamId);
+    }
+  }, [steamUserInfo?.steamId, steamProfile]);
+
   useEffect(() => {
     const handler = (event: MessageEvent) => {
       console.log("event.origin:", event.origin);
@@ -85,10 +133,46 @@ export default function SteamConnection({
                 Steam Account Connected!
               </h3>
               {steamUserInfo && (
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="font-medium text-foreground">
-                    Steam ID: {steamUserInfo.steamId}
-                  </span>
+                <div className="space-y-3 mb-3">
+                  {isLoadingProfile ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        Loading Steam profile...
+                      </span>
+                    </div>
+                  ) : steamProfile ? (
+                    <div className="flex items-center gap-3">
+                      <Image
+                        src={steamProfile.avatarmedium}
+                        alt={`${steamProfile.personaname} avatar`}
+                        width={40}
+                        height={40}
+                        className="rounded-lg border border-border/50"
+                      />
+                      <div className="flex flex-col">
+                        {steamProfile.realname && (
+                          <span className="font-medium text-foreground">
+                            {steamProfile.realname}
+                          </span>
+                        )}
+                        <a
+                          href={steamProfile.profileurl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary hover:text-primary/80 hover:underline transition-colors"
+                        >
+                          {steamProfile.personaname}
+                        </a>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <span className="font-medium text-foreground">
+                        Steam ID: {steamUserInfo.steamId}
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
               <p className="text-sm text-muted-foreground">

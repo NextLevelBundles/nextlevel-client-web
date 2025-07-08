@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
 
   const player = json?.response?.players?.[0];
   if (!player) {
-    return new Response("Player not found", { status: 404 });
+    return Response.json({ message: "Player not found" }, { status: 404 });
   }
 
   return Response.json(player);

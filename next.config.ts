@@ -12,6 +12,9 @@ const nextConfig: NextConfig = {
       {
         hostname: "media.nextlevelbundle.com",
       },
+      {
+        hostname: "avatars.steamstatic.com",
+      },
     ],
   },
   async redirects() {
