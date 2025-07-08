@@ -23,6 +23,7 @@ import {
 import { Card } from "@/app/(shared)/components/ui/card";
 import { cn } from "@/app/(shared)/utils/tailwind";
 import SteamConnection from "./steam-connection";
+import { useSession } from "next-auth/react";
 
 interface FormData {
   name: string;
@@ -89,6 +90,8 @@ const formSections = [
 ];
 
 export function OnboardingForm() {
+  const session = useSession();
+  console.log(session);
   const [currentSection, setCurrentSection] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -104,7 +107,7 @@ export function OnboardingForm() {
   );
   const [handleInput, setHandleInput] = useState("");
   const [formData, setFormData] = useState<FormData>({
-    name: "",
+    name: session.data?.name || "",
     handle: "",
     steamId: null,
     billingAddress: {
@@ -117,8 +120,8 @@ export function OnboardingForm() {
       countryCode: "",
     },
     contact: {
-      name: "",
-      email: "",
+      name: session.data?.name || "",
+      email: session.data?.email || "",
       phone: "",
       alternatePhone: null,
     },
@@ -250,17 +253,22 @@ export function OnboardingForm() {
       };
 
       const response = await fetch(
-        "https://api.nextlevelbundle.com/api/customer",
+        `${process.env.NEXT_PUBLIC_API_URL}/customer`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${session.data?.id_token}`,
           },
           body: JSON.stringify(submitData),
         }
       );
 
       if (response.ok) {
+        await session.update({
+          dummy: "test",
+        });
+
         setIsSubmitted(true);
       } else {
         throw new Error("Failed to submit form");
@@ -311,7 +319,7 @@ export function OnboardingForm() {
 
   if (isSubmitted) {
     return (
-      <section className="relative py-12">
+      <section className="py-12 flex items-center justify-center">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(57,130,245,0.15),transparent_70%),radial-gradient(ellipse_at_bottom,rgba(249,113,20,0.1),transparent_70%)] opacity-30 dark:opacity-40" />
         <div className="container relative px-4 max-w-2xl mx-auto">
           <Card className="p-12 text-center bg-white/90 dark:bg-card/90 backdrop-blur-sm border border-white/20 dark:border-border shadow-xl">
@@ -319,11 +327,14 @@ export function OnboardingForm() {
               <CheckCircle className="h-8 w-8" />
             </div>
             <h1 className="font-orbitron mb-4 text-3xl font-bold text-foreground">
-              Welcome to Digiphile!
+              You&apos;re all set! 🎉
             </h1>
             <p className="text-muted-foreground mb-8">
-              Your account has been successfully created. You can now start
-              exploring our amazing game bundles and supporting great causes.
+              Your account has been successfully created and your profile is
+              ready.
+              <br />
+              Start discovering incredible game bundles, support meaningful
+              causes, and enjoy exclusive deals tailored just for you.
             </p>
             <Button
               size="lg"

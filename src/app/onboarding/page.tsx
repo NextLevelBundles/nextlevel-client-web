@@ -5,11 +5,10 @@ import { Navigation } from "./components/navigation";
 
 export default async function Onboarding() {
   const session = await auth();
-
   const groups = session?.["cognito:groups"] || [];
   const customerId = session?.["custom:customerId"];
 
-  if (customerId && groups.includes("Customer")) {
+  if (!session || (customerId && groups.includes("Customer"))) {
     redirect("/", RedirectType.replace);
   }
 
@@ -18,7 +17,7 @@ export default async function Onboarding() {
       <Navigation />
 
       <div className="absolute inset-0 bg-mesh opacity-20 dark:opacity-10" />
-      <div className="pt-24 pb-12">
+      <div className="pt-24 pb-12 h-full">
         <OnboardingForm />
       </div>
     </main>

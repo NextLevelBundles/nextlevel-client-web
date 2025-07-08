@@ -6,7 +6,7 @@ export default async function requireOnboarding(): Promise<void> {
   const groups = session?.["cognito:groups"] || [];
   const customerId = session?.["custom:customerId"];
 
-  if (!customerId || !groups.includes("Customer")) {
+  if (session && (!customerId || !groups.includes("Customer"))) {
     redirect("/onboarding", RedirectType.push);
   }
 }

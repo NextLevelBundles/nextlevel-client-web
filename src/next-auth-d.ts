@@ -1,10 +1,11 @@
-import { JWT } from "next-auth/jwt";
+import type { JWT } from "next-auth/jwt";
 import { DefaultSession } from "next-auth";
 
 declare module "next-auth/jwt" {
   interface JWT {
     idToken?: string;
     accessToken?: string;
+    refresh_token?: string;
   }
 }
 
@@ -18,7 +19,8 @@ declare module "next-auth" {
     "custom:publisherId"?: string;
     "custom:userId"?: string;
     "custom:customerId"?: string;
-    user: {
-    } & DefaultSession["user"];
+    name?: string;
+    email?: string;
+    user: {} & DefaultSession["user"];
   }
 }
