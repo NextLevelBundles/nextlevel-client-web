@@ -1,4 +1,5 @@
 import requireOnboarding from "@/shared/utils/onboarding";
+import { CartProviderWrapper } from "../(shared)/contexts/cart-provider-wrapper";
 
 export default async function RootLayout({
   children,
@@ -10,7 +11,7 @@ export default async function RootLayout({
   return (
     <main className="min-h-screen bg-background relative">
       <div className="absolute inset-0 bg-mesh opacity-20 dark:opacity-10" />
-      {children}
+      <CartProviderWrapper>{children}</CartProviderWrapper>
     </main>
   );
 }

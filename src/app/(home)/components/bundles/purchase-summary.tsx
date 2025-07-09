@@ -201,6 +201,7 @@ export function PurchaseSummary({
             <span>Total</span>
             <span>${totalAmount}</span>
           </div>
+
           <Button
             onClick={checkout}
             className="w-full bg-primary text-white hover:bg-primary/90 shadow-xs hover:shadow-xl hover:shadow-primary/30 dark:hover:shadow-primary/40 transition-all duration-300 h-14 text-lg font-medium px-8 py-4 rounded-xl ring-1 ring-primary/50 hover:ring-primary hover:scale-[1.02]"

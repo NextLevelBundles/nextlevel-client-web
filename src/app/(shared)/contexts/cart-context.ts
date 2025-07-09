@@ -1,0 +1,21 @@
+import { AddToCartRequest, Cart } from "@/lib/client-api";
+import { createContext } from "react";
+
+export interface CartState {
+  cart: Cart | null;
+  isLoading: boolean;
+  error: string | null;
+}
+
+export interface CartContextType extends CartState {
+  addToCart: (item: AddToCartRequest) => Promise<void>;
+  removeFromCart: (itemId: string) => Promise<void>;
+  clearCart: () => Promise<void>;
+  refreshCart: () => Promise<void>;
+  getTotalItems: () => number;
+  getTotalPrice: () => number;
+}
+
+const TimeframeContext = createContext<CartContextType | undefined>(undefined);
+
+export default TimeframeContext;

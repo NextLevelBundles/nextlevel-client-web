@@ -10,6 +10,7 @@ import { UserProfile } from "./user-profile";
 import SignInButton from "./SignInButton";
 import SignUpButton from "./SignUpButton";
 import Image from "next/image";
+import { CartDrawer } from "./cart/cart-drawer";
 
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -68,7 +69,7 @@ export function Navigation() {
 
           <div className="hidden md:flex md:items-center md:gap-2">
             <ThemeToggle />
-
+            <CartDrawer />
             <UserProfile />
           </div>
 
@@ -126,6 +127,7 @@ export function Navigation() {
               </div>
               <div className="flex items-center justify-between pt-4 mt-4 border-t border-black/[0.06] dark:border-white/[0.06]">
                 <ThemeToggle />
+                <CartDrawer />
                 <div className="flex gap-2">
                   <SignInButton />
                   <SignUpButton />
