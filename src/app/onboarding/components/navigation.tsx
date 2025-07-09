@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { cn } from "@/shared/utils/tailwind";
 import { ThemeToggle } from "@/shared/components/theme-toggle";
 import Image from "next/image";
+import SignOutButton from "@/app/(home)/components/SignOutButton";
 
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -38,8 +39,11 @@ export function Navigation() {
             </div>
           </div>
 
-          <div className="hidden md:flex md:items-center md:gap-2">
+          <div className="flex items-center gap-2">
             <ThemeToggle />
+            <div className="cursor-pointer">
+              <SignOutButton />
+            </div>
           </div>
         </div>
       </div>
