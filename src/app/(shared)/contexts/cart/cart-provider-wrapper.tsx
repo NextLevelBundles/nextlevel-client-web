@@ -1,13 +1,16 @@
 import { ReactNode } from "react";
 import { serverApiClient } from "@/lib/server-api";
 import CartProvider from "./cart-provider";
+import { Session } from "next-auth";
 
 interface CartProviderWrapperProps {
   children: ReactNode;
+  session: Session | null;
 }
 
 export async function CartProviderWrapper({
   children,
+  session,
 }: CartProviderWrapperProps) {
   // Load cart data on the server
   let initialCart = null;
@@ -15,7 +18,9 @@ export async function CartProviderWrapper({
   try {
     // Only attempt to load cart data if we're on the server
     if (typeof window === "undefined") {
-      initialCart = await serverApiClient.getCart();
+      if (session?.id_token) {
+        initialCart = await serverApiClient.getCart();
+      }
     }
   } catch (error) {
     console.error("Failed to load initial cart data:", error);

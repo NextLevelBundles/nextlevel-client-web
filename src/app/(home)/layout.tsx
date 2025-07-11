@@ -1,12 +1,14 @@
 import requireOnboarding from "@/shared/utils/onboarding";
 import { CartProviderWrapper } from "../(shared)/contexts/cart/cart-provider-wrapper";
+import { auth } from "@/auth";
 
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  await requireOnboarding();
+  const session = await auth();
+  await requireOnboarding(session);
 
   return (
     <main className="min-h-screen bg-background relative">
