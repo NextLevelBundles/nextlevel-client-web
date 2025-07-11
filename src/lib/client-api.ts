@@ -1,4 +1,4 @@
-import { getSession } from "next-auth/react";
+import { getIdTokenFromLocalStorage } from "@/app/(shared)/contexts/id-token/id-token-servie";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
@@ -43,13 +43,14 @@ export interface AddToCartRequest {
 
 class ClientApi {
   private async getAuthHeaders(): Promise<HeadersInit> {
-    const session = await getSession();
+    const idToken = getIdTokenFromLocalStorage();
+
     const headers: HeadersInit = {
       "Content-Type": "application/json",
     };
 
-    if (session?.id_token) {
-      headers["Authorization"] = `Bearer ${session.id_token}`;
+    if (idToken) {
+      headers["Authorization"] = `Bearer ${idToken}`;
     }
 
     return headers;

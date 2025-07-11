@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Trash2, ShoppingBag, CreditCard } from "lucide-react";
 import { CartButton } from "./cart-button";
 import { CartItemDetails } from "./cart-item-details";
-import { useCart } from "@/app/(shared)/contexts/cart-provider";
+import { useCart } from "@/app/(shared)/contexts/cart/cart-provider";
 import {
   Sheet,
   SheetContent,
@@ -25,14 +25,14 @@ export function CartDrawer() {
     getTotalItems,
     getTotalPrice,
     isLoading,
-    refreshCart,
+    // refreshCart,
   } = useCart();
 
   // Refresh cart when drawer opens to ensure fresh data
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (open && cart) {
-      refreshCart();
+      // refreshCart();
     }
   };
 

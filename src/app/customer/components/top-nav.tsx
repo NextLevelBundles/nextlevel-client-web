@@ -28,15 +28,16 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/shared/components/ui/tooltip";
-import { useSession } from "next-auth/react";
 import SignOutButton from "@/app/(home)/components/SignOutButton";
 import { Input } from "@/app/(shared)/components/ui/input";
 import { ThemeToggle } from "@/app/(shared)/components/theme-toggle";
+import { Session } from "next-auth";
 
-export function TopNav() {
+interface TopNavProps {
+  session?: Session | null;
+}
+export function TopNav({ session }: TopNavProps) {
   const xpProgress = 50; // Replace with actual XP progress
-
-  const session = useSession();
 
   return (
     <div className="sticky top-0 z-50 w-full border-b bg-white dark:bg-[#1a1d2e]/80 backdrop-blur-xs shadow-xs transition-all">
@@ -121,10 +122,10 @@ export function TopNav() {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">
-                    {session.data?.user?.name ?? "Unknown user"}
+                    {session?.user?.name ?? "Unknown user"}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    {session.data?.user?.email}
+                    {session?.user?.email}
                   </p>
                 </div>
               </DropdownMenuLabel>

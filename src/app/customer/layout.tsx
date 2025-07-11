@@ -10,6 +10,7 @@ import { MainNav } from "./components/main-nav";
 import { TopNav } from "./components/top-nav";
 import requireOnboarding from "@/shared/utils/onboarding";
 import Image from "next/image";
+import { auth } from "@/auth";
 
 export default async function CustomerNavigation({
   children,
@@ -17,6 +18,8 @@ export default async function CustomerNavigation({
   children: React.ReactNode;
 }) {
   await requireOnboarding();
+
+  const session = await auth();
 
   return (
     <div className="flex min-h-screen">
@@ -64,7 +67,7 @@ export default async function CustomerNavigation({
 
       {/* Main content */}
       <div className="flex-1 overflow-auto bg-gray-50 dark:bg-[#0f111a] lg:ml-64">
-        <TopNav />
+        <TopNav session={session} />
         <div className="container mx-auto p-6 pt-20 lg:pt-6">{children}</div>
       </div>
     </div>

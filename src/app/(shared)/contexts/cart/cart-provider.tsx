@@ -2,7 +2,13 @@
 
 import { AddToCartRequest, apiClient, Cart, CartItem } from "@/lib/client-api";
 import { useSession } from "next-auth/react";
-import { useContext, useReducer, useEffect, ReactNode } from "react";
+import {
+  useContext,
+  useReducer,
+  useEffect,
+  ReactNode,
+  useCallback,
+} from "react";
 import { toast } from "sonner";
 import CartContext, { CartContextType, CartState } from "./cart-context";
 
@@ -88,7 +94,8 @@ export default function CartProvider({
   });
   const { status } = useSession();
 
-  const refreshCart = async () => {
+  const refreshCart = useCallback(async () => {
+    console.log("Refreshing cart, current status:", status);
     if (status !== "authenticated") return;
 
     dispatch({ type: "SET_LOADING", payload: true });
@@ -101,7 +108,7 @@ export default function CartProvider({
     } finally {
       dispatch({ type: "SET_LOADING", payload: false });
     }
-  };
+  }, [status]);
 
   const addToCart = async (item: AddToCartRequest) => {
     dispatch({ type: "SET_LOADING", payload: true });
@@ -169,9 +176,10 @@ export default function CartProvider({
   useEffect(() => {
     // Only refresh cart if we don't have initial data or if authentication status changes
     if (status === "authenticated" && !initialCart) {
+      console.log("Refreshing cart due to authentication status change");
       refreshCart();
     }
-  }, [status, initialCart]);
+  }, [status, initialCart, refreshCart]);
 
   const value: CartContextType = {
     ...state,
@@ -182,8 +190,6 @@ export default function CartProvider({
     getTotalItems,
     getTotalPrice,
   };
-
-  console.log("CartProvider rendered with state:", value);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

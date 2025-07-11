@@ -7,6 +7,7 @@ import { Toaster } from "sonner";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/auth";
 import { ThemeProvider } from "./(shared)/components/theme-provider";
+import { IdTokenProvider } from "./(shared)/contexts/id-token/id-token-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -42,7 +43,7 @@ export default async function RootLayout({
           <Toaster position="top-right" expand={true} richColors />
 
           <SessionProvider session={session} refetchOnWindowFocus={false}>
-            {children}
+            <IdTokenProvider>{children}</IdTokenProvider>
           </SessionProvider>
         </ThemeProvider>
       </body>

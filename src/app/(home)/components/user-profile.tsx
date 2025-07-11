@@ -16,16 +16,16 @@ import {
   AvatarImage,
 } from "@/shared/components/ui/avatar";
 import { Settings, MessageCircleIcon, GamepadIcon } from "lucide-react";
-import { useSession } from "next-auth/react";
 import Link from "next/link";
 import SignInButton from "./SignInButton";
 import SignUpButton from "./SignUpButton";
 import SignOutButton from "./SignOutButton";
+import { useSession } from "next-auth/react";
 
 export function UserProfile() {
   const session = useSession();
 
-  if (session.status === "unauthenticated") {
+  if (session.status != "authenticated") {
     return (
       <div className="flex items-center gap-2">
         <SignInButton />
@@ -54,10 +54,10 @@ export function UserProfile() {
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">
-              {session.data?.user?.name ?? "Unknown user"}
+              {session?.data.user?.name ?? "Unknown user"}
             </p>
             <p className="text-xs leading-none text-muted-foreground">
-              {session.data?.user?.email}
+              {session?.data?.user?.email}
             </p>
           </div>
         </DropdownMenuLabel>

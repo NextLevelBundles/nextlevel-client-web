@@ -24,7 +24,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       const { token, user, account, session, trigger } = jwtData;
       let newJwtData = { ...token, ...user, ...account, ...session };
 
-      if (trigger == "update") {
+      const shouldRefreshToken =
+        token.expires_at &&
+        Date.now() >= token.expires_at * 1000 - 4 * 60 * 1000; // Refresh if token is expiring in less than 4 minutes
+
+      console.log(
+        "JWT Callback - shouldRefreshToken:",
+        shouldRefreshToken,
+        Date.now(),
+        token.expires_at! * 1000
+      );
+      if (trigger == "update" || shouldRefreshToken) {
+        console.log("Refreshing Cognito token...");
         const cognitoTokensResponse = await refreshCognitoToken(
           token.refresh_token ?? ""
         );
@@ -32,9 +43,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const idTokenClaims = decodeIdTokenClaims(
           cognitoTokensResponse.id_token
         );
-
-        console.log("Cognito Tokens Response:", cognitoTokensResponse);
-        console.log("ID Token Claims:", idTokenClaims);
 
         newJwtData = {
           ...newJwtData,
@@ -66,6 +74,7 @@ export interface CognitoTokenResponse {
   refresh_token?: string;
   token_type: string;
   expires_in: number;
+  expires_at?: number;
 }
 
 export async function refreshCognitoToken(
@@ -102,6 +111,8 @@ export async function refreshCognitoToken(
   }
 
   const tokens = (await response.json()) as CognitoTokenResponse;
+  tokens.expires_at = Math.floor(Date.now() / 1000) + tokens.expires_in;
+
   return tokens;
 }
 

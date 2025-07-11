@@ -16,6 +16,6 @@ export interface CartContextType extends CartState {
   getTotalPrice: () => number;
 }
 
-const TimeframeContext = createContext<CartContextType | undefined>(undefined);
+const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export default TimeframeContext;
+export default CartContext;

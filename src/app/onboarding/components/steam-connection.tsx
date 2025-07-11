@@ -303,7 +303,10 @@ export default function SteamConnection({
           <div className="text-center">
             <p className="text-xs text-muted-foreground">
               Steam integration is mandatory to become part of our gaming
-              community and enjoy the full Digiphile experience
+              community and enjoy the full Digiphile experience. Your Steam
+              avatar, handle or name won&apos;t be shared publicly, and we only
+              use your Steam ID to deliver game keys and provide personalized
+              recommendations.
             </p>
           </div>
         </>
@@ -312,7 +315,7 @@ export default function SteamConnection({
       {steamConnected && (
         <div className="text-center">
           <p className="text-xs text-green-600 dark:text-green-400 font-medium">
-            ✅ Steam account successfully connected and ready for game delivery
+            Steam account successfully connected and ready for game delivery
           </p>
         </div>
       )}

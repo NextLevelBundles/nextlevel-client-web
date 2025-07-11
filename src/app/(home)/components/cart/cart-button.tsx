@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/app/(shared)/components/ui/button";
-import { useCart } from "@/app/(shared)/contexts/cart-provider";
+import { useCart } from "@/app/(shared)/contexts/cart/cart-provider";
 import { cn } from "@/app/(shared)/utils/tailwind";
 import { ShoppingCart } from "lucide-react";
 import { useState, useEffect } from "react";

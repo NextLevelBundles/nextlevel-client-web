@@ -91,8 +91,8 @@ const formSections = [
 
 export function OnboardingForm() {
   const session = useSession();
-  console.log(session);
-  const [currentSection, setCurrentSection] = useState(0);
+
+  const [currentSection, setCurrentSection] = useState(2);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [steamConnected, setSteamConnected] = useState(false);
@@ -243,15 +243,6 @@ export function OnboardingForm() {
     setIsSubmitting(true);
 
     try {
-      const submitData = {
-        ...formData,
-        steamId: formData.steamId, // Now includes actual Steam ID if connected
-        contact: {
-          ...formData.contact,
-          alternatePhone: null, // Always null as requested
-        },
-      };
-
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/customer`,
         {
@@ -260,13 +251,13 @@ export function OnboardingForm() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${session.data?.id_token}`,
           },
-          body: JSON.stringify(submitData),
+          body: JSON.stringify(formData),
         }
       );
 
       if (response.ok) {
         await session.update({
-          dummy: "test",
+          invalidate: "true",
         });
 
         setIsSubmitted(true);
@@ -364,7 +355,7 @@ export function OnboardingForm() {
         </div>
 
         {/* Progress Indicator */}
-        <div className="mb-8">
+        {/* <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             {formSections.map((section, index) => (
               <div key={section.id} className="flex items-center">
@@ -397,7 +388,7 @@ export function OnboardingForm() {
               {formSections[currentSection].description}
             </p>
           </div>
-        </div>
+        </div> */}
 
         <Card className="p-8 bg-white/90 dark:bg-card/90 backdrop-blur-sm border border-white/20 dark:border-border shadow-xl">
           <div className="space-y-6">

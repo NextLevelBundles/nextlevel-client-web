@@ -1,5 +1,5 @@
 import requireOnboarding from "@/shared/utils/onboarding";
-import { CartProviderWrapper } from "../(shared)/contexts/cart-provider-wrapper";
+import { CartProviderWrapper } from "../(shared)/contexts/cart/cart-provider-wrapper";
 
 export default async function RootLayout({
   children,
