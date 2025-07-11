@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useReducer, useCallback, useEffect, act } from "react";
+import { ReactNode, useReducer, useCallback, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import IdTokenContext, {
   IdTokenContextType,

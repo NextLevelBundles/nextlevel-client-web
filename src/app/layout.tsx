@@ -35,6 +35,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
+  console.log("Environment:", process.env);
 
   return (
     <html lang="en">
