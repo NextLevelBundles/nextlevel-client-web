@@ -17,9 +17,8 @@ export default async function CustomerNavigation({
 }: {
   children: React.ReactNode;
 }) {
-  await requireOnboarding();
-
   const session = await auth();
+  await requireOnboarding(session);
 
   return (
     <div className="flex min-h-screen">
