@@ -37,8 +37,8 @@ export function CartItemDetails({ item }: CartItemDetailsProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Image
-              width={0}
-              height={0}
+              width={150}
+              height={150}
               src={item.snapshotImageUrl ?? ""}
               alt={item.snapshotTitle ?? "Cart item image"}
               className="w-8 h-8 rounded object-cover"
@@ -68,7 +68,8 @@ export function CartItemDetails({ item }: CartItemDetailsProps) {
                     className="flex items-center gap-3 p-3 rounded-lg border"
                   >
                     <Image
-                      width={48}
+                      width={150}
+                      height={150}
                       src={product.coverImageUrl}
                       alt={product.title}
                       className="w-12 h-12 rounded object-cover"
@@ -106,7 +107,7 @@ export function CartItemDetails({ item }: CartItemDetailsProps) {
               </div>
               <div>
                 <span className="text-muted-foreground">Price per item:</span>
-                <div>${item.priceAtSelection.toFixed(2)}</div>
+                <div>${item.price.toFixed(2)}</div>
               </div>
             </div>
           </div>

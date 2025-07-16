@@ -9,16 +9,8 @@ import { useState } from "react";
 
 interface AddToCartButtonProps {
   bundleId: string;
-  selectedTier: number;
+  selectedTier: string;
   totalAmount: number;
-  snapshotTitle: string;
-  snapshotImageUrl: string;
-  snapshotTierTitle: string;
-  snapshotProducts: Array<{
-    productId: string;
-    title: string;
-    coverImageUrl: string;
-  }>;
   className?: string;
   children?: React.ReactNode;
 }
@@ -39,9 +31,9 @@ export function AddToCartButton({
     try {
       const cartItem: AddToCartRequest = {
         bundleId,
-        selectedTierId: selectedTier.toString(),
+        selectedTierId: selectedTier,
         quantity: 1,
-        priceAtSelection: totalAmount,
+        price: totalAmount,
       };
 
       await addToCart(cartItem);
@@ -61,24 +53,24 @@ export function AddToCartButton({
       onClick={handleAddToCart}
       disabled={isDisabled}
       className={cn(
-        "relative overflow-hidden transition-all duration-300",
+        "cursor-pointer relative overflow-hidden transition-all duration-300 w-full bg-primary text-white hover:bg-primary/90 shadow-xs hover:shadow-xl hover:shadow-primary/30 dark:hover:shadow-primary/40 h-14 text-lg font-medium px-8 py-4 rounded-xl ring-1 ring-primary/50 hover:ring-primary hover:scale-[1.02]",
         justAdded && "bg-green-500 hover:bg-green-600",
         className
       )}
     >
       {isAdding ? (
         <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
           Adding to Cart...
         </>
       ) : justAdded ? (
         <>
-          <Check className="mr-2 h-4 w-4" />
+          <Check className="mr-2 h-5 w-5" />
           Added to Cart!
         </>
       ) : (
         <>
-          <ShoppingCart className="mr-2 h-4 w-4" />
+          <ShoppingCart className="mr-2 h-5 w-5" />
           {children || "Add to Cart"}
         </>
       )}

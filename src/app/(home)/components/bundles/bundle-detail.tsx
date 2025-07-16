@@ -75,6 +75,7 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
 
             {currentTier && (
               <PurchaseSummary
+                bundle={bundle}
                 tiers={tiers}
                 currentTier={currentTier}
                 totalAmount={totalAmount}

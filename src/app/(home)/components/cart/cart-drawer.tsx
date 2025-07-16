@@ -28,6 +28,8 @@ export function CartDrawer() {
     // refreshCart,
   } = useCart();
 
+  console.log("CartDrawer rendered with cart:", cart);
+
   // Refresh cart when drawer opens to ensure fresh data
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
@@ -62,14 +64,15 @@ export function CartDrawer() {
           </div>
         ) : (
           <div className="flex flex-col h-full">
-            <ScrollArea className="flex-1 pr-4">
+            <ScrollArea className="flex-1">
               <div className="space-y-4 py-4">
                 {cart?.items.map((item) => (
                   <div key={item.id} className="group relative">
                     <div className="flex gap-4 p-4 rounded-lg border border-border hover:border-primary/50 transition-colors">
                       <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-muted">
                         <Image
-                          width={50}
+                          width={200}
+                          height={200}
                           src={item.snapshotImageUrl ?? ""}
                           alt={item.snapshotTitle ?? "Cart item image"}
                           className="w-full h-full object-cover"
@@ -88,7 +91,7 @@ export function CartDrawer() {
 
                           <div className="text-right">
                             <div className="font-semibold text-sm">
-                              ${item.priceAtSelection.toFixed(2)}
+                              ${item.price.toFixed(2)}
                             </div>
                             <span className="text-xs text-muted-foreground">
                               {item.snapshotProducts.length} games
@@ -100,7 +103,7 @@ export function CartDrawer() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="cursor-pointer h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
                         onClick={() => removeFromCart(item.id)}
                         disabled={isLoading}
                       >
@@ -112,7 +115,7 @@ export function CartDrawer() {
               </div>
             </ScrollArea>
 
-            <div className="border-t pt-4 space-y-4">
+            <div className="border-t py-4 space-y-4">
               {cart?.reservationStatus === "Active" &&
                 cart.reservationExpiresAt && (
                   <div className="p-3 bg-secondary/10 rounded-lg border border-secondary/20">

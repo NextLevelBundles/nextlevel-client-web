@@ -9,7 +9,7 @@ export interface CartItem {
   bundleId?: string;
   selectedTierId?: string;
   quantity: number;
-  priceAtSelection: number;
+  price: number;
   snapshotTitle?: string;
   snapshotImageUrl?: string;
   snapshotPlatform?: string;
@@ -38,7 +38,7 @@ export interface AddToCartRequest {
   bundleId: string;
   selectedTierId: string;
   quantity: number;
-  priceAtSelection: number;
+  price: number;
 }
 
 class ClientApi {

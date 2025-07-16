@@ -41,7 +41,7 @@ export default async function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          <Toaster position="top-right" expand={true} richColors />
+          <Toaster position="bottom-right" expand={true} richColors />
 
           <SessionProvider session={session} refetchOnWindowFocus={false}>
             <IdTokenProvider>{children}</IdTokenProvider>

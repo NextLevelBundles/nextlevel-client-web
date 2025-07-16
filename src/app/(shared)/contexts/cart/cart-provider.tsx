@@ -167,7 +167,7 @@ export default function CartProvider({
   const getTotalPrice = () => {
     return (
       state.cart?.items.reduce(
-        (total, item) => total + item.priceAtSelection * item.quantity,
+        (total, item) => total + item.price * item.quantity,
         0
       ) || 0
     );

@@ -13,9 +13,11 @@ import {
 } from "lucide-react";
 import { Slider } from "@/shared/components/ui/slider";
 import { cn } from "@/shared/utils/tailwind";
-import { Tier } from "@/app/(shared)/types/bundle";
+import { Bundle, Tier } from "@/app/(shared)/types/bundle";
+import { AddToCartButton } from "../cart/add-to-cart-button";
 
 interface PurchaseSummaryProps {
+  bundle: Bundle;
   tiers: Tier[];
   currentTier: Tier;
   totalAmount: number;
@@ -24,6 +26,7 @@ interface PurchaseSummaryProps {
 }
 
 export function PurchaseSummary({
+  bundle,
   tiers,
   totalAmount,
   currentTier,
@@ -37,30 +40,6 @@ export function PurchaseSummary({
   const minimumPrice = tiers[0].price;
   const charityAmount = Math.round(totalAmount * (charityPercentage / 100));
   const publisherAmount = totalAmount - charityAmount;
-
-  const checkout = async () => {
-    try {
-      const response = await fetch(
-        `https://localhost:7100/api/publisher/checkout/create-session`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to create checkout session");
-      }
-
-      const responseJson = await response.json();
-      window.open(responseJson.url, "_blank");
-    } catch (error) {
-      console.error("Checkout error:", error);
-      alert("Something went wrong while starting checkout.");
-    }
-  };
 
   return (
     <div className="lg:sticky lg:top-20 lg:h-fit space-y-4 w-[350px] animate-fade-up">
@@ -202,13 +181,12 @@ export function PurchaseSummary({
             <span>${totalAmount}</span>
           </div>
 
-          <Button
-            onClick={checkout}
-            className="w-full bg-primary text-white hover:bg-primary/90 shadow-xs hover:shadow-xl hover:shadow-primary/30 dark:hover:shadow-primary/40 transition-all duration-300 h-14 text-lg font-medium px-8 py-4 rounded-xl ring-1 ring-primary/50 hover:ring-primary hover:scale-[1.02]"
-          >
-            <ShoppingCart className="mr-2 h-5 w-5" />
-            Add to Cart
-          </Button>
+          <AddToCartButton
+            bundleId={bundle.id}
+            selectedTier={currentTier.id}
+            totalAmount={totalAmount}
+          />
+
           <p className="text-xs text-center text-muted-foreground mt-2">
             Your bundle will be added to the cart. You can complete checkout
             later.
