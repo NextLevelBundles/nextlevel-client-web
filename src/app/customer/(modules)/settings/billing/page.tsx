@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { getIdTokenFromLocalStorage } from "@/app/(shared)/contexts/id-token/id-token-servie";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
@@ -29,22 +28,8 @@ import {
 } from "@/shared/components/ui/card";
 import { Loader2, CreditCardIcon, SaveIcon } from "lucide-react";
 import { toast } from "sonner";
-
-interface BillingAddress {
-  addressLine1: string;
-  addressLine2: string;
-  locality: string;
-  state: string;
-  postalCode: string;
-  country: string;
-  countryCode: string;
-}
-
-interface Country {
-  id: string;
-  name: string;
-  flag: string;
-}
+import { userApi, ClientApiError } from "@/lib/api";
+import type { BillingAddress, Country } from "@/lib/api/types";
 
 export default function BillingAddressPage() {
   const { data: session } = useSession();
@@ -63,55 +48,28 @@ export default function BillingAddressPage() {
   });
   const [errors, setErrors] = useState<Partial<BillingAddress>>({});
 
-  // Helper function to get auth headers (similar to client-api.ts)
-  const getAuthHeaders = (): HeadersInit => {
-    const idToken = getIdTokenFromLocalStorage();
-
-    const headers: HeadersInit = {
-      "Content-Type": "application/json",
-    };
-
-    if (idToken) {
-      headers["Authorization"] = `Bearer ${idToken}`;
-    }
-
-    return headers;
-  };
-
   // Load existing billing address and countries on component mount
   useEffect(() => {
     const loadData = async () => {
       try {
-        const headers = getAuthHeaders();
+        // Load countries and customer data
+        const [countriesData, customerData] = await Promise.all([
+          userApi.getCountries(),
+          userApi.getCustomer(),
+        ]);
 
-        // Load countries
-        const countriesResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/common/countries`,
-          {
-            headers,
-          }
-        );
-        if (countriesResponse.ok) {
-          const countriesData = await countriesResponse.json();
-          setCountries(countriesData);
-        }
+        setCountries(countriesData);
 
-        // Load customer data including billing address
-        const customerResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/customer`,
-          {
-            headers,
-          }
-        );
-
-        if (customerResponse.ok) {
-          const customerData = await customerResponse.json();
-          if (customerData.billingAddress) {
-            setFormData(customerData.billingAddress);
-          }
+        if (customerData.billingAddress) {
+          setFormData(customerData.billingAddress);
         }
       } catch (error) {
         console.error("Error loading data:", error);
+        if (error instanceof ClientApiError) {
+          toast.error(`Failed to load data: ${error.message}`);
+        } else {
+          toast.error("Failed to load data. Please try again.");
+        }
       } finally {
         setIsLoading(false);
       }
@@ -151,37 +109,22 @@ export default function BillingAddressPage() {
     e.preventDefault();
 
     if (!validateForm()) {
+      toast.error("Please fix the validation errors before submitting");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const headers = getAuthHeaders();
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/customer/billing-address`,
-        {
-          method: "PUT",
-          headers,
-          body: JSON.stringify(formData),
-        }
-      );
-
-      if (response.ok) {
-        toast.success("Billing address updated successfully");
-      } else {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.message || "Failed to update billing address"
-        );
-      }
+      await userApi.updateBillingAddress(formData);
+      toast.success("Billing address updated successfully");
     } catch (error) {
       console.error("Error updating billing address:", error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to update billing address"
-      );
+      if (error instanceof ClientApiError) {
+        toast.error(`Failed to update billing address: ${error.message}`);
+      } else {
+        toast.error("Failed to update billing address. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
