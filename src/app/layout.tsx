@@ -9,8 +9,7 @@ import { auth } from "@/auth";
 import { ThemeProvider } from "./(shared)/components/theme-provider";
 import { IdTokenProvider } from "./(shared)/contexts/id-token/id-token-provider";
 import SessionRefresh from "./(shared)/providers/session-refresh";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "./(shared)/providers/query-client";
+import { QueryClientProviderWrapper } from "./(shared)/providers/query-client";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -48,9 +47,9 @@ export default async function RootLayout({
           <SessionProvider session={session} refetchOnWindowFocus={false}>
             <SessionRefresh />
             <IdTokenProvider>
-              <QueryClientProvider client={queryClient}>
+              <QueryClientProviderWrapper>
                 {children}
-              </QueryClientProvider>
+              </QueryClientProviderWrapper>
             </IdTokenProvider>
           </SessionProvider>
         </ThemeProvider>
