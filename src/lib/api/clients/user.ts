@@ -1,5 +1,6 @@
 import { ClientApi } from "../client";
-import { Customer, BillingAddress, Country } from "../types";
+import { Customer, BillingAddress } from "../types/user";
+import { Country } from "../types/common";
 
 export class UserApi {
   private client: ClientApi;

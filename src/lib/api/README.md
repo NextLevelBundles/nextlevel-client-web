@@ -6,13 +6,19 @@ This folder contains the clean architecture implementation for API calls in the 
 
 ```
 src/lib/api/
-├── client.ts           # Generic ClientApi class with HTTP methods
+├── client.ts              # Generic ClientApi class with HTTP methods
 ├── types/
-│   └── index.ts       # TypeScript interfaces and types
+│   ├── index.ts          # Re-exports all types (backward compatibility)
+│   ├── cart/
+│   │   └── index.ts      # Cart-specific types
+│   ├── user/
+│   │   └── index.ts      # User-specific types
+│   └── common/
+│       └── index.ts      # Shared/common types
 ├── clients/
-│   ├── cart.ts        # Cart-specific API methods
-│   └── user.ts        # User-specific API methods
-└── index.ts           # Main exports and API client instances
+│   ├── cart.ts           # Cart-specific API methods
+│   └── user.ts           # User-specific API methods
+└── index.ts              # Main exports and API client instances
 ```
 
 ## Usage
@@ -57,6 +63,24 @@ import { ClientApi, UserApi } from "@/lib/api";
 // Create a custom client instance
 const customClient = new ClientApi("https://api.example.com");
 const customUserApi = new UserApi(customClient);
+```
+
+### Type Imports
+
+You can import types in several ways:
+
+```typescript
+// Import all types (backward compatibility)
+import { Cart, Customer, Country } from "@/lib/api";
+
+// Import specific type modules for better organization
+import { CartTypes, UserTypes, CommonTypes } from "@/lib/api";
+const cart: CartTypes.Cart = await cartApi.getCart();
+
+// Import directly from specific type modules
+import { Cart } from "@/lib/api/types/cart";
+import { Customer } from "@/lib/api/types/user";
+import { Country } from "@/lib/api/types/common";
 ```
 
 ## Features

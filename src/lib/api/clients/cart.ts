@@ -1,5 +1,5 @@
 import { ClientApi } from "../client";
-import { Cart, AddToCartRequest } from "../types";
+import { Cart, AddToCartRequest } from "../types/cart";
 
 export class CartApi {
   private client: ClientApi;
