@@ -7,8 +7,8 @@ import { BundleProgress } from "./bundle-progress";
 import { GameGrid } from "./game-grid";
 import { CharityHighlight } from "./charity-highlight";
 import { PurchaseSummary } from "./purchase-summary";
-import { MobilePurchaseCTA } from "./mobile-purchase-cta";
 import { Bundle } from "@/app/(shared)/types/bundle";
+import { AddToCartButton } from "../cart/add-to-cart-button";
 
 export function BundleDetail({ bundle }: { bundle: Bundle }) {
   const [totalAmount, setTotalAmount] = useState(bundle.minPrice);
@@ -30,12 +30,10 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
       allProducts.filter((product) => product.bundleTierId == tier.id)
     );
 
-  const unlockedProductsValue = tiers
-    .slice(0, currentTierIndex)
-    .flatMap((tier) =>
-      bundle.products.filter((product) => product.bundleTierId === tier.id)
-    )
-    .reduce((sum, game) => sum + game.price, 0);
+  const unlockedProductsValue = unlockedProducts.reduce(
+    (sum, game) => sum + game.price,
+    0
+  );
 
   return (
     <TooltipProvider>
@@ -85,9 +83,16 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
             )}
           </div>
 
-          <div className="lg:hidden">
-            <MobilePurchaseCTA totalAmount={totalAmount} />
-          </div>
+          {/* <div className="lg:hidden">
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-lg border-t border-border z-50">
+              <AddToCartButton
+                bundleId={bundle.id}
+                selectedTierId={currentTier?.id}
+                totalAmount={totalAmount}
+                charityPercentage={0}
+              />
+            </div>
+          </div> */}
         </div>
       </div>
     </TooltipProvider>

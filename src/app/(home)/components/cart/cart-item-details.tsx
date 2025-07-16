@@ -13,6 +13,7 @@ import { ScrollArea } from "@/app/(shared)/components/ui/scroll-area";
 import { CartItem } from "@/lib/client-api";
 import { ExternalLink } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 
 interface CartItemDetailsProps {
@@ -51,8 +52,8 @@ export function CartItemDetails({ item }: CartItemDetailsProps) {
           <div className="flex items-center gap-2">
             <Badge variant="secondary">{item.snapshotTierTitle}</Badge>
             <Badge variant="outline">{item.snapshotPlatform}</Badge>
-            <span className="text-sm text-muted-foreground">
-              ${item.snapshotTierPrice?.toFixed(2)}
+            <span className="text-sm text-muted-foreground ml-auto">
+              ${item.price?.toFixed(2)}
             </span>
           </div>
 
@@ -60,7 +61,7 @@ export function CartItemDetails({ item }: CartItemDetailsProps) {
             <h4 className="font-semibold mb-3">
               Included Games ({item.snapshotProducts.length})
             </h4>
-            <ScrollArea className="h-64">
+            <ScrollArea className="h-96">
               <div className="grid gap-3">
                 {item.snapshotProducts.map((product) => (
                   <div
@@ -82,34 +83,18 @@ export function CartItemDetails({ item }: CartItemDetailsProps) {
                         </div>
                       )}
                     </div>
-                    <Button variant="ghost" size="sm">
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
+                    <Link
+                      href={`https://store.steampowered.com/app/${product.steamGameInfo?.steamAppId ?? ""}`}
+                      target="_blank"
+                    >
+                      <Button variant="ghost" size="sm">
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                    </Link>
                   </div>
                 ))}
               </div>
             </ScrollArea>
-          </div>
-
-          <div className="pt-4 border-t">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-muted-foreground">Bundle ID:</span>
-                <div className="font-mono">{item.bundleId}</div>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Listing ID:</span>
-                <div className="font-mono">{item.listingId}</div>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Quantity:</span>
-                <div>{item.quantity}</div>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Price per item:</span>
-                <div>${item.price.toFixed(2)}</div>
-              </div>
-            </div>
           </div>
         </div>
       </DialogContent>

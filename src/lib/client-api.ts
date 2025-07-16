@@ -7,8 +7,9 @@ export interface CartItem {
   type: "Listing" | "Bundle";
   listingId?: string;
   bundleId?: string;
-  selectedTierId?: string;
+  bundleTierId?: string;
   quantity: number;
+  charityPercentage: number;
   price: number;
   snapshotTitle?: string;
   snapshotImageUrl?: string;
@@ -20,6 +21,7 @@ export interface CartItem {
     title: string;
     coverImageUrl: string;
     steamGameInfo?: {
+      steamAppId?: number;
       packageId: string;
       steamKeyId: string;
     };
@@ -36,8 +38,8 @@ export interface Cart {
 
 export interface AddToCartRequest {
   bundleId: string;
-  selectedTierId: string;
-  quantity: number;
+  tierId: string;
+  charityPercentage: number;
   price: number;
 }
 
@@ -83,14 +85,11 @@ class ClientApi {
   async addToCart(item: AddToCartRequest): Promise<Cart> {
     try {
       const headers = await this.getAuthHeaders();
-      const response = await fetch(
-        `${API_BASE_URL}/customer/cart/add-bundle/${item.bundleId}/tier/${item.selectedTierId}`,
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify(item),
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/customer/cart/add-bundle`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(item),
+      });
 
       if (!response.ok) {
         throw new Error(`Failed to add to cart: ${response.statusText}`);

@@ -28,8 +28,6 @@ export function CartDrawer() {
     // refreshCart,
   } = useCart();
 
-  console.log("CartDrawer rendered with cart:", cart);
-
   // Refresh cart when drawer opens to ensure fresh data
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);

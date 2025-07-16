@@ -4,13 +4,7 @@ import { useState } from "react";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
-import {
-  Stamp as Steam,
-  Gift,
-  DollarSign,
-  ShoppingCart,
-  Heart,
-} from "lucide-react";
+import { Stamp as Steam, Gift, DollarSign, Heart } from "lucide-react";
 import { Slider } from "@/shared/components/ui/slider";
 import { cn } from "@/shared/utils/tailwind";
 import { Bundle, Tier } from "@/app/(shared)/types/bundle";
@@ -42,7 +36,7 @@ export function PurchaseSummary({
   const publisherAmount = totalAmount - charityAmount;
 
   return (
-    <div className="lg:sticky lg:top-20 lg:h-fit space-y-4 w-[350px] animate-fade-up">
+    <div className="lg:sticky lg:top-20 lg:h-fit space-y-4 lg:w-[350px] w-full animate-fade-up">
       <Card className="p-6 bg-white dark:bg-card/70 backdrop-blur-xs border border-gray-100 dark:border-border shadow-xs hover:shadow-md transition-all duration-300 rounded-xl">
         <h3 className="font-rajdhani text-xl font-bold mb-4">Bundle Summary</h3>
 
@@ -183,8 +177,9 @@ export function PurchaseSummary({
 
           <AddToCartButton
             bundleId={bundle.id}
-            selectedTier={currentTier.id}
+            selectedTierId={currentTier.id}
             totalAmount={totalAmount}
+            charityPercentage={charityPercentage}
           />
 
           <p className="text-xs text-center text-muted-foreground mt-2">

@@ -9,16 +9,18 @@ import { useState } from "react";
 
 interface AddToCartButtonProps {
   bundleId: string;
-  selectedTier: string;
+  selectedTierId?: string;
   totalAmount: number;
+  charityPercentage: number;
   className?: string;
   children?: React.ReactNode;
 }
 
 export function AddToCartButton({
   bundleId,
-  selectedTier,
+  selectedTierId,
   totalAmount,
+  charityPercentage,
   className,
   children,
 }: AddToCartButtonProps) {
@@ -31,9 +33,9 @@ export function AddToCartButton({
     try {
       const cartItem: AddToCartRequest = {
         bundleId,
-        selectedTierId: selectedTier,
-        quantity: 1,
+        tierId: selectedTierId!,
         price: totalAmount,
+        charityPercentage: charityPercentage,
       };
 
       await addToCart(cartItem);
@@ -46,7 +48,8 @@ export function AddToCartButton({
     }
   };
 
-  const isDisabled = isLoading || isAdding || totalAmount <= 0;
+  const isDisabled =
+    isLoading || isAdding || totalAmount <= 0 || !selectedTierId;
 
   return (
     <Button
