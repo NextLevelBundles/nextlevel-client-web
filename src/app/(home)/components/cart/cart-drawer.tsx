@@ -130,10 +130,10 @@ export function CartDrawer() {
                 )}
 
               <div className="space-y-2">
-                <div className="flex justify-between text-sm">
+                {/* <div className="flex justify-between text-sm">
                   <span>Subtotal ({totalItems} items)</span>
                   <span>${totalPrice.toFixed(2)}</span>
-                </div>
+                </div> */}
                 <Separator />
                 <div className="flex justify-between font-semibold">
                   <span>Total</span>

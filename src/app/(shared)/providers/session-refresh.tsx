@@ -10,10 +10,11 @@ export default function SessionRefresh() {
   useEffect(() => {
     const interval = setInterval(
       () => {
-        const expires_at = (session as any).expires_at;
+        const expires_at = (session as any)?.expires_at;
 
         const shouldRefreshToken =
-          expires_at && Date.now() >= expires_at * 1000 - 10 * 60 * 1000; // Refresh if token is expiring in less than 10 minutes
+          !expires_at ||
+          (expires_at && Date.now() >= expires_at * 1000 - 10 * 60 * 1000); // Refresh if token is expiring in less than 10 minutes
 
         if (shouldRefreshToken) {
           console.log("Refreshing session...");
