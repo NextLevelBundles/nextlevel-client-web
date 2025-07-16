@@ -14,6 +14,7 @@ export interface CartContextType extends CartState {
   refreshCart: () => Promise<void>;
   getTotalItems: () => number;
   getTotalPrice: () => number;
+  reserveCart: () => Promise<{ url: string }>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);

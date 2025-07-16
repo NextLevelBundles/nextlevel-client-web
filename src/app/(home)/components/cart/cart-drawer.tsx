@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Trash2, ShoppingBag, CreditCard } from "lucide-react";
+import { Trash2, ShoppingBag, CreditCard, Loader2 } from "lucide-react";
 import { CartButton } from "./cart-button";
 import { CartItemDetails } from "./cart-item-details";
 import { useCart } from "@/app/(shared)/contexts/cart/cart-provider";
@@ -19,12 +19,14 @@ import Image from "next/image";
 
 export function CartDrawer() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
   const {
     cart,
     removeFromCart,
     getTotalItems,
     getTotalPrice,
     isLoading,
+    reserveCart,
     // refreshCart,
   } = useCart();
 
@@ -33,6 +35,20 @@ export function CartDrawer() {
     setIsOpen(open);
     if (open && cart) {
       // refreshCart();
+    }
+  };
+
+  const handleCheckout = async () => {
+    setIsCheckoutLoading(true);
+    try {
+      const response = await reserveCart();
+      // Redirect to Stripe checkout
+      window.location.href = response.url;
+    } catch (error) {
+      console.error("Checkout failed:", error);
+      // Toast error is handled by the global ClientApi error handler
+    } finally {
+      setIsCheckoutLoading(false);
     }
   };
 
@@ -144,11 +160,25 @@ export function CartDrawer() {
               <Button
                 className="w-full bg-primary text-white hover:bg-primary/90 shadow-lg hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
                 size="lg"
-                disabled={isLoading || totalItems === 0}
+                disabled={isLoading || totalItems === 0 || isCheckoutLoading}
+                onClick={handleCheckout}
               >
-                <CreditCard className="mr-2 h-5 w-5" />
-                Proceed to Checkout
+                {isCheckoutLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="mr-2 h-5 w-5" />
+                    Proceed to Checkout
+                  </>
+                )}
               </Button>
+              <p className="text-xs text-center text-muted-foreground mt-2">
+                Steam keys are reserved for 10 minutes once you click
+                &quot;Proceed to Checkout&quot;.
+              </p>
             </div>
           </div>
         )}

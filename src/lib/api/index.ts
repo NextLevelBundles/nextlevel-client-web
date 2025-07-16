@@ -1,4 +1,4 @@
-import { ClientApi } from "./client-appi";
+import { ClientApi } from "./client-api";
 import { CartApi } from "./clients/cart";
 import { UserApi } from "./clients/user";
 

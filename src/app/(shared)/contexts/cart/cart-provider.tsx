@@ -118,7 +118,7 @@ export default function CartProvider({
       toast.success("Item added to cart!");
     } catch (error) {
       dispatch({ type: "SET_ERROR", payload: "Failed to add item to cart" });
-      toast.error("Failed to add item to cart");
+      // Error toast is handled by the global ClientApi error handler
       console.error("Error adding to cart:", error);
     } finally {
       dispatch({ type: "SET_LOADING", payload: false });
@@ -136,7 +136,7 @@ export default function CartProvider({
         type: "SET_ERROR",
         payload: "Failed to remove item from cart",
       });
-      toast.error("Failed to remove item from cart");
+      // Error toast is handled by the global ClientApi error handler
       console.error("Error removing from cart:", error);
     } finally {
       dispatch({ type: "SET_LOADING", payload: false });
@@ -151,8 +151,23 @@ export default function CartProvider({
       toast.success("Cart cleared");
     } catch (error) {
       dispatch({ type: "SET_ERROR", payload: "Failed to clear cart" });
-      toast.error("Failed to clear cart");
+      // Error toast is handled by the global ClientApi error handler
       console.error("Error clearing cart:", error);
+    } finally {
+      dispatch({ type: "SET_LOADING", payload: false });
+    }
+  };
+
+  const reserveCart = async (): Promise<{ url: string }> => {
+    dispatch({ type: "SET_LOADING", payload: true });
+    try {
+      const response = await cartApi.reserveCart();
+      return response;
+    } catch (error) {
+      dispatch({ type: "SET_ERROR", payload: "Failed to reserve cart" });
+      // Error toast is handled by the global ClientApi error handler
+      console.error("Error reserving cart:", error);
+      throw error;
     } finally {
       dispatch({ type: "SET_LOADING", payload: false });
     }
@@ -189,6 +204,7 @@ export default function CartProvider({
     refreshCart,
     getTotalItems,
     getTotalPrice,
+    reserveCart,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

@@ -1,4 +1,5 @@
 import { getIdTokenFromLocalStorage } from "@/app/(shared)/contexts/id-token/id-token-servie";
+import { toast } from "sonner";
 
 export interface ApiResponse<T = unknown> {
   data: T;
@@ -10,6 +11,12 @@ export interface ApiError {
   message: string;
   status: number;
   statusText: string;
+}
+
+export interface ApiErrorResponse {
+  errors: string[];
+  statusCode: number;
+  message: string;
 }
 
 export class ClientApiError extends Error {
@@ -55,9 +62,27 @@ export class ClientApi {
 
       try {
         const errorData = await response.json();
-        errorMessage = errorData.message || errorMessage;
+
+        // Check if it matches our expected API error format
+        if (
+          errorData.errors &&
+          Array.isArray(errorData.errors) &&
+          errorData.errors.length > 0
+        ) {
+          // Show toast with the first error message
+          toast.error(errorData.errors[0]);
+          errorMessage = errorData.errors[0];
+        } else if (errorData.message) {
+          // Fallback to message field if available
+          toast.error(errorData.message);
+          errorMessage = errorData.message;
+        } else {
+          // Default error message
+          toast.error("An unexpected error occurred. Please try again.");
+        }
       } catch {
-        // If we can't parse the error response, use the default message
+        // If we can't parse the error response, show default toast
+        toast.error("An unexpected error occurred. Please try again.");
       }
 
       throw new ClientApiError(
@@ -198,3 +223,6 @@ export class ClientApi {
     });
   }
 }
+
+// Default instance
+export const apiClient = new ClientApi();

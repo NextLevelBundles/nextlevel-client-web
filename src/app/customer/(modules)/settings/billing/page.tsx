@@ -32,7 +32,7 @@ import {
   useCustomer,
   useUpdateBillingAddress,
 } from "@/hooks/queries";
-import { ClientApiError } from "@/lib/api/client-appi";
+import { ClientApiError } from "@/lib/api/client-api";
 import { BillingAddress } from "@/lib/api/types/user";
 import { Country } from "@/lib/api/types/common";
 

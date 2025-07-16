@@ -1,4 +1,4 @@
-import { ClientApi } from "../client-appi";
+import { ClientApi } from "../client-api";
 import { Cart, AddToCartRequest } from "../types/cart";
 
 export class CartApi {
@@ -35,5 +35,11 @@ export class CartApi {
 
   async clearCart(): Promise<void> {
     await this.client.delete<void>("/customer/cart/clear");
+  }
+
+  async reserveCart(): Promise<{ url: string }> {
+    return await this.client.post<{ url: string }>(
+      "/customer/checkout/reserve"
+    );
   }
 }
