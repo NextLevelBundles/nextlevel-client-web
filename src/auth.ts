@@ -20,22 +20,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   callbacks: {
     async jwt(jwtData) {
-      // console.log("JWT Callback Data:", jwtData);
       const { token, user, account, session, trigger } = jwtData;
       let newJwtData = { ...token, ...user, ...account, ...session };
 
       const shouldRefreshToken =
         token.expires_at &&
-        Date.now() >= token.expires_at * 1000 - 4 * 60 * 1000; // Refresh if token is expiring in less than 4 minutes
+        Date.now() >= token.expires_at * 1000 - 10 * 60 * 1000; // Refresh if token is expiring in less than 10 minutes
 
-      console.log(
-        "JWT Callback - shouldRefreshToken:",
-        shouldRefreshToken,
-        Date.now(),
-        token.expires_at! * 1000
-      );
       if (trigger == "update" || shouldRefreshToken) {
-        console.log("Refreshing Cognito token...");
         const cognitoTokensResponse = await refreshCognitoToken(
           token.refresh_token ?? ""
         );
@@ -115,13 +107,6 @@ export async function refreshCognitoToken(
 
   return tokens;
 }
-
-// export interface CognitoIdTokenClaims {
-//   "custom:userId"?: string;
-//   "custom:publisherId"?: string;
-//   "custom:customerId"?: string;
-//   "cognito:groups"?: string[];
-// }
 
 export function decodeIdTokenClaims(idToken: string): Record<string, any> {
   const parts = idToken.split(".");

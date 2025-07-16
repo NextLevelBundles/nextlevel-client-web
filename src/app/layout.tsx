@@ -8,6 +8,7 @@ import { SessionProvider } from "next-auth/react";
 import { auth } from "@/auth";
 import { ThemeProvider } from "./(shared)/components/theme-provider";
 import { IdTokenProvider } from "./(shared)/contexts/id-token/id-token-provider";
+import SessionRefresh from "./(shared)/providers/session-refresh";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -35,7 +36,6 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
-  console.log("Environment:", process.env);
 
   return (
     <html lang="en">
@@ -44,6 +44,7 @@ export default async function RootLayout({
           <Toaster position="bottom-right" expand={true} richColors />
 
           <SessionProvider session={session} refetchOnWindowFocus={false}>
+            <SessionRefresh />
             <IdTokenProvider>{children}</IdTokenProvider>
           </SessionProvider>
         </ThemeProvider>

@@ -95,7 +95,6 @@ export default function CartProvider({
   const { status } = useSession();
 
   const refreshCart = useCallback(async () => {
-    console.log("Refreshing cart, current status:", status);
     if (status !== "authenticated") return;
 
     dispatch({ type: "SET_LOADING", payload: true });

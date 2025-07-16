@@ -45,8 +45,6 @@ export async function GET(req: NextRequest) {
 function authenticateSteam(req: string): Promise<string> {
   return new Promise((resolve, reject) => {
     relyingParty.verifyAssertion(req, (err, result) => {
-      console.log("Steam authentication result:", result);
-
       if (err || !result?.authenticated) {
         console.log("Steam authentication error:", err);
         return reject("Authentication failed");

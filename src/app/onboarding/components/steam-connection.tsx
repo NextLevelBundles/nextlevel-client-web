@@ -63,13 +63,10 @@ export default function SteamConnection({
 
   useEffect(() => {
     const handler = (event: MessageEvent) => {
-      console.log("event.origin:", event.origin);
-      console.log("window.location.origin:", window.location.origin);
-
       if (event.origin !== window.location.origin) return;
 
       const { type, steamId } = event.data || {};
-      console.log("Received message from Steam login:", event);
+
       if (type === "STEAM_CONNECT_SUCCESS") {
         onSteamInfoReceived({
           steamId: steamId,

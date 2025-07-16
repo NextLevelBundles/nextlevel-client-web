@@ -16,7 +16,6 @@ const relyingParty = new openid.RelyingParty(
 // GET api/steam/init
 export async function GET() {
   try {
-    console.log("Starting Steam authentication...", returnUrl);
     const steamOpenIdUrl = await authenticateSteam();
     return NextResponse.redirect(steamOpenIdUrl);
   } catch (error) {
