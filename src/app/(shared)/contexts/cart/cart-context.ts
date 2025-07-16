@@ -1,4 +1,4 @@
-import { AddToCartRequest, Cart } from "@/lib/client-api";
+import { AddToCartRequest, Cart } from "@/lib/api/types/cart";
 import { createContext } from "react";
 
 export interface CartState {

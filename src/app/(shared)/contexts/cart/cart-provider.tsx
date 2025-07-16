@@ -1,6 +1,5 @@
 "use client";
 
-import { AddToCartRequest, apiClient, Cart, CartItem } from "@/lib/client-api";
 import { useSession } from "next-auth/react";
 import {
   useContext,
@@ -11,6 +10,8 @@ import {
 } from "react";
 import { toast } from "sonner";
 import CartContext, { CartContextType, CartState } from "./cart-context";
+import { AddToCartRequest, Cart, CartItem } from "@/lib/api/types/cart";
+import { cartApi } from "@/lib/api";
 
 interface CartProviderProps {
   children: ReactNode;
@@ -99,7 +100,7 @@ export default function CartProvider({
 
     dispatch({ type: "SET_LOADING", payload: true });
     try {
-      const cart = await apiClient.getCart();
+      const cart = await cartApi.getCart();
       dispatch({ type: "SET_CART", payload: cart });
     } catch (error) {
       dispatch({ type: "SET_ERROR", payload: "Failed to load cart" });
@@ -112,7 +113,7 @@ export default function CartProvider({
   const addToCart = async (item: AddToCartRequest) => {
     dispatch({ type: "SET_LOADING", payload: true });
     try {
-      const updatedCart = await apiClient.addToCart(item);
+      const updatedCart = await cartApi.addToCart(item);
       dispatch({ type: "SET_CART", payload: updatedCart });
       toast.success("Item added to cart!");
     } catch (error) {
@@ -127,7 +128,7 @@ export default function CartProvider({
   const removeFromCart = async (itemId: string) => {
     dispatch({ type: "SET_LOADING", payload: true });
     try {
-      const updatedCart = await apiClient.removeFromCart(itemId);
+      const updatedCart = await cartApi.removeFromCart(itemId);
       dispatch({ type: "SET_CART", payload: updatedCart });
       toast.success("Item removed from cart");
     } catch (error) {
@@ -145,7 +146,7 @@ export default function CartProvider({
   const clearCart = async () => {
     dispatch({ type: "SET_LOADING", payload: true });
     try {
-      await apiClient.clearCart();
+      await cartApi.clearCart();
       dispatch({ type: "CLEAR_CART" });
       toast.success("Cart cleared");
     } catch (error) {

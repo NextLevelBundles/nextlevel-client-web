@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { Cart } from "./client-api";
+import { Cart } from "./api/types/cart";
 
 const API_BASE_URL = process.env.API_URL ?? "";
 

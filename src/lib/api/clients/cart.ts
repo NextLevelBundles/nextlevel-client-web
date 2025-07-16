@@ -1,4 +1,4 @@
-import { ClientApi } from "../client";
+import { ClientApi } from "../client-appi";
 import { Cart, AddToCartRequest } from "../types/cart";
 
 export class CartApi {

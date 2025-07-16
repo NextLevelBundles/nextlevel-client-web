@@ -198,6 +198,3 @@ export class ClientApi {
     });
   }
 }
-
-// Default instance
-export const apiClient = new ClientApi();

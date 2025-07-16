@@ -3,7 +3,7 @@
 import { Button } from "@/app/(shared)/components/ui/button";
 import { useCart } from "@/app/(shared)/contexts/cart/cart-provider";
 import { cn } from "@/app/(shared)/utils/tailwind";
-import { AddToCartRequest } from "@/lib/client-api";
+import { AddToCartRequest } from "@/lib/api/types/cart";
 import { Check, Loader2, ShoppingCart } from "lucide-react";
 import { useState } from "react";
 

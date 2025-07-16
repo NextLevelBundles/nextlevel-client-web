@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
@@ -28,14 +27,16 @@ import {
 } from "@/shared/components/ui/card";
 import { Loader2, CreditCardIcon, SaveIcon } from "lucide-react";
 import { toast } from "sonner";
-import { userApi, ClientApiError } from "@/lib/api";
-import type { BillingAddress, Country } from "@/lib/api/types";
+import {
+  useCountries,
+  useCustomer,
+  useUpdateBillingAddress,
+} from "@/hooks/queries";
+import { ClientApiError } from "@/lib/api/client-appi";
+import { BillingAddress } from "@/lib/api/types/user";
+import { Country } from "@/lib/api/types/common";
 
 export default function BillingAddressPage() {
-  const { data: session } = useSession();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [countries, setCountries] = useState<Country[]>([]);
   const [countryPopoverOpen, setCountryPopoverOpen] = useState(false);
   const [formData, setFormData] = useState<BillingAddress>({
     addressLine1: "",
@@ -48,35 +49,53 @@ export default function BillingAddressPage() {
   });
   const [errors, setErrors] = useState<Partial<BillingAddress>>({});
 
-  // Load existing billing address and countries on component mount
+  // Use TanStack Query hooks
+  const {
+    data: countries = [],
+    isLoading: isLoadingCountries,
+    error: countriesError,
+  } = useCountries();
+
+  const {
+    data: customer,
+    isLoading: isLoadingCustomer,
+    error: customerError,
+  } = useCustomer();
+
+  const updateBillingAddressMutation = useUpdateBillingAddress();
+
+  // Initialize form data when customer data is loaded
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Load countries and customer data
-        const [countriesData, customerData] = await Promise.all([
-          userApi.getCountries(),
-          userApi.getCustomer(),
-        ]);
+    if (customer?.billingAddress) {
+      setFormData(customer.billingAddress);
+    }
+  }, [customer]);
 
-        setCountries(countriesData);
+  // Handle loading states
+  const isLoading = isLoadingCountries || isLoadingCustomer;
 
-        if (customerData.billingAddress) {
-          setFormData(customerData.billingAddress);
-        }
-      } catch (error) {
-        console.error("Error loading data:", error);
-        if (error instanceof ClientApiError) {
-          toast.error(`Failed to load data: ${error.message}`);
-        } else {
-          toast.error("Failed to load data. Please try again.");
-        }
-      } finally {
-        setIsLoading(false);
+  // Handle errors
+  useEffect(() => {
+    if (countriesError) {
+      console.error("Error loading countries:", countriesError);
+      if (countriesError instanceof ClientApiError) {
+        toast.error(`Failed to load countries: ${countriesError.message}`);
+      } else {
+        toast.error("Failed to load countries. Please try again.");
       }
-    };
+    }
+  }, [countriesError]);
 
-    loadData();
-  }, [session]);
+  useEffect(() => {
+    if (customerError) {
+      console.error("Error loading customer:", customerError);
+      if (customerError instanceof ClientApiError) {
+        toast.error(`Failed to load customer data: ${customerError.message}`);
+      } else {
+        toast.error("Failed to load customer data. Please try again.");
+      }
+    }
+  }, [customerError]);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<BillingAddress> = {};
@@ -113,10 +132,8 @@ export default function BillingAddressPage() {
       return;
     }
 
-    setIsSubmitting(true);
-
     try {
-      await userApi.updateBillingAddress(formData);
+      await updateBillingAddressMutation.mutateAsync(formData);
       toast.success("Billing address updated successfully");
     } catch (error) {
       console.error("Error updating billing address:", error);
@@ -125,8 +142,6 @@ export default function BillingAddressPage() {
       } else {
         toast.error("Failed to update billing address. Please try again.");
       }
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -276,7 +291,7 @@ export default function BillingAddressPage() {
                           <span className="text-lg">
                             {
                               countries.find(
-                                (c) => c.id === formData.countryCode
+                                (c: Country) => c.id === formData.countryCode
                               )?.flag
                             }
                           </span>
@@ -294,7 +309,7 @@ export default function BillingAddressPage() {
                       <CommandList>
                         <CommandEmpty>No country found.</CommandEmpty>
                         <CommandGroup>
-                          {countries.map((country) => (
+                          {countries.map((country: Country) => (
                             <CommandItem
                               key={country.id}
                               value={`${country.name} ${country.flag}`}
@@ -332,10 +347,10 @@ export default function BillingAddressPage() {
             <div className="flex justify-end pt-4 border-t">
               <Button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={updateBillingAddressMutation.isPending}
                 className="bg-primary text-white hover:bg-primary/90"
               >
-                {isSubmitting ? (
+                {updateBillingAddressMutation.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Saving...

@@ -8,7 +8,6 @@ import { GameGrid } from "./game-grid";
 import { CharityHighlight } from "./charity-highlight";
 import { PurchaseSummary } from "./purchase-summary";
 import { Bundle } from "@/app/(shared)/types/bundle";
-import { AddToCartButton } from "../cart/add-to-cart-button";
 
 export function BundleDetail({ bundle }: { bundle: Bundle }) {
   const [totalAmount, setTotalAmount] = useState(bundle.minPrice);

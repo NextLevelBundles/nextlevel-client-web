@@ -1,4 +1,4 @@
-import { ClientApi } from "../client";
+import { ClientApi } from "../client-appi";
 import { Customer, BillingAddress } from "../types/user";
 import { Country } from "../types/common";
 

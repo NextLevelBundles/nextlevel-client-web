@@ -10,7 +10,7 @@ import {
   DialogTrigger,
 } from "@/app/(shared)/components/ui/dialog";
 import { ScrollArea } from "@/app/(shared)/components/ui/scroll-area";
-import { CartItem } from "@/lib/client-api";
+import { CartItem } from "@/lib/api/types/cart";
 import { ExternalLink } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
