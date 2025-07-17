@@ -31,7 +31,7 @@ import {
   useCountries,
   useCustomer,
   useUpdateBillingAddress,
-} from "@/hooks/queries";
+} from "@/hooks/queries/index";
 import { ClientApiError } from "@/lib/api/client-api";
 import { BillingAddress } from "@/lib/api/types/user";
 import { Country } from "@/lib/api/types/common";

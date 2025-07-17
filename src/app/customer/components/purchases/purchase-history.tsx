@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
@@ -8,16 +8,15 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/shared/components/ui/card";
-import { useRouter } from "next/navigation";
+} from "@/app/(shared)/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/components/ui/select";
-import { Input } from "@/shared/components/ui/input";
+} from "@/app/(shared)/components/ui/select";
+import { Input } from "@/app/(shared)/components/ui/input";
 import {
   Table,
   TableBody,
@@ -25,98 +24,139 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/shared/components/ui/table";
-import { Button } from "@/shared/components/ui/button";
-import { Badge } from "@/shared/components/ui/badge";
+} from "@/app/(shared)/components/ui/table";
+import { Button } from "@/app/(shared)/components/ui/button";
 import {
   CalendarIcon,
-  TagIcon,
   SearchIcon,
   PackageIcon,
   XIcon,
-  ExternalLinkIcon,
+  ArrowUpDownIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+  Loader2,
 } from "lucide-react";
+import { usePurchases } from "@/hooks/queries/usePurchases";
+import { PurchaseQueryParams } from "@/lib/api/types/purchase";
+import { BundleProductsPopup } from "./bundle-products-popup";
 
-// Mock data - replace with actual data fetching
-const purchaseHistory = [
-  {
-    id: 1,
-    bundleName: "Indie Gems Bundle",
-    purchaseDate: "2024-03-20",
-    bundleSize: "5 Item Bundle",
-    amountPaid: 25.0,
-    keyStatus: "3 of 5 Keys Claimed",
-    unclaimedKeys: 3,
-  },
-  {
-    id: 2,
-    bundleName: "Strategy Masters Collection",
-    purchaseDate: "2024-03-15",
-    bundleSize: "3 Item Bundle",
-    amountPaid: 12.0,
-    keyStatus: "3 of 3 Keys Claimed",
-    unclaimedKeys: 0,
-  },
-  {
-    id: 3,
-    bundleName: "RPG Essentials Pack",
-    purchaseDate: "2024-03-10",
-    bundleSize: "Entire 8 Item Bundle",
-    amountPaid: 30.0,
-    keyStatus: "6 of 8 Keys Claimed",
-    unclaimedKeys: 2,
-  },
-  {
-    id: 4,
-    bundleName: "Retro Gaming Bundle",
-    purchaseDate: "2024-02-28",
-    bundleSize: "3 Item Bundle",
-    amountPaid: 15.0,
-    keyStatus: "Refunded",
-    unclaimedKeys: 0,
-  },
-];
-
-const years = ["All Years", "2024", "2023", "2022"];
-const keyStatuses = ["All Status", "All Claimed", "Some Unclaimed", "Refunded"];
+const years = ["All Years", "2024", "2025"];
 
 export function PurchaseHistory() {
-  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [selectedYear, setSelectedYear] = useState("All Years");
-  const [selectedStatus, setSelectedStatus] = useState("All Status");
+  const [sortBy, setSortBy] = useState<PurchaseQueryParams["sortBy"]>("Date");
+  const [sortDirection, setSortDirection] =
+    useState<PurchaseQueryParams["sortDirection"]>("Descending");
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Build query params
+  const queryParams: PurchaseQueryParams = {
+    sortBy,
+    sortDirection,
+    ...(selectedYear !== "All Years" && {
+      year: selectedYear as "2024" | "2025",
+    }),
+    ...(debouncedSearchQuery && { searchQuery: debouncedSearchQuery }),
+  };
+
+  const {
+    data: purchases = [],
+    isLoading,
+    isError,
+    error,
+  } = usePurchases(queryParams);
 
   const resetFilters = () => {
     setSearchQuery("");
+    setDebouncedSearchQuery("");
     setSelectedYear("All Years");
-    setSelectedStatus("All Status");
+    setSortBy("Date");
+    setSortDirection("Descending");
   };
 
-  const filteredPurchases = purchaseHistory.filter((purchase) => {
-    const matchesSearch = purchase.bundleName
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesYear =
-      selectedYear === "All Years" ||
-      purchase.purchaseDate.includes(selectedYear);
-    const matchesStatus =
-      selectedStatus === "All Status" || purchase.keyStatus === selectedStatus;
+  // Toggle sort direction
+  const toggleSortDirection = () => {
+    setSortDirection((prev) =>
+      prev === "Ascending" ? "Descending" : "Ascending"
+    );
+  };
 
-    return matchesSearch && matchesYear && matchesStatus;
-  });
-
-  function getStatusBadgeVariant(status: string) {
-    switch (status) {
-      case "3 of 3 Keys Claimed":
-        return "default";
-      case "3 of 5 Keys Claimed":
-      case "6 of 8 Keys Claimed":
-        return "secondary";
-      case "Refunded":
-        return "destructive";
-      default:
-        return "outline";
+  // Handle header click for sorting
+  const handleHeaderClick = (column: PurchaseQueryParams["sortBy"]) => {
+    if (sortBy === column) {
+      // If clicking the same column, toggle direction
+      toggleSortDirection();
+    } else {
+      // If clicking a different column, set new column and default to descending
+      setSortBy(column);
+      setSortDirection("Descending");
     }
+  };
+
+  // Get sort icon for a column
+  const getSortIcon = (column: PurchaseQueryParams["sortBy"]) => {
+    if (sortBy !== column) {
+      return <ArrowUpDownIcon className="h-4 w-4 text-muted-foreground/50" />;
+    }
+    return sortDirection === "Ascending" ? (
+      <ArrowUpIcon className="h-4 w-4 text-primary" />
+    ) : (
+      <ArrowDownIcon className="h-4 w-4 text-primary" />
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <Card className="bg-linear-to-br from-card to-card/95 shadow-md">
+        <CardHeader>
+          <CardTitle>Purchase History</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex min-h-[400px] flex-col items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="mt-4 text-sm text-muted-foreground">
+              Loading purchase history...
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Card className="bg-linear-to-br from-card to-card/95 shadow-md">
+        <CardHeader>
+          <CardTitle>Purchase History</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex min-h-[400px] flex-col items-center justify-center">
+            <PackageIcon className="h-8 w-8 text-muted-foreground" />
+            <h3 className="mb-2 text-xl font-semibold">
+              Error loading purchases
+            </h3>
+            <p className="mb-6 max-w-md text-center text-muted-foreground">
+              {error instanceof Error
+                ? error.message
+                : "Failed to load purchase history. Please try again."}
+            </p>
+            <Button onClick={() => window.location.reload()} className="gap-2">
+              Try Again
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
@@ -148,22 +188,11 @@ export function PurchaseHistory() {
               ))}
             </SelectContent>
           </Select>
-          <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-            <SelectTrigger className="w-[180px] gap-2">
-              <TagIcon className="h-4 w-4" />
-              <SelectValue placeholder="Key Status" />
-            </SelectTrigger>
-            <SelectContent className="bg-card">
-              {keyStatuses.map((status) => (
-                <SelectItem key={status} value={status}>
-                  {status}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
 
-        {purchaseHistory.length === 0 ? (
+        {purchases.length === 0 &&
+        !debouncedSearchQuery &&
+        selectedYear === "All Years" ? (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -183,7 +212,7 @@ export function PurchaseHistory() {
               </Button>
             </Link>
           </motion.div>
-        ) : filteredPurchases.length === 0 ? (
+        ) : purchases.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -194,7 +223,7 @@ export function PurchaseHistory() {
             </div>
             <h3 className="mb-2 text-xl font-semibold">No results found</h3>
             <p className="mb-6 max-w-md text-muted-foreground">
-              We couldn&amp;t find any bundles matching your search criteria.
+              We couldn&apos;t find any bundles matching your search criteria.
               Try adjusting your filters or search term.
             </p>
             <Button variant="outline" onClick={resetFilters} className="gap-2">
@@ -207,16 +236,56 @@ export function PurchaseHistory() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Bundle Name</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Bundle Size</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead
+                    className="cursor-pointer select-none hover:bg-muted/50 transition-colors"
+                    onClick={() => handleHeaderClick("Title")}
+                  >
+                    <div className="flex items-center gap-2">
+                      Bundle Name
+                      {getSortIcon("Title")}
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className="cursor-pointer select-none hover:bg-muted/50 transition-colors"
+                    onClick={() => handleHeaderClick("Date")}
+                  >
+                    <div className="flex items-center gap-2">
+                      Date
+                      {getSortIcon("Date")}
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className="cursor-pointer select-none hover:bg-muted/50 transition-colors"
+                    onClick={() => handleHeaderClick("Quantity")}
+                  >
+                    <div className="flex items-center gap-2">
+                      Items
+                      {getSortIcon("Quantity")}
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className="cursor-pointer select-none hover:bg-muted/50 transition-colors"
+                    onClick={() => handleHeaderClick("Price")}
+                  >
+                    <div className="flex items-center gap-2">
+                      Amount
+                      {getSortIcon("Price")}
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className="cursor-pointer select-none hover:bg-muted/50 transition-colors"
+                    onClick={() => handleHeaderClick("CharityAmount")}
+                  >
+                    <div className="flex items-center gap-2">
+                      Charity
+                      {getSortIcon("CharityAmount")}
+                    </div>
+                  </TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredPurchases.map((purchase, index) => (
+                {purchases.map((purchase, index) => (
                   <motion.tr
                     key={purchase.id}
                     initial={{ opacity: 0, y: 10 }}
@@ -225,32 +294,21 @@ export function PurchaseHistory() {
                     className="transition-colors hover:bg-muted/5"
                   >
                     <TableCell className="font-medium">
-                      {purchase.bundleName}
+                      {purchase.snapshotTitle || "Unknown Bundle"}
                     </TableCell>
                     <TableCell>
-                      {new Date(purchase.purchaseDate).toLocaleDateString()}
+                      {purchase.completedAt
+                        ? new Date(purchase.completedAt).toLocaleDateString()
+                        : "-"}
                     </TableCell>
-                    <TableCell>{purchase.bundleSize}</TableCell>
-                    <TableCell>${purchase.amountPaid.toFixed(2)}</TableCell>
                     <TableCell>
-                      <Badge
-                        variant={getStatusBadgeVariant(purchase.keyStatus)}
-                      >
-                        <motion.span layout>{purchase.keyStatus}</motion.span>
-                      </Badge>
+                      {purchase.quantity}{" "}
+                      {purchase.quantity === 1 ? "item" : "items"}
                     </TableCell>
+                    <TableCell>${purchase.price.toFixed(2)}</TableCell>
+                    <TableCell>${purchase.charityAmount.toFixed(2)}</TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="gap-2"
-                        onClick={() =>
-                          router.push(`/my-bundles/${purchase.id}`)
-                        }
-                      >
-                        <ExternalLinkIcon className="h-4 w-4" />
-                        View Bundle
-                      </Button>
+                      <BundleProductsPopup purchase={purchase} />
                     </TableCell>
                   </motion.tr>
                 ))}
