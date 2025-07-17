@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import dayjs from "dayjs";
 import {
   Card,
   CardContent,
@@ -19,7 +20,7 @@ import {
   CopyIcon,
   GiftIcon,
   SearchIcon,
-  StarIcon,
+  XIcon,
   SparklesIcon,
 } from "lucide-react";
 import {
@@ -30,6 +31,12 @@ import {
 } from "@/shared/components/ui/tooltip";
 import confetti from "canvas-confetti";
 import { GameLevelProgress } from "@/customer/components/game-level/progress";
+import {
+  useSteamKeys,
+  useRevealKey,
+  useViewKey,
+} from "@/hooks/queries/useSteamKeys";
+import { SteamKey, SteamKeyQueryParams } from "@/lib/api/types/steam-key";
 
 // Progress levels and their requirements
 const PROGRESS_LEVELS = [
@@ -39,9 +46,15 @@ const PROGRESS_LEVELS = [
   { level: 4, title: "Steam Legend", required: 25, icon: "👑" },
 ];
 
-type KeyStatus = "All" | "Revealed" | "Unrevealed" | "Gifted" | "Refunded";
+type KeyStatus = "All" | "Assigned" | "Revealed" | "Expired" | "Refunded";
 
-const statusOptions: KeyStatus[] = ["All", "Revealed", "Unrevealed", "Gifted"];
+const statusOptions: KeyStatus[] = [
+  "All",
+  "Assigned",
+  "Revealed",
+  "Expired",
+  "Refunded",
+];
 
 const copyMessages = [
   "🔑 You got it!",
@@ -50,104 +63,74 @@ const copyMessages = [
   "🗝️ Another one in your collection!",
 ];
 
-// Mock data - replace with API call
-const gameKeys = [
-  {
-    id: 1,
-    name: "Stardew Valley",
-    key: "XXXX-YYYY-ZZZZ",
-    platform: "Steam",
-    revealed: true,
-    bundleName: "Indie Gems Bundle",
-    purchaseDate: "2024-03-20",
-    bundleId: 1,
-    status: "Revealed" as KeyStatus,
-  },
-  {
-    id: 2,
-    name: "Hollow Knight",
-    key: null,
-    platform: "Steam",
-    revealed: false,
-    bundleName: "Strategy Masters Collection",
-    purchaseDate: "2024-03-15",
-    bundleId: 2,
-    status: "Unrevealed" as KeyStatus,
-  },
-  {
-    id: 3,
-    name: "Terraria",
-    key: "ABCD-EFGH-IJKL",
-    platform: "Steam",
-    revealed: true,
-    bundleName: "Indie Gems Bundle",
-    purchaseDate: "2024-03-20",
-    bundleId: 1,
-    status: "Revealed" as KeyStatus,
-  },
-  {
-    id: 4,
-    name: "Hades",
-    key: null,
-    platform: "Steam",
-    revealed: false,
-    bundleName: "Roguelike Collection",
-    purchaseDate: "2024-03-18",
-    bundleId: 3,
-    status: "Unrevealed" as KeyStatus,
-  },
-  {
-    id: 5,
-    name: "Dead Cells",
-    key: "MNOP-QRST-UVWX",
-    platform: "Steam",
-    revealed: true,
-    bundleName: "Roguelike Collection",
-    purchaseDate: "2024-03-18",
-    bundleId: 3,
-    status: "Revealed" as KeyStatus,
-  },
-  {
-    id: 6,
-    name: "Celeste",
-    key: "PQRS-TUVW-XYZ1",
-    platform: "Steam",
-    revealed: true,
-    bundleName: "Platformer Classics",
-    purchaseDate: "2024-03-10",
-    bundleId: 4,
-    status: "Gifted" as KeyStatus,
-  },
-  {
-    id: 7,
-    name: "Undertale",
-    key: null,
-    platform: "Steam",
-    revealed: false,
-    bundleName: "Indie Story Bundle",
-    purchaseDate: "2024-03-05",
-    bundleId: 5,
-    status: "Unrevealed" as KeyStatus,
-  },
-  {
-    id: 8,
-    name: "Cuphead",
-    key: "2345-6789-ABCD",
-    platform: "Steam",
-    revealed: true,
-    bundleName: "Challenging Games Pack",
-    purchaseDate: "2024-02-28",
-    bundleId: 6,
-    status: "Refunded" as KeyStatus,
-  },
-];
-
 export default function KeysPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<KeyStatus>("All");
   const [flippingStates, setFlippingStates] = useState<{
-    [key: number]: { isFlipping: boolean; showKey: boolean };
+    [key: string]: {
+      isFlipping: boolean;
+      showKey: boolean;
+      revealedKeyValue?: string;
+    };
   }>({});
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Build query params
+  const queryParams: SteamKeyQueryParams = {
+    ...(debouncedSearchQuery && { searchQuery: debouncedSearchQuery }),
+    ...(statusFilter !== "All" && {
+      status: statusFilter as "Assigned" | "Revealed" | "Expired" | "Refunded",
+    }),
+  };
+
+  // Fetch steam keys
+  const {
+    data: steamKeys = [],
+    isLoading,
+    isError,
+    error,
+  } = useSteamKeys(queryParams);
+
+  // Reveal key mutation
+  const revealKeyMutation = useRevealKey();
+
+  // View key mutation
+  const viewKeyMutation = useViewKey();
+
+  // Calculate user's progress
+  const revealedKeys = steamKeys.filter(
+    (key) => key.status === "Revealed"
+  ).length;
+  const currentLevel = PROGRESS_LEVELS.reduce(
+    (acc, level) => (revealedKeys >= level.required ? level : acc),
+    PROGRESS_LEVELS[0]
+  );
+
+  const nextLevel = PROGRESS_LEVELS[PROGRESS_LEVELS.indexOf(currentLevel) + 1];
+
+  // Helper function to check if a key is newly assigned (within 30 days)
+  const isNewlyAssigned = (key: SteamKey): boolean => {
+    if (key.status !== "Assigned" || !key.assignedAt) return false;
+
+    const assignedDate = dayjs(key.assignedAt);
+    const thirtyDaysAgo = dayjs().subtract(30, "day");
+
+    return assignedDate.isAfter(thirtyDaysAgo);
+  };
+
+  // Helper function to get the key value (supports both new and legacy property names)
+  const getKeyValue = (key: SteamKey): string | null => {
+    return key.steamKeyValue || key.keyValue || null;
+  };
 
   const triggerConfetti = () => {
     confetti({
@@ -158,121 +141,110 @@ export default function KeysPage() {
     });
   };
 
-  // Calculate user's progress
-  const revealedKeys = gameKeys.filter((game) => game.revealed).length;
-  const currentLevel = PROGRESS_LEVELS.reduce(
-    (acc, level) => (revealedKeys >= level.required ? level : acc),
-    PROGRESS_LEVELS[0]
-  );
+  const handleCopyKey = async (keyId: string) => {
+    try {
+      // Call API to get the key value
+      const response = await viewKeyMutation.mutateAsync(keyId);
 
-  const nextLevel = PROGRESS_LEVELS[PROGRESS_LEVELS.indexOf(currentLevel) + 1];
+      if (response.steamKeyValue) {
+        navigator.clipboard.writeText(response.steamKeyValue);
+        const message =
+          copyMessages[Math.floor(Math.random() * copyMessages.length)];
 
-  const handleCopyKey = (key: string) => {
-    navigator.clipboard.writeText(key);
-    const message =
-      copyMessages[Math.floor(Math.random() * copyMessages.length)];
+        // Create a small confetti burst for copy action
+        confetti({
+          particleCount: 20,
+          spread: 30,
+          origin: { y: 0.8 },
+          colors: ["#4F46E5", "#10B981"],
+          gravity: 0.5,
+          scalar: 0.5,
+          ticks: 50,
+        });
 
-    // Create a small confetti burst for copy action
-    confetti({
-      particleCount: 20,
-      spread: 30,
-      origin: { y: 0.8 },
-      colors: ["#4F46E5", "#10B981"],
-      gravity: 0.5,
-      scalar: 0.5,
-      ticks: 50,
-    });
-
-    toast.success(message, {
-      icon: (
-        <motion.div
-          initial={{ rotate: -20 }}
-          animate={{ rotate: 20 }}
-          transition={{ duration: 0.3, repeat: 3, repeatType: "reverse" }}
-        >
-          <SparklesIcon className="h-5 w-5 text-yellow-400" />
-        </motion.div>
-      ),
-      duration: 2000,
-    });
+        toast.success(message, {
+          icon: (
+            <motion.div
+              initial={{ rotate: -20 }}
+              animate={{ rotate: 20 }}
+              transition={{ duration: 0.3, repeat: 3, repeatType: "reverse" }}
+            >
+              <SparklesIcon className="h-5 w-5 text-yellow-400" />
+            </motion.div>
+          ),
+          duration: 2000,
+        });
+      } else {
+        toast.error("Steam key not available");
+      }
+    } catch (error) {
+      console.error("Error viewing key:", error);
+      toast.error("Failed to copy key");
+    }
   };
 
-  const handleRevealKey = async (gameId: number) => {
+  const handleRevealKey = async (keyId: string) => {
     setFlippingStates((prev) => ({
       ...prev,
-      [gameId]: { isFlipping: true, showKey: false },
+      [keyId]: { isFlipping: true, showKey: false },
     }));
 
-    // Wait for half of the flip animation before showing the key
-    await new Promise((resolve) => setTimeout(resolve, 400));
+    try {
+      // Wait for half of the flip animation before showing the key
+      await new Promise((resolve) => setTimeout(resolve, 400));
 
-    setFlippingStates((prev) => ({
-      ...prev,
-      [gameId]: { isFlipping: true, showKey: true },
-    }));
+      // Call the API to reveal the key
+      const revealedKey = await revealKeyMutation.mutateAsync(keyId);
 
-    // Trigger confetti
-    triggerConfetti();
+      setFlippingStates((prev) => ({
+        ...prev,
+        [keyId]: {
+          isFlipping: true,
+          showKey: true,
+          revealedKeyValue: revealedKey.steamKeyValue,
+        },
+      }));
 
-    // Show success toast
-    toast("🎉 New game key unlocked!", {
-      description: "Your collection grows stronger!",
-      icon: (
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 200, damping: 10 }}
-        >
-          <StarIcon className="h-5 w-5 text-yellow-400" />
-        </motion.div>
-      ),
-      style: {
-        background: "linear-gradient(to right, #8B5CF6, #6366F1)",
-        color: "white",
-      },
-      duration: 3000,
-    });
+      // Trigger confetti
+      triggerConfetti();
 
-    // Wait for 2 seconds before flipping back
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Wait for 2 seconds before flipping back
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    setFlippingStates((prev) => ({
-      ...prev,
-      [gameId]: { isFlipping: false, showKey: false },
-    }));
+      setFlippingStates((prev) => ({
+        ...prev,
+        [keyId]: {
+          isFlipping: false,
+          showKey: false,
+          revealedKeyValue: undefined,
+        },
+      }));
+    } catch {
+      // Reset flipping state on error
+      setFlippingStates((prev) => ({
+        ...prev,
+        [keyId]: {
+          isFlipping: false,
+          showKey: false,
+          revealedKeyValue: undefined,
+        },
+      }));
+    }
   };
-
-  const filteredKeys = gameKeys.filter((game) => {
-    const matchesSearch = game.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      statusFilter === "All" ||
-      (statusFilter === "Revealed" && game.revealed) ||
-      (statusFilter === "Unrevealed" && !game.revealed) ||
-      game.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
-  });
 
   const handleActivateOnSteam = (key: string) => {
     // Steam activation URL
     window.open(`steam://open/activateproduct?key=${key}`);
   };
 
-  const handleGiftKey = (gameId: number) => {
+  const handleGiftKey = (keyId: string) => {
     // TODO: Implement gifting functionality
-    toast.info(`Gifting feature coming soon! Game ID: ${gameId}`);
+    toast.info(`Gifting feature coming soon! Key ID: ${keyId}`);
   };
 
   const getStatusCount = (status: KeyStatus) => {
-    if (status === "All") return gameKeys.length;
-    return gameKeys.filter(
-      (game) =>
-        (status === "Revealed" && game.revealed) ||
-        (status === "Unrevealed" && !game.revealed) ||
-        game.status === status
-    ).length;
+    if (status === "All") return steamKeys.length;
+    return steamKeys.filter((key) => key.status === status).length;
   };
 
   return (
@@ -285,7 +257,7 @@ export default function KeysPage() {
               currentLevel={currentLevel}
               nextLevel={nextLevel}
               revealedKeys={revealedKeys}
-              totalKeys={gameKeys.length}
+              totalKeys={steamKeys.length}
             />
           </div>
         </div>
@@ -330,7 +302,38 @@ export default function KeysPage() {
           <CardTitle>Available Keys</CardTitle>
         </CardHeader>
         <CardContent>
-          {gameKeys.length === 0 || filteredKeys.length === 0 ? (
+          {isLoading ? (
+            <div className="flex min-h-[400px] flex-col items-center justify-center">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+              <p className="mt-4 text-sm text-muted-foreground">
+                Loading your game keys...
+              </p>
+            </div>
+          ) : isError ? (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center justify-center rounded-lg border bg-card/30 p-8 text-center"
+            >
+              <div className="mb-4 rounded-full bg-red-100 p-3">
+                <KeyIcon className="h-8 w-8 text-red-600" />
+              </div>
+              <h3 className="mb-2 text-xl font-semibold">Error loading keys</h3>
+              <p className="mb-6 max-w-md text-muted-foreground">
+                {error instanceof Error
+                  ? error.message
+                  : "Something went wrong"}
+              </p>
+              <Button
+                onClick={() => window.location.reload()}
+                className="bg-linear-to-r from-primary to-primary/90"
+              >
+                Try Again
+              </Button>
+            </motion.div>
+          ) : steamKeys.length === 0 &&
+            !debouncedSearchQuery &&
+            statusFilter === "All" ? (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -339,11 +342,7 @@ export default function KeysPage() {
               <div className="mb-4 rounded-full bg-primary/10 p-3">
                 <KeyIcon className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="mb-2 text-xl font-semibold">
-                {gameKeys.length === 0
-                  ? "No game keys yet"
-                  : "No matches found"}
-              </h3>
+              <h3 className="mb-2 text-xl font-semibold">No game keys yet</h3>
               <p className="mb-6 max-w-md text-muted-foreground">
                 Purchase a bundle to get started with your game collection!
               </p>
@@ -351,37 +350,65 @@ export default function KeysPage() {
                 Browse Bundles
               </Button>
             </motion.div>
+          ) : steamKeys.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center justify-center rounded-lg border bg-card/30 p-8 text-center"
+            >
+              <div className="mb-4 rounded-full bg-secondary/10 p-3">
+                <SearchIcon className="h-8 w-8 text-secondary" />
+              </div>
+              <h3 className="mb-2 text-xl font-semibold">No results found</h3>
+              <p className="mb-6 max-w-md text-muted-foreground">
+                We couldn&apos;t find any keys matching your search criteria.
+                Try adjusting your filters or search term.
+              </p>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchQuery("");
+                  setDebouncedSearchQuery("");
+                  setStatusFilter("All");
+                }}
+                className="gap-2"
+              >
+                <XIcon className="h-4 w-4" />
+                Clear Filters
+              </Button>
+            </motion.div>
           ) : (
             <div className="space-y-4">
-              {filteredKeys.map((game) => (
+              {steamKeys.map((key) => (
                 <motion.div
-                  key={game.id}
+                  key={key.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   whileHover={{ scale: 1.01 }}
                   className={`relative flex flex-col gap-4 rounded-lg border bg-card/30 p-4 sm:flex-row sm:items-center sm:justify-between transition-all duration-200 hover:bg-card/50 hover:shadow-lg dark:hover:bg-[#1d2233]/60 dark:hover:shadow-blue-500/5 ${
-                    flippingStates[game.id]?.isFlipping
+                    flippingStates[key.id]?.isFlipping
                       ? "animate-flip-reveal"
                       : ""
                   }`}
                 >
                   <AnimatePresence>
-                    {flippingStates[game.id]?.isFlipping && (
+                    {flippingStates[key.id]?.isFlipping && (
                       <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.3 }}
                         className={`absolute inset-0 flex items-center justify-center rounded-lg ${
-                          flippingStates[game.id]?.showKey
+                          flippingStates[key.id]?.showKey
                             ? "bg-primary/20"
                             : "bg-primary/10"
                         } backdrop-blur-xs flip-content`}
                       >
-                        {flippingStates[game.id]?.showKey ? (
+                        {flippingStates[key.id]?.showKey ? (
                           <div className="flex flex-col items-center gap-4">
                             <div className="text-2xl font-bold text-primary">
-                              XXXX-YYYY-ZZZZ
+                              {flippingStates[key.id]?.revealedKeyValue ||
+                                "XXXX-YYYY-ZZZZ"}
                             </div>
                             <div className="text-sm text-primary/80">
                               Your new game key!
@@ -404,8 +431,8 @@ export default function KeysPage() {
                   </AnimatePresence>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold">{game.name}</h3>
-                      {!game.revealed && (
+                      <h3 className="font-semibold">{key.productTitle}</h3>
+                      {isNewlyAssigned(key) && (
                         <Badge
                           variant="secondary"
                           className="animate-subtle-pulse"
@@ -416,22 +443,30 @@ export default function KeysPage() {
                     </div>
                     <p className="text-sm text-muted-foreground">
                       From{" "}
-                      <Link
-                        href={`/my-bundles/${game.bundleId}`}
-                        className="hover:text-primary"
-                      >
-                        {game.bundleName}
-                      </Link>{" "}
+                      {key.bundleId ? (
+                        <Link
+                          href={`/my-bundles/${key.bundleId}`}
+                          className="hover:text-primary"
+                        >
+                          {key.bundleName || "Unknown Bundle"}
+                        </Link>
+                      ) : (
+                        <span>{key.bundleName || "Unknown Bundle"}</span>
+                      )}{" "}
                       • Purchased on{" "}
-                      {new Date(game.purchaseDate).toLocaleDateString()}
+                      {key.purchaseDate
+                        ? new Date(key.purchaseDate).toLocaleDateString()
+                        : key.assignedAt
+                          ? new Date(key.assignedAt).toLocaleDateString()
+                          : "Unknown"}
                     </p>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
-                    {game.revealed ? (
+                    {key.status === "Revealed" && getKeyValue(key) ? (
                       <>
                         <code className="rounded bg-muted/10 px-2 py-1 font-mono text-muted-foreground">
-                          {game.key}
+                          {getKeyValue(key)}
                         </code>
                         <TooltipProvider>
                           <Tooltip>
@@ -441,7 +476,7 @@ export default function KeysPage() {
                                   variant="outline"
                                   size="icon"
                                   className="h-8 w-8 transition-all duration-200"
-                                  onClick={() => handleCopyKey(game.key!)}
+                                  onClick={() => handleCopyKey(key.id)}
                                 >
                                   <CopyIcon className="h-4 w-4" />
                                 </Button>
@@ -457,7 +492,7 @@ export default function KeysPage() {
                                   size="icon"
                                   className="h-8 w-8 transition-all duration-200 bg-linear-to-r from-primary to-primary/90"
                                   onClick={() =>
-                                    handleActivateOnSteam(game.key!)
+                                    handleActivateOnSteam(getKeyValue(key)!)
                                   }
                                 >
                                   <ExternalLinkIcon className="h-4 w-4" />
@@ -474,7 +509,7 @@ export default function KeysPage() {
                                   variant="ghost"
                                   size="icon"
                                   className="h-8 w-8 transition-all duration-200"
-                                  onClick={() => handleGiftKey(game.id)}
+                                  onClick={() => handleGiftKey(key.id)}
                                 >
                                   <GiftIcon className="h-4 w-4" />
                                 </Button>
@@ -484,19 +519,26 @@ export default function KeysPage() {
                           </Tooltip>
                         </TooltipProvider>
                       </>
-                    ) : (
+                    ) : key.status === "Assigned" ? (
                       <motion.div
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                       >
                         <Button
-                          className="gap-2 bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60"
-                          onClick={() => handleRevealKey(game.id)}
+                          className="cursor-pointer gap-2 bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60"
+                          onClick={() => handleRevealKey(key.id)}
                         >
                           <KeyIcon className="h-4 w-4" />
                           Reveal Key
                         </Button>
                       </motion.div>
+                    ) : (
+                      <Badge
+                        variant="outline"
+                        className="text-muted-foreground"
+                      >
+                        {key.status}
+                      </Badge>
                     )}
                   </div>
                 </motion.div>

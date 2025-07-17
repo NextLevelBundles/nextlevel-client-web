@@ -2,6 +2,7 @@ import { ClientApi } from "./client-api";
 import { CartApi } from "./clients/cart";
 import { UserApi } from "./clients/user";
 import { PurchaseApi } from "./clients/purchase";
+import { SteamKeyApi } from "./clients/steam-key";
 
 // Default instance
 const apiClient = new ClientApi();
@@ -10,3 +11,4 @@ const apiClient = new ClientApi();
 export const cartApi = new CartApi(apiClient);
 export const userApi = new UserApi(apiClient);
 export const purchaseApi = new PurchaseApi(apiClient);
+export const steamKeyApi = new SteamKeyApi(apiClient);
