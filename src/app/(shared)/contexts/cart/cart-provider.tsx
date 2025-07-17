@@ -120,6 +120,8 @@ export default function CartProvider({
       dispatch({ type: "SET_ERROR", payload: "Failed to add item to cart" });
       // Error toast is handled by the global ClientApi error handler
       console.error("Error adding to cart:", error);
+      // Re-throw the error so components can handle it
+      throw error;
     } finally {
       dispatch({ type: "SET_LOADING", payload: false });
     }
@@ -138,6 +140,8 @@ export default function CartProvider({
       });
       // Error toast is handled by the global ClientApi error handler
       console.error("Error removing from cart:", error);
+      // Re-throw the error so components can handle it
+      throw error;
     } finally {
       dispatch({ type: "SET_LOADING", payload: false });
     }
@@ -153,6 +157,8 @@ export default function CartProvider({
       dispatch({ type: "SET_ERROR", payload: "Failed to clear cart" });
       // Error toast is handled by the global ClientApi error handler
       console.error("Error clearing cart:", error);
+      // Re-throw the error so components can handle it
+      throw error;
     } finally {
       dispatch({ type: "SET_LOADING", payload: false });
     }

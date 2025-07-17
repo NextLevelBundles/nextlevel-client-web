@@ -39,10 +39,13 @@ export function AddToCartButton({
       };
 
       await addToCart(cartItem);
+      // Only show success state if the API call succeeded
       setJustAdded(true);
       setTimeout(() => setJustAdded(false), 2000);
     } catch (error) {
       console.error("Failed to add to cart:", error);
+      // Don't show success state if there was an error
+      // The global error handler will show the error toast
     } finally {
       setIsAdding(false);
     }
