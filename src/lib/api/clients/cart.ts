@@ -34,7 +34,7 @@ export class CartApi {
   }
 
   async clearCart(): Promise<void> {
-    await this.client.delete<void>("/customer/cart/clear");
+    await this.client.put<void>("/customer/cart/clear");
   }
 
   async reserveCart(): Promise<{ url: string }> {

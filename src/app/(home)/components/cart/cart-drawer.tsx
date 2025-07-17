@@ -1,7 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { Trash2, ShoppingBag, CreditCard, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  Trash2,
+  ShoppingBag,
+  CreditCard,
+  Loader2,
+  Clock,
+  X,
+} from "lucide-react";
 import { CartButton } from "./cart-button";
 import { CartItemDetails } from "./cart-item-details";
 import { useCart } from "@/app/(shared)/contexts/cart/cart-provider";
@@ -12,10 +19,26 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/app/(shared)/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/app/(shared)/components/ui/alert-dialog";
 import { Separator } from "@radix-ui/react-dropdown-menu";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { Button } from "@/app/(shared)/components/ui/button";
 import Image from "next/image";
+import dayjs from "dayjs";
+import duration from "dayjs/plugin/duration";
+import { padded } from "@/app/(shared)/utils/numbers";
+
+dayjs.extend(duration);
 
 export function CartDrawer() {
   const [isOpen, setIsOpen] = useState(false);
@@ -23,6 +46,7 @@ export function CartDrawer() {
   const {
     cart,
     removeFromCart,
+    clearCart,
     getTotalItems,
     getTotalPrice,
     isLoading,
@@ -52,8 +76,48 @@ export function CartDrawer() {
     }
   };
 
+  const handleClearCart = async () => {
+    try {
+      await clearCart();
+    } catch (error) {
+      console.error("Failed to clear cart:", error);
+      // Toast error is handled by the global ClientApi error handler
+    }
+  };
+
   const totalItems = getTotalItems();
   const totalPrice = getTotalPrice();
+
+  // Custom countdown timer for cart reservations (minutes:seconds only)
+  const [reservationTimeLeft, setReservationTimeLeft] = useState<string>("");
+
+  useEffect(() => {
+    function updateCartCountdown() {
+      if (!cart?.reservationExpiresAt) {
+        setReservationTimeLeft("");
+        return;
+      }
+
+      const future = dayjs(cart.reservationExpiresAt);
+      const now = dayjs();
+      const diffMs = future.diff(now);
+
+      if (diffMs <= 0) {
+        setReservationTimeLeft("Expired");
+        return;
+      }
+
+      const dur = dayjs.duration(diffMs);
+      const minutes = padded(dur.minutes());
+      const seconds = padded(dur.seconds());
+
+      setReservationTimeLeft(`${minutes}:${seconds}`);
+    }
+
+    updateCartCountdown();
+    const timer = setInterval(updateCartCountdown, 5000);
+    return () => clearInterval(timer);
+  }, [cart?.reservationExpiresAt]);
 
   return (
     <Sheet open={isOpen} onOpenChange={handleOpenChange}>
@@ -62,10 +126,42 @@ export function CartDrawer() {
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
-            <ShoppingBag className="h-5 w-5" />
-            Shopping Cart ({totalItems})
-          </SheetTitle>
+          <div className="flex items-center justify-between">
+            <SheetTitle className="flex items-center gap-2">
+              <ShoppingBag className="h-5 w-5" />
+              Shopping Cart ({totalItems})
+            </SheetTitle>
+            {totalItems > 0 && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="cursor-pointer text-muted-foreground hover:text-destructive"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Clear Cart
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Clear Cart</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {cart?.reservationStatus === "Active"
+                        ? "Are you sure you want to clear your cart? This will release your reserved Steam keys and they may become unavailable."
+                        : "Are you sure you want to clear your cart? This will remove all items from your cart."}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleClearCart}>
+                      Clear Cart
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
         </SheetHeader>
 
         {cart?.items.length === 0 ? (
@@ -131,19 +227,32 @@ export function CartDrawer() {
 
             <div className="border-t py-4 space-y-4">
               {cart?.reservationStatus === "Active" &&
-                cart.reservationExpiresAt && (
+                cart.reservationExpiresAt &&
+                reservationTimeLeft !== "Expired" && (
                   <div className="p-3 bg-secondary/10 rounded-lg border border-secondary/20">
                     <div className="flex items-center gap-2 text-sm">
                       <div className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
+                      <Clock className="h-4 w-4 text-secondary" />
                       <span className="font-medium text-secondary">
-                        Reserved until{" "}
-                        {new Date(
-                          cart.reservationExpiresAt
-                        ).toLocaleTimeString()}
+                        Reservation expires in {reservationTimeLeft}
                       </span>
                     </div>
                   </div>
                 )}
+
+              {(cart?.reservationStatus === "Expired" ||
+                (cart?.reservationStatus === "Active" &&
+                  reservationTimeLeft === "Expired")) && (
+                <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                  <div className="flex items-center gap-2 text-sm">
+                    <div className="w-2 h-2 bg-red-500 rounded-full" />
+                    <Clock className="h-4 w-4 text-red-500" />
+                    <span className="font-medium text-red-600 dark:text-red-400">
+                      Reservation expired - Steam keys have been released
+                    </span>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-2">
                 {/* <div className="flex justify-between text-sm">
@@ -158,7 +267,7 @@ export function CartDrawer() {
               </div>
 
               <Button
-                className="w-full bg-primary text-white hover:bg-primary/90 shadow-lg hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
+                className="cursor-pointer w-full bg-primary text-white hover:bg-primary/90 shadow-lg hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
                 size="lg"
                 disabled={isLoading || totalItems === 0 || isCheckoutLoading}
                 onClick={handleCheckout}
@@ -175,9 +284,10 @@ export function CartDrawer() {
                   </>
                 )}
               </Button>
-              <p className="text-xs text-center text-muted-foreground mt-2">
-                Steam keys are reserved for 10 minutes once you click
-                &quot;Proceed to Checkout&quot;.
+              <p className="text-xs text-center text-muted-foreground mb-2">
+                {cart?.reservationStatus === "Active"
+                  ? "You have already reserved your Steam keys. Proceed to Checkout"
+                  : `Steam keys are reserved for 10 minutes once you click "Proceed to Checkout"`}
               </p>
             </div>
           </div>

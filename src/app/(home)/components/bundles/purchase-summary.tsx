@@ -169,7 +169,7 @@ export function PurchaseSummary({
           </div>
         </div>
 
-        <div className="pt-4 border-t border-gray-100 dark:border-border">
+        <div className="py-4 border-t border-gray-100 dark:border-border">
           <div className="flex justify-between text-lg font-bold mb-4">
             <span>Total</span>
             <span>${totalAmount}</span>
