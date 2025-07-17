@@ -181,11 +181,6 @@ export function PurchaseSummary({
             totalAmount={totalAmount}
             charityPercentage={charityPercentage}
           />
-
-          <p className="text-xs text-center text-muted-foreground mt-2">
-            Your bundle will be added to the cart. You can complete checkout
-            later.
-          </p>
         </div>
       </Card>
 

@@ -4,8 +4,9 @@ import { Button } from "@/app/(shared)/components/ui/button";
 import { useCart } from "@/app/(shared)/contexts/cart/cart-provider";
 import { cn } from "@/app/(shared)/utils/tailwind";
 import { AddToCartRequest } from "@/lib/api/types/cart";
-import { Check, Loader2, ShoppingCart } from "lucide-react";
+import { Check, Loader2, ShoppingCart, LogIn } from "lucide-react";
 import { useState } from "react";
+import { useSession, signIn } from "next-auth/react";
 
 interface AddToCartButtonProps {
   bundleId: string;
@@ -25,6 +26,7 @@ export function AddToCartButton({
   children,
 }: AddToCartButtonProps) {
   const { addToCart, isLoading } = useCart();
+  const { status } = useSession();
   const [isAdding, setIsAdding] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
 
@@ -51,35 +53,64 @@ export function AddToCartButton({
     }
   };
 
+  const handleSignIn = async () => {
+    await signIn("cognito");
+  };
+
+  const isAuthenticated = status === "authenticated";
+  const isLoadingSession = status === "loading";
+
   const isDisabled =
-    isLoading || isAdding || totalAmount <= 0 || !selectedTierId;
+    isLoading ||
+    isAdding ||
+    totalAmount <= 0 ||
+    !selectedTierId ||
+    isLoadingSession;
 
   return (
-    <Button
-      onClick={handleAddToCart}
-      disabled={isDisabled}
-      className={cn(
-        "cursor-pointer relative overflow-hidden transition-all duration-300 w-full bg-primary text-white hover:bg-primary/90 shadow-xs hover:shadow-xl hover:shadow-primary/30 dark:hover:shadow-primary/40 h-14 text-lg font-medium px-8 py-4 rounded-xl ring-1 ring-primary/50 hover:ring-primary hover:scale-[1.02]",
-        justAdded && "bg-green-500 hover:bg-green-600",
-        className
-      )}
-    >
-      {isAdding ? (
-        <>
-          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-          Adding to Cart...
-        </>
-      ) : justAdded ? (
-        <>
-          <Check className="mr-2 h-5 w-5" />
-          Added to Cart!
-        </>
-      ) : (
-        <>
-          <ShoppingCart className="mr-2 h-5 w-5" />
-          {children || "Add to Cart"}
-        </>
-      )}
-    </Button>
+    <div className="flex flex-col items-center gap-2">
+      <Button
+        onClick={isAuthenticated ? handleAddToCart : handleSignIn}
+        disabled={isDisabled}
+        className={cn(
+          "cursor-pointer relative overflow-hidden transition-all duration-300 w-full bg-primary text-white hover:bg-primary/90 shadow-xs hover:shadow-xl hover:shadow-primary/30 dark:hover:shadow-primary/40 h-14 text-lg font-medium px-8 py-4 rounded-xl ring-1 ring-primary/50 hover:ring-primary hover:scale-[1.02]",
+          justAdded &&
+            "bg-green-500 hover:bg-green-600 ring-green-500 hover:ring-green-600",
+          className
+        )}
+      >
+        {isLoadingSession ? (
+          <>
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            Loading...
+          </>
+        ) : !isAuthenticated ? (
+          <>
+            <LogIn className="mr-2 h-5 w-5" />
+            Login to Add to Cart
+          </>
+        ) : isAdding ? (
+          <>
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            Adding to Cart...
+          </>
+        ) : justAdded ? (
+          <>
+            <Check className="mr-2 h-5 w-5" />
+            Added to Cart!
+          </>
+        ) : (
+          <>
+            <ShoppingCart className="mr-2 h-5 w-5" />
+            {children || "Add to Cart"}
+          </>
+        )}
+      </Button>
+      <p className="text-xs text-center text-muted-foreground mt-2">
+        {isAuthenticated
+          ? "Your bundle will be added to the cart. You can complete checkout later."
+          : "Please log in to add items to your cart."}
+      </p>
+    </div>
   );
 }
