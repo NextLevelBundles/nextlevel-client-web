@@ -179,7 +179,6 @@ export default function KeysPage() {
       }
     } catch (error) {
       console.error("Error viewing key:", error);
-      toast.error("Failed to copy key");
     }
   };
 
@@ -463,7 +462,7 @@ export default function KeysPage() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
-                    {key.status === "Revealed" && getKeyValue(key) ? (
+                    {key.status === "Revealed" ? (
                       <>
                         <code className="rounded bg-muted/10 px-2 py-1 font-mono text-muted-foreground">
                           {getKeyValue(key)}
