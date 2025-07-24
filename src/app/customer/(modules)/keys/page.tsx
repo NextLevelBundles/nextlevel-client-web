@@ -30,18 +30,22 @@ import {
   TooltipTrigger,
 } from "@/shared/components/ui/tooltip";
 import confetti from "canvas-confetti";
-import { GameLevelProgress } from "@/customer/components/game-level/progress";
 import {
   useSteamKeys,
   useRevealKey,
   useViewKey,
+  useGiftKey,
+  useSteamKeyStatusCounts,
 } from "@/hooks/queries/useSteamKeys";
-import { SteamKey, SteamKeyQueryParams, GiftKeyRequest } from "@/lib/api/types/steam-key";
+import {
+  SteamKey,
+  SteamKeyQueryParams,
+  GiftKeyRequest,
+} from "@/lib/api/types/steam-key";
 import { GiftFilterType } from "@/lib/api/types/purchase";
-import { GiftFilter } from "@/customer/components/gift-filter";
 import { GiftIndicator } from "@/customer/components/gift-indicator";
 import { GiftKeyModal } from "@/customer/components/steam-keys/gift-key-modal";
-import { useGiftKey } from "@/hooks/queries/useSteamKeys";
+import { FilterDropdown } from "@/customer/components/filter-dropdown";
 
 // Progress levels and their requirements
 const PROGRESS_LEVELS = [
@@ -51,15 +55,13 @@ const PROGRESS_LEVELS = [
   { level: 4, title: "Steam Legend", required: 25, icon: "👑" },
 ];
 
-type KeyStatus = "All" | "Assigned" | "Revealed" | "Expired" | "Refunded" | "Gifted";
-
-const statusOptions: KeyStatus[] = [
-  "All",
-  "Assigned",
-  "Revealed",
-  "Expired",
-  "Refunded",
-  "Gifted",
+// Gift ownership filter options
+const ownershipOptions = [
+  { value: "All", label: "All Keys" },
+  { value: "Owned", label: "My Keys" },
+  // { value: "Gifted", label: "All Gifts" },
+  { value: "GivenByMe", label: "Gifted" },
+  { value: "ReceivedByMe", label: "Received as gift" },
 ];
 
 const copyMessages = [
@@ -72,7 +74,7 @@ const copyMessages = [
 export default function KeysPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<KeyStatus>("All");
+  const [statusFilter, setStatusFilter] = useState<string>("All");
   const [giftFilter, setGiftFilter] = useState<GiftFilterType>("All");
   const [selectedGiftKey, setSelectedGiftKey] = useState<SteamKey | null>(null);
   const [isGiftModalOpen, setIsGiftModalOpen] = useState(false);
@@ -97,7 +99,12 @@ export default function KeysPage() {
   const queryParams: SteamKeyQueryParams = {
     ...(debouncedSearchQuery && { searchQuery: debouncedSearchQuery }),
     ...(statusFilter !== "All" && {
-      status: statusFilter,
+      status: statusFilter as
+        | "Assigned"
+        | "Revealed"
+        | "Expired"
+        | "Refunded"
+        | "Gifted",
     }),
     giftFilter,
   };
@@ -119,6 +126,37 @@ export default function KeysPage() {
   // Gift key mutation
   const giftKeyMutation = useGiftKey();
 
+  // Fetch status counts
+  const { data: statusCounts, isLoading: isLoadingStatusCounts } =
+    useSteamKeyStatusCounts();
+
+  // Transform status counts to filter options
+  const statusOptions = React.useMemo(() => {
+    if (!statusCounts) return [];
+    return statusCounts.map((sc) => ({
+      value: sc.status || "All",
+      label: sc.label,
+      count: sc.count,
+    }));
+  }, [statusCounts]);
+
+  // Calculate ownership counts
+  const ownershipOptionsWithCounts = React.useMemo(() => {
+    return ownershipOptions.map((option) => ({
+      ...option,
+      count: steamKeys.filter((key) => {
+        if (option.value === "All") return true;
+        if (option.value === "Owned")
+          return !key.isGift && key.status !== "Gifted";
+        if (option.value === "Gifted")
+          return key.isGift || key.status === "Gifted";
+        if (option.value === "GivenByMe") return key.status === "Gifted";
+        if (option.value === "ReceivedByMe") return key.isGift;
+        return false;
+      }).length,
+    }));
+  }, [steamKeys]);
+
   // Calculate user's progress
   const revealedKeys = steamKeys.filter(
     (key) => key.status === "Revealed"
@@ -129,6 +167,7 @@ export default function KeysPage() {
   );
 
   const nextLevel = PROGRESS_LEVELS[PROGRESS_LEVELS.indexOf(currentLevel) + 1];
+  console.log(nextLevel);
 
   // Helper function to check if a key is newly assigned (within 30 days)
   const isNewlyAssigned = (key: SteamKey): boolean => {
@@ -254,20 +293,18 @@ export default function KeysPage() {
     setIsGiftModalOpen(true);
   };
 
-  const handleGiftSubmit = async (assignmentId: string, giftData: GiftKeyRequest) => {
+  const handleGiftSubmit = async (
+    assignmentId: string,
+    giftData: GiftKeyRequest
+  ) => {
     await giftKeyMutation.mutateAsync({ assignmentId, giftData });
-  };
-
-  const getStatusCount = (status: KeyStatus) => {
-    if (status === "All") return steamKeys.length;
-    return steamKeys.filter((key) => key.status === status).length;
   };
 
   return (
     <div className="grid gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">My Game Keys</h1>
-        <div className="flex items-center gap-4">
+        {/* <div className="flex items-center gap-4">
           <div className="hidden sm:block">
             <GameLevelProgress
               currentLevel={currentLevel}
@@ -276,44 +313,74 @@ export default function KeysPage() {
               totalKeys={steamKeys.length}
             />
           </div>
-        </div>
-      </div>
-
-      <div className="mb-4">
-        <GiftFilter value={giftFilter} onChange={setGiftFilter} />
+        </div> */}
       </div>
 
       <Card className="bg-card border shadow-xs">
         <CardHeader className="pb-2">
           <h2 className="text-sm text-muted-foreground font-medium">Filters</h2>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
-          <div className="relative flex-1">
-            <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search by game title..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 bg-background"
+        <CardContent className="space-y-4 p-4">
+          {/* Search Filter */}
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="sm:col-span-3 lg:col-span-1">
+              <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                Search
+              </label>
+              <div className="relative">
+                <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search by game title..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 bg-background"
+                />
+              </div>
+            </div>
+
+            {/* Status Filter */}
+            <FilterDropdown
+              label="Status"
+              options={statusOptions}
+              value={statusFilter}
+              onChange={setStatusFilter}
+              placeholder="All Statuses"
+              searchPlaceholder="Search status..."
+              isLoading={isLoadingStatusCounts}
+              className="sm:col-span-1"
+            />
+
+            {/* Ownership Filter */}
+            <FilterDropdown
+              label="Ownership"
+              options={ownershipOptionsWithCounts}
+              value={giftFilter}
+              onChange={(value) => setGiftFilter(value as GiftFilterType)}
+              placeholder="All Keys"
+              searchPlaceholder="Search ownership..."
+              showCounts={false}
+              className="sm:col-span-1"
             />
           </div>
-          <div className="flex flex-wrap gap-2">
-            {statusOptions.map((status) => (
+
+          {/* Clear Filters Button */}
+          {(searchQuery || statusFilter !== "All" || giftFilter !== "All") && (
+            <div className="flex justify-end">
               <Button
-                key={status}
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                onClick={() => setStatusFilter(status)}
-                className={`transition-all duration-200 ${
-                  statusFilter === status
-                    ? "bg-primary/10 dark:bg-primary/20 text-primary font-semibold"
-                    : ""
-                }`}
+                onClick={() => {
+                  setSearchQuery("");
+                  setStatusFilter("All");
+                  setGiftFilter("All");
+                }}
+                className="gap-2"
               >
-                {status} ({getStatusCount(status)})
+                <XIcon className="h-4 w-4" />
+                Clear Filters
               </Button>
-            ))}
-          </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -371,26 +438,26 @@ export default function KeysPage() {
                 )}
               </div>
               <h3 className="mb-2 text-xl font-semibold">
-                {giftFilter === "Owned" 
+                {giftFilter === "Owned"
                   ? "No personal keys yet"
                   : giftFilter === "Gifted"
-                  ? "No gift keys yet"
-                  : giftFilter === "GivenByMe"
-                  ? "No keys gifted yet"
-                  : giftFilter === "ReceivedByMe"
-                  ? "No gift keys received yet"
-                  : "No game keys yet"}
+                    ? "No gift keys yet"
+                    : giftFilter === "GivenByMe"
+                      ? "No keys gifted yet"
+                      : giftFilter === "ReceivedByMe"
+                        ? "No gift keys received yet"
+                        : "No game keys yet"}
               </h3>
               <p className="mb-6 max-w-md text-muted-foreground">
-                {giftFilter === "Owned" 
+                {giftFilter === "Owned"
                   ? "Purchase a bundle to get started with your personal game collection!"
                   : giftFilter === "Gifted"
-                  ? "When you give or receive gift keys, they'll appear here."
-                  : giftFilter === "GivenByMe"
-                  ? "When you gift game keys to others, they'll appear here."
-                  : giftFilter === "ReceivedByMe"
-                  ? "When someone gifts you game keys, they'll appear here."
-                  : "Purchase a bundle to get started with your game collection!"}
+                    ? "When you give or receive gift keys, they'll appear here."
+                    : giftFilter === "GivenByMe"
+                      ? "When you gift game keys to others, they'll appear here."
+                      : giftFilter === "ReceivedByMe"
+                        ? "When someone gifts you game keys, they'll appear here."
+                        : "Purchase a bundle to get started with your game collection!"}
               </p>
               {giftFilter !== "ReceivedByMe" && (
                 <Link href="/bundles">
@@ -622,18 +689,20 @@ export default function KeysPage() {
                                   </Button>
                                 </motion.div>
                               </TooltipTrigger>
-                              <TooltipContent>Gift this game without revealing</TooltipContent>
+                              <TooltipContent>
+                                Gift this game without revealing
+                              </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
                         )}
                       </>
                     ) : key.status === "Gifted" ? (
-                      <Badge
-                        variant="secondary"
-                        className="gap-1"
-                      >
+                      <Badge variant="secondary" className="gap-1">
                         <GiftIcon className="h-3 w-3" />
-                        Gifted to {key.giftRecipientName || key.giftRecipientEmail || "someone"}
+                        Gifted to{" "}
+                        {key.giftRecipientName ||
+                          key.giftRecipientEmail ||
+                          "someone"}
                       </Badge>
                     ) : (
                       <Badge

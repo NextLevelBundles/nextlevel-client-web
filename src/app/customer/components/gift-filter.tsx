@@ -18,25 +18,25 @@ const filterOptions: {
 }[] = [
   {
     value: "All",
-    label: "All Purchases",
+    label: "All Transactions",
     icon: Package,
     description: "View all your purchases",
   },
   {
     value: "Owned",
-    label: "Owned by me",
+    label: "My Purchases",
     icon: ShoppingBag,
     description: "Items bought for yourself",
   },
   {
     value: "Gifted",
-    label: "Gifts Sent by Me",
+    label: "Gifts I Sent",
     icon: Send,
     description: "Items you gifted to others",
   },
   {
     value: "ReceivedByMe",
-    label: "Gifts Received",
+    label: "Gifts I Received",
     icon: Gift,
     description: "Items gifted to you",
   },

@@ -10,10 +10,10 @@ import {
   CalendarIcon,
   PiggyBankIcon,
 } from "lucide-react";
-import { QuickActions } from "@/customer/components/dashboard/quick-actions";
 import { RecentBundles } from "@/customer/components/dashboard/recent-bundles";
 import { StatsCard } from "@/customer/components/dashboard/stats-card";
 import { SteamStatus } from "@/customer/components/dashboard/steam-status";
+import { DigiphileStatus } from "@/customer/components/dashboard/digiphile-status";
 import { useDashboardData } from "@/hooks/queries/useDashboard";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { motion } from "framer-motion";
@@ -155,7 +155,7 @@ export default function Home() {
 
       <div className="grid gap-4 md:grid-cols-2">
         <SteamStatus />
-        <QuickActions />
+        <DigiphileStatus />
       </div>
 
       <RecentBundles />

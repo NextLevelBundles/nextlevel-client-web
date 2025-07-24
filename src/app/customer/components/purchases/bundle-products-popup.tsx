@@ -28,7 +28,7 @@ export function BundleProductsPopup({ purchase }: BundleProductsPopupProps) {
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm" className="gap-2">
           <EyeIcon className="h-4 w-4" />
-          View Products
+          View Items
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">

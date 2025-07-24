@@ -91,3 +91,9 @@ export interface GiftKeyResponse {
   success: boolean;
   message: string;
 }
+
+export interface StatusCount {
+  status: string | null;
+  label: string;
+  count: number;
+}

@@ -15,7 +15,7 @@ export function useCustomer() {
     queryFn: (): Promise<Customer> => userApi.getCustomer(),
     staleTime: 5 * 60 * 1000, // Consider data stale after 5 minutes
     gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
-    retry: 3, // Retry failed requests 3 times
+    retry: false, // Retry failed requests 3 times
     refetchOnWindowFocus: true, // Refetch on window focus to ensure fresh data
     refetchOnReconnect: true, // Refetch on reconnect
   });

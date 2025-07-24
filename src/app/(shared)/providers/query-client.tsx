@@ -16,14 +16,10 @@ export function QueryClientProviderWrapper({
             // Enable background refetching
             staleTime: 5 * 60 * 1000, // 5 minutes
             gcTime: 10 * 60 * 1000, // 10 minutes (was cacheTime)
-            // Retry failed requests
-            retry: 3,
-            retryDelay: (attemptIndex) =>
-              Math.min(1000 * 2 ** attemptIndex, 30000),
             // Refetch on window focus
-            refetchOnWindowFocus: true,
+            refetchOnWindowFocus: false,
             // Refetch on network reconnect
-            refetchOnReconnect: true,
+            refetchOnReconnect: false,
           },
         },
       })

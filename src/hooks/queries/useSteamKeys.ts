@@ -78,3 +78,11 @@ export function useGiftKey() {
     },
   });
 }
+
+export function useSteamKeyStatusCounts() {
+  return useQuery({
+    queryKey: ["steam-keys", "status-counts"],
+    queryFn: () => steamKeyApi.getStatusCounts(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
