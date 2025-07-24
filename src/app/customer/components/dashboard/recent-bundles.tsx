@@ -9,47 +9,80 @@ import {
 } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import {
-  KeyIcon,
   ChevronRightIcon,
-  DamIcon as SteamIcon,
   PackageIcon,
+  Gift,
 } from "lucide-react";
 import { Badge } from "@/shared/components/ui/badge";
 import Link from "next/link";
-
-const recentBundles: {
-  id: number;
-  name: string;
-  purchaseDate: string;
-  unclaimedKeys: number;
-}[] = [
-  {
-    id: 1,
-    name: "Indie Gems Bundle",
-    purchaseDate: "2024-03-20",
-    unclaimedKeys: 3,
-  },
-  {
-    id: 2,
-    name: "Strategy Masters Collection",
-    purchaseDate: "2024-03-15",
-    unclaimedKeys: 1,
-  },
-  {
-    id: 3,
-    name: "RPG Essentials Pack",
-    purchaseDate: "2024-03-10",
-    unclaimedKeys: 2,
-  },
-];
+import { useRecentPurchases } from "@/hooks/queries/usePurchases";
+import { Skeleton } from "@/shared/components/ui/skeleton";
+import { BundleProductsPopup } from "@/customer/components/purchases/bundle-products-popup";
 
 export function RecentBundles() {
+  const { data: recentPurchases = [], isLoading, isError } = useRecentPurchases();
+
+  if (isLoading) {
+    return (
+      <Card className="bg-linear-to-br from-card to-card/95 shadow-md">
+        <CardHeader>
+          <div>
+            <CardTitle>Recent Purchases</CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              Your last 5 purchases from the past 30 days
+            </p>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-20 w-full" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Card className="bg-linear-to-br from-card to-card/95 shadow-md">
+        <CardHeader>
+          <div>
+            <CardTitle>Recent Purchases</CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              Your last 5 purchases from the past 30 days
+            </p>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center text-sm text-muted-foreground">
+            Failed to load recent purchases
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="bg-linear-to-br from-card to-card/95 shadow-md">
-      <CardHeader>
-        <CardTitle>Recent Purchases</CardTitle>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>Recent Purchases</CardTitle>
+          <p className="text-sm text-muted-foreground mt-1">
+            Your last 5 purchases from the past 30 days
+          </p>
+        </div>
+        {recentPurchases.length > 0 && (
+          <Link href="/customer/purchases">
+            <Button variant="ghost" size="sm" className="text-xs">
+              View All
+              <ChevronRightIcon className="ml-1 h-3 w-3" />
+            </Button>
+          </Link>
+        )}
       </CardHeader>
-      {recentBundles.length === 0 ? (
+      {recentPurchases.length === 0 ? (
         <CardContent>
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -74,9 +107,9 @@ export function RecentBundles() {
       ) : (
         <CardContent className="max-h-[400px] overflow-y-auto">
           <div className="space-y-4">
-            {recentBundles.map((bundle, index) => (
+            {recentPurchases.map((purchase, index) => (
               <motion.div
-                key={bundle.id}
+                key={purchase.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
@@ -85,26 +118,29 @@ export function RecentBundles() {
               >
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <p className="font-medium">{bundle.name}</p>
-                    <Badge variant="outline" className="gap-1">
-                      <SteamIcon className="h-3 w-3" />
-                      Steam
-                    </Badge>
+                    <p className="font-medium">
+                      {purchase.snapshotTitle || "Unknown Bundle"}
+                    </p>
+                    {purchase.isGift && (
+                      <Badge variant="secondary" className="gap-1">
+                        <Gift className="h-3 w-3" />
+                        Gift
+                      </Badge>
+                    )}
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Purchased on{" "}
-                    {new Date(bundle.purchaseDate).toLocaleDateString()}
-                  </p>
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <span>
+                      {purchase.completedAt
+                        ? new Date(purchase.completedAt).toLocaleDateString()
+                        : "Processing"}
+                    </span>
+                    <span>•</span>
+                    <span>${purchase.price.toFixed(2)}</span>
+                    <span>•</span>
+                    <span>{purchase.snapshotProducts.length} items</span>
+                  </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="group-hover:bg-primary/5 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60"
-                >
-                  <KeyIcon className="mr-2 h-4 w-4" />
-                  {bundle.unclaimedKeys} keys to claim
-                  <ChevronRightIcon className="ml-2 h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
-                </Button>
+                <BundleProductsPopup purchase={purchase} />
               </motion.div>
             ))}
           </div>

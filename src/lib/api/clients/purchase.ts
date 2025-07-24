@@ -35,4 +35,8 @@ export class PurchaseApi {
 
     return await this.client.get<Purchase[]>(endpoint);
   }
+
+  async getRecentPurchases(): Promise<Purchase[]> {
+    return await this.client.get<Purchase[]>("/customer/purchases/recent");
+  }
 }
