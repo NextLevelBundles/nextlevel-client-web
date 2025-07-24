@@ -1,4 +1,4 @@
-import { AddToCartRequest, Cart } from "@/lib/api/types/cart";
+import { AddToCartRequest, Cart, UpdateGiftRequest } from "@/lib/api/types/cart";
 import { createContext } from "react";
 
 export interface CartState {
@@ -15,6 +15,7 @@ export interface CartContextType extends CartState {
   getTotalItems: () => number;
   getTotalPrice: () => number;
   reserveCart: () => Promise<{ url: string }>;
+  updateGiftSettings: (itemId: string, giftSettings: UpdateGiftRequest) => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);

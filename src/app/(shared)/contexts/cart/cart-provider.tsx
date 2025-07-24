@@ -10,7 +10,7 @@ import {
 } from "react";
 import { toast } from "sonner";
 import CartContext, { CartContextType, CartState } from "./cart-context";
-import { AddToCartRequest, Cart, CartItem } from "@/lib/api/types/cart";
+import { AddToCartRequest, Cart, CartItem, UpdateGiftRequest } from "@/lib/api/types/cart";
 import { cartApi } from "@/lib/api";
 
 interface CartProviderProps {
@@ -194,6 +194,17 @@ export default function CartProvider({
     );
   };
 
+  const updateGiftSettings = async (itemId: string, giftSettings: UpdateGiftRequest) => {
+    try {
+      const updatedCart = await cartApi.updateGiftSettings(itemId, giftSettings);
+      dispatch({ type: "SET_CART", payload: updatedCart });
+    } catch (error) {
+      dispatch({ type: "SET_ERROR", payload: "Failed to update gift settings" });
+      console.error("Error updating gift settings:", error);
+      throw error;
+    }
+  };
+
   useEffect(() => {
     // Only refresh cart if we don't have initial data or if authentication status changes
     if (status === "authenticated" && !initialCart) {
@@ -211,6 +222,7 @@ export default function CartProvider({
     getTotalItems,
     getTotalPrice,
     reserveCart,
+    updateGiftSettings,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

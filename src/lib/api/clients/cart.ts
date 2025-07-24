@@ -1,5 +1,5 @@
 import { ClientApi } from "../client-api";
-import { Cart, AddToCartRequest } from "../types/cart";
+import { Cart, AddToCartRequest, UpdateGiftRequest } from "../types/cart";
 
 export class CartApi {
   private client: ClientApi;
@@ -40,6 +40,16 @@ export class CartApi {
   async reserveCart(): Promise<{ url: string }> {
     return await this.client.post<{ url: string }>(
       "/customer/checkout/reserve"
+    );
+  }
+
+  async updateGiftSettings(
+    itemId: string,
+    giftSettings: UpdateGiftRequest
+  ): Promise<Cart> {
+    return await this.client.put<Cart, UpdateGiftRequest>(
+      `/customer/cart/items/${itemId}/gift`,
+      giftSettings
     );
   }
 }

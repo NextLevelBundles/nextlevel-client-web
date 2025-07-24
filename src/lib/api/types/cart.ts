@@ -22,6 +22,12 @@ export interface CartItem {
       steamKeyId: string;
     };
   }[];
+  // Gift functionality fields
+  isGift: boolean;
+  giftRecipientEmail?: string;
+  giftRecipientName?: string;
+  giftMessage?: string;
+  canOnlyBeGifted: boolean;
 }
 
 export interface Cart {
@@ -37,4 +43,11 @@ export interface AddToCartRequest {
   tierId: string;
   charityPercentage: number;
   price: number;
+}
+
+export interface UpdateGiftRequest {
+  isGift: boolean;
+  giftRecipientEmail?: string;
+  giftRecipientName?: string;
+  giftMessage?: string;
 }

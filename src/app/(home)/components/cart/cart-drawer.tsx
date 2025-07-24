@@ -8,9 +8,11 @@ import {
   Loader2,
   Clock,
   X,
+  Gift,
 } from "lucide-react";
 import { CartButton } from "./cart-button";
 import { CartItemDetails } from "./cart-item-details";
+import { GiftForm } from "./gift-form";
 import { useCart } from "@/app/(shared)/contexts/cart/cart-provider";
 import {
   Sheet,
@@ -37,6 +39,7 @@ import Image from "next/image";
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 import { padded } from "@/app/(shared)/utils/numbers";
+import { toast } from "sonner";
 
 dayjs.extend(duration);
 
@@ -51,6 +54,7 @@ export function CartDrawer() {
     getTotalPrice,
     isLoading,
     reserveCart,
+    updateGiftSettings,
     // refreshCart,
   } = useCart();
 
@@ -62,7 +66,40 @@ export function CartDrawer() {
     }
   };
 
+  // Validation helper
+  const validateGiftItems = () => {
+    if (!cart?.items) return { isValid: true, error: null };
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    for (const item of cart.items) {
+      if (item.isGift) {
+        if (!item.giftRecipientEmail) {
+          return { 
+            isValid: false, 
+            error: `Gift recipient email is required for "${item.snapshotTitle}"` 
+          };
+        }
+        if (!emailRegex.test(item.giftRecipientEmail)) {
+          return { 
+            isValid: false, 
+            error: `Please enter a valid email address for "${item.snapshotTitle}"` 
+          };
+        }
+      }
+    }
+
+    return { isValid: true, error: null };
+  };
+
   const handleCheckout = async () => {
+    // Validate gift items before checkout
+    const validation = validateGiftItems();
+    if (!validation.isValid) {
+      toast.error(validation.error!);
+      return;
+    }
+
     setIsCheckoutLoading(true);
     try {
       const response = await reserveCart();
@@ -178,47 +215,77 @@ export function CartDrawer() {
               <div className="space-y-4 py-4">
                 {cart?.items.map((item) => (
                   <div key={item.id} className="group relative">
-                    <div className="flex gap-4 p-4 rounded-lg border border-border hover:border-primary/50 transition-colors">
-                      <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-muted">
-                        <Image
-                          width={200}
-                          height={200}
-                          src={item.snapshotImageUrl ?? ""}
-                          alt={item.snapshotTitle ?? "Cart item image"}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
+                    <div className={`p-4 rounded-lg border transition-colors ${
+                      item.isGift 
+                        ? "border-primary/30 bg-primary/5 hover:border-primary/50" 
+                        : "border-border hover:border-primary/50"
+                    }`}>
+                      {/* Gift indicator */}
+                      {item.isGift && (
+                        <div className="flex items-center gap-1 mb-2 text-xs text-primary">
+                          <Gift className="h-3 w-3" />
+                          <span className="font-medium">
+                            Gift {item.giftRecipientEmail ? `for ${item.giftRecipientEmail}` : ''}
+                          </span>
+                        </div>
+                      )}
 
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-sm line-clamp-2 mb-1">
-                          {item.snapshotTitle}
-                        </h4>
-
-                        <div className="flex items-center justify-between mt-3">
-                          <div className="flex items-center gap-2">
-                            <CartItemDetails item={item} />
-                          </div>
-
-                          <div className="text-right">
-                            <div className="font-semibold text-sm">
-                              ${item.price.toFixed(2)}
+                      <div className="flex gap-4">
+                        <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-muted">
+                          <Image
+                            width={200}
+                            height={200}
+                            src={item.snapshotImageUrl ?? ""}
+                            alt={item.snapshotTitle ?? "Cart item image"}
+                            className="w-full h-full object-cover"
+                          />
+                          {item.isGift && (
+                            <div className="absolute top-1 right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                              <Gift className="h-3 w-3 text-white" />
                             </div>
-                            <span className="text-xs text-muted-foreground">
-                              {item.snapshotProducts.length} games
-                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-sm line-clamp-2 mb-1">
+                            {item.snapshotTitle}
+                          </h4>
+
+                          <div className="flex items-center justify-between mt-3">
+                            <div className="flex items-center gap-2">
+                              <CartItemDetails item={item} />
+                            </div>
+
+                            <div className="text-right">
+                              <div className="font-semibold text-sm">
+                                ${item.price.toFixed(2)}
+                              </div>
+                              <span className="text-xs text-muted-foreground">
+                                {item.snapshotProducts.length} games
+                              </span>
+                            </div>
                           </div>
                         </div>
+
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="cursor-pointer h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => removeFromCart(item.id)}
+                          disabled={isLoading}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
 
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="cursor-pointer h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => removeFromCart(item.id)}
-                        disabled={isLoading}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {/* Gift form */}
+                      <div className="mt-4 pt-3 border-t border-border/50">
+                        <GiftForm
+                          item={item}
+                          onGiftUpdate={updateGiftSettings}
+                          isUpdating={isLoading}
+                        />
+                      </div>
                     </div>
                   </div>
                 ))}
