@@ -37,6 +37,9 @@ import {
   useViewKey,
 } from "@/hooks/queries/useSteamKeys";
 import { SteamKey, SteamKeyQueryParams } from "@/lib/api/types/steam-key";
+import { GiftFilterType } from "@/lib/api/types/purchase";
+import { GiftFilter } from "@/customer/components/gift-filter";
+import { GiftIndicator } from "@/customer/components/gift-indicator";
 
 // Progress levels and their requirements
 const PROGRESS_LEVELS = [
@@ -67,6 +70,7 @@ export default function KeysPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<KeyStatus>("All");
+  const [giftFilter, setGiftFilter] = useState<GiftFilterType>("All");
   const [flippingStates, setFlippingStates] = useState<{
     [key: string]: {
       isFlipping: boolean;
@@ -90,6 +94,7 @@ export default function KeysPage() {
     ...(statusFilter !== "All" && {
       status: statusFilter as "Assigned" | "Revealed" | "Expired" | "Refunded",
     }),
+    giftFilter,
   };
 
   // Fetch steam keys
@@ -262,6 +267,10 @@ export default function KeysPage() {
         </div>
       </div>
 
+      <div className="mb-4">
+        <GiftFilter value={giftFilter} onChange={setGiftFilter} />
+      </div>
+
       <Card className="bg-card border shadow-xs">
         <CardHeader className="pb-2">
           <h2 className="text-sm text-muted-foreground font-medium">Filters</h2>
@@ -339,15 +348,45 @@ export default function KeysPage() {
               className="flex flex-col items-center justify-center rounded-lg border bg-card/30 p-8 text-center"
             >
               <div className="mb-4 rounded-full bg-primary/10 p-3">
-                <KeyIcon className="h-8 w-8 text-primary" />
+                {giftFilter === "ReceivedByMe" ? (
+                  <GiftIcon className="h-8 w-8 text-primary" />
+                ) : giftFilter === "GivenByMe" ? (
+                  <ExternalLinkIcon className="h-8 w-8 text-primary" />
+                ) : giftFilter === "Gifted" ? (
+                  <GiftIcon className="h-8 w-8 text-primary" />
+                ) : (
+                  <KeyIcon className="h-8 w-8 text-primary" />
+                )}
               </div>
-              <h3 className="mb-2 text-xl font-semibold">No game keys yet</h3>
+              <h3 className="mb-2 text-xl font-semibold">
+                {giftFilter === "Owned" 
+                  ? "No personal keys yet"
+                  : giftFilter === "Gifted"
+                  ? "No gift keys yet"
+                  : giftFilter === "GivenByMe"
+                  ? "No keys gifted yet"
+                  : giftFilter === "ReceivedByMe"
+                  ? "No gift keys received yet"
+                  : "No game keys yet"}
+              </h3>
               <p className="mb-6 max-w-md text-muted-foreground">
-                Purchase a bundle to get started with your game collection!
+                {giftFilter === "Owned" 
+                  ? "Purchase a bundle to get started with your personal game collection!"
+                  : giftFilter === "Gifted"
+                  ? "When you give or receive gift keys, they'll appear here."
+                  : giftFilter === "GivenByMe"
+                  ? "When you gift game keys to others, they'll appear here."
+                  : giftFilter === "ReceivedByMe"
+                  ? "When someone gifts you game keys, they'll appear here."
+                  : "Purchase a bundle to get started with your game collection!"}
               </p>
-              <Button className="bg-linear-to-r from-primary to-primary/90">
-                Browse Bundles
-              </Button>
+              {giftFilter !== "ReceivedByMe" && (
+                <Link href="/bundles">
+                  <Button className="bg-linear-to-r from-primary to-primary/90">
+                    Browse Bundles
+                  </Button>
+                </Link>
+              )}
             </motion.div>
           ) : steamKeys.length === 0 ? (
             <motion.div
@@ -369,6 +408,7 @@ export default function KeysPage() {
                   setSearchQuery("");
                   setDebouncedSearchQuery("");
                   setStatusFilter("All");
+                  setGiftFilter("All");
                 }}
                 className="gap-2"
               >
@@ -440,25 +480,34 @@ export default function KeysPage() {
                         </Badge>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      From{" "}
-                      {key.bundleId ? (
-                        <Link
-                          href={`/my-bundles/${key.bundleId}`}
-                          className="hover:text-primary"
-                        >
-                          {key.bundleName || "Unknown Bundle"}
-                        </Link>
-                      ) : (
-                        <span>{key.bundleName || "Unknown Bundle"}</span>
-                      )}{" "}
-                      • Purchased on{" "}
-                      {key.purchaseDate
-                        ? new Date(key.purchaseDate).toLocaleDateString()
-                        : key.assignedAt
-                          ? new Date(key.assignedAt).toLocaleDateString()
-                          : "Unknown"}
-                    </p>
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">
+                        From{" "}
+                        {key.bundleId ? (
+                          <Link
+                            href={`/my-bundles/${key.bundleId}`}
+                            className="hover:text-primary"
+                          >
+                            {key.bundleName || "Unknown Bundle"}
+                          </Link>
+                        ) : (
+                          <span>{key.bundleName || "Unknown Bundle"}</span>
+                        )}{" "}
+                        • Purchased on{" "}
+                        {key.purchaseDate
+                          ? new Date(key.purchaseDate).toLocaleDateString()
+                          : key.assignedAt
+                            ? new Date(key.assignedAt).toLocaleDateString()
+                            : "Unknown"}
+                      </p>
+                      <GiftIndicator
+                        isGift={key.isGift}
+                        giftedByCustomerName={key.giftedByCustomerName}
+                        giftMessage={key.giftMessage}
+                        giftedAt={key.giftedAt}
+                        variant="compact"
+                      />
+                    </div>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">

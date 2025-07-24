@@ -35,12 +35,16 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
   Loader2,
+  Gift,
+  Send,
 } from "lucide-react";
 import { usePurchases } from "@/hooks/queries/usePurchases";
-import { PurchaseQueryParams } from "@/lib/api/types/purchase";
+import { PurchaseQueryParams, GiftFilterType } from "@/lib/api/types/purchase";
 import { BundleProductsPopup } from "./bundle-products-popup";
+import { GiftFilter } from "../gift-filter";
+import { GiftIndicator } from "../gift-indicator";
 
-const years = ["All Years", "2024", "2025"];
+const years = ["All Years", "2025", "2024"];
 
 export function PurchaseHistory() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -49,6 +53,7 @@ export function PurchaseHistory() {
   const [sortBy, setSortBy] = useState<PurchaseQueryParams["sortBy"]>("Date");
   const [sortDirection, setSortDirection] =
     useState<PurchaseQueryParams["sortDirection"]>("Descending");
+  const [giftFilter, setGiftFilter] = useState<GiftFilterType>("All");
 
   // Debounce search query
   useEffect(() => {
@@ -63,8 +68,9 @@ export function PurchaseHistory() {
   const queryParams: PurchaseQueryParams = {
     sortBy,
     sortDirection,
+    giftFilter,
     ...(selectedYear !== "All Years" && {
-      year: selectedYear as "2024" | "2025",
+      year: selectedYear as "2025" | "2024",
     }),
     ...(debouncedSearchQuery && { searchQuery: debouncedSearchQuery }),
   };
@@ -82,6 +88,7 @@ export function PurchaseHistory() {
     setSelectedYear("All Years");
     setSortBy("Date");
     setSortDirection("Descending");
+    setGiftFilter("All");
   };
 
   // Toggle sort direction
@@ -165,6 +172,9 @@ export function PurchaseHistory() {
         <CardTitle>Purchase History</CardTitle>
       </CardHeader>
       <CardContent>
+        <div className="mb-4">
+          <GiftFilter value={giftFilter} onChange={setGiftFilter} />
+        </div>
         <div className="mb-6 flex flex-col gap-4 sm:flex-row">
           <div className="relative flex-1">
             <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -199,18 +209,45 @@ export function PurchaseHistory() {
             className="flex min-h-[400px] flex-col items-center justify-center rounded-lg border bg-card/30 p-8 text-center"
           >
             <div className="mb-4 rounded-full bg-primary/10 p-3">
-              <PackageIcon className="h-8 w-8 text-primary" />
+              {giftFilter === "ReceivedByMe" ? (
+                <Gift className="h-8 w-8 text-primary" />
+              ) : giftFilter === "GivenByMe" ? (
+                <Send className="h-8 w-8 text-primary" />
+              ) : giftFilter === "Gifted" ? (
+                <Gift className="h-8 w-8 text-primary" />
+              ) : (
+                <PackageIcon className="h-8 w-8 text-primary" />
+              )}
             </div>
-            <h3 className="mb-2 text-xl font-semibold">No purchases yet</h3>
+            <h3 className="mb-2 text-xl font-semibold">
+              {giftFilter === "Owned"
+                ? "No personal purchases yet"
+                : giftFilter === "Gifted"
+                  ? "No gift purchases yet"
+                  : giftFilter === "GivenByMe"
+                    ? "No gifts sent yet"
+                    : giftFilter === "ReceivedByMe"
+                      ? "No gifts received yet"
+                      : "No purchases yet"}
+            </h3>
             <p className="mb-6 max-w-md text-muted-foreground">
-              Ready to start your gaming journey? Check out our curated bundles
-              and support amazing causes while building your game library.
+              {giftFilter === "Owned"
+                ? "Ready to start your gaming journey? Check out our curated bundles and build your game library."
+                : giftFilter === "Gifted"
+                  ? "When you give or receive gifts, they will appear here."
+                  : giftFilter === "GivenByMe"
+                    ? "Share the joy of gaming! Browse our bundles and send them as gifts to your friends."
+                    : giftFilter === "ReceivedByMe"
+                      ? "When someone sends you a bundle as a gift, it will appear here."
+                      : "Ready to start your gaming journey? Check out our curated bundles and support amazing causes while building your game library."}
             </p>
-            <Link href="/bundles">
-              <Button className="bg-linear-to-r from-primary to-primary/90">
-                Browse Bundles
-              </Button>
-            </Link>
+            {giftFilter !== "ReceivedByMe" && (
+              <Link href="/bundles">
+                <Button className="bg-linear-to-r from-primary to-primary/90">
+                  Browse Bundles
+                </Button>
+              </Link>
+            )}
           </motion.div>
         ) : purchases.length === 0 ? (
           <motion.div
@@ -294,7 +331,16 @@ export function PurchaseHistory() {
                     className="transition-colors hover:bg-muted/5"
                   >
                     <TableCell className="font-medium">
-                      {purchase.snapshotTitle || "Unknown Bundle"}
+                      <div className="space-y-1">
+                        <div>{purchase.snapshotTitle || "Unknown Bundle"}</div>
+                        <GiftIndicator
+                          isGift={purchase.isGift}
+                          giftedByCustomerName={purchase.giftedByCustomerName}
+                          giftMessage={purchase.giftMessage}
+                          giftedAt={purchase.giftedAt}
+                          variant="compact"
+                        />
+                      </div>
                     </TableCell>
                     <TableCell>
                       {purchase.completedAt

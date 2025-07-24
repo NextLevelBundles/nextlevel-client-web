@@ -70,7 +70,7 @@ interface Purchase {
 ### 2. Filtering & Sorting
 
 - **Search**: Filter by bundle name
-- **Year Filter**: Filter by 2024 or 2025
+- **Year Filter**: Filter by 2025 or 2024
 - **Sort Options**: Sort by Title, Date, Price, or Quantity
 - **Sort Direction**: Toggle between Ascending and Descending
 - **Clear Filters**: Reset all filters to default

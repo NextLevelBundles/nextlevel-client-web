@@ -1,3 +1,10 @@
+export type GiftFilterType =
+  | "All"
+  | "Owned"
+  | "Gifted"
+  | "GivenByMe"
+  | "ReceivedByMe";
+
 export interface Purchase {
   id: string;
   type: "Listing" | "Bundle";
@@ -25,11 +32,17 @@ export interface Purchase {
       steamKeyId: string;
     };
   }[];
+  // Gift-related fields
+  isGift?: boolean;
+  giftedByCustomerName?: string;
+  giftMessage?: string;
+  giftedAt?: string;
 }
 
 export interface PurchaseQueryParams {
   sortBy?: "Title" | "Date" | "Price" | "Quantity" | "CharityAmount";
   sortDirection?: "Ascending" | "Descending";
-  year?: "2024" | "2025";
+  year?: "2025" | "2024";
   searchQuery?: string;
+  giftFilter?: GiftFilterType;
 }

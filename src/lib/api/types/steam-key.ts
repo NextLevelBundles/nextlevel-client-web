@@ -1,3 +1,5 @@
+import { GiftFilterType } from "./purchase";
+
 export interface SteamKey {
   id: string;
   steamKeyId: string;
@@ -52,11 +54,17 @@ export interface SteamKey {
   platform?: "Steam";
   coverImageUrl?: string;
   steamAppId?: number;
+  // Gift-related fields
+  isGift?: boolean;
+  giftedByCustomerName?: string;
+  giftMessage?: string;
+  giftedAt?: string;
 }
 
 export interface SteamKeyQueryParams {
   searchQuery?: string;
   status?: "Assigned" | "Revealed" | "Expired" | "Refunded";
+  giftFilter?: GiftFilterType;
 }
 
 export interface RevealKeyResponse extends SteamKey {

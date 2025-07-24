@@ -27,6 +27,10 @@ export class PurchaseApi {
       searchParams.append("searchQuery", params.searchQuery);
     }
 
+    if (params?.giftFilter) {
+      searchParams.append("giftFilter", params.giftFilter);
+    }
+
     const endpoint = `/customer/purchases${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
 
     return await this.client.get<Purchase[]>(endpoint);

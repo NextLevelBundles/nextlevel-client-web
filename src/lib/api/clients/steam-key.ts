@@ -24,6 +24,10 @@ export class SteamKeyApi {
       searchParams.append("status", params.status);
     }
 
+    if (params?.giftFilter) {
+      searchParams.append("giftFilter", params.giftFilter);
+    }
+
     const endpoint = `/customer/steam-keys${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
 
     return await this.client.get<SteamKey[]>(endpoint);
