@@ -52,29 +52,39 @@ export function GiftForm({ item, onGiftUpdate, isUpdating }: GiftFormProps) {
     recipientName: item.giftRecipientName || "",
     giftMessage: item.giftMessage || "",
   });
+  // Track the item ID to detect when we're switching to a different item
+  const lastItemId = useRef(item.id);
+  // Track active timeout to cancel it if needed
+  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Update state when item prop changes (e.g., after API response)
+  // Update state when switching to a different cart item
   useEffect(() => {
-    setIsGift(item.isGift);
-    setRecipientEmail(item.giftRecipientEmail || "");
-    setRecipientName(item.giftRecipientName || "");
-    setGiftMessage(item.giftMessage || "");
-    setIsOpen(item.isGift || item.canOnlyBeGifted);
+    if (lastItemId.current !== item.id) {
+      // Clear any pending timeout when switching items
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+        updateTimeoutRef.current = null;
+      }
+      
+      // Reset state for the new item
+      setIsGift(item.isGift);
+      setRecipientEmail(item.giftRecipientEmail || "");
+      setRecipientName(item.giftRecipientName || "");
+      setGiftMessage(item.giftMessage || "");
+      setIsOpen(item.isGift || item.canOnlyBeGifted);
+      setEmailError("");
 
-    // Update last sent values to match current item state
-    lastSentValues.current = {
-      isGift: item.isGift,
-      recipientEmail: item.giftRecipientEmail || "",
-      recipientName: item.giftRecipientName || "",
-      giftMessage: item.giftMessage || "",
-    };
-  }, [
-    item.isGift,
-    item.giftRecipientEmail,
-    item.giftRecipientName,
-    item.giftMessage,
-    item.canOnlyBeGifted,
-  ]);
+      // Update tracking refs
+      lastItemId.current = item.id;
+      lastSentValues.current = {
+        isGift: item.isGift,
+        recipientEmail: item.giftRecipientEmail || "",
+        recipientName: item.giftRecipientName || "",
+        giftMessage: item.giftMessage || "",
+      };
+      isInitialMount.current = true;
+    }
+  }, [item.id, item.isGift, item.giftRecipientEmail, item.giftRecipientName, item.giftMessage, item.canOnlyBeGifted]);
 
   // Validate email format
   const validateEmail = (email: string) => {
@@ -87,6 +97,12 @@ export function GiftForm({ item, onGiftUpdate, isUpdating }: GiftFormProps) {
     if (item.canOnlyBeGifted && !checked) {
       // Cannot turn off gift mode for items that can only be gifted
       return;
+    }
+
+    // Clear any pending timeout
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current);
+      updateTimeoutRef.current = null;
     }
 
     setIsGift(checked);
@@ -128,7 +144,13 @@ export function GiftForm({ item, onGiftUpdate, isUpdating }: GiftFormProps) {
 
     if (!isGift) return;
 
-    const timeoutId = setTimeout(async () => {
+    // Clear any existing timeout
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current);
+    }
+
+    // Set new timeout
+    updateTimeoutRef.current = setTimeout(async () => {
       // Check if values have actually changed from last sent values
       const hasChanged =
         isGift !== lastSentValues.current.isGift ||
@@ -153,7 +175,7 @@ export function GiftForm({ item, onGiftUpdate, isUpdating }: GiftFormProps) {
 
       setEmailError("");
 
-      // Update last sent values
+      // Update last sent values BEFORE making the API call
       lastSentValues.current = {
         isGift,
         recipientEmail,
@@ -162,15 +184,22 @@ export function GiftForm({ item, onGiftUpdate, isUpdating }: GiftFormProps) {
       };
 
       // Update gift settings
-      await onGiftUpdate(item.id, {
-        isGift,
-        giftRecipientEmail: recipientEmail || undefined,
-        giftRecipientName: recipientName || undefined,
-        giftMessage: giftMessage || undefined,
-      });
+      try {
+        await onGiftUpdate(item.id, {
+          isGift,
+          giftRecipientEmail: recipientEmail || undefined,
+          giftRecipientName: recipientName || undefined,
+          giftMessage: giftMessage || undefined,
+        });
+      } catch (error) {
+        // On error, revert last sent values so user can retry
+        console.error("Failed to update gift settings:", error);
+      }
     }, 500); // Debounce API calls by 500ms
 
-    return () => clearTimeout(timeoutId);
+    return () => {
+      // Cleanup is handled by the next effect run
+    };
   }, [
     isGift,
     recipientEmail,
@@ -179,6 +208,15 @@ export function GiftForm({ item, onGiftUpdate, isUpdating }: GiftFormProps) {
     item.id,
     onGiftUpdate,
   ]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="space-y-3">
