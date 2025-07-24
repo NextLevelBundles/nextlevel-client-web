@@ -4,6 +4,8 @@ import {
   SteamKeyQueryParams,
   RevealKeyResponse,
   ViewKeyResponse,
+  GiftKeyRequest,
+  GiftKeyResponse,
 } from "../types/steam-key";
 
 export class SteamKeyApi {
@@ -42,6 +44,17 @@ export class SteamKeyApi {
   async viewKey(keyId: string): Promise<ViewKeyResponse> {
     return await this.client.post<ViewKeyResponse>(
       `/customer/steam-keys/${keyId}/view`
+    );
+  }
+
+  async getGiftableKeys(): Promise<SteamKey[]> {
+    return await this.client.get<SteamKey[]>("/customer/steam-keys/giftable");
+  }
+
+  async giftKey(assignmentId: string, giftData: GiftKeyRequest): Promise<GiftKeyResponse> {
+    return await this.client.post<GiftKeyResponse, GiftKeyRequest>(
+      `/customer/steam-keys/${assignmentId}/gift`,
+      giftData
     );
   }
 }

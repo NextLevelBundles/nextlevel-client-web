@@ -38,7 +38,7 @@ export interface SteamKey {
     screenshotUrlsJson?: string;
     steamAppId?: number;
   };
-  status: "Assigned" | "Revealed" | "Expired" | "Refunded";
+  status: "Assigned" | "Revealed" | "Expired" | "Refunded" | "Gifted";
   assignedAt: string;
   expiresAt?: string | null;
   revealedAt?: string | null;
@@ -59,11 +59,17 @@ export interface SteamKey {
   giftedByCustomerName?: string;
   giftMessage?: string;
   giftedAt?: string;
+  // Outgoing gift fields
+  giftStatus?: "Pending" | "Accepted" | "Declined";
+  giftRecipientEmail?: string;
+  giftRecipientName?: string;
+  giftSentAt?: string;
+  canBeGifted?: boolean;
 }
 
 export interface SteamKeyQueryParams {
   searchQuery?: string;
-  status?: "Assigned" | "Revealed" | "Expired" | "Refunded";
+  status?: "Assigned" | "Revealed" | "Expired" | "Refunded" | "Gifted";
   giftFilter?: GiftFilterType;
 }
 
@@ -73,4 +79,15 @@ export interface RevealKeyResponse extends SteamKey {
 
 export interface ViewKeyResponse {
   steamKeyValue?: string;
+}
+
+export interface GiftKeyRequest {
+  recipientEmail: string;
+  recipientName?: string;
+  message?: string;
+}
+
+export interface GiftKeyResponse {
+  success: boolean;
+  message: string;
 }

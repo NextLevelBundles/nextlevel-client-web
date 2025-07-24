@@ -1,6 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { steamKeyApi } from "@/lib/api";
-import { SteamKeyQueryParams } from "@/lib/api/types/steam-key";
+import { 
+  SteamKeyQueryParams,
+  GiftKeyRequest,
+} from "@/lib/api/types/steam-key";
 import { toast } from "sonner";
 
 // Query key factory
@@ -46,6 +49,29 @@ export function useViewKey() {
     mutationFn: (keyId: string) => steamKeyApi.viewKey(keyId),
     onError: (error) => {
       toast.error("Failed to view key", {
+        description:
+          error instanceof Error ? error.message : "Something went wrong",
+      });
+    },
+  });
+}
+
+export function useGiftKey() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ assignmentId, giftData }: { assignmentId: string; giftData: GiftKeyRequest }) => 
+      steamKeyApi.giftKey(assignmentId, giftData),
+    onSuccess: () => {
+      // Invalidate and refetch steam keys
+      queryClient.invalidateQueries({ queryKey: steamKeyKeys.all });
+
+      toast.success("🎁 Gift sent successfully!", {
+        description: "The recipient will receive an email with their gift.",
+      });
+    },
+    onError: (error) => {
+      toast.error("Failed to send gift", {
         description:
           error instanceof Error ? error.message : "Something went wrong",
       });

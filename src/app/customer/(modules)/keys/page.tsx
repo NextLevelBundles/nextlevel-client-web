@@ -36,10 +36,12 @@ import {
   useRevealKey,
   useViewKey,
 } from "@/hooks/queries/useSteamKeys";
-import { SteamKey, SteamKeyQueryParams } from "@/lib/api/types/steam-key";
+import { SteamKey, SteamKeyQueryParams, GiftKeyRequest } from "@/lib/api/types/steam-key";
 import { GiftFilterType } from "@/lib/api/types/purchase";
 import { GiftFilter } from "@/customer/components/gift-filter";
 import { GiftIndicator } from "@/customer/components/gift-indicator";
+import { GiftKeyModal } from "@/customer/components/steam-keys/gift-key-modal";
+import { useGiftKey } from "@/hooks/queries/useSteamKeys";
 
 // Progress levels and their requirements
 const PROGRESS_LEVELS = [
@@ -49,7 +51,7 @@ const PROGRESS_LEVELS = [
   { level: 4, title: "Steam Legend", required: 25, icon: "👑" },
 ];
 
-type KeyStatus = "All" | "Assigned" | "Revealed" | "Expired" | "Refunded";
+type KeyStatus = "All" | "Assigned" | "Revealed" | "Expired" | "Refunded" | "Gifted";
 
 const statusOptions: KeyStatus[] = [
   "All",
@@ -57,6 +59,7 @@ const statusOptions: KeyStatus[] = [
   "Revealed",
   "Expired",
   "Refunded",
+  "Gifted",
 ];
 
 const copyMessages = [
@@ -71,6 +74,8 @@ export default function KeysPage() {
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<KeyStatus>("All");
   const [giftFilter, setGiftFilter] = useState<GiftFilterType>("All");
+  const [selectedGiftKey, setSelectedGiftKey] = useState<SteamKey | null>(null);
+  const [isGiftModalOpen, setIsGiftModalOpen] = useState(false);
   const [flippingStates, setFlippingStates] = useState<{
     [key: string]: {
       isFlipping: boolean;
@@ -92,7 +97,7 @@ export default function KeysPage() {
   const queryParams: SteamKeyQueryParams = {
     ...(debouncedSearchQuery && { searchQuery: debouncedSearchQuery }),
     ...(statusFilter !== "All" && {
-      status: statusFilter as "Assigned" | "Revealed" | "Expired" | "Refunded",
+      status: statusFilter,
     }),
     giftFilter,
   };
@@ -110,6 +115,9 @@ export default function KeysPage() {
 
   // View key mutation
   const viewKeyMutation = useViewKey();
+
+  // Gift key mutation
+  const giftKeyMutation = useGiftKey();
 
   // Calculate user's progress
   const revealedKeys = steamKeys.filter(
@@ -241,9 +249,13 @@ export default function KeysPage() {
     window.open(`steam://open/activateproduct?key=${key}`);
   };
 
-  const handleGiftKey = (keyId: string) => {
-    // TODO: Implement gifting functionality
-    toast.info(`Gifting feature coming soon! Key ID: ${keyId}`);
+  const handleGiftKey = (key: SteamKey) => {
+    setSelectedGiftKey(key);
+    setIsGiftModalOpen(true);
+  };
+
+  const handleGiftSubmit = async (assignmentId: string, giftData: GiftKeyRequest) => {
+    await giftKeyMutation.mutateAsync({ assignmentId, giftData });
   };
 
   const getStatusCount = (status: KeyStatus) => {
@@ -479,6 +491,18 @@ export default function KeysPage() {
                           New!
                         </Badge>
                       )}
+                      {key.status === "Gifted" && (
+                        <Badge variant="outline" className="gap-1">
+                          <GiftIcon className="h-3 w-3" />
+                          Gifted
+                        </Badge>
+                      )}
+                      {key.isGift && (
+                        <Badge variant="secondary" className="gap-1">
+                          <GiftIcon className="h-3 w-3" />
+                          Received
+                        </Badge>
+                      )}
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground">
@@ -550,36 +574,67 @@ export default function KeysPage() {
                             <TooltipContent>Activate on Steam</TooltipContent>
                           </Tooltip>
 
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <motion.div whileTap={{ scale: 0.95 }}>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 transition-all duration-200"
-                                  onClick={() => handleGiftKey(key.id)}
-                                >
-                                  <GiftIcon className="h-4 w-4" />
-                                </Button>
-                              </motion.div>
-                            </TooltipTrigger>
-                            <TooltipContent>Gift this game</TooltipContent>
-                          </Tooltip>
+                          {key.canBeGifted !== false && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <motion.div whileTap={{ scale: 0.95 }}>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 transition-all duration-200"
+                                    onClick={() => handleGiftKey(key)}
+                                  >
+                                    <GiftIcon className="h-4 w-4" />
+                                  </Button>
+                                </motion.div>
+                              </TooltipTrigger>
+                              <TooltipContent>Gift this game</TooltipContent>
+                            </Tooltip>
+                          )}
                         </TooltipProvider>
                       </>
                     ) : key.status === "Assigned" ? (
-                      <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <Button
-                          className="cursor-pointer gap-2 bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60"
-                          onClick={() => handleRevealKey(key.id)}
+                      <>
+                        <motion.div
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
                         >
-                          <KeyIcon className="h-4 w-4" />
-                          Reveal Key
-                        </Button>
-                      </motion.div>
+                          <Button
+                            className="cursor-pointer gap-2 bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60"
+                            onClick={() => handleRevealKey(key.id)}
+                          >
+                            <KeyIcon className="h-4 w-4" />
+                            Reveal Key
+                          </Button>
+                        </motion.div>
+                        {key.canBeGifted !== false && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <motion.div whileTap={{ scale: 0.95 }}>
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-8 w-8 transition-all duration-200"
+                                    onClick={() => handleGiftKey(key)}
+                                  >
+                                    <GiftIcon className="h-4 w-4" />
+                                  </Button>
+                                </motion.div>
+                              </TooltipTrigger>
+                              <TooltipContent>Gift this game without revealing</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                      </>
+                    ) : key.status === "Gifted" ? (
+                      <Badge
+                        variant="secondary"
+                        className="gap-1"
+                      >
+                        <GiftIcon className="h-3 w-3" />
+                        Gifted to {key.giftRecipientName || key.giftRecipientEmail || "someone"}
+                      </Badge>
                     ) : (
                       <Badge
                         variant="outline"
@@ -595,6 +650,18 @@ export default function KeysPage() {
           )}
         </CardContent>
       </Card>
+
+      {selectedGiftKey && (
+        <GiftKeyModal
+          steamKey={selectedGiftKey}
+          isOpen={isGiftModalOpen}
+          onClose={() => {
+            setIsGiftModalOpen(false);
+            setSelectedGiftKey(null);
+          }}
+          onGift={handleGiftSubmit}
+        />
+      )}
     </div>
   );
 }
