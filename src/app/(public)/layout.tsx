@@ -13,22 +13,21 @@ export default function PublicLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background flex flex-col">
           {/* Header */}
           <header className="border-b bg-card/50 backdrop-blur-sm">
             <div className="container mx-auto px-4">
               <div className="flex h-16 items-center justify-between">
                 <Link href="/" className="flex items-center gap-2">
                   <Image
-                    src="/logo.png"
+                    src="/logo/digiphile-logo-rectangle.png"
                     alt="NextLevel"
-                    width={32}
-                    height={32}
-                    className="h-8 w-8"
+                    width={200}
+                    height={50}
+                    className="h-12 w-auto"
                   />
-                  <span className="text-xl font-bold">NextLevel</span>
                 </Link>
-                <nav className="flex items-center gap-4">
+                {/* <nav className="flex items-center gap-4">
                   <Link
                     href="/signin"
                     className="text-sm text-muted-foreground hover:text-foreground"
@@ -41,20 +40,20 @@ export default function PublicLayout({
                   >
                     Create Account
                   </Link>
-                </nav>
+                </nav> */}
               </div>
             </div>
           </header>
 
           {/* Main Content */}
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 flex items-center">{children}</main>
 
           {/* Footer */}
           <footer className="mt-auto border-t bg-card/50 py-8">
             <div className="container mx-auto px-4">
               <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
                 <p className="text-sm text-muted-foreground">
-                  © {new Date().getFullYear()} NextLevel. All rights reserved.
+                  © {new Date().getFullYear()} Digiphile. All rights reserved.
                 </p>
                 <div className="flex gap-6">
                   <Link
