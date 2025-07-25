@@ -1,6 +1,6 @@
 import { ClientApi } from "../client-api";
 import {
-  SteamKey,
+  SteamKeyAssignment,
   SteamKeyQueryParams,
   RevealKeyResponse,
   ViewKeyResponse,
@@ -16,7 +16,7 @@ export class SteamKeyApi {
     this.client = client;
   }
 
-  async getSteamKeys(params?: SteamKeyQueryParams): Promise<SteamKey[]> {
+  async getSteamKeys(params?: SteamKeyQueryParams): Promise<SteamKeyAssignment[]> {
     const searchParams = new URLSearchParams();
 
     if (params?.searchQuery) {
@@ -33,7 +33,7 @@ export class SteamKeyApi {
 
     const endpoint = `/customer/steam-keys${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
 
-    return await this.client.get<SteamKey[]>(endpoint);
+    return await this.client.get<SteamKeyAssignment[]>(endpoint);
   }
 
   async revealKey(keyId: string): Promise<RevealKeyResponse> {
@@ -48,8 +48,8 @@ export class SteamKeyApi {
     );
   }
 
-  async getGiftableKeys(): Promise<SteamKey[]> {
-    return await this.client.get<SteamKey[]>("/customer/steam-keys/giftable");
+  async getGiftableKeys(): Promise<SteamKeyAssignment[]> {
+    return await this.client.get<SteamKeyAssignment[]>("/customer/steam-keys/giftable");
   }
 
   async giftKey(assignmentId: string, giftData: GiftKeyRequest): Promise<GiftKeyResponse> {

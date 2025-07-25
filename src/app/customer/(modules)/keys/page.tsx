@@ -22,7 +22,6 @@ import {
   SearchIcon,
   XIcon,
   SparklesIcon,
-  Mail,
 } from "lucide-react";
 import {
   Tooltip,
@@ -39,13 +38,15 @@ import {
   useSteamKeyStatusCounts,
 } from "@/hooks/queries/useSteamKeys";
 import {
-  SteamKey,
+  SteamKeyAssignment,
   SteamKeyQueryParams,
   GiftKeyRequest,
 } from "@/lib/api/types/steam-key";
 import { GiftFilterType } from "@/lib/api/types/purchase";
 import { GiftKeyModal } from "@/customer/components/steam-keys/gift-key-modal";
 import { FilterDropdown } from "@/customer/components/filter-dropdown";
+import { SteamKeyGiftIndicator } from "@/customer/components/steam-keys/steam-key-gift-indicator";
+import { useSession } from "next-auth/react";
 
 // Progress levels and their requirements
 const PROGRESS_LEVELS = [
@@ -72,11 +73,17 @@ const copyMessages = [
 ];
 
 export default function KeysPage() {
+  const { data: session } = useSession();
+  const currentCustomerId = session?.["custom:customerId"] as
+    | string
+    | undefined;
+  const currentUserEmail = session?.user?.email;
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
   const [giftFilter, setGiftFilter] = useState<GiftFilterType>("All");
-  const [selectedGiftKey, setSelectedGiftKey] = useState<SteamKey | null>(null);
+  const [selectedGiftKey, setSelectedGiftKey] =
+    useState<SteamKeyAssignment | null>(null);
   const [isGiftModalOpen, setIsGiftModalOpen] = useState(false);
   const [flippingStates, setFlippingStates] = useState<{
     [key: string]: {
@@ -99,11 +106,7 @@ export default function KeysPage() {
   const queryParams: SteamKeyQueryParams = {
     ...(debouncedSearchQuery && { searchQuery: debouncedSearchQuery }),
     ...(statusFilter !== "All" && {
-      status: statusFilter as
-        | "Assigned"
-        | "Revealed"
-        | "Expired"
-        | "Refunded",
+      status: statusFilter as "Assigned" | "Revealed" | "Expired" | "Refunded",
     }),
     giftFilter,
   };
@@ -145,18 +148,17 @@ export default function KeysPage() {
       ...option,
       count: steamKeys.filter((key) => {
         if (option.value === "All") return true;
-        if (option.value === "Owned")
-          return !key.isGift;
-        if (option.value === "GivenByMe") 
-          // Outgoing gifts are gifts with giftAccepted === false
-          return key.isGift && key.giftAccepted === false;
-        if (option.value === "ReceivedByMe") 
-          // Incoming gifts are gifts with giftAccepted === true or null
-          return key.isGift && (key.giftAccepted === true || key.giftAccepted === null);
+        if (option.value === "Owned") return !key.isGift;
+        if (option.value === "GivenByMe")
+          // Outgoing gifts are gifts where current user is the customer who sent it
+          return key.isGift && key.customerId === currentCustomerId;
+        if (option.value === "ReceivedByMe")
+          // Incoming gifts are gifts where current user is not the customer who sent it
+          return key.isGift && key.customerId !== currentCustomerId;
         return false;
       }).length,
     }));
-  }, [steamKeys]);
+  }, [steamKeys, currentCustomerId]);
 
   // Calculate user's progress
   const revealedKeys = steamKeys.filter(
@@ -171,7 +173,7 @@ export default function KeysPage() {
   console.log(nextLevel);
 
   // Helper function to check if a key is newly assigned (within 30 days)
-  const isNewlyAssigned = (key: SteamKey): boolean => {
+  const isNewlyAssigned = (key: SteamKeyAssignment): boolean => {
     if (key.status !== "Assigned" || !key.assignedAt) return false;
 
     const assignedDate = dayjs(key.assignedAt);
@@ -181,7 +183,7 @@ export default function KeysPage() {
   };
 
   // Helper function to get the key value
-  const getKeyValue = (key: SteamKey): string | null => {
+  const getKeyValue = (key: SteamKeyAssignment): string | null => {
     return key.steamKeyValue || null;
   };
 
@@ -289,7 +291,7 @@ export default function KeysPage() {
     window.open(`steam://open/activateproduct?key=${key}`);
   };
 
-  const handleGiftKey = (key: SteamKey) => {
+  const handleGiftKey = (key: SteamKeyAssignment) => {
     setSelectedGiftKey(key);
     setIsGiftModalOpen(true);
   };
@@ -567,17 +569,15 @@ export default function KeysPage() {
                           New
                         </Badge>
                       )}
-                      {key.isGift && key.giftAccepted === null && (
-                        <Badge className="gap-1 bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800 dark:hover:bg-amber-950/40">
-                          <GiftIcon className="h-3 w-3" />
-                          Gift Pending
-                        </Badge>
-                      )}
-                      {key.isGift && key.giftAccepted === true && (
-                        <Badge className="gap-1 bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-950/40">
-                          <GiftIcon className="h-3 w-3" />
-                          Gift Accepted
-                        </Badge>
+                      {key.isGift && (
+                        <SteamKeyGiftIndicator
+                          steamKey={key}
+                          currentCustomerId={currentCustomerId}
+                          currentUserEmail={currentUserEmail || undefined}
+                          onGiftAccepted={() => {
+                            window.location.reload();
+                          }}
+                        />
                       )}
                     </div>
                     <div className="space-y-1">
@@ -586,25 +586,14 @@ export default function KeysPage() {
                         {key.assignedAt
                           ? new Date(key.assignedAt).toLocaleDateString()
                           : "Unknown"}
-                        {key.expiresAt && (
+                        {key.status === "Assigned" && key.expiresAt && (
                           <>
-                            {" "}• Expires on{" "}
+                            {" "}
+                            • Expires on{" "}
                             {new Date(key.expiresAt).toLocaleDateString()}
                           </>
                         )}
                       </p>
-                      {key.isGift && key.giftAccepted === true && (
-                        <p className="text-sm text-muted-foreground">
-                          Gift accepted{key.giftAcceptedAt && (
-                            <> on {new Date(key.giftAcceptedAt).toLocaleDateString()}</>
-                          )}
-                        </p>
-                      )}
-                      {key.isGift && key.giftAccepted === null && (
-                        <p className="text-sm text-muted-foreground">
-                          Awaiting recipient to accept gift
-                        </p>
-                      )}
                     </div>
                   </div>
 
@@ -668,33 +657,14 @@ export default function KeysPage() {
                         </TooltipProvider>
                       </>
                     ) : key.status === "Assigned" ? (
-                      // Check if this is an outgoing gift (gifted to someone else)
-                      key.isGift && key.giftAccepted === false ? (
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <motion.div whileTap={{ scale: 0.95 }}>
-                                <Button
-                                  variant="outline"
-                                  className="gap-2"
-                                  onClick={() => {
-                                    toast.info("Resend invite", {
-                                      description: "Feature coming soon - email will be resent to recipient"
-                                    });
-                                  }}
-                                >
-                                  <Mail className="h-4 w-4" />
-                                  Resend Invite
-                                </Button>
-                              </motion.div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              Resend gift invitation email
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      ) : (
-                        <>
+                      <>
+                        {/* Only show Reveal Key button if:
+                            1. Key is not a gift, OR
+                            2. Key is a received gift that has been accepted */}
+                        {(!key.isGift ||
+                          (key.isGift &&
+                            key.customerId !== currentCustomerId &&
+                            key.giftAccepted === true)) && (
                           <motion.div
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
@@ -707,29 +677,29 @@ export default function KeysPage() {
                               Reveal Key
                             </Button>
                           </motion.div>
-                          {!key.isGift && (
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <motion.div whileTap={{ scale: 0.95 }}>
-                                    <Button
-                                      variant="outline"
-                                      size="icon"
-                                      className="h-8 w-8 transition-all duration-200"
-                                      onClick={() => handleGiftKey(key)}
-                                    >
-                                      <GiftIcon className="h-4 w-4" />
-                                    </Button>
-                                  </motion.div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  Gift this game without revealing
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          )}
-                        </>
-                      )
+                        )}
+                        {!key.isGift && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <motion.div whileTap={{ scale: 0.95 }}>
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-8 w-8 transition-all duration-200"
+                                    onClick={() => handleGiftKey(key)}
+                                  >
+                                    <GiftIcon className="h-4 w-4" />
+                                  </Button>
+                                </motion.div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                Gift this game without revealing
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                      </>
                     ) : key.isGift && key.giftAccepted === null ? (
                       <Badge variant="secondary" className="gap-1">
                         <GiftIcon className="h-3 w-3" />

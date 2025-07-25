@@ -1,6 +1,6 @@
 import { GiftFilterType } from "./purchase";
 
-export interface SteamKey {
+export interface SteamKeyAssignment {
   id: string;
   steamKeyId: string;
   customerId: string;
@@ -43,10 +43,16 @@ export interface SteamKey {
   revealedAt: string | null;
   refundedAt: string | null;
   steamKeyValue: string | null;
-  giftAccepted?: boolean | null;
+  giftAccepted: boolean | null;
   isGift: boolean;
+  isPurchaseGift: boolean;
   giftAcceptedAt: string | null;
-  isPurchaseGift?: boolean | null;
+  giftedByCustomerName?: string;
+  giftedByCustomerId?: string;
+  giftRecipientEmail?: string;
+  giftRecipientName?: string;
+  giftMessage?: string;
+  giftedAt?: string;
 }
 
 export interface SteamKeyQueryParams {
@@ -55,7 +61,7 @@ export interface SteamKeyQueryParams {
   giftFilter?: GiftFilterType;
 }
 
-export interface RevealKeyResponse extends SteamKey {
+export interface RevealKeyResponse extends SteamKeyAssignment {
   steamKeyValue: string; // This is guaranteed to be present in the response
 }
 

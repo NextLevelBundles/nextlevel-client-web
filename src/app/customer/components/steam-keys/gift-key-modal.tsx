@@ -26,7 +26,7 @@ import { Alert, AlertDescription } from "@/app/(shared)/components/ui/alert";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { SteamKey, GiftKeyRequest } from "@/lib/api/types/steam-key";
+import { SteamKeyAssignment, GiftKeyRequest } from "@/lib/api/types/steam-key";
 
 const GIFT_MESSAGE_LIMIT = 500;
 
@@ -45,7 +45,7 @@ const giftFormSchema = z.object({
 type GiftFormValues = z.infer<typeof giftFormSchema>;
 
 interface GiftKeyModalProps {
-  steamKey: SteamKey;
+  steamKey: SteamKeyAssignment;
   isOpen: boolean;
   onClose: () => void;
   onGift: (assignmentId: string, giftData: GiftKeyRequest) => Promise<void>;
