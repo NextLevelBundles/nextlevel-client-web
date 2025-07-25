@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import {
   Card,
@@ -55,6 +56,7 @@ const ownershipOptions = [
 ];
 
 export function PurchaseHistory() {
+  const { data: session } = useSession();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [selectedYear, setSelectedYear] = useState("All Years");
@@ -401,7 +403,22 @@ export function PurchaseHistory() {
                             giftedByCustomerName={purchase.giftedByCustomerName}
                             giftMessage={purchase.giftMessage}
                             giftedAt={purchase.giftedAt}
+                            giftRecipientEmail={purchase.giftRecipientEmail}
+                            giftRecipientName={purchase.giftRecipientName}
+                            giftAccepted={purchase.giftAccepted}
+                            giftAcceptedAt={purchase.giftAcceptedAt}
                             variant="compact"
+                            cartItemId={purchase.id}
+                            recipientEmail={
+                              // For incoming gifts, use current user's email
+                              purchase.giftedByCustomerName 
+                                ? session?.user?.email || undefined
+                                : purchase.giftRecipientEmail
+                            }
+                            onGiftAccepted={() => {
+                              // Refresh the purchases list
+                              window.location.reload();
+                            }}
                           />
                         </div>
                       </TableCell>

@@ -10,7 +10,8 @@ import { toast } from "sonner";
 import { giftApi } from "@/lib/api";
 import { CartItemGift } from "@/lib/api/types/gift";
 import { GiftDetailsCard } from "@/app/(public)/components/gift-details-card";
-import { AuthPrompt } from "@/app/(public)/components/auth-prompt";
+import { GiftAuthPrompt } from "@/app/(public)/components/gift-auth-prompt";
+import { GiftProductsList } from "@/app/(public)/components/gift-products-list";
 import { giftAcceptanceRateLimiter } from "@/lib/utils/rate-limiter";
 import {
   AlertDialog,
@@ -49,6 +50,7 @@ export default function CartItemGiftPage() {
       try {
         setIsLoading(true);
         const giftData = await giftApi.getCartItemGift(cartItemId, email);
+        console.log(giftData);
         setGift(giftData);
       } catch (err) {
         console.error("Error fetching gift:", err);
@@ -116,12 +118,17 @@ export default function CartItemGiftPage() {
   };
 
   const canAcceptGift = () => {
+    if (!gift || !session) return false;
+    // Gift must be pending (not accepted yet)
+    if (gift.giftAccepted === true) return false;
+    // Check email match if recipientEmail is set
+    if (gift.recipientEmail && gift.recipientEmail !== session.user?.email)
+      return false;
     return true;
-    // if (!gift || !session) return false;
-    // if (gift.status !== "Pending") return false;
-    // if (gift.recipientEmail !== session.user?.email) return false;
-    // return true;
   };
+
+  const isGiftPending = gift && !gift.giftAccepted;
+  const isGiftAccepted = gift && gift.giftAccepted === true;
 
   if (!email) {
     return (
@@ -165,31 +172,52 @@ export default function CartItemGiftPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mx-auto max-w-2xl space-y-6">
+        {/* Welcome message for non-authenticated users */}
+        {!session && isGiftPending && (
+          <div className="text-center space-y-2 mb-8">
+            <h1 className="text-3xl font-bold">
+              You&apos;ve received a gift! 🎁
+            </h1>
+            <p className="text-lg text-muted-foreground">
+              {gift.giftedByCustomerName} has sent you something special
+            </p>
+          </div>
+        )}
+
         <GiftDetailsCard
-          title={gift.productTitle}
-          description={gift.productDescription}
-          imageUrl={gift.productImageUrl}
-          bundleName={gift.bundleName || gift.listingTitle}
+          title={gift.snapshotTitle}
+          description={`${gift.quantity} × ${gift.snapshotProducts.length} items`}
+          imageUrl={gift.snapshotImageUrl}
+          bundleName={gift.snapshotTitle}
           giftedByName={gift.giftedByCustomerName}
           giftMessage={gift.giftMessage}
-          createdAt={gift.createdAt}
-          expiresAt={gift.expiresAt}
-          status={gift.status}
+          createdAt={gift.giftedAt}
+          expiresAt={undefined} // No expiry in the new model
+          status={isGiftAccepted ? "Accepted" : "Pending"}
+          additionalInfo={
+            <GiftProductsList
+              products={gift.snapshotProducts}
+              platform={gift.snapshotPlatform}
+            />
+          }
         />
 
         {/* Authentication or Accept Button */}
-        {(gift.status === "Pending" || gift.status !== "Pending") && (
+        {isGiftPending && (
           <>
             {sessionStatus === "loading" ? (
               <div className="flex justify-center">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             ) : !session ? (
-              <AuthPrompt
-                recipientEmail={gift.recipientEmail}
-                hasAccount={gift.recipientHasAccount}
-                returnUrl={returnUrl}
-              />
+              <div className="mt-6">
+                <GiftAuthPrompt
+                  recipientEmail={gift.recipientEmail || email || ""}
+                  hasAccount={gift.recipientHasAccount || false}
+                  returnUrl={returnUrl}
+                  giftTitle={gift.snapshotTitle}
+                />
+              </div>
             ) : canAcceptGift() ? (
               <div className="flex justify-center">
                 <Button
@@ -206,22 +234,26 @@ export default function CartItemGiftPage() {
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  This gift is for {gift.recipientEmail}. Please sign in with
-                  the correct account to accept it.
+                  This gift is for {gift.recipientEmail || email}. Please sign
+                  in with the correct account to accept it.
                 </AlertDescription>
               </Alert>
             )}
           </>
         )}
 
-        {gift.status === "Accepted" && (
+        {isGiftAccepted && (
           <Alert>
             <Check className="h-4 w-4" />
             <AlertDescription>
-              This gift has already been accepted.
+              This gift has already been accepted
+              {gift.giftAcceptedAt &&
+                ` on ${new Date(gift.giftAcceptedAt).toLocaleDateString()}`}
+              .
             </AlertDescription>
           </Alert>
         )}
+
       </div>
 
       {/* Confirmation Dialog */}

@@ -37,6 +37,11 @@ export interface Purchase {
   giftedByCustomerName?: string;
   giftMessage?: string;
   giftedAt?: string;
+  // Outgoing gift fields
+  giftRecipientEmail?: string;
+  giftRecipientName?: string;
+  giftAccepted?: boolean | null;
+  giftAcceptedAt?: string | null;
 }
 
 export interface PurchaseQueryParams {

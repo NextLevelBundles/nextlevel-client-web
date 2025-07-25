@@ -27,7 +27,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { SteamKey, GiftKeyRequest } from "@/lib/api/types/steam-key";
-import Image from "next/image";
 
 const GIFT_MESSAGE_LIMIT = 500;
 
@@ -116,20 +115,10 @@ export function GiftKeyModal({
         <div className="my-4">
           {/* Game Preview */}
           <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border">
-            {steamKey.coverImageUrl && (
-              <div className="relative w-16 h-16 rounded overflow-hidden">
-                <Image
-                  src={steamKey.coverImageUrl}
-                  alt={steamKey.productTitle}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            )}
             <div className="flex-1">
               <h4 className="font-semibold text-sm">{steamKey.productTitle}</h4>
               <p className="text-xs text-muted-foreground">
-                From {steamKey.bundleName || "Unknown Bundle"}
+                Steam Key
               </p>
             </div>
           </div>

@@ -1,21 +1,41 @@
+export interface SteamGameInfo {
+  steamAppId: number;
+  packageId: string;
+  steamKeyId: string;
+}
+
+export interface SnapshotProduct {
+  productId: string;
+  title: string;
+  coverImageUrl: string;
+  steamGameInfo?: SteamGameInfo;
+}
+
 export interface CartItemGift {
   id: string;
-  cartItemId: string;
-  productTitle: string;
-  productDescription?: string;
-  productImageUrl?: string;
-  bundleName?: string;
-  listingTitle?: string;
-  giftedByCustomerName: string;
-  giftedByCustomerId: string;
-  recipientEmail: string;
-  recipientName?: string;
-  giftMessage?: string;
+  type: "Bundle" | "Listing";
   createdAt: string;
-  expiresAt?: string;
-  acceptedAt?: string;
-  status: "Pending" | "Accepted" | "Expired" | "Declined";
-  recipientHasAccount: boolean;
+  completedAt: string | null;
+  listingId: string | null;
+  bundleId: string | null;
+  bundleTierId: string | null;
+  quantity: number;
+  price: number;
+  charityPercentage: number;
+  charityAmount: number;
+  snapshotTitle: string;
+  snapshotImageUrl: string;
+  snapshotPlatform: string;
+  snapshotTierTitle?: string;
+  snapshotTierPrice?: number;
+  snapshotProducts: SnapshotProduct[];
+  giftedByCustomerName: string;
+  giftMessage?: string;
+  giftedAt: string;
+  giftAccepted: boolean | null;
+  giftAcceptedAt: string | null;
+  recipientEmail?: string;
+  recipientHasAccount?: boolean;
 }
 
 export interface SteamKeyGift {

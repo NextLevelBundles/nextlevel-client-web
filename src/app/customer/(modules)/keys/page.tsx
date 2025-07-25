@@ -22,6 +22,7 @@ import {
   SearchIcon,
   XIcon,
   SparklesIcon,
+  Mail,
 } from "lucide-react";
 import {
   Tooltip,
@@ -43,7 +44,6 @@ import {
   GiftKeyRequest,
 } from "@/lib/api/types/steam-key";
 import { GiftFilterType } from "@/lib/api/types/purchase";
-import { GiftIndicator } from "@/customer/components/gift-indicator";
 import { GiftKeyModal } from "@/customer/components/steam-keys/gift-key-modal";
 import { FilterDropdown } from "@/customer/components/filter-dropdown";
 
@@ -103,8 +103,7 @@ export default function KeysPage() {
         | "Assigned"
         | "Revealed"
         | "Expired"
-        | "Refunded"
-        | "Gifted",
+        | "Refunded",
     }),
     giftFilter,
   };
@@ -147,11 +146,13 @@ export default function KeysPage() {
       count: steamKeys.filter((key) => {
         if (option.value === "All") return true;
         if (option.value === "Owned")
-          return !key.isGift && key.status !== "Gifted";
-        if (option.value === "Gifted")
-          return key.isGift || key.status === "Gifted";
-        if (option.value === "GivenByMe") return key.status === "Gifted";
-        if (option.value === "ReceivedByMe") return key.isGift;
+          return !key.isGift;
+        if (option.value === "GivenByMe") 
+          // Outgoing gifts are gifts with giftAccepted === false
+          return key.isGift && key.giftAccepted === false;
+        if (option.value === "ReceivedByMe") 
+          // Incoming gifts are gifts with giftAccepted === true or null
+          return key.isGift && (key.giftAccepted === true || key.giftAccepted === null);
         return false;
       }).length,
     }));
@@ -179,9 +180,9 @@ export default function KeysPage() {
     return assignedDate.isAfter(thirtyDaysAgo);
   };
 
-  // Helper function to get the key value (supports both new and legacy property names)
+  // Helper function to get the key value
   const getKeyValue = (key: SteamKey): string | null => {
-    return key.steamKeyValue || key.keyValue || null;
+    return key.steamKeyValue || null;
   };
 
   const triggerConfetti = () => {
@@ -386,7 +387,14 @@ export default function KeysPage() {
 
       <Card className="bg-linear-to-br from-card to-card/95 dark:from-[#1a1d2e] dark:to-[#1a1d2e]/95 shadow-md">
         <CardHeader>
-          <CardTitle>Available Keys</CardTitle>
+          <CardTitle>
+            Available Keys
+            {steamKeys.length > 0 && (
+              <span className="text-sm text-muted-foreground">
+                &nbsp; ({steamKeys.length} found)
+              </span>
+            )}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -552,52 +560,51 @@ export default function KeysPage() {
                       <h3 className="font-semibold">{key.productTitle}</h3>
                       {isNewlyAssigned(key) && (
                         <Badge
-                          variant="secondary"
-                          className="animate-subtle-pulse"
+                          variant="outline"
+                          className="animate-subtle-pulse bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800"
                         >
-                          New!
+                          <SparklesIcon className="h-3 w-3 mr-1" />
+                          New
                         </Badge>
                       )}
-                      {key.status === "Gifted" && (
-                        <Badge variant="outline" className="gap-1">
+                      {key.isGift && key.giftAccepted === null && (
+                        <Badge className="gap-1 bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800 dark:hover:bg-amber-950/40">
                           <GiftIcon className="h-3 w-3" />
-                          Gifted
+                          Gift Pending
                         </Badge>
                       )}
-                      {key.isGift && (
-                        <Badge variant="secondary" className="gap-1">
+                      {key.isGift && key.giftAccepted === true && (
+                        <Badge className="gap-1 bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-950/40">
                           <GiftIcon className="h-3 w-3" />
-                          Received
+                          Gift Accepted
                         </Badge>
                       )}
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground">
-                        From{" "}
-                        {key.bundleId ? (
-                          <Link
-                            href={`/my-bundles/${key.bundleId}`}
-                            className="hover:text-primary"
-                          >
-                            {key.bundleName || "Unknown Bundle"}
-                          </Link>
-                        ) : (
-                          <span>{key.bundleName || "Unknown Bundle"}</span>
-                        )}{" "}
-                        • Purchased on{" "}
-                        {key.purchaseDate
-                          ? new Date(key.purchaseDate).toLocaleDateString()
-                          : key.assignedAt
-                            ? new Date(key.assignedAt).toLocaleDateString()
-                            : "Unknown"}
+                        Assigned on{" "}
+                        {key.assignedAt
+                          ? new Date(key.assignedAt).toLocaleDateString()
+                          : "Unknown"}
+                        {key.expiresAt && (
+                          <>
+                            {" "}• Expires on{" "}
+                            {new Date(key.expiresAt).toLocaleDateString()}
+                          </>
+                        )}
                       </p>
-                      <GiftIndicator
-                        isGift={key.isGift}
-                        giftedByCustomerName={key.giftedByCustomerName}
-                        giftMessage={key.giftMessage}
-                        giftedAt={key.giftedAt}
-                        variant="compact"
-                      />
+                      {key.isGift && key.giftAccepted === true && (
+                        <p className="text-sm text-muted-foreground">
+                          Gift accepted{key.giftAcceptedAt && (
+                            <> on {new Date(key.giftAcceptedAt).toLocaleDateString()}</>
+                          )}
+                        </p>
+                      )}
+                      {key.isGift && key.giftAccepted === null && (
+                        <p className="text-sm text-muted-foreground">
+                          Awaiting recipient to accept gift
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -641,7 +648,7 @@ export default function KeysPage() {
                             <TooltipContent>Activate on Steam</TooltipContent>
                           </Tooltip>
 
-                          {key.canBeGifted !== false && (
+                          {!key.isGift && (
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <motion.div whileTap={{ scale: 0.95 }}>
@@ -661,48 +668,72 @@ export default function KeysPage() {
                         </TooltipProvider>
                       </>
                     ) : key.status === "Assigned" ? (
-                      <>
-                        <motion.div
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          <Button
-                            className="cursor-pointer gap-2 bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60"
-                            onClick={() => handleRevealKey(key.id)}
+                      // Check if this is an outgoing gift (gifted to someone else)
+                      key.isGift && key.giftAccepted === false ? (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <motion.div whileTap={{ scale: 0.95 }}>
+                                <Button
+                                  variant="outline"
+                                  className="gap-2"
+                                  onClick={() => {
+                                    toast.info("Resend invite", {
+                                      description: "Feature coming soon - email will be resent to recipient"
+                                    });
+                                  }}
+                                >
+                                  <Mail className="h-4 w-4" />
+                                  Resend Invite
+                                </Button>
+                              </motion.div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              Resend gift invitation email
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      ) : (
+                        <>
+                          <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
                           >
-                            <KeyIcon className="h-4 w-4" />
-                            Reveal Key
-                          </Button>
-                        </motion.div>
-                        {key.canBeGifted !== false && (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <motion.div whileTap={{ scale: 0.95 }}>
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8 transition-all duration-200"
-                                    onClick={() => handleGiftKey(key)}
-                                  >
-                                    <GiftIcon className="h-4 w-4" />
-                                  </Button>
-                                </motion.div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                Gift this game without revealing
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        )}
-                      </>
-                    ) : key.status === "Gifted" ? (
+                            <Button
+                              className="cursor-pointer gap-2 bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60"
+                              onClick={() => handleRevealKey(key.id)}
+                            >
+                              <KeyIcon className="h-4 w-4" />
+                              Reveal Key
+                            </Button>
+                          </motion.div>
+                          {!key.isGift && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <motion.div whileTap={{ scale: 0.95 }}>
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      className="h-8 w-8 transition-all duration-200"
+                                      onClick={() => handleGiftKey(key)}
+                                    >
+                                      <GiftIcon className="h-4 w-4" />
+                                    </Button>
+                                  </motion.div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  Gift this game without revealing
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                        </>
+                      )
+                    ) : key.isGift && key.giftAccepted === null ? (
                       <Badge variant="secondary" className="gap-1">
                         <GiftIcon className="h-3 w-3" />
-                        Gifted to{" "}
-                        {key.giftRecipientName ||
-                          key.giftRecipientEmail ||
-                          "someone"}
+                        Awaiting acceptance
                       </Badge>
                     ) : (
                       <Badge

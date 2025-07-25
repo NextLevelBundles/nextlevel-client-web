@@ -30,46 +30,28 @@ export interface SteamKey {
       website?: string;
     }>;
     releaseDate?: {
-      comingSoon: boolean;
       date: string;
-    };
+    } | null;
     platforms?: string[];
     trailerUrl?: string;
-    screenshotUrlsJson?: string;
+    screenshotUrlsJson?: string | null;
     steamAppId?: number;
   };
-  status: "Assigned" | "Revealed" | "Expired" | "Refunded" | "Gifted";
+  status: "Assigned" | "Revealed" | "Expired" | "Refunded";
   assignedAt: string;
-  expiresAt?: string | null;
-  revealedAt?: string | null;
-  refundedAt?: string | null;
-  steamKeyValue?: string | null;
-  // Legacy properties for backward compatibility
-  keyValue?: string | null;
-  purchaseId?: string;
-  bundleId?: string;
-  bundleName?: string;
-  bundleTierName?: string;
-  purchaseDate?: string;
-  platform?: "Steam";
-  coverImageUrl?: string;
-  steamAppId?: number;
-  // Gift-related fields
-  isGift?: boolean;
-  giftedByCustomerName?: string;
-  giftMessage?: string;
-  giftedAt?: string;
-  // Outgoing gift fields
-  giftStatus?: "Pending" | "Accepted" | "Declined";
-  giftRecipientEmail?: string;
-  giftRecipientName?: string;
-  giftSentAt?: string;
-  canBeGifted?: boolean;
+  expiresAt: string;
+  revealedAt: string | null;
+  refundedAt: string | null;
+  steamKeyValue: string | null;
+  giftAccepted?: boolean | null;
+  isGift: boolean;
+  giftAcceptedAt: string | null;
+  isPurchaseGift?: boolean | null;
 }
 
 export interface SteamKeyQueryParams {
   searchQuery?: string;
-  status?: "Assigned" | "Revealed" | "Expired" | "Refunded" | "Gifted";
+  status?: "Assigned" | "Revealed" | "Expired" | "Refunded";
   giftFilter?: GiftFilterType;
 }
 

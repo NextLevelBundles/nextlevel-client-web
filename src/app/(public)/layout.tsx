@@ -1,52 +1,28 @@
 import { Inter } from "next/font/google";
 import Link from "next/link";
-import Image from "next/image";
 import { Toaster } from "sonner";
+import { PublicNavigation } from "./components/navigation";
+import { CartProviderWrapper } from "@/app/(shared)/contexts/cart/cart-provider-wrapper";
+import { auth } from "@/auth";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export default function PublicLayout({
+export default async function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth();
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="min-h-screen bg-background flex flex-col">
-          {/* Header */}
-          <header className="border-b bg-card/50 backdrop-blur-sm">
-            <div className="container mx-auto px-4">
-              <div className="flex h-16 items-center justify-between">
-                <Link href="/" className="flex items-center gap-2">
-                  <Image
-                    src="/logo/digiphile-logo-rectangle.png"
-                    alt="NextLevel"
-                    width={200}
-                    height={50}
-                    className="h-12 w-auto"
-                  />
-                </Link>
-                {/* <nav className="flex items-center gap-4">
-                  <Link
-                    href="/signin"
-                    className="text-sm text-muted-foreground hover:text-foreground"
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    href="/signup"
-                    className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-                  >
-                    Create Account
-                  </Link>
-                </nav> */}
-              </div>
-            </div>
-          </header>
+        <CartProviderWrapper session={session}>
+          <div className="min-h-screen bg-background flex flex-col">
+            {/* Header */}
+            <PublicNavigation />
 
-          {/* Main Content */}
-          <main className="flex-1 flex items-center">{children}</main>
+            {/* Main Content */}
+            <main className="flex-1 flex items-center">{children}</main>
 
           {/* Footer */}
           <footer className="mt-auto border-t bg-card/50 py-8">
@@ -78,8 +54,9 @@ export default function PublicLayout({
               </div>
             </div>
           </footer>
-        </div>
-        <Toaster richColors position="top-center" />
+          </div>
+          <Toaster richColors position="top-center" />
+        </CartProviderWrapper>
       </body>
     </html>
   );
