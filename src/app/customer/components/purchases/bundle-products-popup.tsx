@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/app/(shared)/components/ui/dialog";
-import { Purchase } from "@/lib/api/types/purchase";
+import { CartItem } from "@/lib/api/types/cart";
 import { Badge } from "@/app/(shared)/components/ui/badge";
 import { Card, CardContent } from "@/app/(shared)/components/ui/card";
 import { EyeIcon, DamIcon as SteamIcon, ExternalLinkIcon } from "lucide-react";
@@ -17,7 +17,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 
 interface BundleProductsPopupProps {
-  purchase: Purchase;
+  purchase: CartItem;
 }
 
 export function BundleProductsPopup({ purchase }: BundleProductsPopupProps) {
@@ -76,7 +76,7 @@ export function BundleProductsPopup({ purchase }: BundleProductsPopupProps) {
               </p>
               <p className="text-xs text-green-600 dark:text-green-300">
                 {purchase.charityPercentage}% of your purchase ($
-                {purchase.charityAmount.toFixed(2)}) went to charity
+                {purchase.charityAmount?.toFixed(2) || "0.00"}) went to charity
               </p>
             </div>
           )}

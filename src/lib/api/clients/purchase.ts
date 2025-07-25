@@ -1,5 +1,6 @@
 import { ClientApi } from "../client-api";
-import { Purchase, PurchaseQueryParams } from "../types/purchase";
+import { PurchaseQueryParams } from "../types/purchase";
+import { CartItem } from "../types/cart";
 
 export class PurchaseApi {
   private client: ClientApi;
@@ -8,7 +9,7 @@ export class PurchaseApi {
     this.client = client;
   }
 
-  async getPurchases(params?: PurchaseQueryParams): Promise<Purchase[]> {
+  async getPurchases(params?: PurchaseQueryParams): Promise<CartItem[]> {
     const searchParams = new URLSearchParams();
 
     if (params?.sortBy) {
@@ -33,10 +34,10 @@ export class PurchaseApi {
 
     const endpoint = `/customer/purchases${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
 
-    return await this.client.get<Purchase[]>(endpoint);
+    return await this.client.get<CartItem[]>(endpoint);
   }
 
-  async getRecentPurchases(): Promise<Purchase[]> {
-    return await this.client.get<Purchase[]>("/customer/purchases/recent");
+  async getRecentPurchases(): Promise<CartItem[]> {
+    return await this.client.get<CartItem[]>("/customer/purchases/recent");
   }
 }
