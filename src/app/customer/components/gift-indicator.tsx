@@ -1,6 +1,14 @@
 "use client";
 
-import { Gift, Send, MessageSquare, Check, Loader2 } from "lucide-react";
+import {
+  Gift,
+  Send,
+  Check,
+  Loader2,
+  Mail,
+  CheckCircle,
+  Clock,
+} from "lucide-react";
 import { Badge } from "@/app/(shared)/components/ui/badge";
 import {
   Dialog,
@@ -37,6 +45,8 @@ interface GiftIndicatorProps {
   giftAcceptedAt?: string | null;
   variant?: "compact" | "detailed";
   cartItemId?: string; // For accepting the gift (cart item id)
+  cartItemCustomerId?: string; // Customer ID who purchased the cart item
+  currentCustomerId?: string; // Current user's customer ID
   recipientEmail?: string; // Email of the recipient (for gift acceptance)
   onGiftAccepted?: () => void; // Callback when gift is accepted
 }
@@ -52,47 +62,68 @@ export function GiftIndicator({
   giftAcceptedAt,
   variant = "compact",
   cartItemId,
+  cartItemCustomerId,
+  currentCustomerId,
+  recipientEmail,
   onGiftAccepted,
 }: GiftIndicatorProps) {
   if (!isGift) return null;
 
-  const isReceived = !!giftedByCustomerName;
-  const isOutgoing = !!giftRecipientEmail || !!giftRecipientName;
+  // Determine if gift is outgoing or incoming based on customerId
+  const isOutgoing = cartItemCustomerId === currentCustomerId;
+  const isReceived = !isOutgoing;
   const Icon = isReceived ? Gift : Send;
 
   let label = "Gift";
+  let badgeClassName = "";
+  
   if (isReceived) {
-    label = `By ${giftedByCustomerName}`;
+    if (giftedByCustomerName) {
+      label = `From ${giftedByCustomerName}`;
+    } else {
+      label = "Received Gift";
+    }
+    if (giftAccepted === true) {
+      badgeClassName = "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/30 border-green-200 dark:border-green-800";
+    } else {
+      badgeClassName = "bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30 border-amber-200 dark:border-amber-800";
+    }
   } else if (isOutgoing) {
     const recipient = giftRecipientName || giftRecipientEmail || "someone";
     label = `To ${recipient}`;
+    if (giftAccepted === true) {
+      badgeClassName = "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/30 border-green-200 dark:border-green-800";
+    } else {
+      badgeClassName = "bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30 border-blue-200 dark:border-blue-800";
+    }
   }
-
-  const badgeVariant = isReceived ? "default" : "secondary";
 
   if (variant === "compact") {
     return (
-      <div className="flex items-center gap-2">
-        <Badge variant={badgeVariant} className="flex items-center gap-1">
-          <Icon className="h-3 w-3" />
-          <span className="text-xs">{label}</span>
-        </Badge>
-        {(giftMessage || isOutgoing) && (
-          <GiftDetailsDialog
-            message={giftMessage}
-            giftedAt={giftedAt}
-            isReceived={isReceived}
-            giftedByCustomerName={giftedByCustomerName}
-            giftRecipientEmail={giftRecipientEmail}
-            giftRecipientName={giftRecipientName}
-            giftAccepted={giftAccepted}
-            giftAcceptedAt={giftAcceptedAt}
-            cartItemId={cartItemId}
-            recipientEmail={giftRecipientEmail}
-            onGiftAccepted={onGiftAccepted}
-          />
-        )}
-      </div>
+      <GiftDetailsDialog
+        message={giftMessage}
+        giftedAt={giftedAt}
+        isReceived={isReceived}
+        isOutgoing={isOutgoing}
+        giftedByCustomerName={giftedByCustomerName}
+        giftRecipientEmail={giftRecipientEmail}
+        giftRecipientName={giftRecipientName}
+        giftAccepted={giftAccepted}
+        giftAcceptedAt={giftAcceptedAt}
+        cartItemId={cartItemId}
+        recipientEmail={recipientEmail}
+        onGiftAccepted={onGiftAccepted}
+        trigger={
+          <Badge 
+            className={`inline-flex items-center gap-1 cursor-pointer transition-colors w-fit ${badgeClassName}`}
+          >
+            <Icon className="h-3 w-3" />
+            <span className="text-xs">{label}</span>
+            {giftAccepted === true && <CheckCircle className="h-3 w-3" />}
+            {giftAccepted === false && <Clock className="h-3 w-3" />}
+          </Badge>
+        }
+      />
     );
   }
 
@@ -117,29 +148,32 @@ export function GiftIndicator({
           {dayjs(giftedAt).format("MMM D, YYYY")}
         </span>
       )}
-      {(giftMessage || isOutgoing) && (
-        <div className="mt-1">
-          <GiftDetailsDialog
-            message={giftMessage}
-            giftedAt={giftedAt}
-            isReceived={isReceived}
-            giftedByCustomerName={giftedByCustomerName}
-            giftRecipientEmail={giftRecipientEmail}
-            giftRecipientName={giftRecipientName}
-            giftAccepted={giftAccepted}
-            giftAcceptedAt={giftAcceptedAt}
-            cartItemId={cartItemId}
-            recipientEmail={giftRecipientEmail}
-            onGiftAccepted={onGiftAccepted}
-            trigger={
-              <Button variant="ghost" size="sm" className="h-auto p-1 text-xs">
-                <MessageSquare className="h-3 w-3 mr-1" />
-                View details
-              </Button>
-            }
-          />
-        </div>
-      )}
+      <div className="mt-1">
+        <GiftDetailsDialog
+          message={giftMessage}
+          giftedAt={giftedAt}
+          isReceived={isReceived}
+          isOutgoing={isOutgoing}
+          giftedByCustomerName={giftedByCustomerName}
+          giftRecipientEmail={giftRecipientEmail}
+          giftRecipientName={giftRecipientName}
+          giftAccepted={giftAccepted}
+          giftAcceptedAt={giftAcceptedAt}
+          cartItemId={cartItemId}
+          recipientEmail={recipientEmail}
+          onGiftAccepted={onGiftAccepted}
+          trigger={
+            <Badge 
+              className={`inline-flex items-center gap-1 cursor-pointer transition-colors w-fit ${badgeClassName}`}
+            >
+              <Gift className="h-3 w-3" />
+              <span className="text-xs">View details</span>
+              {giftAccepted === true && <CheckCircle className="h-3 w-3" />}
+              {giftAccepted === false && <Clock className="h-3 w-3" />}
+            </Badge>
+          }
+        />
+      </div>
     </div>
   );
 }
@@ -148,6 +182,7 @@ interface GiftDetailsDialogProps {
   message?: string;
   giftedAt?: string;
   isReceived: boolean;
+  isOutgoing: boolean;
   giftedByCustomerName?: string;
   giftRecipientEmail?: string;
   giftRecipientName?: string;
@@ -163,6 +198,7 @@ function GiftDetailsDialog({
   message,
   giftedAt,
   isReceived,
+  isOutgoing,
   giftedByCustomerName,
   giftRecipientEmail,
   giftRecipientName,
@@ -176,6 +212,7 @@ function GiftDetailsDialog({
   const [isAccepting, setIsAccepting] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [isResending, setIsResending] = useState(false);
 
   const handleAcceptGift = async () => {
     if (!cartItemId || !recipientEmail) return;
@@ -207,13 +244,32 @@ function GiftDetailsDialog({
       setShowConfirmDialog(false);
     }
   };
+
+  const handleResendEmail = async () => {
+    if (!cartItemId) return;
+
+    setIsResending(true);
+    try {
+      const response = await giftApi.resendPurchaseGiftEmail(cartItemId);
+
+      toast.success("Email sent!", {
+        description:
+          response.message ||
+          "Gift notification has been resent to the recipient",
+      });
+    } catch (err) {
+      console.error("Error resending email:", err);
+    } finally {
+      setIsResending(false);
+    }
+  };
   return (
     <>
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogTrigger asChild>
           {trigger || (
             <Button variant="ghost" size="icon" className="h-6 w-6">
-              <MessageSquare className="h-3 w-3" />
+              <Gift className="h-3 w-3" />
             </Button>
           )}
         </DialogTrigger>
@@ -240,7 +296,7 @@ function GiftDetailsDialog({
                   <span className="text-sm">{giftedByCustomerName}</span>
                 </div>
               )}
-              {!isReceived && (giftRecipientName || giftRecipientEmail) && (
+              {isOutgoing && (giftRecipientName || giftRecipientEmail) && (
                 <div className="flex items-start gap-2">
                   <span className="text-sm font-medium text-muted-foreground">
                     To:
@@ -250,18 +306,58 @@ function GiftDetailsDialog({
                   </span>
                 </div>
               )}
-              {!isReceived && giftAccepted !== undefined && (
+              {isOutgoing && giftAccepted !== undefined && (
                 <div className="flex items-start gap-2">
                   <span className="text-sm font-medium text-muted-foreground">
                     Status:
                   </span>
-                  <span className="text-sm">
-                    {giftAccepted === true
-                      ? `Accepted${giftAcceptedAt ? ` on ${dayjs(giftAcceptedAt).format("MMM D, YYYY")}` : ""}`
-                      : giftAccepted === false
-                        ? "Not accepted yet"
-                        : "Pending acceptance"}
+                  <div className="flex items-center gap-2">
+                    {giftAccepted === true ? (
+                      <>
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span className="text-sm text-green-600">
+                          Accepted
+                          {giftAcceptedAt
+                            ? ` on ${dayjs(giftAcceptedAt).format("MMM D, YYYY")}`
+                            : ""}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="h-4 w-4 text-amber-600" />
+                        <span className="text-sm text-amber-600">
+                          Pending acceptance
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+              {isReceived && giftAccepted !== undefined && (
+                <div className="flex items-start gap-2">
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Status:
                   </span>
+                  <div className="flex items-center gap-2">
+                    {giftAccepted === true ? (
+                      <>
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span className="text-sm text-green-600">
+                          Accepted
+                          {giftAcceptedAt
+                            ? ` on ${dayjs(giftAcceptedAt).format("MMM D, YYYY")}`
+                            : ""}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="h-4 w-4 text-amber-600" />
+                        <span className="text-sm text-amber-600">
+                          Not accepted yet
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -280,22 +376,42 @@ function GiftDetailsDialog({
               </div>
             )}
 
-            {/* Accept button for pending received gifts */}
-            {isReceived &&
-              cartItemId &&
-              recipientEmail &&
-              giftAccepted === false && (
-                <div className="flex justify-end mt-4">
-                  <Button
-                    onClick={() => setShowConfirmDialog(true)}
-                    disabled={isAccepting}
-                    className="gap-2"
-                  >
-                    <Check className="h-4 w-4" />
-                    Accept Gift
-                  </Button>
-                </div>
+            {/* Action buttons */}
+            <div className="flex justify-end gap-2 mt-4">
+              {/* Resend button for pending outgoing gifts */}
+              {isOutgoing && cartItemId && !giftAccepted && (
+                <Button
+                  variant="outline"
+                  onClick={handleResendEmail}
+                  disabled={isResending}
+                  className="gap-2"
+                >
+                  {isResending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Mail className="h-4 w-4" />
+                      Resend Email
+                    </>
+                  )}
+                </Button>
               )}
+
+              {/* Accept button for pending received gifts */}
+              {isReceived && cartItemId && recipientEmail && !giftAccepted && (
+                <Button
+                  onClick={() => setShowConfirmDialog(true)}
+                  disabled={isAccepting}
+                  className="gap-2"
+                >
+                  <Check className="h-4 w-4" />
+                  Accept Gift
+                </Button>
+              )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>

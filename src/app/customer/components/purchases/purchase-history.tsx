@@ -57,6 +57,9 @@ const ownershipOptions = [
 
 export function PurchaseHistory() {
   const { data: session } = useSession();
+  const currentCustomerId = session?.["custom:customerId"] as
+    | string
+    | undefined;
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [selectedYear, setSelectedYear] = useState("All Years");
@@ -409,9 +412,11 @@ export function PurchaseHistory() {
                             giftAcceptedAt={purchase.giftAcceptedAt}
                             variant="compact"
                             cartItemId={purchase.id}
+                            cartItemCustomerId={purchase.customerId}
+                            currentCustomerId={currentCustomerId}
                             recipientEmail={
                               // For incoming gifts, use current user's email
-                              purchase.giftedByCustomerName 
+                              purchase.customerId !== currentCustomerId
                                 ? session?.user?.email || undefined
                                 : purchase.giftRecipientEmail
                             }
@@ -437,7 +442,7 @@ export function PurchaseHistory() {
                       <TableCell>
                         ${purchase.charityAmount?.toFixed(2) || "0.00"}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-center">
                         <BundleProductsPopup purchase={purchase} />
                       </TableCell>
                     </motion.tr>

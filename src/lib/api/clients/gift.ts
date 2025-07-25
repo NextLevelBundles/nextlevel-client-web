@@ -50,4 +50,10 @@ export class GiftApi {
       `/gifts/steam-keys/${assignmentId}/accept?${params.toString()}`
     );
   }
+
+  async resendPurchaseGiftEmail(cartItemId: string): Promise<{ message: string }> {
+    return await this.client.post<{ message: string }>(
+      `/customer/gift-management/purchase-gifts/${cartItemId}/resend-email`
+    );
+  }
 }
