@@ -4,7 +4,13 @@ import { useState } from "react";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
-import { DamIcon as SteamIcon, ExternalLinkIcon, ChevronDown, ChevronUp, Package } from "lucide-react";
+import {
+  DamIcon as SteamIcon,
+  ExternalLinkIcon,
+  ChevronDown,
+  ChevronUp,
+  Package,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { SnapshotProduct } from "@/lib/api/types/gift";
@@ -14,7 +20,10 @@ interface GiftProductsListProps {
   platform?: string;
 }
 
-export function GiftProductsList({ products, platform }: GiftProductsListProps) {
+export function GiftProductsList({
+  products,
+  platform,
+}: GiftProductsListProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   if (products.length === 0) return null;
@@ -34,9 +43,12 @@ export function GiftProductsList({ products, platform }: GiftProductsListProps) 
                 <Package className="h-5 w-5 text-primary" />
               </div>
               <div className="text-left">
-                <h3 className="text-base font-semibold">What's included</h3>
+                <h3 className="text-base font-semibold">
+                  What&apos;s included
+                </h3>
                 <p className="text-sm text-muted-foreground">
-                  {products.length} {products.length === 1 ? "game" : "games"} in this bundle
+                  {products.length} {products.length === 1 ? "game" : "games"}{" "}
+                  in this bundle
                 </p>
               </div>
             </div>
