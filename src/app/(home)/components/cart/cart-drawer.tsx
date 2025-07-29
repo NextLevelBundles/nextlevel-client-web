@@ -71,19 +71,19 @@ export function CartDrawer() {
     if (!cart?.items) return { isValid: true, error: null };
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
+
     for (const item of cart.items) {
       if (item.isGift) {
         if (!item.giftRecipientEmail) {
-          return { 
-            isValid: false, 
-            error: `Gift recipient email is required for "${item.snapshotTitle}"` 
+          return {
+            isValid: false,
+            error: `Gift recipient email is required for "${item.snapshotTitle}"`,
           };
         }
         if (!emailRegex.test(item.giftRecipientEmail)) {
-          return { 
-            isValid: false, 
-            error: `Please enter a valid email address for "${item.snapshotTitle}"` 
+          return {
+            isValid: false,
+            error: `Please enter a valid email address for "${item.snapshotTitle}"`,
           };
         }
       }
@@ -152,7 +152,7 @@ export function CartDrawer() {
     }
 
     updateCartCountdown();
-    const timer = setInterval(updateCartCountdown, 5000);
+    const timer = setInterval(updateCartCountdown, 1000);
     return () => clearInterval(timer);
   }, [cart?.reservationExpiresAt]);
 
@@ -215,17 +215,22 @@ export function CartDrawer() {
               <div className="space-y-4 py-4">
                 {cart?.items.map((item) => (
                   <div key={item.id} className="group relative">
-                    <div className={`p-4 rounded-lg border transition-colors ${
-                      item.isGift 
-                        ? "border-primary/30 bg-primary/5 hover:border-primary/50" 
-                        : "border-border hover:border-primary/50"
-                    }`}>
+                    <div
+                      className={`p-4 rounded-lg border transition-colors ${
+                        item.isGift
+                          ? "border-primary/30 bg-primary/5 hover:border-primary/50"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                    >
                       {/* Gift indicator */}
                       {item.isGift && (
                         <div className="flex items-center gap-1 mb-2 text-xs text-primary">
                           <Gift className="h-3 w-3" />
                           <span className="font-medium">
-                            Gift {item.giftRecipientEmail ? `for ${item.giftRecipientEmail}` : ''}
+                            Gift{" "}
+                            {item.giftRecipientEmail
+                              ? `for ${item.giftRecipientEmail}`
+                              : ""}
                           </span>
                         </div>
                       )}
