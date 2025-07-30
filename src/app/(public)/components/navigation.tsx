@@ -9,8 +9,8 @@ import Link from "next/link";
 import { UserProfile } from "@/home/components/user-profile";
 import SignInButton from "@/home/components/SignInButton";
 import SignUpButton from "@/home/components/SignUpButton";
-import Image from "next/image";
 import { CartDrawer } from "@/home/components/cart/cart-drawer";
+import Logo from "@/app/(shared)/components/logo";
 
 export function PublicNavigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -20,13 +20,7 @@ export function PublicNavigation() {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <Image
-              src="/logo/digiphile-logo-rectangle.png"
-              alt="NextLevel"
-              width={200}
-              height={50}
-              className="h-12 w-auto"
-            />
+            <Logo width={200} height={50} className="h-12 w-auto" />
           </Link>
 
           <div className="hidden md:flex md:items-center md:gap-8">

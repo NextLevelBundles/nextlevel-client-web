@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/shared/utils/tailwind";
 import { ThemeToggle } from "@/shared/components/theme-toggle";
-import Image from "next/image";
 import SignOutButton from "@/app/(home)/components/SignOutButton";
+import Logo from "@/app/(shared)/components/logo";
 
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -30,12 +30,7 @@ export function Navigation() {
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="p-3">
-              <Image
-                src="/logo/digiphile-logo-rectangle.png"
-                alt="Digiphile Logo"
-                width="140"
-                height="0"
-              />
+              <Logo width={140} height={0} />
             </div>
           </div>
 
