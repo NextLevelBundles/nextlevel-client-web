@@ -24,6 +24,7 @@ import { Card } from "@/app/(shared)/components/ui/card";
 import { cn } from "@/app/(shared)/utils/tailwind";
 import SteamConnection from "./steam-connection";
 import { useSession } from "next-auth/react";
+import { apiClient } from "@/lib/api/client-api";
 
 interface FormData {
   name: string;
@@ -170,31 +171,26 @@ export function OnboardingForm() {
 
     const timeoutId = setTimeout(async () => {
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/customer/check-handle?handle=${encodeURIComponent(handleInput)}`
+        const isAvailable = await apiClient.get<boolean>(
+          `/customer/check-handle?handle=${encodeURIComponent(handleInput)}`
         );
-        if (response.ok) {
-          const isAvailable = await response.json();
-          setHandleCheckResult(isAvailable);
-          if (isAvailable) {
-            setHandleVerified(true);
-            setVerifiedHandle(handleInput);
-            // Only set the form value if handle is available
-            setFormData((prev) => ({
-              ...prev,
-              handle: handleInput,
-            }));
-          } else {
-            setHandleVerified(false);
-            setVerifiedHandle("");
-            // Clear form data handle if not available
-            setFormData((prev) => ({
-              ...prev,
-              handle: "",
-            }));
-          }
+        setHandleCheckResult(isAvailable);
+        if (isAvailable) {
+          setHandleVerified(true);
+          setVerifiedHandle(handleInput);
+          // Only set the form value if handle is available
+          setFormData((prev) => ({
+            ...prev,
+            handle: handleInput,
+          }));
         } else {
-          throw new Error("Failed to check handle availability");
+          setHandleVerified(false);
+          setVerifiedHandle("");
+          // Clear form data handle if not available
+          setFormData((prev) => ({
+            ...prev,
+            handle: "",
+          }));
         }
       } catch (error) {
         console.error("Error checking handle availability:", error);
@@ -297,6 +293,13 @@ export function OnboardingForm() {
           formData.billingAddress.country.trim() !== ""
         );
       case 2: // Gaming
+        console.log(
+          handleVerified,
+          verifiedHandle,
+          handleInput,
+          formData.handle,
+          formData.steamId
+        );
         return (
           handleVerified &&
           verifiedHandle === handleInput &&
