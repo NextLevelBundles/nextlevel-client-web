@@ -12,8 +12,21 @@ export async function HeroSection() {
   const response = await fetch(
     `${process.env.API_URL}/customer/bundles/featured`
   );
-  if (!response.ok) return null;
-  const bundle: Bundle | null = await response.json();
+
+  const text = await response.text();
+
+  if (!text) return null;
+
+  let bundle: Bundle | null = null;
+  try {
+    bundle = JSON.parse(text);
+  } catch (error) {
+    console.error("Failed to parse JSON:", error);
+    return null;
+  }
+
+  console.log("Hero Section Response:", bundle);
+
   if (!bundle) return null;
 
   return (
