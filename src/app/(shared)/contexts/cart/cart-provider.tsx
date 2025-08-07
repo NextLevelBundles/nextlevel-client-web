@@ -188,7 +188,13 @@ export default function CartProvider({
   const getTotalPrice = () => {
     return (
       state.cart?.items.reduce(
-        (total, item) => total + item.price * item.quantity,
+        (total, item) => {
+          // Use donationTierAmount if it's a donation tier, otherwise use regular price
+          const itemPrice = item.isDonationTierSelected && item.donationTierAmount
+            ? item.donationTierAmount
+            : item.price;
+          return total + itemPrice * item.quantity;
+        },
         0
       ) || 0
     );

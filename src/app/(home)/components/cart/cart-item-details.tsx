@@ -11,7 +11,7 @@ import {
 } from "@/app/(shared)/components/ui/dialog";
 import { ScrollArea } from "@/app/(shared)/components/ui/scroll-area";
 import { CartItem } from "@/lib/api/types/cart";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Heart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -52,10 +52,24 @@ export function CartItemDetails({ item }: CartItemDetailsProps) {
           <div className="flex items-center gap-2">
             <Badge variant="secondary">{item.snapshotTierTitle}</Badge>
             <Badge variant="outline">{item.snapshotPlatform}</Badge>
+            {item.isDonationTierSelected && (
+              <Badge variant="destructive" className="bg-rose-500">
+                Charity Tier
+              </Badge>
+            )}
             <span className="text-sm text-muted-foreground ml-auto">
-              ${item.price?.toFixed(2)}
+              ${(item.isDonationTierSelected && item.donationTierAmount ? item.donationTierAmount : item.price)?.toFixed(2)}
             </span>
           </div>
+          
+          {item.isDonationTierSelected && item.donationTierAmount && item.snapshotTierPrice && (
+            <div className="p-3 bg-rose-50 dark:bg-rose-950/30 rounded-lg border border-rose-200 dark:border-rose-800">
+              <p className="text-sm text-rose-700 dark:text-rose-300">
+                <Heart className="inline h-4 w-4 mr-1" />
+                Charity Tier: ${(item.donationTierAmount - item.snapshotTierPrice).toFixed(2)} extra goes directly to charity!
+              </p>
+            </div>
+          )}
 
           <div>
             <h4 className="font-semibold mb-3">

@@ -69,14 +69,13 @@ export function BundleProductsPopup({ purchase }: BundleProductsPopupProps) {
             </div>
           </div>
 
-          {purchase.charityPercentage > 0 && (
+          {purchase.isDonationTierSelected && (
             <div className="mt-4 rounded-lg bg-green-50 dark:bg-green-900/20 p-3">
               <p className="text-sm font-medium text-green-800 dark:text-green-200">
                 Charity Contribution
               </p>
               <p className="text-xs text-green-600 dark:text-green-300">
-                {purchase.charityPercentage}% of your purchase ($
-                {purchase.charityAmount?.toFixed(2) || "0.00"}) went to charity
+                Charity Tier: ${((purchase.donationTierAmount || 0) - (purchase.snapshotTierPrice || 0)).toFixed(2)} extra went to charity
               </p>
             </div>
           )}

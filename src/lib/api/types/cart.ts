@@ -6,7 +6,6 @@ export interface CartItem {
   bundleId?: string;
   bundleTierId?: string;
   quantity: number;
-  charityPercentage: number;
   price: number;
   snapshotTitle?: string;
   snapshotImageUrl?: string;
@@ -30,12 +29,13 @@ export interface CartItem {
   giftMessage?: string;
   canOnlyBeGifted?: boolean;
   
+  // Donation tier fields
+  isDonationTierSelected?: boolean;
+  donationTierAmount?: number;
+  
   // Transaction timestamps
   createdAt?: string;
   completedAt?: string | null;
-  
-  // Calculated fields
-  charityAmount?: number;
   
   // Incoming gift fields (when current user received this as a gift)
   giftedByCustomerName?: string;
@@ -57,8 +57,10 @@ export interface Cart {
 export interface AddToCartRequest {
   bundleId: string;
   tierId: string;
-  charityPercentage: number;
   price: number;
+  isDonationTier?: boolean;
+  donationAmount?: number;
+  giftRecipientEmail?: string;
 }
 
 export interface UpdateGiftRequest {

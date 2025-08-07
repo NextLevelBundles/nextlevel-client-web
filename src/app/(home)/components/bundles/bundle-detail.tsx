@@ -33,6 +33,20 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
     (sum, game) => sum + game.price,
     0
   );
+  
+  // Calculate charity amount based on the same logic as PurchaseSummary
+  const isDonationTier = currentTier?.isDonationTier || false;
+  const previousTier = currentTierIndex > 0 ? tiers[currentTierIndex - 1] : null;
+  
+  let charityAmountForDisplay = 0;
+  if (isDonationTier && previousTier && currentTier) {
+    const baseCharityOn5Percent = previousTier.price * 0.05;
+    const tierDifference = currentTier.price - previousTier.price;
+    const extraAboveTier = Math.max(0, totalAmount - currentTier.price);
+    charityAmountForDisplay = baseCharityOn5Percent + tierDifference + extraAboveTier;
+  } else {
+    charityAmountForDisplay = totalAmount * 0.05;
+  }
 
   return (
     <TooltipProvider>
@@ -66,7 +80,7 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
 
               <CharityHighlight
                 charities={bundle.charities.map((c) => c.charity)}
-                charityAmount={totalAmount * 0.8} // Maximum possible charity amount (80%)
+                charityAmount={charityAmountForDisplay}
               />
             </div>
 

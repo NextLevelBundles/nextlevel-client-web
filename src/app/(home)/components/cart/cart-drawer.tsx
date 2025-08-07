@@ -9,6 +9,7 @@ import {
   Clock,
   X,
   Gift,
+  Heart,
 } from "lucide-react";
 import { CartButton } from "./cart-button";
 import { CartItemDetails } from "./cart-item-details";
@@ -256,6 +257,22 @@ export function CartDrawer() {
                             {item.snapshotTitle}
                           </h4>
 
+                          {/* Donation tier indicator */}
+                          {item.isDonationTierSelected &&
+                            item.donationTierAmount && (
+                              <div className="flex items-center gap-1 mb-2 text-xs text-rose-600 dark:text-rose-400">
+                                <Heart className="h-3 w-3 fill-rose-500" />
+                                <span className="font-medium">
+                                  Charity Tier: $
+                                  {(
+                                    item.donationTierAmount -
+                                    (item.snapshotTierPrice || 0)
+                                  ).toFixed(2)}{" "}
+                                  extra to charity
+                                </span>
+                              </div>
+                            )}
+
                           <div className="flex items-center justify-between mt-3">
                             <div className="flex items-center gap-2">
                               <CartItemDetails item={item} />
@@ -263,7 +280,11 @@ export function CartDrawer() {
 
                             <div className="text-right">
                               <div className="font-semibold text-sm">
-                                ${item.price.toFixed(2)}
+                                $
+                                {(item.isDonationTierSelected
+                                  ? item.donationTierAmount
+                                  : item.price
+                                )?.toFixed(2)}
                               </div>
                               <span className="text-xs text-muted-foreground">
                                 {item.snapshotProducts.length} games
@@ -359,7 +380,7 @@ export function CartDrawer() {
               <p className="text-xs text-center text-muted-foreground mb-2">
                 {cart?.reservationStatus === "Active"
                   ? "You have already reserved your Steam keys. Proceed to Checkout"
-                  : `Steam keys are reserved for 10 minutes once you click "Proceed to Checkout"`}
+                  : `Steam keys are reserved for 5 minutes once you click "Proceed to Checkout"`}
               </p>
             </div>
           </div>

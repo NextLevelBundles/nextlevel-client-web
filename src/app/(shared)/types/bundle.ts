@@ -25,6 +25,7 @@ export interface Bundle {
 export interface Tier {
   id: string;
   price: number;
+  isDonationTier?: boolean;
 }
 
 export interface Product {
