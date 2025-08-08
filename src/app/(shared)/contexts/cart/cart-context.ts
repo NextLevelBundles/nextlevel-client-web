@@ -14,7 +14,7 @@ export interface CartContextType extends CartState {
   refreshCart: () => Promise<void>;
   getTotalItems: () => number;
   getTotalPrice: () => number;
-  reserveCart: () => Promise<{ url: string }>;
+  reserveCart: (turnstileToken?: string) => Promise<{ url: string }>;
   updateGiftSettings: (itemId: string, giftSettings: UpdateGiftRequest) => Promise<void>;
 }
 

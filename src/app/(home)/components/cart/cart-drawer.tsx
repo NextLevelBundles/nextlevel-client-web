@@ -14,6 +14,7 @@ import {
 import { CartButton } from "./cart-button";
 import { CartItemDetails } from "./cart-item-details";
 import { GiftForm } from "./gift-form";
+import { TurnstileCaptcha } from "./turnstile-captcha";
 import { useCart } from "@/app/(shared)/contexts/cart/cart-provider";
 import {
   Sheet,
@@ -47,6 +48,8 @@ dayjs.extend(duration);
 export function CartDrawer() {
   const [isOpen, setIsOpen] = useState(false);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+  const [showCaptcha, setShowCaptcha] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const {
     cart,
     removeFromCart,
@@ -64,6 +67,10 @@ export function CartDrawer() {
     setIsOpen(open);
     if (open && cart) {
       // refreshCart();
+    }
+    // Reset captcha token when drawer is closed
+    if (!open) {
+      setCaptchaToken(null);
     }
   };
 
@@ -101,9 +108,15 @@ export function CartDrawer() {
       return;
     }
 
+    // Show captcha if no token
+    if (!captchaToken) {
+      setShowCaptcha(true);
+      return;
+    }
+
     setIsCheckoutLoading(true);
     try {
-      const response = await reserveCart();
+      const response = await reserveCart(captchaToken);
       // Redirect to Stripe checkout
       window.location.href = response.url;
     } catch (error) {
@@ -112,6 +125,29 @@ export function CartDrawer() {
     } finally {
       setIsCheckoutLoading(false);
     }
+  };
+
+  const handleCaptchaVerified = async (token: string) => {
+    setCaptchaToken(token);
+    setShowCaptcha(false);
+    
+    // Now proceed with the actual checkout
+    setIsCheckoutLoading(true);
+    try {
+      const response = await reserveCart(token);
+      // Redirect to Stripe checkout
+      window.location.href = response.url;
+    } catch (error) {
+      console.error("Checkout failed:", error);
+      // Reset token on failure so user can try again
+      setCaptchaToken(null);
+    } finally {
+      setIsCheckoutLoading(false);
+    }
+  };
+
+  const handleCaptchaClose = () => {
+    setShowCaptcha(false);
   };
 
   const handleClearCart = async () => {
@@ -386,6 +422,12 @@ export function CartDrawer() {
           </div>
         )}
       </SheetContent>
+
+      <TurnstileCaptcha
+        isOpen={showCaptcha}
+        onVerified={handleCaptchaVerified}
+        onClose={handleCaptchaClose}
+      />
     </Sheet>
   );
 }

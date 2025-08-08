@@ -37,9 +37,10 @@ export class CartApi {
     await this.client.put<void>("/customer/cart/clear");
   }
 
-  async reserveCart(): Promise<{ url: string }> {
+  async reserveCart(turnstileToken?: string): Promise<{ url: string }> {
     return await this.client.post<{ url: string }>(
-      "/customer/checkout/reserve"
+      "/customer/checkout/reserve",
+      { turnstileToken }
     );
   }
 

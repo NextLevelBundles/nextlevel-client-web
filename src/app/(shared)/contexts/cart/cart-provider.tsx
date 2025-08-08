@@ -164,10 +164,10 @@ export default function CartProvider({
     }
   };
 
-  const reserveCart = async (): Promise<{ url: string }> => {
+  const reserveCart = async (turnstileToken?: string): Promise<{ url: string }> => {
     dispatch({ type: "SET_LOADING", payload: true });
     try {
-      const response = await cartApi.reserveCart();
+      const response = await cartApi.reserveCart(turnstileToken);
       return response;
     } catch (error) {
       dispatch({ type: "SET_ERROR", payload: "Failed to reserve cart" });
