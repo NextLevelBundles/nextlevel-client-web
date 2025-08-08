@@ -28,19 +28,19 @@ export interface CartItem {
   giftRecipientName?: string;
   giftMessage?: string;
   canOnlyBeGifted?: boolean;
-  
+
   // Donation tier fields
   isDonationTierSelected?: boolean;
   donationTierAmount?: number;
-  
+
   // Transaction timestamps
   createdAt?: string;
   completedAt?: string | null;
-  
+
   // Incoming gift fields (when current user received this as a gift)
   giftedByCustomerName?: string;
   giftedAt?: string;
-  
+
   // Gift acceptance tracking
   giftAccepted?: boolean | null;
   giftAcceptedAt?: string | null;
@@ -52,6 +52,7 @@ export interface Cart {
   reservationStatus: "None" | "Active" | "Completed" | "Failed" | "Expired";
   reservedAt?: string;
   reservationExpiresAt?: string;
+  total: number;
 }
 
 export interface AddToCartRequest {

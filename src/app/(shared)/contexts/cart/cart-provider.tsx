@@ -10,7 +10,12 @@ import {
 } from "react";
 import { toast } from "sonner";
 import CartContext, { CartContextType, CartState } from "./cart-context";
-import { AddToCartRequest, Cart, CartItem, UpdateGiftRequest } from "@/lib/api/types/cart";
+import {
+  AddToCartRequest,
+  Cart,
+  CartItem,
+  UpdateGiftRequest,
+} from "@/lib/api/types/cart";
 import { cartApi } from "@/lib/api";
 
 interface CartProviderProps {
@@ -164,7 +169,9 @@ export default function CartProvider({
     }
   };
 
-  const reserveCart = async (turnstileToken?: string): Promise<{ url: string }> => {
+  const reserveCart = async (
+    turnstileToken?: string
+  ): Promise<{ url: string }> => {
     dispatch({ type: "SET_LOADING", payload: true });
     try {
       const response = await cartApi.reserveCart(turnstileToken);
@@ -186,26 +193,24 @@ export default function CartProvider({
   };
 
   const getTotalPrice = () => {
-    return (
-      state.cart?.items.reduce(
-        (total, item) => {
-          // Use donationTierAmount if it's a donation tier, otherwise use regular price
-          const itemPrice = item.isDonationTierSelected && item.donationTierAmount
-            ? item.donationTierAmount
-            : item.price;
-          return total + itemPrice * item.quantity;
-        },
-        0
-      ) || 0
-    );
+    return state.cart?.total || 0;
   };
 
-  const updateGiftSettings = async (itemId: string, giftSettings: UpdateGiftRequest) => {
+  const updateGiftSettings = async (
+    itemId: string,
+    giftSettings: UpdateGiftRequest
+  ) => {
     try {
-      const updatedCart = await cartApi.updateGiftSettings(itemId, giftSettings);
+      const updatedCart = await cartApi.updateGiftSettings(
+        itemId,
+        giftSettings
+      );
       dispatch({ type: "SET_CART", payload: updatedCart });
     } catch (error) {
-      dispatch({ type: "SET_ERROR", payload: "Failed to update gift settings" });
+      dispatch({
+        type: "SET_ERROR",
+        payload: "Failed to update gift settings",
+      });
       console.error("Error updating gift settings:", error);
       throw error;
     }

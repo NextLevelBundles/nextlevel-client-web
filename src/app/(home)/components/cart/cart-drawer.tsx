@@ -130,7 +130,7 @@ export function CartDrawer() {
   const handleCaptchaVerified = async (token: string) => {
     setCaptchaToken(token);
     setShowCaptcha(false);
-    
+
     // Now proceed with the actual checkout
     setIsCheckoutLoading(true);
     try {
@@ -300,11 +300,8 @@ export function CartDrawer() {
                                 <Heart className="h-3 w-3 fill-rose-500" />
                                 <span className="font-medium">
                                   Charity Tier: $
-                                  {(
-                                    item.donationTierAmount -
-                                    (item.snapshotTierPrice || 0)
-                                  ).toFixed(2)}{" "}
-                                  extra to charity
+                                  {item.donationTierAmount.toFixed(2)} extra to
+                                  charity
                                 </span>
                               </div>
                             )}
@@ -316,11 +313,7 @@ export function CartDrawer() {
 
                             <div className="text-right">
                               <div className="font-semibold text-sm">
-                                $
-                                {(item.isDonationTierSelected
-                                  ? item.donationTierAmount
-                                  : item.price
-                                )?.toFixed(2)}
+                                ${item.price?.toFixed(2)}
                               </div>
                               <span className="text-xs text-muted-foreground">
                                 {item.snapshotProducts.length} games
