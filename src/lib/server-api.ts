@@ -38,6 +38,7 @@ class ServerApiClient {
         id: "temp-cart",
         items: [],
         reservationStatus: "None",
+        total: 0,
       };
     }
   }
