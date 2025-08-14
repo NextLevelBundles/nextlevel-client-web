@@ -11,7 +11,7 @@ import {
 } from "@/app/(shared)/components/ui/dialog";
 import { ScrollArea } from "@/app/(shared)/components/ui/scroll-area";
 import { CartItem } from "@/lib/api/types/cart";
-import { ExternalLink, Heart } from "lucide-react";
+import { ExternalLink, Heart, BookOpen, Gamepad2, FileText } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -51,7 +51,19 @@ export function CartItemDetails({ item }: CartItemDetailsProps) {
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <Badge variant="secondary">{item.snapshotTierTitle}</Badge>
-            <Badge variant="outline">{item.snapshotPlatform}</Badge>
+            <Badge 
+              variant="outline" 
+              className={item.bundleType === 1 
+                ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border-amber-300" 
+                : "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border-blue-300"
+              }
+            >
+              {item.bundleType === 1 ? (
+                <><BookOpen className="h-3 w-3 mr-1" /> Book Bundle</>
+              ) : (
+                <><Gamepad2 className="h-3 w-3 mr-1" /> Game Bundle</>
+              )}
+            </Badge>
             {item.isDonationTierSelected && (
               <Badge variant="destructive" className="bg-rose-500">
                 Charity Tier
@@ -73,7 +85,7 @@ export function CartItemDetails({ item }: CartItemDetailsProps) {
 
           <div>
             <h4 className="font-semibold mb-3">
-              Included Games ({item.snapshotProducts.length})
+              Included {item.bundleType === 1 ? "Books" : "Games"} ({item.snapshotProducts.length})
             </h4>
             <ScrollArea className="h-96">
               <div className="grid gap-3">
@@ -91,20 +103,40 @@ export function CartItemDetails({ item }: CartItemDetailsProps) {
                     />
                     <div className="flex-1">
                       <h5 className="font-medium text-sm">{product.title}</h5>
-                      {product.steamGameInfo && (
+                      {product.productType === 1 && product.bookInfo ? (
+                        <div className="space-y-1 mt-1">
+                          {product.bookInfo.author && (
+                            <div className="text-xs text-muted-foreground">
+                              by {product.bookInfo.author}
+                            </div>
+                          )}
+                          {product.bookInfo.formats && product.bookInfo.formats.length > 0 && (
+                            <div className="flex gap-1">
+                              {product.bookInfo.formats.map((format) => (
+                                <span key={format} className="inline-flex items-center gap-0.5 text-xs bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded">
+                                  <FileText className="h-3 w-3" />
+                                  {format}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ) : product.steamGameInfo ? (
                         <div className="text-xs text-muted-foreground mt-1">
                           Steam Package: {product.steamGameInfo.packageId}
                         </div>
-                      )}
+                      ) : null}
                     </div>
-                    <Link
-                      href={`https://store.steampowered.com/app/${product.steamGameInfo?.steamAppId ?? ""}`}
-                      target="_blank"
-                    >
-                      <Button variant="ghost" size="sm">
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
-                    </Link>
+                    {product.productType !== 1 && product.steamGameInfo && (
+                      <Link
+                        href={`https://store.steampowered.com/app/${product.steamGameInfo?.steamAppId ?? ""}`}
+                        target="_blank"
+                      >
+                        <Button variant="ghost" size="sm">
+                          <ExternalLink className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                    )}
                   </div>
                 ))}
               </div>

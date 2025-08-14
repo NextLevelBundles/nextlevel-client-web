@@ -1,5 +1,10 @@
 import MediaData from "./media";
 
+export enum BundleType {
+  SteamGame = 0,
+  EBook = 1,
+}
+
 export interface Bundle {
   id: string;
   title: string;
@@ -16,6 +21,7 @@ export interface Bundle {
   status: string;
   createdAt: string;
   updatedAt?: string;
+  bundleType: BundleType;
   tiers: Tier[];
   products: Product[];
   charities: BundleCharity[];
@@ -28,6 +34,12 @@ export interface Tier {
   isDonationTier?: boolean;
 }
 
+export enum ProductType {
+  SteamGame = 0,
+  EBook = 1,
+  Audio = 2,
+}
+
 export interface Product {
   id: string;
   title: string;
@@ -35,12 +47,22 @@ export interface Product {
   headerImage: string;
   price: number;
   curatorComment: string;
-  type: string;
+  type: ProductType;
   publisherId: string | null;
   bundleTierId?: string | null;
+  bookId?: string;
   steamGameMetadata: SteamGameMetadata;
-  ebookMetadata: Record<string, never>; // empty object
+  ebookMetadata: EBookMetadata;
   audioMetadata: Record<string, never>; // empty object
+}
+
+export interface EBookMetadata {
+  author?: string;
+  isbn?: string;
+  pageCount?: number;
+  publisher?: string;
+  publicationDate?: string;
+  formats?: string[];
 }
 
 export interface SteamGameMetadata {

@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { TooltipProvider } from "@/shared/components/ui/tooltip";
 import { BundleHero } from "./bundle-hero";
 import { BundleProgress } from "./bundle-progress";
-import { GameGrid } from "./game-grid";
+import { ProductGrid } from "./product-grid";
 import { CharityHighlight } from "./charity-highlight";
 import { PurchaseSummary } from "./purchase-summary";
 import { Bundle } from "@/app/(shared)/types/bundle";
@@ -68,7 +68,7 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
               )}
 
               {currentTier && (
-                <GameGrid
+                <ProductGrid
                   bundle={bundle}
                   products={allProducts}
                   unlockedProducts={unlockedProducts}

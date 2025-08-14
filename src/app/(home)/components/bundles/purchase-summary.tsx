@@ -4,9 +4,9 @@ import { useState } from "react";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
-import { Stamp as Steam, Gift, DollarSign, Heart } from "lucide-react";
+import { Stamp as Steam, Gift, DollarSign, Heart, BookOpen, Gamepad2 } from "lucide-react";
 import { cn } from "@/shared/utils/tailwind";
-import { Bundle, Tier } from "@/app/(shared)/types/bundle";
+import { Bundle, Tier, BundleType } from "@/app/(shared)/types/bundle";
 import { AddToCartButton } from "../cart/add-to-cart-button";
 
 interface PurchaseSummaryProps {
@@ -66,10 +66,14 @@ export function PurchaseSummary({
 
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
-            <Gift className="h-4 w-4 text-primary" />
+            {bundle.bundleType === BundleType.EBook ? (
+              <BookOpen className="h-4 w-4 text-primary" />
+            ) : (
+              <Gift className="h-4 w-4 text-primary" />
+            )}
             <span className="text-sm font-medium">
               You&apos;re getting ${unlockedProductsValue.toFixed(2)} worth of
-              games
+              {bundle.bundleType === BundleType.EBook ? " books" : " games"}
             </span>
           </div>
           <p className="text-xs text-muted-foreground mb-3">

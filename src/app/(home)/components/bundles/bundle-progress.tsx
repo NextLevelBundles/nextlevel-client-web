@@ -1,6 +1,6 @@
 import { Card } from "@/shared/components/ui/card";
 import { Progress } from "@/shared/components/ui/progress";
-import { Sparkles, Gift, PartyPopper } from "lucide-react";
+import { Sparkles, Gift, PartyPopper, BookOpen, Gamepad2 } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -8,7 +8,7 @@ import {
   TooltipTrigger,
 } from "@/shared/components/ui/tooltip";
 import { cn } from "@/shared/utils/tailwind";
-import { Bundle, Product, Tier } from "@/app/(shared)/types/bundle";
+import { Bundle, Product, Tier, BundleType } from "@/app/(shared)/types/bundle";
 import { Fragment } from "react";
 
 interface BundleProgressProps {
@@ -76,14 +76,14 @@ export function BundleProgress({
           {isComplete ? (
             <div className="flex items-center gap-2 text-sm font-medium text-primary animate-pulse dark:text-primary/90">
               <PartyPopper className="h-4 w-4" />
-              All {allProducts.length} games unlocked 🎉
+              All {allProducts.length} {bundle.bundleType === BundleType.EBook ? "books" : "games"} unlocked 🎉
             </div>
           ) : (
             <span className="text-sm text-muted-foreground">
               <span className="text-primary font-semibold">
                 {unlockedProducts.length}
               </span>{" "}
-              of {allProducts.length} games unlocked
+              of {allProducts.length} {bundle.bundleType === BundleType.EBook ? "books" : "games"} unlocked
             </span>
           )}
         </div>

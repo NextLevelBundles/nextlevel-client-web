@@ -20,16 +20,18 @@ import {
   X,
 } from "lucide-react";
 import { Badge } from "@/shared/components/ui/badge";
-import { Bundle } from "@/app/(shared)/types/bundle";
+import { Bundle, BundleType } from "@/app/(shared)/types/bundle";
+import { BookOpen, Gamepad2 } from "lucide-react";
 
 const ITEMS_PER_PAGE = 9;
 
 const filters = [
   { label: "All", value: "all" },
+  { label: "Game Bundles", value: "games", icon: Gamepad2 },
+  { label: "Book Bundles", value: "books", icon: BookOpen },
   { label: "Featured", value: "featured" },
   { label: "Early Access", value: "early_acces" },
   { label: "Limited Keys", value: "limited_keys" },
-  { label: "Best Value", value: "best_value" },
 ];
 
 const sortOptions = [
@@ -50,6 +52,8 @@ export function BundlesGrid({ bundles }: BundlesGridProps) {
   const filteredBundles = bundles
     .filter((bundle) => {
       if (currentFilter === "all") return true;
+      if (currentFilter === "games") return bundle.bundleType === BundleType.SteamGame;
+      if (currentFilter === "books") return bundle.bundleType === BundleType.EBook;
       if (currentFilter === "featured") return bundle.isFeatured;
       if (currentFilter === "early_acces") return bundle.isEarlyAccess;
       if (currentFilter === "limited_keys") return bundle.isLimitedKeys;
@@ -81,11 +85,11 @@ export function BundlesGrid({ bundles }: BundlesGridProps) {
         <div className="container relative px-4">
           <div className="mb-12">
             <h1 className="font-orbitron mb-4 text-3xl font-bold tracking-tight md:text-4xl text-foreground">
-              Game Bundles
+              All Bundles
             </h1>
             <p className="text-muted-foreground max-w-2xl">
-              Browse our collection of premium game bundles. Each bundle is
-              carefully curated to bring you the best gaming experience at
+              Browse our collection of premium game and book bundles. Each bundle is
+              carefully curated to bring you the best experience at
               unbeatable prices.
             </p>
           </div>
@@ -105,7 +109,10 @@ export function BundlesGrid({ bundles }: BundlesGridProps) {
                   }}
                   className="transition-all hover:shadow-md dark:hover:shadow-primary/20"
                 >
-                  {filter.label}
+                  <span className="flex items-center gap-2">
+                    {filter.icon && <filter.icon className="h-4 w-4" />}
+                    {filter.label}
+                  </span>
                 </Button>
               ))}
             </div>

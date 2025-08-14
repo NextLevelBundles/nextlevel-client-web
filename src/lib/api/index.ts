@@ -5,6 +5,7 @@ import { PurchaseApi } from "./clients/purchase";
 import { SteamKeyApi } from "./clients/steam-key";
 import { DashboardApi } from "./clients/dashboard";
 import { GiftApi } from "./clients/gift";
+import { BookClient } from "./clients/book";
 
 // Default instance
 const apiClient = new ClientApi();
@@ -16,3 +17,4 @@ export const purchaseApi = new PurchaseApi(apiClient);
 export const steamKeyApi = new SteamKeyApi(apiClient);
 export const dashboardApi = new DashboardApi(apiClient);
 export const giftApi = new GiftApi(apiClient);
+export const bookApi = new BookClient(apiClient);

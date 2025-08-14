@@ -1,9 +1,9 @@
 "use client";
 
 import { Card } from "@/shared/components/ui/card";
-import { Timer, Users } from "lucide-react";
+import { Timer, BookOpen, Gamepad2, Package } from "lucide-react";
 import Image from "next/image";
-import { Bundle } from "@/app/(shared)/types/bundle";
+import { Bundle, BundleType } from "@/app/(shared)/types/bundle";
 import { useCountdownTimer } from "@/app/(shared)/hooks/useCountdownTimer";
 
 interface BundleHeroProps {
@@ -32,22 +32,38 @@ export function BundleHero({ bundle }: BundleHeroProps) {
       <div className="absolute inset-0 flex items-center ">
         <div className="container px-4">
           <div className="max-w-4xl">
-            <div
-              className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${
-                bundle.isEarlyAccess
-                  ? "bg-primary/20 text-primary ring-1 ring-primary/50"
-                  : bundle.isFeatured
-                    ? "bg-secondary/20 text-secondary ring-1 ring-secondary/50"
-                    : "bg-muted/20 text-muted-foreground ring-1 ring-white/20"
-              } backdrop-blur-xs mb-4`}
-            >
-              {bundle.isEarlyAccess && "Early Access"}
-              {bundle.isFeatured && "Featured"}
-              {bundle.isLimitedKeys && "Limited Keys"}
-              {!bundle.isFeatured &&
-                !bundle.isEarlyAccess &&
-                !bundle.isLimitedKeys &&
-                "New"}
+            <div className="flex gap-3 mb-4">
+              {/* Bundle Type Badge - Prominent */}
+              <div
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm ${
+                  bundle.bundleType === BundleType.EBook
+                    ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/30"
+                    : "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-500/30"
+                } backdrop-blur-md`}
+              >
+                {bundle.bundleType === BundleType.EBook ? (
+                  <><BookOpen className="h-5 w-5" /> Book Bundle</>
+                ) : (
+                  <><Gamepad2 className="h-5 w-5" /> Game Bundle</>
+                )}
+              </div>
+              
+              {/* Status badges */}
+              {(bundle.isEarlyAccess || bundle.isFeatured || bundle.isLimitedKeys) && (
+                <div
+                  className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${
+                    bundle.isEarlyAccess
+                      ? "bg-primary/20 text-primary ring-1 ring-primary/50"
+                      : bundle.isFeatured
+                        ? "bg-secondary/20 text-secondary ring-1 ring-secondary/50"
+                        : "bg-muted/20 text-muted-foreground ring-1 ring-white/20"
+                  } backdrop-blur-xs`}
+                >
+                  {bundle.isEarlyAccess && "Early Access"}
+                  {bundle.isFeatured && "Featured"}
+                  {bundle.isLimitedKeys && "Limited Keys"}
+                </div>
+              )}
             </div>
             <h1 className="font-orbitron text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
               {bundle.title}
@@ -64,14 +80,18 @@ export function BundleHero({ bundle }: BundleHeroProps) {
                   </div>
                 </div>
               </Card>
-              <Card className="bg-white/10 backdrop-blur-xs border-white/20">
+              <Card className={`backdrop-blur-xs border-white/20 ${
+                bundle.bundleType === BundleType.EBook 
+                  ? "bg-amber-500/10" 
+                  : "bg-blue-500/10"
+              }`}>
                 <div className="p-4">
                   <div className="flex items-center gap-2 text-white/70">
-                    <Users className="h-5 w-5" />
-                    <span>Keys Left</span>
+                    <Package className="h-5 w-5" />
+                    <span>Contains</span>
                   </div>
                   <div className="text-2xl font-mono font-bold text-white">
-                    4512
+                    {bundle.products?.length || 0} {bundle.bundleType === BundleType.EBook ? "Books" : "Games"}
                   </div>
                 </div>
               </Card>

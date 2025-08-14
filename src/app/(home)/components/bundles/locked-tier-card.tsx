@@ -3,7 +3,7 @@
 import { Lock } from "lucide-react";
 import { cn } from "@/shared/utils/tailwind";
 import Image from "next/image";
-import { Bundle, Product, Tier } from "@/app/(shared)/types/bundle";
+import { Bundle, Product, Tier, BundleType } from "@/app/(shared)/types/bundle";
 
 interface LockedTierCardProps {
   tier: Tier;
@@ -88,7 +88,7 @@ export function LockedTierCard({
             style={{ animationDelay: "200ms" }}
           >
             <p className="text-xl text-white/90 font-semibold flex items-center justify-center gap-2">
-              +{totalGamesToUnlock} Games at ${tier.price.toFixed(2)}
+              +{totalGamesToUnlock} {bundle.bundleType === BundleType.EBook ? "Books" : "Games"} at ${tier.price.toFixed(2)}
             </p>
             <p className="text-white/90 text-sm font-semibold bg-linear-to-r from-primary/90 to-secondary/90 bg-clip-text">
               Worth ${totalValue.toFixed(2)}

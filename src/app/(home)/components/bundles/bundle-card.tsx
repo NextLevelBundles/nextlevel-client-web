@@ -3,10 +3,10 @@
 import { useRef, useState, useEffect } from "react";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
-import { Timer, Users, ArrowRight } from "lucide-react";
+import { Timer, Users, ArrowRight, BookOpen, Gamepad2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Bundle } from "@/app/(shared)/types/bundle";
+import { Bundle, BundleType } from "@/app/(shared)/types/bundle";
 import { useCountdownTimer } from "@/app/(shared)/hooks/useCountdownTimer";
 
 interface BundleCardProps {
@@ -65,27 +65,50 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
               />
               <div className="absolute inset-0 dark:from-background/95 dark:via-background/50 dark:to-transparent transition-opacity group-hover:opacity-75" />
             </div>
-            <div
-              className={`absolute right-3 top-3 text-xs font-semibold rounded-full px-2 py-0.5 backdrop-blur-xs transition-transform group-hover:scale-105 ${
-                bundle.isFeatured
-                  ? "bg-green-500/20 text-green-500 ring-1 ring-green-500/50 group-hover:bg-green-500/30"
-                  : bundle.isEarlyAccess
-                    ? "bg-purple-500/20 text-purple-500 ring-1 ring-purple-500/50 group-hover:bg-purple-500/30"
-                    : bundle.isLimitedKeys
-                      ? "bg-red-500/20 text-red-500 ring-1 ring-red-500/50 group-hover:bg-red-500/30"
-                      : "bg-muted/30 text-muted-foreground ring-1 ring-white/30"
-              }`}
-            >
-              {bundle.isFeatured && "Featured"}
-              {bundle.isEarlyAccess && "Early Access"}
-              {bundle.isLimitedKeys && "Limited Keys"}
-              {!bundle.isFeatured &&
-                !bundle.isEarlyAccess &&
-                !bundle.isLimitedKeys &&
-                "New"}
+            {/* Bundle Type Badge - More prominent */}
+            <div className="absolute left-3 top-3 z-10">
+              <div
+                className={`text-xs font-bold rounded-lg px-3 py-1.5 backdrop-blur-md transition-all group-hover:scale-105 flex items-center gap-1.5 shadow-lg ${
+                  bundle.bundleType === BundleType.EBook
+                    ? "bg-gradient-to-r from-amber-500/90 to-orange-500/90 text-white ring-2 ring-amber-400/50"
+                    : "bg-gradient-to-r from-blue-500/90 to-indigo-500/90 text-white ring-2 ring-blue-400/50"
+                }`}
+              >
+                {bundle.bundleType === BundleType.EBook ? (
+                  <><BookOpen className="h-4 w-4" /> Book Bundle</>
+                ) : (
+                  <><Gamepad2 className="h-4 w-4" /> Game Bundle</>
+                )}
+              </div>
+            </div>
+            
+            {/* Status badges moved to right */}
+            <div className="absolute right-3 top-3 flex gap-2">
+              {(bundle.isFeatured || bundle.isEarlyAccess || bundle.isLimitedKeys) && (
+                <div
+                  className={`text-xs font-semibold rounded-full px-2 py-0.5 backdrop-blur-xs transition-transform group-hover:scale-105 ${
+                    bundle.isFeatured
+                      ? "bg-green-500/20 text-green-500 ring-1 ring-green-500/50 group-hover:bg-green-500/30"
+                      : bundle.isEarlyAccess
+                        ? "bg-purple-500/20 text-purple-500 ring-1 ring-purple-500/50 group-hover:bg-purple-500/30"
+                        : "bg-red-500/20 text-red-500 ring-1 ring-red-500/50 group-hover:bg-red-500/30"
+                  }`}
+                >
+                  {bundle.isFeatured && "Featured"}
+                  {bundle.isEarlyAccess && "Early Access"}
+                  {bundle.isLimitedKeys && "Limited Keys"}
+                </div>
+              )}
             </div>
           </div>
 
+          {/* Color-coded border accent */}
+          <div className={`absolute inset-x-0 top-0 h-1 ${
+            bundle.bundleType === BundleType.EBook
+              ? "bg-gradient-to-r from-amber-400 to-orange-400"
+              : "bg-gradient-to-r from-blue-400 to-indigo-400"
+          }`} />
+          
           <div className="flex flex-1 flex-col p-7">
             <h3 className="font-rajdhani mb-2 text-xl font-bold text-[#1c1c1e] dark:text-foreground transition-colors group-hover:text-primary">
               {bundle.title}
@@ -97,8 +120,13 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
                 <span>{timeLeft}</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-[#64748b] dark:text-muted-foreground group-hover:text-[#4b5563] dark:group-hover:text-muted-foreground/80 transition-colors">
-                <Users className="h-4 w-4" />
-                <span>2532 keys left</span>
+                {bundle.bundleType === BundleType.EBook ? (
+                  <><BookOpen className="h-4 w-4" />
+                  <span>{bundle.products?.length || 0} books</span></>
+                ) : (
+                  <><Gamepad2 className="h-4 w-4" />
+                  <span>{bundle.products?.length || 0} games</span></>
+                )}
               </div>
             </div>
 
