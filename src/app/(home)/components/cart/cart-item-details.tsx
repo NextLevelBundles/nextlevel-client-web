@@ -11,6 +11,7 @@ import {
 } from "@/app/(shared)/components/ui/dialog";
 import { ScrollArea } from "@/app/(shared)/components/ui/scroll-area";
 import { CartItem } from "@/lib/api/types/cart";
+import { isBookBundle } from "@/app/(shared)/utils/cart";
 import { ExternalLink, Heart, BookOpen, Gamepad2, FileText } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -53,12 +54,12 @@ export function CartItemDetails({ item }: CartItemDetailsProps) {
             <Badge variant="secondary">{item.snapshotTierTitle}</Badge>
             <Badge 
               variant="outline" 
-              className={item.bundleType === 1 
+              className={isBookBundle(item) 
                 ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border-amber-300" 
                 : "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border-blue-300"
               }
             >
-              {item.bundleType === 1 ? (
+              {isBookBundle(item) ? (
                 <><BookOpen className="h-3 w-3 mr-1" /> Book Bundle</>
               ) : (
                 <><Gamepad2 className="h-3 w-3 mr-1" /> Game Bundle</>
@@ -85,7 +86,7 @@ export function CartItemDetails({ item }: CartItemDetailsProps) {
 
           <div>
             <h4 className="font-semibold mb-3">
-              Included {item.bundleType === 1 ? "Books" : "Games"} ({item.snapshotProducts.length})
+              Included {isBookBundle(item) ? "Books" : "Games"} ({item.snapshotProducts.length})
             </h4>
             <ScrollArea className="h-96">
               <div className="grid gap-3">
@@ -103,7 +104,7 @@ export function CartItemDetails({ item }: CartItemDetailsProps) {
                     />
                     <div className="flex-1">
                       <h5 className="font-medium text-sm">{product.title}</h5>
-                      {product.productType === 1 && product.bookInfo ? (
+                      {product.bookInfo ? (
                         <div className="space-y-1 mt-1">
                           {product.bookInfo.author && (
                             <div className="text-xs text-muted-foreground">
@@ -127,7 +128,7 @@ export function CartItemDetails({ item }: CartItemDetailsProps) {
                         </div>
                       ) : null}
                     </div>
-                    {product.productType !== 1 && product.steamGameInfo && (
+                    {!product.bookInfo && product.steamGameInfo && (
                       <Link
                         href={`https://store.steampowered.com/app/${product.steamGameInfo?.steamAppId ?? ""}`}
                         target="_blank"

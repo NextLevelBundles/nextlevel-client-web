@@ -66,14 +66,14 @@ export function PurchaseSummary({
 
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
-            {bundle.bundleType === BundleType.EBook ? (
+            {bundle.bundleType === BundleType.Ebook ? (
               <BookOpen className="h-4 w-4 text-primary" />
             ) : (
               <Gift className="h-4 w-4 text-primary" />
             )}
             <span className="text-sm font-medium">
               You&apos;re getting ${unlockedProductsValue.toFixed(2)} worth of
-              {bundle.bundleType === BundleType.EBook ? " books" : " games"}
+              {bundle.bundleType === BundleType.Ebook ? " books" : " games"}
             </span>
           </div>
           <p className="text-xs text-muted-foreground mb-3">

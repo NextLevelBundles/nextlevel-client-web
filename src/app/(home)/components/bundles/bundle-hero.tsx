@@ -36,12 +36,12 @@ export function BundleHero({ bundle }: BundleHeroProps) {
               {/* Bundle Type Badge - Prominent */}
               <div
                 className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm ${
-                  bundle.bundleType === BundleType.EBook
+                  bundle.bundleType === BundleType.Ebook
                     ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/30"
                     : "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-500/30"
                 } backdrop-blur-md`}
               >
-                {bundle.bundleType === BundleType.EBook ? (
+                {bundle.bundleType === BundleType.Ebook ? (
                   <><BookOpen className="h-5 w-5" /> Book Bundle</>
                 ) : (
                   <><Gamepad2 className="h-5 w-5" /> Game Bundle</>
@@ -81,7 +81,7 @@ export function BundleHero({ bundle }: BundleHeroProps) {
                 </div>
               </Card>
               <Card className={`backdrop-blur-xs border-white/20 ${
-                bundle.bundleType === BundleType.EBook 
+                bundle.bundleType === BundleType.Ebook 
                   ? "bg-amber-500/10" 
                   : "bg-blue-500/10"
               }`}>
@@ -91,7 +91,7 @@ export function BundleHero({ bundle }: BundleHeroProps) {
                     <span>Contains</span>
                   </div>
                   <div className="text-2xl font-mono font-bold text-white">
-                    {bundle.products?.length || 0} {bundle.bundleType === BundleType.EBook ? "Books" : "Games"}
+                    {bundle.products?.length || 0} {bundle.bundleType === BundleType.Ebook ? "Books" : "Games"}
                   </div>
                 </div>
               </Card>

@@ -5,7 +5,6 @@ export interface CartItem {
   listingId?: string;
   bundleId?: string;
   bundleTierId?: string;
-  bundleType?: 0 | 1; // 0 = SteamGame, 1 = EBook
   quantity: number;
   price: number;
   snapshotTitle?: string;
@@ -17,7 +16,6 @@ export interface CartItem {
     productId: string;
     title: string;
     coverImageUrl: string;
-    productType?: 0 | 1 | 2; // 0 = SteamGame, 1 = EBook, 2 = Audio
     steamGameInfo?: {
       steamAppId?: number;
       packageId: string;

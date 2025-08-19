@@ -53,7 +53,7 @@ export function BundlesGrid({ bundles }: BundlesGridProps) {
     .filter((bundle) => {
       if (currentFilter === "all") return true;
       if (currentFilter === "games") return bundle.bundleType === BundleType.SteamGame;
-      if (currentFilter === "books") return bundle.bundleType === BundleType.EBook;
+      if (currentFilter === "books") return bundle.bundleType === BundleType.Ebook;
       if (currentFilter === "featured") return bundle.isFeatured;
       if (currentFilter === "early_acces") return bundle.isEarlyAccess;
       if (currentFilter === "limited_keys") return bundle.isLimitedKeys;

@@ -30,7 +30,7 @@ export function ProductGrid({
   setTotalAmount,
 }: ProductGridProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const isBookBundle = bundle.bundleType === BundleType.EBook;
+  const isBookBundle = bundle.bundleType === BundleType.Ebook;
 
   // Get locked tiers
   const selectedTierIndex = tiers.findIndex(
@@ -105,7 +105,7 @@ export function ProductGrid({
               </div>
               
               {/* Show book metadata for book products */}
-              {product.type === ProductType.EBook && product.ebookMetadata && (
+              {product.type === ProductType.Ebook && product.ebookMetadata && (
                 <div className="mt-3 space-y-2">
                   {product.ebookMetadata.author && (
                     <p className="text-sm text-muted-foreground">
@@ -145,7 +145,7 @@ export function ProductGrid({
         {/* Use appropriate detail drawer based on product type */}
         {selectedProduct && (
           <>
-            {selectedProduct.type === ProductType.EBook ? (
+            {selectedProduct.type === ProductType.Ebook ? (
               <BookDetailDrawer
                 bundle={bundle}
                 product={selectedProduct}

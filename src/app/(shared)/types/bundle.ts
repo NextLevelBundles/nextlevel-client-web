@@ -2,7 +2,7 @@ import MediaData from "./media";
 
 export enum BundleType {
   SteamGame = 0,
-  EBook = 1,
+  Ebook = 1,
 }
 
 export interface Bundle {
@@ -36,7 +36,7 @@ export interface Tier {
 
 export enum ProductType {
   SteamGame = 0,
-  EBook = 1,
+  Ebook = 1,
   Audio = 2,
 }
 

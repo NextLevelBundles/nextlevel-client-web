@@ -18,6 +18,7 @@ import { CartItemDetails } from "./cart-item-details";
 import { GiftForm } from "./gift-form";
 import { TurnstileCaptcha } from "./turnstile-captcha";
 import { useCart } from "@/app/(shared)/contexts/cart/cart-provider";
+import { isBookBundle } from "@/app/(shared)/utils/cart";
 import {
   Sheet,
   SheetContent,
@@ -285,11 +286,11 @@ export function CartDrawer() {
                           />
                           {/* Bundle type indicator */}
                           <div className={`absolute bottom-1 left-1 p-1 rounded-full ${
-                            item.bundleType === 1 
+                            isBookBundle(item) 
                               ? "bg-amber-500" 
                               : "bg-blue-500"
                           }`}>
-                            {item.bundleType === 1 ? (
+                            {isBookBundle(item) ? (
                               <BookOpen className="h-3 w-3 text-white" />
                             ) : (
                               <Gamepad2 className="h-3 w-3 text-white" />
@@ -312,11 +313,11 @@ export function CartDrawer() {
                           {/* Bundle type badge */}
                           <div className="flex items-center gap-2 mb-1">
                             <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
-                              item.bundleType === 1
+                              isBookBundle(item)
                                 ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400"
                                 : "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400"
                             }`}>
-                              {item.bundleType === 1 ? (
+                              {isBookBundle(item) ? (
                                 <><BookOpen className="h-3 w-3" /> Book Bundle</>
                               ) : (
                                 <><Gamepad2 className="h-3 w-3" /> Game Bundle</>
