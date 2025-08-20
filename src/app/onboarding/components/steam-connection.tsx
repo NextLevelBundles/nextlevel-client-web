@@ -1,8 +1,13 @@
+"use client";
+
 import { Label } from "@/app/(shared)/components/ui/label";
-import { Gamepad2, Loader2 } from "lucide-react";
+import { Gamepad2, Loader2, MapPin, AlertTriangle } from "lucide-react";
 import { SteamUserInfo } from "./onboarding-form";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { Alert, AlertDescription } from "@/app/(shared)/components/ui/alert";
+import { useCountries } from "@/hooks/queries/useCountries";
+import { Country } from "@/lib/api/clients/common";
 
 interface SteamProfile {
   steamid: string;
@@ -37,6 +42,20 @@ export default function SteamConnection({
 }: SteamConnectionProps) {
   const [steamProfile, setSteamProfile] = useState<SteamProfile | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+  const [userCountry, setUserCountry] = useState<Country | null>(null);
+  
+  // Use TanStack Query to fetch countries
+  const { data: countries = [], isLoading: isLoadingCountries } = useCountries();
+
+  // Update user country when we have both countries list and steam profile
+  useEffect(() => {
+    if (countries.length > 0 && steamProfile?.loccountrycode) {
+      const country = countries.find(c => c.id === steamProfile.loccountrycode);
+      if (country) {
+        setUserCountry(country);
+      }
+    }
+  }, [countries, steamProfile?.loccountrycode]);
 
   // Load Steam profile when we have a Steam ID
   useEffect(() => {
@@ -47,6 +66,14 @@ export default function SteamConnection({
         if (response.ok) {
           const profile = await response.json();
           setSteamProfile(profile);
+          
+          // If we have a country code from the profile and not already set, update it
+          if (profile.loccountrycode && !steamUserInfo?.steamCountry) {
+            onSteamInfoReceived({
+              steamId: steamId,
+              steamCountry: profile.loccountrycode,
+            });
+          }
         }
       } catch (error) {
         console.error("Failed to load Steam profile:", error);
@@ -59,17 +86,18 @@ export default function SteamConnection({
     if (steamUserInfo?.steamId && !steamProfile) {
       loadSteamProfile(steamUserInfo.steamId);
     }
-  }, [steamUserInfo?.steamId, steamProfile]);
+  }, [steamUserInfo?.steamId, steamUserInfo?.steamCountry, steamProfile, onSteamInfoReceived]);
 
   useEffect(() => {
     const handler = (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
 
-      const { type, steamId } = event.data || {};
+      const { type, steamId, steamCountry } = event.data || {};
 
       if (type === "STEAM_CONNECT_SUCCESS") {
         onSteamInfoReceived({
           steamId: steamId,
+          steamCountry: steamCountry,
         });
       }
     };
@@ -139,29 +167,50 @@ export default function SteamConnection({
                       </span>
                     </div>
                   ) : steamProfile ? (
-                    <div className="flex items-center gap-3">
-                      <Image
-                        src={steamProfile.avatarmedium}
-                        alt={`${steamProfile.personaname} avatar`}
-                        width={40}
-                        height={40}
-                        className="rounded-lg border border-border/50"
-                      />
-                      <div className="flex flex-col">
-                        {steamProfile.realname && (
-                          <span className="font-medium text-foreground">
-                            {steamProfile.realname}
-                          </span>
-                        )}
-                        <a
-                          href={steamProfile.profileurl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-primary hover:text-primary/80 hover:underline transition-colors"
-                        >
-                          {steamProfile.personaname}
-                        </a>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Image
+                          src={steamProfile.avatarmedium}
+                          alt={`${steamProfile.personaname} avatar`}
+                          width={40}
+                          height={40}
+                          className="rounded-lg border border-border/50"
+                        />
+                        <div className="flex flex-col">
+                          {steamProfile.realname && (
+                            <span className="font-medium text-foreground">
+                              {steamProfile.realname}
+                            </span>
+                          )}
+                          <a
+                            href={steamProfile.profileurl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-primary hover:text-primary/80 hover:underline transition-colors"
+                          >
+                            {steamProfile.personaname}
+                          </a>
+                        </div>
                       </div>
+                      {(userCountry || steamProfile?.loccountrycode) && (
+                        <div className="flex items-center gap-2 p-2 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <MapPin className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                          <div className="flex items-center gap-2">
+                            {userCountry ? (
+                              <>
+                                <span className="text-lg">{userCountry.flag}</span>
+                                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                                  {userCountry.name}
+                                </span>
+                              </>
+                            ) : (
+                              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                                Region: {steamProfile?.loccountrycode}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="flex items-center gap-3">
@@ -173,8 +222,7 @@ export default function SteamConnection({
                 </div>
               )}
               <p className="text-sm text-muted-foreground">
-                Your Steam account is now linked and ready for automatic game
-                delivery.
+                Your Steam account is now linked to your Digiphile profile.
               </p>
             </div>
             <div className="flex flex-col items-center gap-2">
@@ -211,23 +259,22 @@ export default function SteamConnection({
                 Connect Your Steam Account
               </h3>
               <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                Link your Steam account to automatically receive game keys, sync
-                your library, and get personalized recommendations based on your
-                gaming preferences.
+                Link your Steam account to receive game keys directly to your library
+                and ensure you get region-appropriate keys based on your Steam country.
               </p>
 
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                  <span>Automatic game key delivery to your Steam library</span>
+                  <span>Instant game key delivery to your Steam library</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                  <span>Personalized bundle recommendations</span>
+                  <span>Region-specific keys matched to your Steam country</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-                  <span>Track your gaming achievements and stats</span>
+                  <span>Track your gaming achievements and stats (Coming soon)</span>
                 </div>
               </div>
             </div>
@@ -301,20 +348,36 @@ export default function SteamConnection({
             <p className="text-xs text-muted-foreground">
               Steam integration is mandatory to become part of our gaming
               community and enjoy the full Digiphile experience. Your Steam
-              avatar, handle or name won&apos;t be shared publicly, and we only
-              use your Steam ID to deliver game keys and provide personalized
-              recommendations.
+              avatar, handle or name won&apos;t be shared publicly. We use your 
+              Steam ID to deliver game keys and your Steam country to ensure 
+              you receive region-appropriate keys that work in your location.
             </p>
           </div>
         </>
       )}
 
       {steamConnected && (
-        <div className="text-center">
-          <p className="text-xs text-green-600 dark:text-green-400 font-medium">
-            Steam account successfully connected and ready for game delivery
-          </p>
-        </div>
+        <>
+          {(userCountry || steamProfile?.loccountrycode) && (
+            <Alert className="border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20">
+              <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+              <AlertDescription className="text-yellow-800 dark:text-yellow-200">
+                <strong>Important:</strong> Steam keys will be provided for your region{' '}
+                {userCountry ? (
+                  <>({userCountry.flag} {userCountry.name})</>
+                ) : (
+                  <>(Country Code: {steamProfile?.loccountrycode})</>
+                )}{' '}
+                only. Keys are region-locked based on your Steam account's country setting and cannot be activated in other regions.
+              </AlertDescription>
+            </Alert>
+          )}
+          <div className="text-center">
+            <p className="text-xs text-green-600 dark:text-green-400 font-medium">
+              Steam account successfully connected and ready for game delivery
+            </p>
+          </div>
+        </>
       )}
     </div>
   );

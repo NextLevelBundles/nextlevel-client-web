@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { userApi } from "@/lib/api";
-import { Country } from "@/lib/api/types/common";
+import { commonApi } from "@/lib/api";
+import { Country } from "@/lib/api/clients/common";
 
 // Query key factory for countries
 export const countriesQueryKey = ["countries"] as const;
@@ -12,7 +12,7 @@ export const countriesQueryKey = ["countries"] as const;
 export function useCountries() {
   return useQuery({
     queryKey: countriesQueryKey,
-    queryFn: (): Promise<Country[]> => userApi.getCountries(),
+    queryFn: (): Promise<Country[]> => commonApi.getCountries(),
     staleTime: Infinity, // Never consider the data stale
     gcTime: Infinity, // Never garbage collect (keeps in cache forever)
     retry: 3, // Retry failed requests 3 times

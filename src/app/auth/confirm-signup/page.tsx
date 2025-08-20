@@ -58,8 +58,6 @@ export default function ConfirmSignUpPage() {
 
     try {
       const result = await AuthService.confirmSignUp(email, code);
-      console.log(result);
-      debugger;
 
       if (result.success && result.isSignUpComplete) {
         setSuccess(true);
@@ -73,7 +71,7 @@ export default function ConfirmSignUpPage() {
             // User is signed in via autoSignIn
             toast.success("Account confirmed! Signing you in...");
             setTimeout(() => {
-              router.push("/customer");
+              router.push("/onboarding");
               router.refresh();
             }, 1000);
           } else {
@@ -90,7 +88,7 @@ export default function ConfirmSignUpPage() {
             // User is signed in
             toast.success("Account confirmed! Signing you in...");
             setTimeout(() => {
-              router.push("/customer");
+              router.push("/onboarding");
               router.refresh();
             }, 1000);
           } else {

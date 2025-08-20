@@ -189,6 +189,22 @@ export class AuthService {
     }
   }
 
+  static async hasCompletedProfile(): Promise<boolean> {
+    try {
+      const session = await fetchAuthSession();
+      const idToken = session.tokens?.idToken;
+      
+      if (!idToken) return false;
+      
+      // Check if the ID token has the custom:customerId claim
+      const customerId = idToken.payload?.['custom:customerId'];
+      return !!customerId;
+    } catch (error) {
+      console.error("Error checking profile completion:", error);
+      return false;
+    }
+  }
+
   static async getSession() {
     try {
       const session = await fetchAuthSession();

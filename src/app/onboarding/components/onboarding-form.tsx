@@ -19,8 +19,15 @@ import {
   Loader2,
   Check,
   X,
+  Info,
 } from "lucide-react";
 import { Card } from "@/app/(shared)/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/app/(shared)/components/ui/tooltip";
 import { cn } from "@/app/(shared)/utils/tailwind";
 import SteamConnection from "./steam-connection";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
@@ -32,6 +39,7 @@ interface FormData {
   name: string;
   handle: string;
   steamId: string | null;
+  steamCountry: string | null;
   billingAddress: {
     addressLine1: string;
     addressLine2: string;
@@ -51,6 +59,7 @@ interface FormData {
 
 export interface SteamUserInfo {
   steamId: string;
+  steamCountry?: string;
 }
 
 const countries = [
@@ -113,6 +122,7 @@ export function OnboardingForm() {
     name: user?.name || "",
     handle: "",
     steamId: null,
+    steamCountry: null,
     billingAddress: {
       addressLine1: "",
       addressLine2: "",
@@ -137,13 +147,21 @@ export function OnboardingForm() {
     setFormData((prev) => ({
       ...prev,
       steamId: data.steamId,
+      steamCountry: data.steamCountry || null,
     }));
   };
 
   const handleHandleChange = (value: string) => {
-    setHandleInput(value);
+    // Convert to lowercase and filter allowed characters
+    // Allowed: lowercase letters, numbers, and .-_!@#$%^&*()=+
+    const allowedChars = /[a-z0-9.\-_!@#$%^&*()=+]/g;
+    const filtered = value.toLowerCase().split('').filter(char => 
+      char.match(allowedChars)
+    ).join('');
+    
+    setHandleInput(filtered);
     // If the user changes the handle after verification, reset verification
-    if (verifiedHandle && value !== verifiedHandle) {
+    if (verifiedHandle && filtered !== verifiedHandle) {
       setHandleVerified(false);
       setVerifiedHandle("");
       setHandleCheckResult(null);
@@ -603,9 +621,31 @@ export function OnboardingForm() {
               <div className="space-y-6 animate-fade-up">
                 <div className="grid gap-4">
                   <div>
-                    <Label htmlFor="handle" className="text-sm font-medium">
-                      Gaming Handle *
-                    </Label>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Label htmlFor="handle" className="text-sm font-medium">
+                        Gaming Handle *
+                      </Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs">
+                            <div className="space-y-2">
+                              <p className="font-medium">Allowed characters:</p>
+                              <ul className="text-sm space-y-1">
+                                <li>• Lowercase letters (a-z)</li>
+                                <li>• Numbers (0-9)</li>
+                                <li>• Special characters: . - _ ! @ # $ % ^ & * ( ) = +</li>
+                              </ul>
+                              <p className="text-xs text-muted-foreground mt-2">
+                                All uppercase letters will be automatically converted to lowercase
+                              </p>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                     <div className="space-y-3">
                       <div className="relative">
                         <Input

@@ -1,9 +1,7 @@
 import { cookies } from "next/headers";
 import { JWTPayload, jwtVerify, createRemoteJWKSet } from "jose";
 
-const COGNITO_REGION = "us-east-1";
-const USER_POOL_ID = "us-east-1_7M0NmzbcR";
-const JWKS_URI = `https://cognito-idp.us-east-1.amazonaws.com/us-east-1_7M0NmzbcR/.well-known/jwks.json`;
+const JWKS_URI = `${process.env.AUTH_COGNITO_ISSUER}/.well-known/jwks.json`;
 
 const jwks = createRemoteJWKSet(new URL(JWKS_URI));
 
@@ -13,6 +11,8 @@ export interface DecodedToken extends JWTPayload {
   sub?: string;
   "cognito:username"?: string;
   email_verified?: boolean;
+  "custom:customerId"?: string;
+  [key: string]: any; // Allow for other custom claims
 }
 
 export async function verifyIdToken(
@@ -20,8 +20,8 @@ export async function verifyIdToken(
 ): Promise<DecodedToken | null> {
   try {
     const { payload } = await jwtVerify(token, jwks, {
-      issuer: `https://cognito-idp.us-east-1.amazonaws.com/us-east-1_7M0NmzbcR`,
-      audience: "2nrhrl7qnj55s275u2jd0ks9a1", // Your Cognito App Client ID
+      issuer: process.env.AUTH_COGNITO_ISSUER,
+      audience: process.env.AUTH_COGNITO_ID,
     });
 
     return payload as DecodedToken;
@@ -61,6 +61,9 @@ export async function getServerSession() {
       email: decoded.email,
       name: decoded.name,
       emailVerified: decoded.email_verified,
+    },
+    customClaims: {
+      "custom:customerId": decoded["custom:customerId"],
     },
     expires: decoded.exp
       ? new Date(decoded.exp * 1000).toISOString()

@@ -159,7 +159,7 @@ export function TopNav({ user }: TopNavProps) {
                 className="text-destructive rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-destructive/5 hover:text-destructive dark:hover:bg-destructive/10 dark:hover:text-destructive focus:bg-destructive/5 focus:text-destructive dark:focus:bg-destructive/10 dark:focus:text-destructive"
               >
                 <div>
-                  <SignOutButton />
+                  <SignOutButton variant="dropdown" />
                 </div>
               </DropdownMenuItem>
             </DropdownMenuContent>

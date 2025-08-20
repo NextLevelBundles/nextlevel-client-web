@@ -93,8 +93,8 @@ export default function SignUpPage() {
           // AutoSignIn is ready, complete it
           const autoSignInResult = await AuthService.handleAutoSignIn();
           if (autoSignInResult.success && autoSignInResult.isSignedIn) {
-            // User is signed in, redirect to dashboard
-            router.push("/customer");
+            // User is signed in, redirect to onboarding (middleware will handle profile check)
+            router.push("/onboarding");
             router.refresh();
           } else {
             // Fallback to confirmation page
@@ -104,7 +104,7 @@ export default function SignUpPage() {
           }
         } else if (result.nextStep?.signUpStep === 'DONE') {
           // Sign up is complete, user should be signed in
-          router.push("/customer");
+          router.push("/onboarding");
           router.refresh();
         } else {
           // Default to confirmation page

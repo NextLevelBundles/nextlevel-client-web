@@ -10,6 +10,13 @@ export default async function Onboarding() {
     redirect("/auth/signin", RedirectType.replace);
   }
 
+  // Check if user already has a customerId (completed profile)
+  // This is handled by middleware, but we can add a server-side check as well
+  const customerId = session.customClaims?.['custom:customerId'];
+  if (customerId) {
+    redirect("/customer", RedirectType.replace);
+  }
+
   return (
     <main className="min-h-screen bg-background relative">
       <Navigation />

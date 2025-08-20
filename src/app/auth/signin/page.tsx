@@ -14,7 +14,7 @@ import { AuthLayout } from "../components/auth-layout";
 export default function SignInPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/customer";
+  const callbackUrl = searchParams.get("callbackUrl") || "/onboarding";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,8 +33,18 @@ export default function SignInPage() {
       const result = await AuthService.signIn(email, password);
 
       if (result.success && result.isSignedIn) {
-        // Redirect to callback URL or dashboard
-        router.push(callbackUrl);
+        // Check if user has completed profile
+        const hasProfile = await AuthService.hasCompletedProfile();
+        
+        // If there's a specific callback URL and user has profile, use it
+        // Otherwise redirect based on profile status
+        if (searchParams.get("callbackUrl") && hasProfile) {
+          router.push(callbackUrl);
+        } else if (hasProfile) {
+          router.push("/customer");
+        } else {
+          router.push("/onboarding");
+        }
         router.refresh();
       } else if (result.nextStep?.signInStep === "CONFIRM_SIGN_UP") {
         // User needs to confirm their account
