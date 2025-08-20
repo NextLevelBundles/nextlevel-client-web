@@ -4,12 +4,11 @@ import "@fontsource/rajdhani/600.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
-import { SessionProvider } from "next-auth/react";
-import { auth } from "@/auth";
 import { ThemeProvider } from "./(shared)/components/theme-provider";
-import { IdTokenProvider } from "./(shared)/contexts/id-token/id-token-provider";
-import SessionRefresh from "./(shared)/providers/session-refresh";
+import { AuthProvider } from "./(shared)/providers/auth-provider";
+import { AmplifyAuthListener } from "./(shared)/providers/amplify-auth-listener";
 import { QueryClientProviderWrapper } from "./(shared)/providers/query-client";
+import AmplifyClientLoader from "./(shared)/components/amplify/load-amplify";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -31,16 +30,15 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
-
   return (
     <html lang="en">
       <body className={inter.className}>
+        <AmplifyClientLoader />
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <Toaster
             position="bottom-right"
@@ -62,14 +60,10 @@ export default async function RootLayout({
             }}
           />
 
-          <SessionProvider session={session} refetchOnWindowFocus={false}>
-            <SessionRefresh />
-            <IdTokenProvider>
-              <QueryClientProviderWrapper>
-                {children}
-              </QueryClientProviderWrapper>
-            </IdTokenProvider>
-          </SessionProvider>
+          <AuthProvider>
+            <AmplifyAuthListener />
+            <QueryClientProviderWrapper>{children}</QueryClientProviderWrapper>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

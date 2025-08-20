@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
 import { LogIn, UserPlus, Loader2, Gift, Lock } from "lucide-react";
 import {
   Card,
@@ -14,7 +13,6 @@ import {
 } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
-import { toast } from "sonner";
 import { motion } from "framer-motion";
 
 interface GiftAuthPromptProps {
@@ -34,26 +32,11 @@ export function GiftAuthPrompt({
   const [isSigningIn, setIsSigningIn] = useState(false);
   const signupLink = `${process.env.NEXT_PUBLIC_COGNITO_DOMAIN}/signup?response_type=code&client_id=${process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID}&redirect_uri=${process.env.NEXT_PUBLIC_COGNITO_REDIRECT_URI}&scope=openid+email+phone+profile`;
 
-  const handleSignIn = async () => {
+  const handleSignIn = () => {
     setIsSigningIn(true);
-    try {
-      const result = await signIn("credentials", {
-        redirect: false,
-        callbackUrl: returnUrl,
-      });
-
-      if (result?.error) {
-        toast.error("Sign in failed", {
-          description: "Please check your credentials and try again.",
-        });
-      } else if (result?.url) {
-        router.push(result.url);
-      }
-    } catch {
-      toast.error("An error occurred during sign in");
-    } finally {
-      setIsSigningIn(false);
-    }
+    const signInUrl = new URL("/auth/signin", window.location.origin);
+    signInUrl.searchParams.set("callbackUrl", returnUrl);
+    router.push(signInUrl.toString());
   };
 
   return (

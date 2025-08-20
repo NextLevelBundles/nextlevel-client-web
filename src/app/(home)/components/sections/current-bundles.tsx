@@ -1,15 +1,11 @@
-"use server";
-
 import { Button } from "@/shared/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { Bundle } from "@/app/(shared)/types/bundle";
 import { BundleCard } from "@/home/components/bundles/bundle-card";
 import Link from "next/link";
+import { serverApiClient } from "@/lib/server-api";
 
 export async function CurrentBundles() {
-  const response = await fetch(`${process.env.API_URL}/customer/bundles`);
-  const bundles = await response.json();
-  const bundlesTyped = bundles as Bundle[];
+  const bundles = await serverApiClient.getBundles();
 
   return (
     <section className="relative py-24 px-6 md:px-12">
@@ -25,7 +21,7 @@ export async function CurrentBundles() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {bundlesTyped.map((bundle, index) => (
+          {bundles.map((bundle, index) => (
             <BundleCard key={bundle.id} bundle={bundle} index={index} />
           ))}
           {/* {bundles.map((bundle) => (

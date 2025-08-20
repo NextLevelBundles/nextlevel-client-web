@@ -23,7 +23,9 @@ import {
 import { Card } from "@/app/(shared)/components/ui/card";
 import { cn } from "@/app/(shared)/utils/tailwind";
 import SteamConnection from "./steam-connection";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/app/(shared)/providers/auth-provider";
+import { fetchAuthSession } from "aws-amplify/auth";
+import { AuthService } from "@/lib/auth/auth-service";
 import { apiClient } from "@/lib/api/client-api";
 
 interface FormData {
@@ -91,7 +93,7 @@ const formSections = [
 ];
 
 export function OnboardingForm() {
-  const session = useSession();
+  const { user } = useAuth();
 
   const [currentSection, setCurrentSection] = useState(2);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -108,7 +110,7 @@ export function OnboardingForm() {
   );
   const [handleInput, setHandleInput] = useState("");
   const [formData, setFormData] = useState<FormData>({
-    name: session.data?.name || "",
+    name: user?.name || "",
     handle: "",
     steamId: null,
     billingAddress: {
@@ -121,8 +123,8 @@ export function OnboardingForm() {
       countryCode: "",
     },
     contact: {
-      name: session.data?.name || "",
-      email: session.data?.email || "",
+      name: user?.name || "",
+      email: user?.email || "",
       phone: "",
       alternatePhone: null,
     },
@@ -245,17 +247,15 @@ export function OnboardingForm() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${session.data?.id_token}`,
+            Authorization: `Bearer ${(await fetchAuthSession()).tokens?.idToken?.toString()}`,
           },
           body: JSON.stringify(formData),
         }
       );
 
       if (response.ok) {
-        await session.update({
-          invalidate: "true",
-        });
-
+        // Refresh auth tokens after onboarding
+        await AuthService.refreshTokens();
         setIsSubmitted(true);
       } else {
         throw new Error("Failed to submit form");

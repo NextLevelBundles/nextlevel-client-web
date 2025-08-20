@@ -15,7 +15,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   BookOpen,
   Download,
-  SearchIcon,
   FileText,
   FileType,
   FileAudio,
@@ -99,7 +98,7 @@ function BookAssignmentCard({
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="group relative overflow-hidden hover:shadow-lg transition-all duration-300 hover:border-amber-500/50">
+      <Card className="group relative overflow-hidden hover:shadow-lg transition-all duration-300 hover:border-blue-500/50">
         {assignment.isGift && (
           <div className="absolute top-2 right-2 z-10">
             <Badge variant="secondary" className="bg-purple-100 dark:bg-purple-500/20">
@@ -126,7 +125,7 @@ function BookAssignmentCard({
               <DropdownMenuTrigger asChild>
                 <Button 
                   variant="default" 
-                  className="w-full bg-amber-500 hover:bg-amber-600 text-white"
+                  className="w-full bg-blue-500 hover:bg-blue-600 text-white"
                 >
                   <Download className="h-4 w-4 mr-2" />
                   Download ({activeFiles.length} formats)
@@ -179,16 +178,12 @@ function BookAssignmentCard({
 }
 
 export default function BooksLibraryPage() {
-  const [searchQuery, setSearchQuery] = useState("");
   const [giftFilter, setGiftFilter] = useState<"All" | "Owned" | "ReceivedByMe">("All");
   
   const { data: assignments = [], isLoading } = useBookAssignments({ giftFilter });
   const generateDownloadUrl = useGenerateDownloadUrl();
 
-  const filteredAssignments = assignments.filter((assignment) => {
-    const title = (assignment.bookTitle || assignment.productTitle || "").toLowerCase();
-    return title.includes(searchQuery.toLowerCase());
-  });
+  const filteredAssignments = assignments;
 
   const handleDownload = (assignmentId: string, bookFileId: string, fileName: string) => {
     generateDownloadUrl.mutate({ assignmentId, bookFileId, fileName });
@@ -221,7 +216,7 @@ export default function BooksLibraryPage() {
       </div>
 
       {/* Progress Section */}
-      <Card className="mb-8 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-amber-200 dark:border-amber-800">
+      <Card className="mb-8 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -244,7 +239,7 @@ export default function BooksLibraryPage() {
           {nextLevel && (
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
               <div
-                className="bg-gradient-to-r from-amber-500 to-orange-500 h-2 rounded-full transition-all duration-500"
+                className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-500"
                 style={{ width: `${progressToNextLevel}%` }}
               />
             </div>
@@ -252,21 +247,12 @@ export default function BooksLibraryPage() {
         </CardContent>
       </Card>
 
-      {/* Filters and Search */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="relative flex-1">
-          <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            placeholder="Search books..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-6 justify-end">
         <FilterDropdown
           label="Filter"
           value={giftFilter}
-          onValueChange={(value) => setGiftFilter(value as typeof giftFilter)}
+          onChange={(value) => setGiftFilter(value as typeof giftFilter)}
           options={ownershipOptions}
         />
       </div>
@@ -289,9 +275,7 @@ export default function BooksLibraryPage() {
           <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
           <h3 className="text-lg font-semibold mb-2">No books found</h3>
           <p className="text-muted-foreground">
-            {searchQuery
-              ? "Try adjusting your search terms"
-              : giftFilter !== "All"
+            {giftFilter !== "All"
               ? "Try changing your filter settings"
               : "Purchase book bundles to build your library"}
           </p>

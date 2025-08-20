@@ -2,21 +2,19 @@ import { Inter } from "next/font/google";
 import Link from "next/link";
 import { Toaster } from "sonner";
 import { PublicNavigation } from "./components/navigation";
-import { CartProviderWrapper } from "@/app/(shared)/contexts/cart/cart-provider-wrapper";
-import { auth } from "@/auth";
+import CartProvider from "@/app/(shared)/contexts/cart/cart-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export default async function PublicLayout({
+export default function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
   return (
     <html lang="en">
       <body className={inter.className}>
-        <CartProviderWrapper session={session}>
+        <CartProvider initialCart={null}>
           <div className="min-h-screen bg-background flex flex-col">
             {/* Header */}
             <PublicNavigation />
@@ -56,7 +54,7 @@ export default async function PublicLayout({
           </footer>
           </div>
           <Toaster richColors position="top-center" />
-        </CartProviderWrapper>
+        </CartProvider>
       </body>
     </html>
   );

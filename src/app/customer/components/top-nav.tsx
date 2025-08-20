@@ -31,12 +31,11 @@ import {
 import SignOutButton from "@/app/(home)/components/SignOutButton";
 import { Input } from "@/app/(shared)/components/ui/input";
 import { ThemeToggle } from "@/app/(shared)/components/theme-toggle";
-import { Session } from "next-auth";
 
 interface TopNavProps {
-  session?: Session | null;
+  user?: { email?: string; name?: string } | null;
 }
-export function TopNav({ session }: TopNavProps) {
+export function TopNav({ user }: TopNavProps) {
   const xpProgress = 50; // Replace with actual XP progress
 
   return (
@@ -121,14 +120,14 @@ export function TopNav({ session }: TopNavProps) {
             >
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  {session?.user?.name && (
+                  {user?.name && (
                     <p className="text-sm font-medium leading-none">
-                      {session.user.name}
+                      {user?.name}
                     </p>
                   )}
 
                   <p className="text-xs leading-none text-muted-foreground">
-                    {session?.user?.email}
+                    {user?.email}
                   </p>
                 </div>
               </DropdownMenuLabel>

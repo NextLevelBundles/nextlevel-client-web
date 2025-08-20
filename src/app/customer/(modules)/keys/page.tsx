@@ -46,7 +46,7 @@ import { GiftFilterType } from "@/lib/api/types/purchase";
 import { GiftKeyModal } from "@/customer/components/steam-keys/gift-key-modal";
 import { FilterDropdown } from "@/customer/components/filter-dropdown";
 import { SteamKeyGiftIndicator } from "@/customer/components/steam-keys/steam-key-gift-indicator";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/app/(shared)/providers/auth-provider";
 
 // Progress levels and their requirements
 const PROGRESS_LEVELS = [
@@ -73,11 +73,9 @@ const copyMessages = [
 ];
 
 export default function KeysPage() {
-  const { data: session } = useSession();
-  const currentCustomerId = session?.["custom:customerId"] as
-    | string
-    | undefined;
-  const currentUserEmail = session?.user?.email;
+  const { user } = useAuth();
+  const currentCustomerId = user?.id;
+  const currentUserEmail = user?.email;
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");

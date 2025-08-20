@@ -1,19 +1,17 @@
-import requireOnboarding from "@/shared/utils/onboarding";
-import { CartProviderWrapper } from "../(shared)/contexts/cart/cart-provider-wrapper";
-import { auth } from "@/auth";
+import { getServerSession } from "@/lib/auth/server-auth";
+import CartProvider from "../(shared)/contexts/cart/cart-provider";
 
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
-  await requireOnboarding(session);
+  await getServerSession();
 
   return (
     <main className="min-h-screen bg-background relative">
       <div className="absolute inset-0 bg-mesh opacity-20 dark:opacity-10" />
-      <CartProviderWrapper session={session}>{children}</CartProviderWrapper>
+      <CartProvider initialCart={null}>{children}</CartProvider>
     </main>
   );
 }

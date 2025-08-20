@@ -1,15 +1,13 @@
-import { auth } from "@/auth";
+import { getServerSession } from "@/lib/auth/server-auth";
 import { redirect, RedirectType } from "next/navigation";
 import { OnboardingForm } from "./components/onboarding-form";
 import { Navigation } from "./components/navigation";
 
 export default async function Onboarding() {
-  const session = await auth();
-  const groups = session?.["cognito:groups"] || [];
-  const customerId = session?.["custom:customerId"];
+  const session = await getServerSession();
 
-  if (!session || (customerId && groups.includes("Customer"))) {
-    redirect("/", RedirectType.replace);
+  if (!session) {
+    redirect("/auth/signin", RedirectType.replace);
   }
 
   return (

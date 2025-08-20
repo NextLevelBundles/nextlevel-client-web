@@ -6,7 +6,8 @@ import { cn } from "@/app/(shared)/utils/tailwind";
 import { AddToCartRequest } from "@/lib/api/types/cart";
 import { Check, Loader2, ShoppingCart, LogIn } from "lucide-react";
 import { useState } from "react";
-import { useSession, signIn } from "next-auth/react";
+import { useAuth } from "@/app/(shared)/providers/auth-provider";
+import { useRouter } from "next/navigation";
 
 interface AddToCartButtonProps {
   bundleId: string;
@@ -26,7 +27,8 @@ export function AddToCartButton({
   children,
 }: AddToCartButtonProps) {
   const { addToCart, isLoading } = useCart();
-  const { status } = useSession();
+  const { user, isLoading: isLoadingAuth } = useAuth();
+  const router = useRouter();
   const [isAdding, setIsAdding] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
 
@@ -56,12 +58,12 @@ export function AddToCartButton({
     }
   };
 
-  const handleSignIn = async () => {
-    await signIn("cognito");
+  const handleSignIn = () => {
+    router.push("/auth/signin");
   };
 
-  const isAuthenticated = status === "authenticated";
-  const isLoadingSession = status === "loading";
+  const isAuthenticated = !!user;
+  const isLoadingSession = isLoadingAuth;
 
   const isDisabled =
     isLoading ||

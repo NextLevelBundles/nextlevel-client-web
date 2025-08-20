@@ -20,12 +20,20 @@ import Link from "next/link";
 import SignInButton from "./SignInButton";
 import SignUpButton from "./SignUpButton";
 import SignOutButton from "./SignOutButton";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/app/(shared)/providers/auth-provider";
 
 export function UserProfile() {
-  const session = useSession();
+  const { user, isLoading } = useAuth();
 
-  if (session.status != "authenticated") {
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2">
+        <div className="h-8 w-8 animate-pulse rounded-full bg-gray-200" />
+      </div>
+    );
+  }
+
+  if (!user) {
     return (
       <div className="flex items-center gap-2">
         <SignInButton />
@@ -53,15 +61,15 @@ export function UserProfile() {
       <DropdownMenuContent className="w-56" align="end">
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
-            {session?.data.user?.name && (
+            {user?.name && (
               <p className="text-sm font-medium leading-none">
-                {session.data.user.name}
+                {user.name}
               </p>
             )}
 
-            {session?.data?.user?.email && (
+            {user?.email && (
               <p className="text-xs leading-none text-muted-foreground">
-                {session.data.user.email}
+                {user.email}
               </p>
             )}
           </div>
