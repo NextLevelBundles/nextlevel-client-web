@@ -20,6 +20,18 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
     <div className="min-h-screen flex">
       {/* Left Panel - Animated Background */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-secondary dark:from-primary/20 dark:via-primary/10 dark:to-secondary/20">
+        {/* Logo in top-left corner */}
+        <div className="absolute top-8 left-8 z-20">
+          <Image
+            src="/logo/digiphile-logo-rectangle-white.svg"
+            alt="Digiphile"
+            width={180}
+            height={60}
+            className="w-auto h-12"
+            priority
+          />
+        </div>
+
         {/* Animated shapes */}
         <div className="absolute inset-0">
           <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-white/10 rounded-full mix-blend-overlay filter blur-xl animate-blob"></div>
@@ -38,16 +50,6 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-center items-center w-full px-12 text-white">
           <div className="max-w-md space-y-6">
-            <div className="mb-8">
-              <Image
-                src="/logo/digiphile-logo-rectangle-inverse.svg"
-                alt="Next Level Bundle"
-                width={280}
-                height={80}
-                className="w-auto h-16"
-                priority
-              />
-            </div>
             <p className="text-xl text-white/90">
               Premium game bundles at unbeatable prices
             </p>
@@ -110,16 +112,16 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
       {/* Right Panel - Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-md space-y-8">
-          {/* Logo for mobile and desktop right panel */}
+          {/* Logo for mobile */}
           <div className="flex justify-between items-center">
             <Link href="/" className="lg:hidden">
               <Image
                 src={
                   theme === "dark"
-                    ? "/logo/digiphile-logo-rectangle-inverse.svg"
+                    ? "/logo/digiphile-logo-rectangle-white.svg"
                     : "/logo/digiphile-logo-rectangle-regular.svg"
                 }
-                alt="Next Level Bundle"
+                alt="Digiphile"
                 width={180}
                 height={60}
                 className="w-auto h-10"
