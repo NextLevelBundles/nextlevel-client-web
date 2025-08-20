@@ -417,10 +417,16 @@
   @keyframes float {
     0%,
     100% {
-      transform: translateY(0);
+      transform: translateY(0) rotate(0deg);
+    }
+    25% {
+      transform: translateY(-8px) rotate(1deg);
     }
     50% {
-      transform: translateY(-10px);
+      transform: translateY(-15px) rotate(-1deg);
+    }
+    75% {
+      transform: translateY(-8px) rotate(1deg);
     }
   }
 
@@ -489,4 +495,24 @@
       opacity: 1;
     }
   }
+}
+
+/* Floating animation classes */
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed-1 {
+  animation: float 6s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+
+.animate-float-delayed-2 {
+  animation: float 6s ease-in-out infinite;
+  animation-delay: 3s;
+}
+
+.animate-float-delayed-3 {
+  animation: float 6s ease-in-out infinite;
+  animation-delay: 4.5s;
 }

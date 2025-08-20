@@ -7,7 +7,7 @@ import { Button } from "@/app/(shared)/components/ui/button";
 import { Input } from "@/app/(shared)/components/ui/input";
 import { Label } from "@/app/(shared)/components/ui/label";
 import { Alert, AlertDescription } from "@/app/(shared)/components/ui/alert";
-import { Loader2, AlertCircle, CheckCircle, Mail, Lock, Hash, Eye, EyeOff } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle, Lock, Hash, Eye, EyeOff } from "lucide-react";
 import { AuthLayout } from "../components/auth-layout";
 
 export default function ResetPasswordPage() {
@@ -15,7 +15,7 @@ export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
   const emailParam = searchParams.get("email") || "";
 
-  const [email, setEmail] = useState(emailParam);
+  const [email] = useState(emailParam);
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -32,10 +32,11 @@ export default function ResetPasswordPage() {
     confirmPassword === newPassword;
 
   useEffect(() => {
-    if (emailParam) {
-      setEmail(emailParam);
+    // If no email in URL, redirect to forgot-password
+    if (!emailParam) {
+      router.push("/auth/forgot-password");
     }
-  }, [emailParam]);
+  }, [emailParam, router]);
 
   const validatePassword = () => {
     if (newPassword !== confirmPassword) {
@@ -117,7 +118,7 @@ export default function ResetPasswordPage() {
   return (
     <AuthLayout
       title="Reset your password"
-      subtitle="Enter the verification code from your email and create a new password"
+      subtitle={`We've sent a code to ${email}`}
     >
       <form onSubmit={handleSubmit} className="space-y-5">
         {error && (
@@ -126,25 +127,6 @@ export default function ResetPasswordPage() {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-
-        <div className="space-y-2">
-          <Label htmlFor="email" className="text-sm font-medium block mb-2">
-            Email address
-          </Label>
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              required
-              autoComplete="email"
-              className="w-full pl-10 h-11"
-            />
-          </div>
-        </div>
 
         <div className="space-y-2">
           <Label htmlFor="code" className="text-sm font-medium block mb-2">
@@ -157,13 +139,17 @@ export default function ResetPasswordPage() {
               type="text"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              placeholder="Enter 6-digit code"
+              placeholder="# # # # # #"
               required
+              autoFocus
               autoComplete="one-time-code"
-              className="w-full pl-10 h-11 font-mono text-center tracking-widest"
+              className="w-full pl-10 h-12 font-mono text-center tracking-[0.5em] text-lg"
               maxLength={6}
             />
           </div>
+          <p className="text-xs text-muted-foreground text-center">
+            Enter 6-digit code from your email
+          </p>
         </div>
 
         <div className="space-y-2">
