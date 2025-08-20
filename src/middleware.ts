@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isCountryBlocked } from "@/lib/blocked-countries";
-import { JWTPayload, decodeJwt } from "jose";
+import { verifyToken, isTokenExpired, type DecodedToken } from "@/lib/auth/token-validator";
 
 export async function middleware(request: NextRequest) {
   // Check for blocked countries
@@ -46,34 +46,39 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   
-  // Handle authenticated users
-  try {
-    const decoded = decodeJwt(idTokenCookie.value) as JWTPayload & {
-      'custom:customerId'?: string;
-    };
+  // Handle authenticated users - verify token properly
+  const decoded = await verifyToken(idTokenCookie.value);
+  
+  // If token verification fails (invalid signature, wrong issuer, etc.)
+  if (!decoded) {
+    console.error("Token verification failed - invalid token");
+    const signInUrl = new URL("/auth/signin", request.url);
+    signInUrl.searchParams.set("callbackUrl", request.nextUrl.pathname);
+    const response = NextResponse.redirect(signInUrl);
+    response.cookies.delete("id_token");
+    return response;
+  }
+  
+  // For auth routes, allow them to handle their own logic
+  if (isAuthRoute) {
+    return NextResponse.next();
+  }
+  
+  // Check if token is expired
+  if (isTokenExpired(decoded)) {
+    // Token is expired, attempt to refresh via the refresh-token page
+    // This page will try to refresh tokens using Amplify's refresh token
+    const refreshUrl = new URL("/auth/refresh-token", request.url);
+    refreshUrl.searchParams.set("returnUrl", request.nextUrl.pathname);
     
-    // For auth routes, allow them to handle their own logic
-    if (isAuthRoute) {
-      return NextResponse.next();
-    }
-    
-    const now = Math.floor(Date.now() / 1000);
-    
-    // Check if token is expired
-    if (decoded.exp && now >= decoded.exp) {
-      // Token is expired, attempt to refresh via the refresh-token page
-      // This page will try to refresh tokens using Amplify's refresh token
-      const refreshUrl = new URL("/auth/refresh-token", request.url);
-      refreshUrl.searchParams.set("returnUrl", request.nextUrl.pathname);
-      
-      // Clear the expired cookie and redirect to refresh page
-      const response = NextResponse.redirect(refreshUrl);
-      response.cookies.delete("id_token");
-      return response;
-    }
-    
-    // Check if user has completed profile setup (has customerId)
-    const hasCustomerId = !!decoded['custom:customerId'];
+    // Clear the expired cookie and redirect to refresh page
+    const response = NextResponse.redirect(refreshUrl);
+    response.cookies.delete("id_token");
+    return response;
+  }
+  
+  // Check if user has completed profile setup (has customerId)
+  const hasCustomerId = !!decoded['custom:customerId'];
     
     // If user hasn't completed profile
     if (!hasCustomerId) {
@@ -90,15 +95,6 @@ export async function middleware(request: NextRequest) {
       // If accessing protected routes, allow
       // If accessing public routes (like /), allow
     }
-  } catch (error) {
-    // If we can't decode the token, clear it and redirect to sign in
-    console.error("Token decode error:", error);
-    const signInUrl = new URL("/auth/signin", request.url);
-    signInUrl.searchParams.set("callbackUrl", request.nextUrl.pathname);
-    const response = NextResponse.redirect(signInUrl);
-    response.cookies.delete("id_token");
-    return response;
-  }
 
   return NextResponse.next();
 }

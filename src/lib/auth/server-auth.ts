@@ -1,40 +1,20 @@
 import { cookies } from "next/headers";
-import { JWTPayload, jwtVerify, createRemoteJWKSet } from "jose";
+import { 
+  verifyToken, 
+  isTokenExpired, 
+  extractUserFromToken,
+  type DecodedToken 
+} from "./token-validator";
 
-const JWKS_URI = `${process.env.AUTH_COGNITO_ISSUER}/.well-known/jwks.json`;
+// Re-export for backward compatibility
+export type { DecodedToken };
+export { isTokenExpired };
 
-const jwks = createRemoteJWKSet(new URL(JWKS_URI));
-
-export interface DecodedToken extends JWTPayload {
-  email?: string;
-  name?: string;
-  sub?: string;
-  "cognito:username"?: string;
-  email_verified?: boolean;
-  "custom:customerId"?: string;
-  [key: string]: any; // Allow for other custom claims
-}
-
+// Wrapper for backward compatibility
 export async function verifyIdToken(
   token: string
 ): Promise<DecodedToken | null> {
-  try {
-    const { payload } = await jwtVerify(token, jwks, {
-      issuer: process.env.AUTH_COGNITO_ISSUER,
-      audience: process.env.AUTH_COGNITO_ID,
-    });
-
-    return payload as DecodedToken;
-  } catch (error) {
-    console.error("Token verification failed:", error);
-    return null;
-  }
-}
-
-export function isTokenExpired(token: DecodedToken): boolean {
-  if (!token.exp) return true;
-  const now = Math.floor(Date.now() / 1000);
-  return now >= token.exp;
+  return verifyToken(token);
 }
 
 export async function getServerSession() {
@@ -45,7 +25,7 @@ export async function getServerSession() {
     return null;
   }
 
-  const decoded = await verifyIdToken(idToken);
+  const decoded = await verifyToken(idToken);
   if (!decoded) {
     return null;
   }
@@ -55,15 +35,17 @@ export async function getServerSession() {
     return { expired: true };
   }
 
+  const user = extractUserFromToken(decoded);
+
   return {
     user: {
-      id: decoded.sub,
-      email: decoded.email,
-      name: decoded.name,
-      emailVerified: decoded.email_verified,
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      emailVerified: user.emailVerified,
     },
     customClaims: {
-      "custom:customerId": decoded["custom:customerId"],
+      "custom:customerId": user.customerId,
     },
     expires: decoded.exp
       ? new Date(decoded.exp * 1000).toISOString()
