@@ -9,6 +9,8 @@ export function AmplifyAuthListener() {
   useEffect(() => {
     // Listen for auth events from Amplify Hub
     const hubListener = Hub.listen("auth", async ({ payload }) => {
+      console.log("Auth event:", payload.event);
+      
       switch (payload.event) {
         case "signedIn":
           console.log("User signed in, syncing ID token to cookie");
@@ -16,7 +18,7 @@ export function AmplifyAuthListener() {
           break;
           
         case "tokenRefresh":
-          console.log("Tokens refreshed, syncing ID token to cookie");
+          console.log("Tokens refreshed by Amplify, syncing ID token to cookie");
           await AuthService.syncIdToken();
           break;
           
@@ -37,6 +39,7 @@ export function AmplifyAuthListener() {
       try {
         const session = await fetchAuthSession();
         if (session.tokens?.idToken) {
+          console.log("Initial token sync on mount");
           await AuthService.syncIdToken();
         }
       } catch (error) {

@@ -61,10 +61,13 @@ export async function middleware(request: NextRequest) {
     
     // Check if token is expired
     if (decoded.exp && now >= decoded.exp) {
-      // Token is expired, clear cookie and redirect to sign in
-      const signInUrl = new URL("/auth/signin", request.url);
-      signInUrl.searchParams.set("callbackUrl", request.nextUrl.pathname);
-      const response = NextResponse.redirect(signInUrl);
+      // Token is expired, attempt to refresh via the refresh-token page
+      // This page will try to refresh tokens using Amplify's refresh token
+      const refreshUrl = new URL("/auth/refresh-token", request.url);
+      refreshUrl.searchParams.set("returnUrl", request.nextUrl.pathname);
+      
+      // Clear the expired cookie and redirect to refresh page
+      const response = NextResponse.redirect(refreshUrl);
       response.cookies.delete("id_token");
       return response;
     }

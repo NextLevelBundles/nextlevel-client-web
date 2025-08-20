@@ -219,7 +219,6 @@ export default function CartProvider({
   useEffect(() => {
     // Only refresh cart if we don't have initial data or if user is authenticated
     if (user && !initialCart) {
-      console.log("Refreshing cart due to authentication");
       refreshCart();
     }
   }, [user, initialCart, refreshCart]);
