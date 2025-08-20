@@ -1,11 +1,13 @@
 "use client";
 
 import { Button } from "@/app/(shared)/components/ui/button";
-import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function SignInButton() {
-  const onSignIn = async () => {
-    await signIn("cognito");
+  const router = useRouter();
+
+  const onSignIn = () => {
+    router.push("/auth/signin");
   };
 
   return (

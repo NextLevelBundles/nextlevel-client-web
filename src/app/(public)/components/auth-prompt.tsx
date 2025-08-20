@@ -3,12 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
 import { LogIn, UserPlus, Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
-import { toast } from "sonner";
 
 interface AuthPromptProps {
   recipientEmail: string;
@@ -24,26 +22,11 @@ export function AuthPrompt({
   const router = useRouter();
   const [isSigningIn, setIsSigningIn] = useState(false);
 
-  const handleSignIn = async () => {
+  const handleSignIn = () => {
     setIsSigningIn(true);
-    try {
-      const result = await signIn("credentials", {
-        redirect: false,
-        callbackUrl: returnUrl,
-      });
-
-      if (result?.error) {
-        toast.error("Sign in failed", {
-          description: "Please check your credentials and try again.",
-        });
-      } else if (result?.url) {
-        router.push(result.url);
-      }
-    } catch {
-      toast.error("An error occurred during sign in");
-    } finally {
-      setIsSigningIn(false);
-    }
+    const signInUrl = new URL("/auth/signin", window.location.origin);
+    signInUrl.searchParams.set("callbackUrl", returnUrl);
+    router.push(signInUrl.toString());
   };
 
   return (

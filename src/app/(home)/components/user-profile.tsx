@@ -20,12 +20,20 @@ import Link from "next/link";
 import SignInButton from "./SignInButton";
 import SignUpButton from "./SignUpButton";
 import SignOutButton from "./SignOutButton";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/app/(shared)/providers/auth-provider";
 
 export function UserProfile() {
-  const session = useSession();
+  const { user, isLoading } = useAuth();
 
-  if (session.status != "authenticated") {
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2">
+        <div className="h-8 w-8 animate-pulse rounded-full bg-gray-200" />
+      </div>
+    );
+  }
+
+  if (!user) {
     return (
       <div className="flex items-center gap-2">
         <SignInButton />
@@ -53,15 +61,13 @@ export function UserProfile() {
       <DropdownMenuContent className="w-56" align="end">
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
-            {session?.data.user?.name && (
-              <p className="text-sm font-medium leading-none">
-                {session.data.user.name}
-              </p>
+            {user?.name && (
+              <p className="text-sm font-medium leading-none">{user.name}</p>
             )}
 
-            {session?.data?.user?.email && (
+            {user?.email && (
               <p className="text-xs leading-none text-muted-foreground">
-                {session.data.user.email}
+                {user.email}
               </p>
             )}
           </div>
@@ -70,14 +76,14 @@ export function UserProfile() {
         <DropdownMenuGroup>
           <DropdownMenuItem
             asChild
-            className="rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary"
+            className="cursor-pointer rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary"
           >
             <Link href="/customer/dashboard" className="flex items-center">
               <GamepadIcon className="mr-2 h-4 w-4" />
               <span className="flex-1">Dashboard</span>
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem className="rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary">
+          <DropdownMenuItem className="cursor-pointer rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary">
             <Settings className="mr-2 h-4 w-4" />
             <Link href="/customer/settings" className="flex-1">
               Settings
@@ -94,7 +100,7 @@ export function UserProfile() {
           </DropdownMenuItem> */}
           <DropdownMenuItem
             asChild
-            className="rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary"
+            className="cursor-pointer rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary"
           >
             <Link href="customer/support" className="flex items-center">
               <MessageCircleIcon className="mr-2 h-4 w-4" />
@@ -104,7 +110,7 @@ export function UserProfile() {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="text-red-600 dark:text-red-400">
-          <SignOutButton />
+          <SignOutButton variant="dropdown" />
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

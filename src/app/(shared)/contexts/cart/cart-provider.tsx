@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/app/(shared)/providers/auth-provider";
 import {
   useContext,
   useReducer,
@@ -98,10 +98,10 @@ export default function CartProvider({
     ...initialState,
     cart: initialCart,
   });
-  const { status } = useSession();
+  const { user } = useAuth();
 
   const refreshCart = useCallback(async () => {
-    if (status !== "authenticated") return;
+    if (!user) return;
 
     dispatch({ type: "SET_LOADING", payload: true });
     try {
@@ -113,7 +113,7 @@ export default function CartProvider({
     } finally {
       dispatch({ type: "SET_LOADING", payload: false });
     }
-  }, [status]);
+  }, [user]);
 
   const addToCart = async (item: AddToCartRequest) => {
     dispatch({ type: "SET_LOADING", payload: true });
@@ -217,12 +217,11 @@ export default function CartProvider({
   };
 
   useEffect(() => {
-    // Only refresh cart if we don't have initial data or if authentication status changes
-    if (status === "authenticated" && !initialCart) {
-      console.log("Refreshing cart due to authentication status change");
+    // Only refresh cart if we don't have initial data or if user is authenticated
+    if (user && !initialCart) {
       refreshCart();
     }
-  }, [status, initialCart, refreshCart]);
+  }, [user, initialCart, refreshCart]);
 
   const value: CartContextType = {
     ...state,

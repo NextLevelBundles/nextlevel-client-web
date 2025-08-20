@@ -31,12 +31,11 @@ import {
 import SignOutButton from "@/app/(home)/components/SignOutButton";
 import { Input } from "@/app/(shared)/components/ui/input";
 import { ThemeToggle } from "@/app/(shared)/components/theme-toggle";
-import { Session } from "next-auth";
 
 interface TopNavProps {
-  session?: Session | null;
+  user?: { email?: string; name?: string } | null;
 }
-export function TopNav({ session }: TopNavProps) {
+export function TopNav({ user }: TopNavProps) {
   const xpProgress = 50; // Replace with actual XP progress
 
   return (
@@ -121,14 +120,14 @@ export function TopNav({ session }: TopNavProps) {
             >
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  {session?.user?.name && (
+                  {user?.name && (
                     <p className="text-sm font-medium leading-none">
-                      {session.user.name}
+                      {user?.name}
                     </p>
                   )}
 
                   <p className="text-xs leading-none text-muted-foreground">
-                    {session?.user?.email}
+                    {user?.email}
                   </p>
                 </div>
               </DropdownMenuLabel>
@@ -160,7 +159,7 @@ export function TopNav({ session }: TopNavProps) {
                 className="text-destructive rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-destructive/5 hover:text-destructive dark:hover:bg-destructive/10 dark:hover:text-destructive focus:bg-destructive/5 focus:text-destructive dark:focus:bg-destructive/10 dark:focus:text-destructive"
               >
                 <div>
-                  <SignOutButton />
+                  <SignOutButton variant="dropdown" />
                 </div>
               </DropdownMenuItem>
             </DropdownMenuContent>

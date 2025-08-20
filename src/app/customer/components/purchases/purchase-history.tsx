@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/app/(shared)/providers/auth-provider";
 import Link from "next/link";
 import {
   Card,
@@ -56,10 +56,8 @@ const ownershipOptions = [
 ];
 
 export function PurchaseHistory() {
-  const { data: session } = useSession();
-  const currentCustomerId = session?.["custom:customerId"] as
-    | string
-    | undefined;
+  const { user } = useAuth();
+  const currentCustomerId = user?.id;
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [selectedYear, setSelectedYear] = useState("All Years");
@@ -417,7 +415,7 @@ export function PurchaseHistory() {
                             recipientEmail={
                               // For incoming gifts, use current user's email
                               purchase.customerId !== currentCustomerId
-                                ? session?.user?.email || undefined
+                                ? user?.email || undefined
                                 : purchase.giftRecipientEmail
                             }
                             onGiftAccepted={() => {

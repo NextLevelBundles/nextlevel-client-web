@@ -1,4 +1,4 @@
-import { getIdTokenFromLocalStorage } from "@/app/(shared)/contexts/id-token/id-token-servie";
+import { fetchAuthSession } from "aws-amplify/auth";
 import { toast } from "sonner";
 
 export interface ApiResponse<T = unknown> {
@@ -43,14 +43,20 @@ export class ClientApi {
   }
 
   private async getAuthHeaders(): Promise<HeadersInit> {
-    const idToken = getIdTokenFromLocalStorage();
-
     const headers: HeadersInit = {
       "Content-Type": "application/json",
     };
 
-    if (idToken) {
-      headers["Authorization"] = `Bearer ${idToken}`;
+    try {
+      // Get tokens directly from Amplify
+      const session = await fetchAuthSession();
+      const idToken = session.tokens?.idToken?.toString();
+      
+      if (idToken) {
+        headers["Authorization"] = `Bearer ${idToken}`;
+      }
+    } catch (error) {
+      console.error("Failed to get auth token:", error);
     }
 
     return headers;

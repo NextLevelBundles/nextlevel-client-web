@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/app/(shared)/providers/auth-provider";
 import { Check, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
@@ -28,7 +28,7 @@ export default function CartItemGiftPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { data: session, status: sessionStatus } = useSession();
+  const { user, isLoading: isLoadingAuth } = useAuth();
 
   const cartItemId = params.cartItemId as string;
   const email = searchParams.get("email");
@@ -118,11 +118,11 @@ export default function CartItemGiftPage() {
   };
 
   const canAcceptGift = () => {
-    if (!gift || !session) return false;
+    if (!gift || !user) return false;
     // Gift must be pending (not accepted yet)
     if (gift.giftAccepted === true) return false;
     // Check email match if recipientEmail is set
-    if (gift.recipientEmail && gift.recipientEmail !== session.user?.email)
+    if (gift.recipientEmail && gift.recipientEmail !== user.email)
       return false;
     return true;
   };
@@ -173,7 +173,7 @@ export default function CartItemGiftPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="mx-auto max-w-2xl space-y-6">
         {/* Welcome message for non-authenticated users */}
-        {!session && isGiftPending && (
+        {!user && isGiftPending && (
           <div className="text-center space-y-2 mb-8">
             <h1 className="text-3xl font-bold">
               You&apos;ve received a gift! 🎁
@@ -205,11 +205,11 @@ export default function CartItemGiftPage() {
         {/* Authentication or Accept Button */}
         {isGiftPending && (
           <>
-            {sessionStatus === "loading" ? (
+            {isLoadingAuth ? (
               <div className="flex justify-center">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
-            ) : !session ? (
+            ) : !user ? (
               <div className="mt-6">
                 <GiftAuthPrompt
                   recipientEmail={gift.recipientEmail || email || ""}
