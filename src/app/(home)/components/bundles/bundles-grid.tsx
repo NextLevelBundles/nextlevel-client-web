@@ -20,7 +20,7 @@ import {
   X,
 } from "lucide-react";
 import { Badge } from "@/shared/components/ui/badge";
-import { Bundle, BundleType } from "@/app/(shared)/types/bundle";
+import { BundleListItem, BundleType } from "@/app/(shared)/types/bundle";
 import { BookOpen, Gamepad2 } from "lucide-react";
 
 const ITEMS_PER_PAGE = 9;
@@ -41,7 +41,7 @@ const sortOptions = [
 ];
 
 interface BundlesGridProps {
-  bundles: Bundle[];
+  bundles: BundleListItem[];
 }
 
 export function BundlesGrid({ bundles }: BundlesGridProps) {

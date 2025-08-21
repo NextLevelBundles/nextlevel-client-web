@@ -140,11 +140,11 @@ export function BookDetailDrawer({
                 </div>
 
                 {/* Available Formats */}
-                {metadata?.formats && metadata.formats.length > 0 && (
+                {metadata?.availableFormats && metadata.availableFormats.length > 0 && (
                   <div>
                     <h3 className="text-sm font-semibold mb-2">Available Formats</h3>
                     <div className="flex flex-wrap gap-2">
-                      {metadata.formats.map((format) => (
+                      {metadata.availableFormats.map((format) => (
                         <Badge
                           key={format}
                           variant="secondary"

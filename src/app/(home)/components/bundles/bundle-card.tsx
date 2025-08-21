@@ -6,11 +6,11 @@ import { Button } from "@/shared/components/ui/button";
 import { Timer, Users, ArrowRight, BookOpen, Gamepad2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Bundle, BundleType } from "@/app/(shared)/types/bundle";
+import { BundleListItem, BundleType } from "@/app/(shared)/types/bundle";
 import { useCountdownTimer } from "@/app/(shared)/hooks/useCountdownTimer";
 
 interface BundleCardProps {
-  bundle: Bundle;
+  bundle: BundleListItem;
   index: number;
 }
 
@@ -122,10 +122,10 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
               <div className="flex items-center gap-2 text-sm text-[#64748b] dark:text-muted-foreground group-hover:text-[#4b5563] dark:group-hover:text-muted-foreground/80 transition-colors">
                 {bundle.bundleType === BundleType.Ebook ? (
                   <><BookOpen className="h-4 w-4" />
-                  <span>{bundle.products?.length || 0} books</span></>
+                  <span>Book Bundle</span></>
                 ) : (
                   <><Gamepad2 className="h-4 w-4" />
-                  <span>{bundle.products?.length || 0} games</span></>
+                  <span>Game Bundle</span></>
                 )}
               </div>
             </div>

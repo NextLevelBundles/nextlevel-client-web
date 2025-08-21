@@ -112,9 +112,9 @@ export function ProductGrid({
                       by {product.ebookMetadata.author}
                     </p>
                   )}
-                  {product.ebookMetadata.formats && product.ebookMetadata.formats.length > 0 && (
+                  {product.ebookMetadata.availableFormats && product.ebookMetadata.availableFormats.length > 0 && (
                     <div className="flex flex-wrap gap-1">
-                      {product.ebookMetadata.formats.map((format) => (
+                      {product.ebookMetadata.availableFormats.map((format) => (
                         <span
                           key={format}
                           className="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-500 ring-1 ring-amber-500/10"

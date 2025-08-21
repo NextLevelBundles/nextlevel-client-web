@@ -62,11 +62,11 @@ export function GameDetailDrawer({
       >
         <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
           <div className="relative aspect-16/9 overflow-hidden">
-            {product.steamGameMetadata.trailerUrl ? (
+            {product.steamGameMetadata?.trailerUrl ? (
               <div className="relative w-full h-full">
                 {isPlaying ? (
                   <iframe
-                    src={`${product.steamGameMetadata.trailerUrl}?autoplay=1&mute=1`}
+                    src={`${product.steamGameMetadata?.trailerUrl}?autoplay=1&mute=1`}
                     allow="autoplay; encrypted-media"
                     className="absolute inset-0 w-full h-full"
                     frameBorder="0"
@@ -108,7 +108,7 @@ export function GameDetailDrawer({
                 {product.title}
               </h2>
               <div className="flex gap-2">
-                {product.steamGameMetadata.platforms.includes("windows") && (
+                {product.steamGameMetadata?.platforms?.includes("windows") && (
                   <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-xs rounded-full px-3 py-1.5">
                     <Windows className="h-4 w-4 text-white" />
                     <span className="text-sm text-white font-medium">
@@ -116,7 +116,7 @@ export function GameDetailDrawer({
                     </span>
                   </div>
                 )}
-                {product.steamGameMetadata.platforms.includes("mac") && (
+                {product.steamGameMetadata?.platforms?.includes("mac") && (
                   <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-xs rounded-full px-3 py-1.5">
                     <Apple className="h-4 w-4 text-white" />
                     <span className="text-sm text-white font-medium">
@@ -124,7 +124,7 @@ export function GameDetailDrawer({
                     </span>
                   </div>
                 )}
-                {product.steamGameMetadata.platforms.includes("linux") && (
+                {product.steamGameMetadata?.platforms?.includes("linux") && (
                   <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-xs rounded-full px-3 py-1.5">
                     <Linux className="h-4 w-4 text-white" />
                     <span className="text-sm text-white font-medium">
@@ -144,23 +144,23 @@ export function GameDetailDrawer({
                   Steam Deck Verified
                 </div>
               )} */}
-              {product.steamGameMetadata.protonDbTier && (
+              {product.steamGameMetadata?.protonDbTier && (
                 <div
                   className={cn(
                     "px-3 py-1.5 rounded-full flex items-center gap-2 text-sm font-medium transition-colors",
                     {
                       "bg-purple-500/20 text-purple-500 ring-1 ring-purple-500/30 hover:bg-purple-500/30":
-                        product.steamGameMetadata.protonDbTier === "platinum",
+                        product.steamGameMetadata?.protonDbTier === "platinum",
                       "bg-yellow-500/20 text-yellow-500 ring-1 ring-yellow-500/30 hover:bg-yellow-500/30":
-                        product.steamGameMetadata.protonDbTier === "gold",
+                        product.steamGameMetadata?.protonDbTier === "gold",
                       "bg-gray-500/20 text-gray-500 ring-1 ring-gray-500/30 hover:bg-gray-500/30":
-                        product.steamGameMetadata.protonDbTier === "silver",
+                        product.steamGameMetadata?.protonDbTier === "silver",
                       "bg-orange-500/20 text-orange-500 ring-1 ring-orange-500/30 hover:bg-orange-500/30":
-                        product.steamGameMetadata.protonDbTier === "bronze",
+                        product.steamGameMetadata?.protonDbTier === "bronze",
                     }
                   )}
                 >
-                  ProtonDB {product.steamGameMetadata.protonDbTier}
+                  ProtonDB {product.steamGameMetadata?.protonDbTier}
                 </div>
               )}
               <div className="bg-primary/20 text-primary px-3 py-1.5 rounded-full flex items-center gap-2 text-sm font-medium ring-1 ring-primary/30 hover:bg-primary/30 transition-colors">
@@ -224,7 +224,9 @@ export function GameDetailDrawer({
                 className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-300 border-white/20 dark:border-border hover:border-primary/50"
                 onClick={() =>
                   window.open(
-                    `https://store.steampowered.com/search/?term=${encodeURIComponent(product.steamGameMetadata.steamAppId)}`,
+                    product.steamGameMetadata?.steamAppId 
+                    ? `https://store.steampowered.com/app/${product.steamGameMetadata.steamAppId}`
+                    : `https://store.steampowered.com/search/?term=${encodeURIComponent(product.title)}`,
                     "_blank"
                   )
                 }

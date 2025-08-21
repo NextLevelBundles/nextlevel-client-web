@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { Cart } from "./api/types/cart";
-import { Bundle } from "@/app/(shared)/types/bundle";
+import { BundleListItem } from "@/app/(shared)/types/bundle";
 
 const API_BASE_URL = process.env.API_URL ?? "";
 
@@ -106,7 +106,7 @@ class ServerApiClient {
     }
   }
 
-  async getBundles(): Promise<Bundle[]> {
+  async getBundles(): Promise<BundleListItem[]> {
     try {
       const headers = await this.getAuthHeaders();
       const response = await this.fetchWithRetry(
@@ -136,6 +136,11 @@ class ServerApiClient {
       // Try to parse JSON
       try {
         const data = JSON.parse(text);
+        // Handle paginated response format
+        if (data && typeof data === 'object' && 'items' in data) {
+          return Array.isArray(data.items) ? data.items : [];
+        }
+        // Handle legacy array format (backwards compatibility)
         return Array.isArray(data) ? data : [];
       } catch (parseError) {
         console.error(

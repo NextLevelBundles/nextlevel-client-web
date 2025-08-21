@@ -1,27 +1,31 @@
 import MediaData from "./media";
 
 export enum BundleType {
-  SteamGame = 0,
-  Ebook = 1,
+  SteamGame = "SteamGame",
+  Ebook = "Ebook",
 }
 
-export interface Bundle {
+// Partial bundle data for list views
+export interface BundleListItem {
   id: string;
   title: string;
   imageMedia: MediaData;
   description: string;
-  curatorComment: string | null;
   minPrice: number;
   suggestedPrice: number;
   isEarlyAccess: boolean;
   isLimitedKeys: boolean;
   isFeatured: boolean;
+  bundleType: BundleType;
   startsAt: string; // ISO date string
   endsAt: string;
   status: string;
   createdAt: string;
-  updatedAt?: string;
-  bundleType: BundleType;
+  updatedAt: string;
+}
+
+// Full bundle data with all relations for detail views
+export interface Bundle extends BundleListItem {
   tiers: Tier[];
   products: Product[];
   charities: BundleCharity[];
@@ -35,9 +39,9 @@ export interface Tier {
 }
 
 export enum ProductType {
-  SteamGame = 0,
-  Ebook = 1,
-  Audio = 2,
+  SteamGame = "SteamGame",
+  Ebook = "Ebook",
+  Audio = "Audio",
 }
 
 export interface Product {
@@ -49,20 +53,29 @@ export interface Product {
   curatorComment: string;
   type: ProductType;
   publisherId: string | null;
+  bundleId: string;
+  listingId: string;
   bundleTierId?: string | null;
-  bookId?: string;
-  steamGameMetadata: SteamGameMetadata;
-  ebookMetadata: EBookMetadata;
-  audioMetadata: Record<string, never>; // empty object
+  steamGameMetadata: SteamGameMetadata | null;
+  ebookMetadata: EBookMetadata | null;
+  audioMetadata: Record<string, never> | null; // empty object
 }
 
 export interface EBookMetadata {
-  author?: string;
   isbn?: string;
-  pageCount?: number;
+  isbN13?: string;
+  author?: string;
+  additionalAuthors?: string[];
   publisher?: string;
+  pageCount?: number;
+  language?: string;
   publicationDate?: string;
-  formats?: string[];
+  edition?: string;
+  genre?: string;
+  tags?: string[];
+  description?: string;
+  coverImage?: MediaData;
+  availableFormats?: string[];
 }
 
 export interface SteamGameMetadata {
@@ -73,6 +86,10 @@ export interface SteamGameMetadata {
   linuxRequirements: Requirements;
   developers: Party[];
   publishers: Party[];
+  releaseDate: {
+    comingSoon: boolean;
+    date: string;
+  };
   platforms: string[];
   trailerUrl: string;
   screenshotUrlsJson: string;
@@ -93,12 +110,28 @@ interface BundleCharity {
   charityId: string;
   charity: Charity;
 }
+
 export interface Charity {
   id: string;
   name: string;
-  website?: string;
+  website: string;
   logoMedia: MediaData;
-  description?: string;
+  description: string;
+  address: {
+    addressLine1: string;
+    addressLine2?: string;
+    locality: string;
+    state: string;
+    postalCode: string;
+    country: string;
+    countryCode: string;
+  };
+  contact: {
+    name: string;
+    email: string;
+    phone: string;
+    alternatePhone?: string;
+  };
 }
 
 export interface BundlePublisher {
