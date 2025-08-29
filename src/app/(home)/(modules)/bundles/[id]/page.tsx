@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use server";
-
 import { Navigation } from "@/home/components/navigation";
 import { BundleDetail } from "@/home/components/bundles/bundle-detail";
 import { Footer } from "@/home/components/sections/footer";
 import { Bundle } from "@/app/(shared)/types/bundle";
 import React from "react";
+
+export const dynamic = 'force-dynamic';
 
 function NotFoundError() {
   return (
