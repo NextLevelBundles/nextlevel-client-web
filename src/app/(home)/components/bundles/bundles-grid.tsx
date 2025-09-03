@@ -52,8 +52,10 @@ export function BundlesGrid({ bundles }: BundlesGridProps) {
   const filteredBundles = bundles
     .filter((bundle) => {
       if (currentFilter === "all") return true;
-      if (currentFilter === "games") return bundle.bundleType === BundleType.SteamGame;
-      if (currentFilter === "books") return bundle.bundleType === BundleType.Ebook;
+      if (currentFilter === "games")
+        return bundle.bundleType === BundleType.SteamGame;
+      if (currentFilter === "books")
+        return bundle.bundleType === BundleType.EBook;
       if (currentFilter === "featured") return bundle.isFeatured;
       if (currentFilter === "early_acces") return bundle.isEarlyAccess;
       if (currentFilter === "limited_keys") return bundle.isLimitedKeys;
@@ -88,8 +90,8 @@ export function BundlesGrid({ bundles }: BundlesGridProps) {
               All Bundles
             </h1>
             <p className="text-muted-foreground max-w-2xl">
-              Browse our collection of premium game and book bundles. Each bundle is
-              carefully curated to bring you the best experience at
+              Browse our collection of premium game and book bundles. Each
+              bundle is carefully curated to bring you the best experience at
               unbeatable prices.
             </p>
           </div>

@@ -7,7 +7,13 @@ import { LockedTierCard } from "./locked-tier-card";
 import { GameDetailDrawer } from "./game-detail-drawer";
 import { BookDetailDrawer } from "./book-detail-drawer";
 import Image from "next/image";
-import { Bundle, Product, Tier, BundleType, ProductType } from "@/app/(shared)/types/bundle";
+import {
+  Bundle,
+  Product,
+  Tier,
+  BundleType,
+  ProductType,
+} from "@/app/(shared)/types/bundle";
 import { BookOpen, FileText, FileAudio, FileType } from "lucide-react";
 
 interface ProductGridProps {
@@ -30,7 +36,7 @@ export function ProductGrid({
   setTotalAmount,
 }: ProductGridProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const isBookBundle = bundle.bundleType === BundleType.Ebook;
+  const isBookBundle = bundle.bundleType === BundleType.EBook;
 
   // Get locked tiers
   const selectedTierIndex = tiers.findIndex(
@@ -55,14 +61,14 @@ export function ProductGrid({
 
   const getFormatIcon = (format: string) => {
     switch (format.toLowerCase()) {
-      case 'pdf':
+      case "pdf":
         return <FileText className="h-3 w-3" />;
-      case 'epub':
+      case "epub":
         return <BookOpen className="h-3 w-3" />;
-      case 'mobi':
+      case "mobi":
         return <FileType className="h-3 w-3" />;
-      case 'mp3':
-      case 'audio':
+      case "mp3":
+      case "audio":
         return <FileAudio className="h-3 w-3" />;
       default:
         return <FileType className="h-3 w-3" />;
@@ -103,28 +109,31 @@ export function ProductGrid({
                   ${product.price}
                 </span>
               </div>
-              
+
               {/* Show book metadata for book products */}
-              {product.type === ProductType.Ebook && product.ebookMetadata && (
+              {product.type === ProductType.EBook && product.ebookMetadata && (
                 <div className="mt-3 space-y-2">
                   {product.ebookMetadata.author && (
                     <p className="text-sm text-muted-foreground">
                       by {product.ebookMetadata.author}
                     </p>
                   )}
-                  {product.ebookMetadata.availableFormats && product.ebookMetadata.availableFormats.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {product.ebookMetadata.availableFormats.map((format) => (
-                        <span
-                          key={format}
-                          className="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-500 ring-1 ring-amber-500/10"
-                        >
-                          {getFormatIcon(format)}
-                          {format}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  {product.ebookMetadata.availableFormats &&
+                    product.ebookMetadata.availableFormats.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {product.ebookMetadata.availableFormats.map(
+                          (format) => (
+                            <span
+                              key={format}
+                              className="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-500 ring-1 ring-amber-500/10"
+                            >
+                              {getFormatIcon(format)}
+                              {format}
+                            </span>
+                          )
+                        )}
+                      </div>
+                    )}
                 </div>
               )}
             </div>
@@ -145,7 +154,7 @@ export function ProductGrid({
         {/* Use appropriate detail drawer based on product type */}
         {selectedProduct && (
           <>
-            {selectedProduct.type === ProductType.Ebook ? (
+            {selectedProduct.type === ProductType.EBook ? (
               <BookDetailDrawer
                 bundle={bundle}
                 product={selectedProduct}

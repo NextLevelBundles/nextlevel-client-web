@@ -69,22 +69,28 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
             <div className="absolute left-3 top-3 z-10">
               <div
                 className={`text-xs font-bold rounded-lg px-3 py-1.5 backdrop-blur-md transition-all group-hover:scale-105 flex items-center gap-1.5 shadow-lg ${
-                  bundle.bundleType === BundleType.Ebook
+                  bundle.bundleType === BundleType.EBook
                     ? "bg-gradient-to-r from-amber-500/90 to-orange-500/90 text-white ring-2 ring-amber-400/50"
                     : "bg-gradient-to-r from-blue-500/90 to-indigo-500/90 text-white ring-2 ring-blue-400/50"
                 }`}
               >
-                {bundle.bundleType === BundleType.Ebook ? (
-                  <><BookOpen className="h-4 w-4" /> Book Bundle</>
+                {bundle.bundleType === BundleType.EBook ? (
+                  <>
+                    <BookOpen className="h-4 w-4" /> Book Bundle
+                  </>
                 ) : (
-                  <><Gamepad2 className="h-4 w-4" /> Game Bundle</>
+                  <>
+                    <Gamepad2 className="h-4 w-4" /> Game Bundle
+                  </>
                 )}
               </div>
             </div>
-            
+
             {/* Status badges moved to right */}
             <div className="absolute right-3 top-3 flex gap-2">
-              {(bundle.isFeatured || bundle.isEarlyAccess || bundle.isLimitedKeys) && (
+              {(bundle.isFeatured ||
+                bundle.isEarlyAccess ||
+                bundle.isLimitedKeys) && (
                 <div
                   className={`text-xs font-semibold rounded-full px-2 py-0.5 backdrop-blur-xs transition-transform group-hover:scale-105 ${
                     bundle.isFeatured
@@ -103,12 +109,14 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
           </div>
 
           {/* Color-coded border accent */}
-          <div className={`absolute inset-x-0 top-0 h-1 ${
-            bundle.bundleType === BundleType.Ebook
-              ? "bg-gradient-to-r from-amber-400 to-orange-400"
-              : "bg-gradient-to-r from-blue-400 to-indigo-400"
-          }`} />
-          
+          <div
+            className={`absolute inset-x-0 top-0 h-1 ${
+              bundle.bundleType === BundleType.EBook
+                ? "bg-gradient-to-r from-amber-400 to-orange-400"
+                : "bg-gradient-to-r from-blue-400 to-indigo-400"
+            }`}
+          />
+
           <div className="flex flex-1 flex-col p-7">
             <h3 className="font-rajdhani mb-2 text-xl font-bold text-[#1c1c1e] dark:text-foreground transition-colors group-hover:text-primary">
               {bundle.title}
@@ -120,12 +128,16 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
                 <span>{timeLeft}</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-[#64748b] dark:text-muted-foreground group-hover:text-[#4b5563] dark:group-hover:text-muted-foreground/80 transition-colors">
-                {bundle.bundleType === BundleType.Ebook ? (
-                  <><BookOpen className="h-4 w-4" />
-                  <span>Book Bundle</span></>
+                {bundle.bundleType === BundleType.EBook ? (
+                  <>
+                    <BookOpen className="h-4 w-4" />
+                    <span>Book Bundle</span>
+                  </>
                 ) : (
-                  <><Gamepad2 className="h-4 w-4" />
-                  <span>Game Bundle</span></>
+                  <>
+                    <Gamepad2 className="h-4 w-4" />
+                    <span>Game Bundle</span>
+                  </>
                 )}
               </div>
             </div>

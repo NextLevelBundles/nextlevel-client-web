@@ -4,7 +4,14 @@ import { useState } from "react";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
-import { Stamp as Steam, Gift, DollarSign, Heart, BookOpen, Gamepad2 } from "lucide-react";
+import {
+  Stamp as Steam,
+  Gift,
+  DollarSign,
+  Heart,
+  BookOpen,
+  Gamepad2,
+} from "lucide-react";
 import { cn } from "@/shared/utils/tailwind";
 import { Bundle, Tier, BundleType } from "@/app/(shared)/types/bundle";
 import { AddToCartButton } from "../cart/add-to-cart-button";
@@ -47,7 +54,8 @@ export function PurchaseSummary({
     const baseCharityOn5Percent = previousTier.price * 0.05;
     const tierDifference = currentTier.price - previousTier.price;
     const extraAboveTier = Math.max(0, totalAmount - currentTier.price);
-    totalCharityAmount = baseCharityOn5Percent + tierDifference + extraAboveTier;
+    totalCharityAmount =
+      baseCharityOn5Percent + tierDifference + extraAboveTier;
 
     // Rest goes to publishers (75%) and platform (20%) based on previous tier price
     publisherAmount = previousTier.price * 0.75;
@@ -66,14 +74,14 @@ export function PurchaseSummary({
 
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
-            {bundle.bundleType === BundleType.Ebook ? (
+            {bundle.bundleType === BundleType.EBook ? (
               <BookOpen className="h-4 w-4 text-primary" />
             ) : (
               <Gift className="h-4 w-4 text-primary" />
             )}
             <span className="text-sm font-medium">
               You&apos;re getting ${unlockedProductsValue.toFixed(2)} worth of
-              {bundle.bundleType === BundleType.Ebook ? " books" : " games"}
+              {bundle.bundleType === BundleType.EBook ? " books" : " games"}
             </span>
           </div>
           <p className="text-xs text-muted-foreground mb-3">
@@ -180,7 +188,9 @@ export function PurchaseSummary({
                     Publishers{!isDonationTier ? " (75%)" : ""}
                   </span>
                 </div>
-                <span className="text-sm font-bold">${publisherAmount.toFixed(2)}</span>
+                <span className="text-sm font-bold">
+                  ${publisherAmount.toFixed(2)}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-1">
@@ -189,7 +199,9 @@ export function PurchaseSummary({
                     Platform{!isDonationTier ? " (20%)" : ""}
                   </span>
                 </div>
-                <span className="text-sm font-bold">${platformAmount.toFixed(2)}</span>
+                <span className="text-sm font-bold">
+                  ${platformAmount.toFixed(2)}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-1">
@@ -199,7 +211,9 @@ export function PurchaseSummary({
                     Charity{!isDonationTier ? " (5%)" : ""}
                   </span>
                 </div>
-                <span className="text-sm font-bold">${totalCharityAmount.toFixed(2)}</span>
+                <span className="text-sm font-bold">
+                  ${totalCharityAmount.toFixed(2)}
+                </span>
               </div>
             </div>
 
@@ -214,11 +228,13 @@ export function PurchaseSummary({
                     • Base: ${(previousTier.price * 0.05).toFixed(2)}
                   </p>
                   <p className="text-xs text-rose-600 dark:text-rose-400">
-                    • Charity tier: ${(currentTier.price - previousTier.price).toFixed(2)}
+                    • Charity tier: $
+                    {(currentTier.price - previousTier.price).toFixed(2)}
                   </p>
                   {totalAmount > currentTier.price && (
                     <p className="text-xs text-rose-600 dark:text-rose-400">
-                      • Your extra contribution: ${(totalAmount - currentTier.price).toFixed(2)}
+                      • Your extra contribution: $
+                      {(totalAmount - currentTier.price).toFixed(2)}
                     </p>
                   )}
                   <p className="text-xs font-semibold text-rose-700 dark:text-rose-300 pt-1 border-t border-rose-200 dark:border-rose-700">

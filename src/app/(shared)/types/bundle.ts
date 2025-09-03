@@ -2,7 +2,7 @@ import MediaData from "./media";
 
 export enum BundleType {
   SteamGame = "SteamGame",
-  Ebook = "Ebook",
+  EBook = "EBook",
 }
 
 // Partial bundle data for list views
@@ -40,7 +40,7 @@ export interface Tier {
 
 export enum ProductType {
   SteamGame = "SteamGame",
-  Ebook = "Ebook",
+  EBook = "EBook",
   Audio = "Audio",
 }
 

@@ -36,20 +36,26 @@ export function BundleHero({ bundle }: BundleHeroProps) {
               {/* Bundle Type Badge - Prominent */}
               <div
                 className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm ${
-                  bundle.bundleType === BundleType.Ebook
+                  bundle.bundleType === BundleType.EBook
                     ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/30"
                     : "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-500/30"
                 } backdrop-blur-md`}
               >
-                {bundle.bundleType === BundleType.Ebook ? (
-                  <><BookOpen className="h-5 w-5" /> Book Bundle</>
+                {bundle.bundleType === BundleType.EBook ? (
+                  <>
+                    <BookOpen className="h-5 w-5" /> Book Bundle
+                  </>
                 ) : (
-                  <><Gamepad2 className="h-5 w-5" /> Game Bundle</>
+                  <>
+                    <Gamepad2 className="h-5 w-5" /> Game Bundle
+                  </>
                 )}
               </div>
-              
+
               {/* Status badges */}
-              {(bundle.isEarlyAccess || bundle.isFeatured || bundle.isLimitedKeys) && (
+              {(bundle.isEarlyAccess ||
+                bundle.isFeatured ||
+                bundle.isLimitedKeys) && (
                 <div
                   className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${
                     bundle.isEarlyAccess
@@ -80,18 +86,21 @@ export function BundleHero({ bundle }: BundleHeroProps) {
                   </div>
                 </div>
               </Card>
-              <Card className={`backdrop-blur-xs border-white/20 ${
-                bundle.bundleType === BundleType.Ebook 
-                  ? "bg-amber-500/10" 
-                  : "bg-blue-500/10"
-              }`}>
+              <Card
+                className={`backdrop-blur-xs border-white/20 ${
+                  bundle.bundleType === BundleType.EBook
+                    ? "bg-amber-500/10"
+                    : "bg-blue-500/10"
+                }`}
+              >
                 <div className="p-4">
                   <div className="flex items-center gap-2 text-white/70">
                     <Package className="h-5 w-5" />
                     <span>Contains</span>
                   </div>
                   <div className="text-2xl font-mono font-bold text-white">
-                    {bundle.products?.length || 0} {bundle.bundleType === BundleType.Ebook ? "Books" : "Games"}
+                    {bundle.products?.length || 0}{" "}
+                    {bundle.bundleType === BundleType.EBook ? "Books" : "Games"}
                   </div>
                 </div>
               </Card>
