@@ -3,7 +3,7 @@ import { isCountryBlocked } from "@/lib/blocked-countries";
 import {
   verifyToken,
   isTokenExpired,
-  type DecodedToken,
+  decodeTokenUnsafe,
 } from "@/lib/auth/token-validator";
 
 export async function middleware(request: NextRequest) {
@@ -52,16 +52,28 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  console.log("Verifying token", idTokenCookie.value);
-  // Handle authenticated users - verify token properly
-  const decoded = await verifyToken(idTokenCookie.value);
-
-  // If token verification fails (invalid signature, wrong issuer, etc.)
-  if (!decoded) {
-    console.error("Token verification failed - invalid token");
+  // First, try to decode the token without verification to check its structure
+  const decodedUnsafe = decodeTokenUnsafe(idTokenCookie.value);
+  
+  // If we can't even decode the token, it's malformed
+  if (!decodedUnsafe) {
+    console.error("Token decode failed - malformed token");
     const signInUrl = new URL("/auth/signin", request.url);
     signInUrl.searchParams.set("callbackUrl", request.nextUrl.pathname);
     const response = NextResponse.redirect(signInUrl);
+    response.cookies.delete("id_token");
+    return response;
+  }
+
+  // Check if token is expired before trying to verify
+  if (isTokenExpired(decodedUnsafe)) {
+    console.log("Token is expired, attempting refresh");
+    // Token is expired but was valid, attempt to refresh
+    const refreshUrl = new URL("/auth/refresh-token", request.url);
+    refreshUrl.searchParams.set("returnUrl", request.nextUrl.pathname);
+    
+    // Clear the expired cookie and redirect to refresh page
+    const response = NextResponse.redirect(refreshUrl);
     response.cookies.delete("id_token");
     return response;
   }
@@ -71,15 +83,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check if token is expired
-  if (isTokenExpired(decoded)) {
-    // Token is expired, attempt to refresh via the refresh-token page
-    // This page will try to refresh tokens using Amplify's refresh token
-    const refreshUrl = new URL("/auth/refresh-token", request.url);
-    refreshUrl.searchParams.set("returnUrl", request.nextUrl.pathname);
+  // Now verify the token fully (signature, issuer, audience)
+  const decoded = await verifyToken(idTokenCookie.value);
 
-    // Clear the expired cookie and redirect to refresh page
-    const response = NextResponse.redirect(refreshUrl);
+  // If verification fails (invalid signature, wrong issuer, etc.)
+  if (!decoded) {
+    console.error("Token verification failed - invalid signature or issuer");
+    const signInUrl = new URL("/auth/signin", request.url);
+    signInUrl.searchParams.set("callbackUrl", request.nextUrl.pathname);
+    const response = NextResponse.redirect(signInUrl);
     response.cookies.delete("id_token");
     return response;
   }
