@@ -8,11 +8,13 @@ export const customerLocationQueryKey = ["customerLocation"] as const;
 /**
  * Hook to fetch customer location data
  * Used to determine the country for Steam key allocation
+ * @param enabled - Whether to enable the query (e.g., only when user is authenticated)
  */
-export function useCustomerLocation() {
+export function useCustomerLocation(enabled: boolean = true) {
   return useQuery({
     queryKey: customerLocationQueryKey,
     queryFn: (): Promise<CustomerLocation> => userApi.getCustomerLocation(),
+    enabled, // Only run query if enabled (user is authenticated)
     staleTime: 30 * 60 * 1000, // Consider data stale after 30 minutes
     gcTime: 60 * 60 * 1000, // Keep in cache for 1 hour
     retry: 2, // Retry failed requests 2 times

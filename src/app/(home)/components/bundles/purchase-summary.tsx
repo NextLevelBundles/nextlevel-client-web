@@ -25,6 +25,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/shared/components/ui/tooltip";
+import { useAuth } from "@/app/(shared)/providers/auth-provider";
 
 interface PurchaseSummaryProps {
   bundle: Bundle;
@@ -45,9 +46,11 @@ export function PurchaseSummary({
 }: PurchaseSummaryProps) {
   const [customInputValue, setCustomInputValue] = useState("");
   const [inputTimeout, setInputTimeout] = useState<NodeJS.Timeout>();
-  const { data: locationData, isLoading: isLoadingLocation } =
-    useCustomerLocation();
-  console.log(bundle);
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
+  
+  // Only fetch location data if user is authenticated
+  const { data: locationData, isLoading: isLoadingLocation } = useCustomerLocation(isAuthenticated);
   const minimumPrice = tiers[0].price;
   const isDonationTier = currentTier?.isDonationTier || false;
 
@@ -287,87 +290,98 @@ export function PurchaseSummary({
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-start gap-2">
-              <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-              <div className="flex-1">
-                {isLoadingLocation ? (
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                    <span className="text-xs text-muted-foreground">
-                      Detecting your location...
-                    </span>
-                  </div>
-                ) : locationData ? (
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">
-                      Keys will be allocated for:
-                    </p>
+            {isAuthenticated ? (
+              <div className="flex items-start gap-2">
+                <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                <div className="flex-1">
+                  {isLoadingLocation ? (
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">
-                        {locationData.hasSteamCountry &&
-                        locationData.steamCountryFlag ? (
-                          <>
-                            <span className="text-base mr-1">
-                              {locationData.steamCountryFlag}
-                            </span>
-                            {locationData.steamCountryName ||
-                              locationData.steamCountryCode}
-                          </>
-                        ) : locationData.hasIpCountry &&
-                          locationData.ipCountryFlag ? (
-                          <>
-                            <span className="text-base mr-1">
-                              {locationData.ipCountryFlag}
-                            </span>
-                            {locationData.ipCountryName ||
-                              locationData.ipCountryCode}
-                          </>
-                        ) : (
-                          "Global"
-                        )}
+                      <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                      <span className="text-xs text-muted-foreground">
+                        Detecting your location...
                       </span>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <Info className="h-3 w-3 text-muted-foreground" />
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-xs">
-                            {locationData.hasSteamCountry ? (
-                              <p className="text-xs">
-                                Based on your Steam account country setting.
-                                Keys are region-locked to ensure compatibility.
-                              </p>
-                            ) : locationData.hasIpCountry ? (
-                              <p className="text-xs">
-                                Based on your current IP address location.
-                                Connect your Steam account for more accurate
-                                region detection.
-                              </p>
-                            ) : (
-                              <p className="text-xs">
-                                Unable to detect location. Global keys will be
-                                provided.
-                              </p>
-                            )}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
                     </div>
+                  ) : locationData ? (
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">
+                        Keys will be allocated for:
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">
+                          {locationData.hasSteamCountry &&
+                          locationData.steamCountryFlag ? (
+                            <>
+                              <span className="text-base mr-1">
+                                {locationData.steamCountryFlag}
+                              </span>
+                              {locationData.steamCountryName ||
+                                locationData.steamCountryCode}
+                            </>
+                          ) : locationData.hasIpCountry &&
+                            locationData.ipCountryFlag ? (
+                            <>
+                              <span className="text-base mr-1">
+                                {locationData.ipCountryFlag}
+                              </span>
+                              {locationData.ipCountryName ||
+                                locationData.ipCountryCode}
+                            </>
+                          ) : (
+                            "Global"
+                          )}
+                        </span>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <Info className="h-3 w-3 text-muted-foreground" />
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              {locationData.hasSteamCountry ? (
+                                <p className="text-xs">
+                                  Based on your Steam account country setting.
+                                  Keys are region-locked to ensure compatibility.
+                                </p>
+                              ) : locationData.hasIpCountry ? (
+                                <p className="text-xs">
+                                  Based on your current IP address location.
+                                  Connect your Steam account for more accurate
+                                  region detection.
+                                </p>
+                              ) : (
+                                <p className="text-xs">
+                                  Unable to detect location. Global keys will be
+                                  provided.
+                                </p>
+                              )}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {locationData.hasSteamCountry
+                          ? "Using your Steam account region"
+                          : locationData.hasIpCountry
+                            ? "Using your IP address location"
+                            : "Region could not be determined"}
+                      </p>
+                    </div>
+                  ) : (
                     <p className="text-xs text-muted-foreground">
-                      {locationData.hasSteamCountry
-                        ? "Using your Steam account region"
-                        : locationData.hasIpCountry
-                          ? "Using your IP address location"
-                          : "Region could not be determined"}
+                      Unable to determine location
                     </p>
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    Unable to determine location
-                  </p>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-start gap-2">
+                <Info className="h-4 w-4 text-muted-foreground mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-xs text-muted-foreground">
+                    Sign in to see region-specific key availability
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div className="pt-2 border-t border-gray-100 dark:border-border">
               <p className="text-xs text-muted-foreground">

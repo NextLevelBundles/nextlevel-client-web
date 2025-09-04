@@ -155,10 +155,12 @@ export function OnboardingForm() {
     // Convert to lowercase and filter allowed characters
     // Allowed: lowercase letters, numbers, and .-_!@#$%^&*()=+
     const allowedChars = /[a-z0-9.\-_!@#$%^&*()=+]/g;
-    const filtered = value.toLowerCase().split('').filter(char => 
-      char.match(allowedChars)
-    ).join('');
-    
+    const filtered = value
+      .toLowerCase()
+      .split("")
+      .filter((char) => char.match(allowedChars))
+      .join("");
+
     setHandleInput(filtered);
     // If the user changes the handle after verification, reset verification
     if (verifiedHandle && filtered !== verifiedHandle) {
@@ -371,7 +373,7 @@ export function OnboardingForm() {
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Your account has been created — now let’s set up your profile so you
-            can start exploring amazing game bundles.
+            can start exploring amazing bundles.
           </p>
         </div>
 
@@ -636,10 +638,14 @@ export function OnboardingForm() {
                               <ul className="text-sm space-y-1">
                                 <li>• Lowercase letters (a-z)</li>
                                 <li>• Numbers (0-9)</li>
-                                <li>• Special characters: . - _ ! @ # $ % ^ & * ( ) = +</li>
+                                <li>
+                                  • Special characters: . - _ ! @ # $ % ^ & * (
+                                  ) = +
+                                </li>
                               </ul>
                               <p className="text-xs text-muted-foreground mt-2">
-                                All uppercase letters will be automatically converted to lowercase
+                                All uppercase letters will be automatically
+                                converted to lowercase
                               </p>
                             </div>
                           </TooltipContent>
