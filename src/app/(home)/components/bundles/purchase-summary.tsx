@@ -11,10 +11,20 @@ import {
   Heart,
   BookOpen,
   Gamepad2,
+  MapPin,
+  Info,
+  Download,
 } from "lucide-react";
 import { cn } from "@/shared/utils/tailwind";
 import { Bundle, Tier, BundleType } from "@/app/(shared)/types/bundle";
 import { AddToCartButton } from "../cart/add-to-cart-button";
+import { useCustomerLocation } from "@/hooks/queries/useCustomerLocation";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared/components/ui/tooltip";
 
 interface PurchaseSummaryProps {
   bundle: Bundle;
@@ -35,7 +45,9 @@ export function PurchaseSummary({
 }: PurchaseSummaryProps) {
   const [customInputValue, setCustomInputValue] = useState("");
   const [inputTimeout, setInputTimeout] = useState<NodeJS.Timeout>();
-
+  const { data: locationData, isLoading: isLoadingLocation } =
+    useCustomerLocation();
+  console.log(bundle);
   const minimumPrice = tiers[0].price;
   const isDonationTier = currentTier?.isDonationTier || false;
 
@@ -265,12 +277,143 @@ export function PurchaseSummary({
         </div>
       </Card>
 
-      <Card className="p-4 bg-white dark:bg-card/70 backdrop-blur-xs border border-gray-100 dark:border-border shadow-xs rounded-xl">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Steam className="h-4 w-4" />
-          <span>Steam keys delivered instantly</span>
-        </div>
-      </Card>
+      {/* Only show Steam keys section for SteamGame bundle type */}
+      {((bundle as any).type === "SteamGame" ||
+        bundle.bundleType === BundleType.SteamGame) && (
+        <Card className="p-4 bg-white dark:bg-card/70 backdrop-blur-xs border border-gray-100 dark:border-border shadow-xs rounded-xl space-y-3">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <Steam className="h-4 w-4 text-primary" />
+            <span>Steam Keys Information</span>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-start gap-2">
+              <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+              <div className="flex-1">
+                {isLoadingLocation ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    <span className="text-xs text-muted-foreground">
+                      Detecting your location...
+                    </span>
+                  </div>
+                ) : locationData ? (
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">
+                      Keys will be allocated for:
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">
+                        {locationData.hasSteamCountry &&
+                        locationData.steamCountryFlag ? (
+                          <>
+                            <span className="text-base mr-1">
+                              {locationData.steamCountryFlag}
+                            </span>
+                            {locationData.steamCountryName ||
+                              locationData.steamCountryCode}
+                          </>
+                        ) : locationData.hasIpCountry &&
+                          locationData.ipCountryFlag ? (
+                          <>
+                            <span className="text-base mr-1">
+                              {locationData.ipCountryFlag}
+                            </span>
+                            {locationData.ipCountryName ||
+                              locationData.ipCountryCode}
+                          </>
+                        ) : (
+                          "Global"
+                        )}
+                      </span>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Info className="h-3 w-3 text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs">
+                            {locationData.hasSteamCountry ? (
+                              <p className="text-xs">
+                                Based on your Steam account country setting.
+                                Keys are region-locked to ensure compatibility.
+                              </p>
+                            ) : locationData.hasIpCountry ? (
+                              <p className="text-xs">
+                                Based on your current IP address location.
+                                Connect your Steam account for more accurate
+                                region detection.
+                              </p>
+                            ) : (
+                              <p className="text-xs">
+                                Unable to detect location. Global keys will be
+                                provided.
+                              </p>
+                            )}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {locationData.hasSteamCountry
+                        ? "Using your Steam account region"
+                        : locationData.hasIpCountry
+                          ? "Using your IP address location"
+                          : "Region could not be determined"}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Unable to determine location
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-gray-100 dark:border-border">
+              <p className="text-xs text-muted-foreground">
+                Steam keys are delivered instantly after purchase
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Show eBook delivery section for EBook bundle type */}
+      {((bundle as any).type === "EBook" ||
+        bundle.bundleType === BundleType.EBook) && (
+        <Card className="p-4 bg-white dark:bg-card/70 backdrop-blur-xs border border-gray-100 dark:border-border shadow-xs rounded-xl space-y-3">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <BookOpen className="h-4 w-4 text-primary" />
+            <span>Digital Library</span>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-start gap-2">
+              <Download className="h-4 w-4 text-muted-foreground mt-0.5" />
+              <div className="flex-1">
+                <p className="text-xs text-muted-foreground">
+                  Multiple formats available (PDF, EPUB, MOBI)
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-2">
+              <Gift className="h-4 w-4 text-muted-foreground mt-0.5" />
+              <div className="flex-1">
+                <p className="text-xs text-muted-foreground">
+                  DRM-free downloads - read on any device
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-gray-100 dark:border-border">
+              <p className="text-xs text-muted-foreground">
+                eBooks are delivered instantly after purchase
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
     </div>
   );
 }

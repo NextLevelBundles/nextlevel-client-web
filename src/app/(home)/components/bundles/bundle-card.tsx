@@ -60,7 +60,7 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
                 className="transition-all duration-300"
               />
             </div>
-            
+
             {/* Status badges on image */}
             <div className="absolute right-3 top-3 flex gap-2 z-10">
               {(bundle.isFeatured ||
@@ -83,18 +83,19 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
             </div>
           </div>
 
-
           <div className="flex flex-1 flex-col p-6">
             {/* Bundle Type Badge */}
             <div className="mb-3">
               <div
                 className={`inline-flex items-center gap-2 text-xs font-bold rounded-full px-3 py-1.5 transition-all group-hover:scale-105 ${
-                  (bundle as any).type === "EBook" || bundle.bundleType === BundleType.EBook
+                  (bundle as any).type === "EBook" ||
+                  bundle.bundleType === BundleType.EBook
                     ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-500/20"
                     : "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md shadow-blue-500/20"
                 }`}
               >
-                {((bundle as any).type === "EBook" || bundle.bundleType === BundleType.EBook) ? (
+                {(bundle as any).type === "EBook" ||
+                bundle.bundleType === BundleType.EBook ? (
                   <>
                     <BookOpen className="h-3.5 w-3.5" />
                     <span>Book Bundle</span>
@@ -107,7 +108,7 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
                 )}
               </div>
             </div>
-            
+
             <h3 className="font-rajdhani mb-3 text-xl font-bold text-[#1c1c1e] dark:text-foreground transition-colors group-hover:text-primary">
               {bundle.title}
             </h3>
@@ -142,7 +143,6 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
               </Button>
             </div>
           </div>
-          <div className="absolute inset-x-0 bottom-0 h-1 bg-linear-to-r from-primary/50 via-secondary/50 to-primary/50 opacity-0 transition-all duration-300 group-hover:opacity-100" />
         </Card>
       </div>
     </Link>

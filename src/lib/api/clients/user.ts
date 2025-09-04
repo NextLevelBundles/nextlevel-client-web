@@ -1,6 +1,7 @@
 import { ClientApi } from "../client-api";
 import { Customer, BillingAddress } from "../types/user";
 import { Country } from "../types/common";
+import { CustomerLocation } from "../types/location";
 
 export class UserApi {
   private client: ClientApi;
@@ -28,5 +29,9 @@ export class UserApi {
     return await this.client.get<boolean>(
       `/customer/check-handle?handle=${encodeURIComponent(handle)}`
     );
+  }
+
+  async getCustomerLocation(): Promise<CustomerLocation> {
+    return await this.client.get<CustomerLocation>("/customer/location");
   }
 }

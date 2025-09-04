@@ -33,10 +33,10 @@ export function LockedTierCard({
   return (
     <div
       onClick={() => onSelect(tierIndex)}
-      className="group relative overflow-hidden rounded-lg border border-border/40 dark:border-border bg-[#f9f9f9]/80 dark:bg-card/70 shadow-xs hover:shadow-lg dark:hover:shadow-secondary/30 transition-all duration-300 hover:border-secondary/50 hover:translate-y-[-2px] hover:bg-white/95 dark:hover:bg-card/90 cursor-pointer will-change-transform"
+      className="group relative h-full overflow-hidden rounded-lg border border-border/40 dark:border-border bg-[#f9f9f9]/80 dark:bg-card/70 shadow-xs hover:shadow-lg dark:hover:shadow-secondary/30 transition-all duration-300 hover:border-secondary/50 hover:translate-y-[-2px] hover:bg-white/95 dark:hover:bg-card/90 cursor-pointer will-change-transform"
     >
-      {/* Background image - first product only with 2:3 aspect ratio */}
-      <div className="relative aspect-[2/3] overflow-hidden bg-gray-900">
+      {/* Background image - first product only, fills full height */}
+      <div className="relative h-full min-h-[400px] overflow-hidden bg-gray-900">
         {firstProduct && (
           <Image
             fill

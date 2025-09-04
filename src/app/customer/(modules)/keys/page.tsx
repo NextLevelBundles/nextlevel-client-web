@@ -23,6 +23,10 @@ import {
   XIcon,
   SparklesIcon,
   ArchiveIcon,
+  AlertTriangle,
+  Loader2,
+  ShieldAlert,
+  CheckCircle2,
 } from "lucide-react";
 import {
   Tooltip,
@@ -30,6 +34,15 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/shared/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/shared/components/ui/dialog";
+import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import confetti from "canvas-confetti";
 import {
   useSteamKeys,
@@ -84,6 +97,17 @@ export default function KeysPage() {
   const [selectedGiftKey, setSelectedGiftKey] =
     useState<SteamKeyAssignment | null>(null);
   const [isGiftModalOpen, setIsGiftModalOpen] = useState(false);
+  const [redeemConfirmDialog, setRedeemConfirmDialog] = useState<{
+    isOpen: boolean;
+    keyId: string | null;
+    productTitle: string;
+    isLoading: boolean;
+  }>({
+    isOpen: false,
+    keyId: null,
+    productTitle: "",
+    isLoading: false,
+  });
 
   // Debounce search query
   useEffect(() => {
@@ -229,33 +253,60 @@ export default function KeysPage() {
     }
   };
 
-  const handleRevealKey = async (keyId: string) => {
+  const handleRevealKey = (keyId: string, productTitle: string) => {
+    setRedeemConfirmDialog({
+      isOpen: true,
+      keyId,
+      productTitle,
+      isLoading: false,
+    });
+  };
+
+  const handleConfirmRedeem = async () => {
+    if (!redeemConfirmDialog.keyId) return;
+
+    setRedeemConfirmDialog((prev) => ({ ...prev, isLoading: true }));
+
     try {
       // Call the API to reveal the key
-      const revealedKey = await revealKeyMutation.mutateAsync(keyId);
-      
+      const revealedKey = await revealKeyMutation.mutateAsync(
+        redeemConfirmDialog.keyId
+      );
+
       if (revealedKey.steamKeyValue) {
+        // Close the dialog
+        setRedeemConfirmDialog({
+          isOpen: false,
+          keyId: null,
+          productTitle: "",
+          isLoading: false,
+        });
+
         // Open Steam registration page with the key
-        window.open(`https://store.steampowered.com/account/registerkey?key=${revealedKey.steamKeyValue}`, '_blank');
-        
+        window.open(
+          `https://store.steampowered.com/account/registerkey?key=${revealedKey.steamKeyValue}`,
+          "_blank"
+        );
+
         // Trigger confetti
         triggerConfetti();
-        
-        toast.success("Opening Steam to redeem your key!", {
+
+        toast.success("Steam key revealed! Redirecting to Steam...", {
           icon: (
             <motion.div
               initial={{ rotate: -20 }}
               animate={{ rotate: 20 }}
               transition={{ duration: 0.3, repeat: 3, repeatType: "reverse" }}
             >
-              <SparklesIcon className="h-5 w-5 text-yellow-400" />
+              <CheckCircle2 className="h-5 w-5 text-green-500" />
             </motion.div>
           ),
-          duration: 2000,
+          duration: 3000,
         });
       }
     } catch (error) {
       console.error("Error revealing key:", error);
+      setRedeemConfirmDialog((prev) => ({ ...prev, isLoading: false }));
       toast.error("Failed to reveal the key. Please try again.");
     }
   };
@@ -267,7 +318,10 @@ export default function KeysPage() {
 
   const handleActivateOnSteam = (key: string) => {
     // Open Steam registration page with the key
-    window.open(`https://store.steampowered.com/account/registerkey?key=${key}`, '_blank');
+    window.open(
+      `https://store.steampowered.com/account/registerkey?key=${key}`,
+      "_blank"
+    );
   };
 
   const handleGiftKey = (key: SteamKeyAssignment) => {
@@ -573,7 +627,9 @@ export default function KeysPage() {
                           >
                             <Button
                               className="cursor-pointer gap-2 bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60"
-                              onClick={() => handleRevealKey(key.id)}
+                              onClick={() =>
+                                handleRevealKey(key.id, key.productTitle)
+                              }
                             >
                               <ExternalLinkIcon className="h-4 w-4" />
                               Redeem on Steam
@@ -656,6 +712,118 @@ export default function KeysPage() {
           onGift={handleGiftSubmit}
         />
       )}
+
+      {/* Redeem Confirmation Dialog */}
+      <Dialog
+        open={redeemConfirmDialog.isOpen}
+        onOpenChange={(open) => {
+          if (!redeemConfirmDialog.isLoading) {
+            setRedeemConfirmDialog((prev) => ({ ...prev, isOpen: open }));
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          {!redeemConfirmDialog.isLoading ? (
+            <>
+              <DialogHeader className="space-y-4">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/20">
+                  <ShieldAlert className="h-8 w-8 text-orange-600 dark:text-orange-400" />
+                </div>
+                <DialogTitle className="text-center text-xl font-semibold">
+                  Important: Refund Policy Notice
+                </DialogTitle>
+              </DialogHeader>
+
+              <div className="space-y-4 py-4">
+                <Alert className="border-orange-200 bg-orange-50 dark:border-orange-900/50 dark:bg-orange-950/20">
+                  <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                  <AlertDescription className="text-sm">
+                    <strong>Please note:</strong> Once you reveal and redeem
+                    this Steam key, the entire bundle containing this game
+                    becomes <strong>non-refundable</strong>.
+                  </AlertDescription>
+                </Alert>
+
+                <div className="space-y-3 text-sm text-muted-foreground">
+                  <p>You're about to reveal the Steam key for:</p>
+                  <div className="rounded-lg border bg-muted/30 p-3">
+                    <p className="font-medium text-foreground">
+                      {redeemConfirmDialog.productTitle}
+                    </p>
+                  </div>
+                  <p className="text-xs">
+                    By proceeding, you acknowledge that:
+                  </p>
+                  <ul className="space-y-1 text-xs list-disc list-inside">
+                    <li>The Steam key will be permanently revealed</li>
+                    <li>The bundle containing this key cannot be refunded</li>
+                    <li>This action cannot be undone</li>
+                  </ul>
+                </div>
+              </div>
+
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button
+                  variant="ghost"
+                  onClick={() =>
+                    setRedeemConfirmDialog({
+                      isOpen: false,
+                      keyId: null,
+                      productTitle: "",
+                      isLoading: false,
+                    })
+                  }
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="bg-linear-to-r from-primary to-primary/90"
+                  onClick={handleConfirmRedeem}
+                >
+                  <KeyIcon className="h-4 w-4 mr-2" />I Understand, Reveal Key
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 space-y-4">
+              <div className="relative">
+                <div className="h-20 w-20 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
+                <KeyIcon className="absolute inset-0 m-auto h-8 w-8 text-primary animate-pulse" />
+              </div>
+              <div className="space-y-2 text-center">
+                <p className="text-lg font-medium">
+                  Revealing your Steam key...
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Please wait while we process your request
+                </p>
+              </div>
+              <motion.div
+                className="flex gap-1"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                <motion.span
+                  className="h-2 w-2 rounded-full bg-primary"
+                  animate={{ scale: [1, 1.5, 1] }}
+                  transition={{ duration: 1, repeat: Infinity, delay: 0 }}
+                />
+                <motion.span
+                  className="h-2 w-2 rounded-full bg-primary"
+                  animate={{ scale: [1, 1.5, 1] }}
+                  transition={{ duration: 1, repeat: Infinity, delay: 0.2 }}
+                />
+                <motion.span
+                  className="h-2 w-2 rounded-full bg-primary"
+                  animate={{ scale: [1, 1.5, 1] }}
+                  transition={{ duration: 1, repeat: Infinity, delay: 0.4 }}
+                />
+              </motion.div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
