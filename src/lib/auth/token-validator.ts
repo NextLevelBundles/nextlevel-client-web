@@ -27,7 +27,6 @@ function getJWKSClient() {
       throw new Error("Cognito issuer not configured");
     }
     const jwksUri = `${issuer}/.well-known/jwks.json`;
-    console.log("jwksUri", jwksUri);
     jwksClient = createRemoteJWKSet(new URL(jwksUri));
   }
   return jwksClient;
