@@ -1,4 +1,7 @@
 export interface CustomerLocation {
+  isSteamLinked: boolean;
+  steamId: string | null;
+  steamConnectedAt: string | null;
   steamCountryCode: string | null;
   steamCountryName: string | null;
   steamCountryFlag: string | null;

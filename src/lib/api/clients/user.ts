@@ -34,4 +34,11 @@ export class UserApi {
   async getCustomerLocation(): Promise<CustomerLocation> {
     return await this.client.get<CustomerLocation>("/customer/location");
   }
+
+  async updateSteamDetails(steamId: string | null, steamCountry: string | null): Promise<Customer> {
+    return await this.client.put<Customer, { steamId: string | null; steamCountry: string | null }>("/customer/steam-details", {
+      steamId,
+      steamCountry
+    });
+  }
 }

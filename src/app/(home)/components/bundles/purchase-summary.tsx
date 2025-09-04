@@ -26,6 +26,7 @@ import {
   TooltipTrigger,
 } from "@/shared/components/ui/tooltip";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
+import { useRouter } from "next/navigation";
 
 interface PurchaseSummaryProps {
   bundle: Bundle;
@@ -48,11 +49,16 @@ export function PurchaseSummary({
   const [inputTimeout, setInputTimeout] = useState<NodeJS.Timeout>();
   const { user } = useAuth();
   const isAuthenticated = !!user;
+  const router = useRouter();
   
   // Only fetch location data if user is authenticated
   const { data: locationData, isLoading: isLoadingLocation } = useCustomerLocation(isAuthenticated);
   const minimumPrice = tiers[0].price;
   const isDonationTier = currentTier?.isDonationTier || false;
+  
+  // Check if this is a Steam bundle and user hasn't connected Steam
+  const isSteamBundle = (bundle as any).type === "SteamGame" || bundle.bundleType === BundleType.SteamGame;
+  const needsSteamConnection = isSteamBundle && isAuthenticated && locationData && !locationData.isSteamLinked;
 
   // Find the previous tier (the one before the charity tier)
   const currentTierIndex = tiers.findIndex((t) => t.id === currentTier?.id);
@@ -271,12 +277,22 @@ export function PurchaseSummary({
             <span>${totalAmount}</span>
           </div>
 
-          <AddToCartButton
-            bundleId={bundle.id}
-            selectedTierId={currentTier.id}
-            totalAmount={totalAmount}
-            isDonationTier={isDonationTier}
-          />
+          {needsSteamConnection ? (
+            <Button
+              onClick={() => router.push("/customer/settings/steam")}
+              className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
+            >
+              <Gamepad2 className="mr-2 h-4 w-4" />
+              Connect Steam Account
+            </Button>
+          ) : (
+            <AddToCartButton
+              bundleId={bundle.id}
+              selectedTierId={currentTier.id}
+              totalAmount={totalAmount}
+              isDonationTier={isDonationTier}
+            />
+          )}
         </div>
       </Card>
 

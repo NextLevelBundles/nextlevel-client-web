@@ -10,6 +10,7 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { Gamepad2 } from "lucide-react";
 import { useCustomer } from "@/hooks/queries/useCustomer";
+import { useRouter } from "next/navigation";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
@@ -17,6 +18,7 @@ dayjs.extend(relativeTime);
 
 export function SteamStatus() {
   const { data: customer, isLoading } = useCustomer();
+  const router = useRouter();
 
   if (isLoading) {
     return (
@@ -45,7 +47,7 @@ export function SteamStatus() {
           </div>
           <Button
             className="relative overflow-hidden"
-            onClick={() => (window.location.href = "/api/steam/init")}
+            onClick={() => router.push("/customer/settings/steam")}
           >
             <Gamepad2 className="mr-2 h-4 w-4" />
             Connect Steam
