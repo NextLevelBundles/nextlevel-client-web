@@ -36,7 +36,8 @@ export function ProductGrid({
   setTotalAmount,
 }: ProductGridProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const isBookBundle = (bundle as any).type === "EBook" || bundle.bundleType === BundleType.EBook;
+  const isBookBundle =
+    (bundle as any).type === "EBook" || bundle.bundleType === BundleType.EBook;
 
   // Get locked tiers
   const selectedTierIndex = tiers.findIndex(
@@ -82,22 +83,21 @@ export function ProductGrid({
         "cursor-pointer p-6 bg-gray-50/95 dark:bg-card/70 backdrop-blur-xs border border-gray-100 dark:border-border shadow-xs transition-all duration-500"
       )}
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
         {unlockedProducts.map((product) => (
           <div
             key={product.id}
             onClick={() => setSelectedProduct(product)}
             className="group relative overflow-hidden rounded-xl bg-white dark:bg-card border border-gray-200 dark:border-border shadow-xs hover:shadow-lg transition-all duration-300 hover:border-primary/50 hover:scale-[1.01] hover:bg-white/95"
           >
-            <div className="relative overflow-hidden">
+            <div className="relative aspect-[2/3] overflow-hidden bg-gray-100 dark:bg-gray-900">
               <Image
-                sizes="500px"
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 quality={80}
-                width={500}
-                height={500}
                 src={product.coverImage?.url || "/placeholder.jpg"}
                 alt={product.title}
-                className="h-auto w-full transition-all duration-300 group-hover:scale-105 group-hover:brightness-[1.02] saturate-[1.02] group-hover:saturate-[1.05]"
+                className="object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-[1.02] saturate-[1.02] group-hover:saturate-[1.05]"
               />
             </div>
             <div className="p-5">
