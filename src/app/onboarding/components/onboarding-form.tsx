@@ -20,6 +20,7 @@ import {
   Check,
   X,
   Info,
+  BookOpen,
 } from "lucide-react";
 import { Card } from "@/app/(shared)/components/ui/card";
 import {
@@ -118,6 +119,9 @@ export function OnboardingForm() {
     null
   );
   const [handleInput, setHandleInput] = useState("");
+  const [interestedInSteam, setInterestedInSteam] = useState<boolean | null>(
+    null
+  );
   const [formData, setFormData] = useState<FormData>({
     name: user?.name || "",
     handle: "",
@@ -320,12 +324,16 @@ export function OnboardingForm() {
           formData.handle,
           formData.steamId
         );
-        return (
+        // If not interested in Steam games, only handle is required
+        // If interested in Steam games, both handle and Steam connection are required
+        const handleValid =
           handleVerified &&
           verifiedHandle === handleInput &&
-          formData.handle === verifiedHandle &&
-          formData.steamId
-        );
+          formData.handle === verifiedHandle;
+        const steamValid =
+          interestedInSteam === false ||
+          (interestedInSteam === true && formData.steamId !== null);
+        return handleValid && steamValid;
       default:
         return true;
     }
@@ -622,115 +630,215 @@ export function OnboardingForm() {
             {currentSection === 2 && (
               <div className="space-y-6 animate-fade-up">
                 <div className="grid gap-4">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <Label htmlFor="handle" className="text-sm font-medium">
-                        Gaming Handle *
-                      </Label>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-xs">
-                            <div className="space-y-2">
-                              <p className="font-medium">Allowed characters:</p>
-                              <ul className="text-sm space-y-1">
-                                <li>• Lowercase letters (a-z)</li>
-                                <li>• Numbers (0-9)</li>
-                                <li>
-                                  • Special characters: . - _ ! @ # $ % ^ & * (
-                                  ) = +
-                                </li>
-                              </ul>
-                              <p className="text-xs text-muted-foreground mt-2">
-                                All uppercase letters will be automatically
-                                converted to lowercase
-                              </p>
-                            </div>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="relative">
-                        <Input
-                          id="handle"
-                          value={handleInput}
-                          onChange={(e) => handleHandleChange(e.target.value)}
-                          placeholder="Your preferred gaming username"
-                          className="mt-1"
-                        />
-                        {isCheckingHandle && (
-                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                          </div>
-                        )}
+                  {/* Interest Selection - Show only if not yet selected */}
+                  {interestedInSteam === null && (
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="text-lg font-semibold mb-2">
+                          What brings you to Digiphile?
+                        </h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Let us know your interests so we can personalize your
+                          experience.
+                        </p>
                       </div>
 
-                      <p className="text-xs text-muted-foreground">
-                        This will be displayed on your profile and leaderboards
-                      </p>
-
-                      {/* Checking indicator */}
-                      {isCheckingHandle && (
-                        <div className="flex items-center gap-2 text-sm p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>
-                            Checking availability for &ldquo;{handleInput}
-                            &rdquo;...
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Verification Status Display */}
-                      {handleCheckResult !== null && (
-                        <div
-                          className={cn(
-                            "flex items-center gap-2 text-sm p-3 rounded-lg",
-                            handleCheckResult
-                              ? "bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
-                              : "bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
-                          )}
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <button
+                          onClick={() => setInterestedInSteam(true)}
+                          className="cursor-pointer p-4 rounded-lg border-2 border-border hover:border-primary hover:bg-primary/5 transition-all text-left group"
                         >
-                          {handleCheckResult ? (
-                            <>
-                              <Check className="h-4 w-4" />
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                              <Gamepad2 className="h-5 w-5 text-primary" />
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-semibold mb-1">
+                                Steam Game Bundles
+                              </h4>
+                              <p className="text-xs text-muted-foreground">
+                                I'm interested in Steam games. I'll need to
+                                connect my Steam account for key allocation.
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={() => setInterestedInSteam(false)}
+                          className="cursor-pointer p-4 rounded-lg border-2 border-border hover:border-primary hover:bg-primary/5 transition-all text-left group"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                              <BookOpen className="h-5 w-5 text-primary" />
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-semibold mb-1">
+                                Book Bundles Only
+                              </h4>
+                              <p className="text-xs text-muted-foreground">
+                                I'm only interested in eBook bundles. No Steam
+                                account needed.
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+                      </div>
+
+                      <div className="p-3 rounded-lg bg-muted/50 border border-border">
+                        <p className="text-xs text-muted-foreground">
+                          <Info className="inline h-3 w-3 mr-1" />
+                          You can always change this later in your account
+                          settings.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Show handle and Steam sections only after interest selection */}
+                  {interestedInSteam !== null && (
+                    <>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Label
+                            htmlFor="handle"
+                            className="text-sm font-medium"
+                          >
+                            Gaming Handle *
+                          </Label>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-xs">
+                                <div className="space-y-2">
+                                  <p className="font-medium">
+                                    Allowed characters:
+                                  </p>
+                                  <ul className="text-sm space-y-1">
+                                    <li>• Lowercase letters (a-z)</li>
+                                    <li>• Numbers (0-9)</li>
+                                    <li>
+                                      • Special characters: . - _ ! @ # $ % ^ &
+                                      * ( ) = +
+                                    </li>
+                                  </ul>
+                                  <p className="text-xs text-muted-foreground mt-2">
+                                    All uppercase letters will be automatically
+                                    converted to lowercase
+                                  </p>
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="relative">
+                            <Input
+                              id="handle"
+                              value={handleInput}
+                              onChange={(e) =>
+                                handleHandleChange(e.target.value)
+                              }
+                              placeholder="Your preferred gaming username"
+                              className="mt-1"
+                            />
+                            {isCheckingHandle && (
+                              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                              </div>
+                            )}
+                          </div>
+
+                          <p className="text-xs text-muted-foreground">
+                            This will be displayed on your profile and
+                            leaderboards
+                          </p>
+
+                          {/* Checking indicator */}
+                          {isCheckingHandle && (
+                            <div className="flex items-center gap-2 text-sm p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                              <Loader2 className="h-4 w-4 animate-spin" />
                               <span>
-                                Handle &ldquo;{verifiedHandle}&rdquo; is
-                                available.
+                                Checking availability for &ldquo;{handleInput}
+                                &rdquo;...
                               </span>
-                            </>
-                          ) : (
-                            <>
+                            </div>
+                          )}
+
+                          {/* Verification Status Display */}
+                          {handleCheckResult !== null && (
+                            <div
+                              className={cn(
+                                "flex items-center gap-2 text-sm p-3 rounded-lg",
+                                handleCheckResult
+                                  ? "bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
+                                  : "bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
+                              )}
+                            >
+                              {handleCheckResult ? (
+                                <>
+                                  <Check className="h-4 w-4" />
+                                  <span>
+                                    Handle &ldquo;{verifiedHandle}&rdquo; is
+                                    available.
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <X className="h-4 w-4" />
+                                  <span>
+                                    Handle &ldquo;{handleInput}&rdquo; is
+                                    already taken. Please try another one.
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          )}
+
+                          {verifiedHandle && verifiedHandle !== handleInput && (
+                            <div className="flex items-center gap-2 text-sm p-3 rounded-lg bg-yellow-50 dark:bg-yellow-950/30 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800">
                               <X className="h-4 w-4" />
                               <span>
-                                Handle &ldquo;{handleInput}&rdquo; is already
-                                taken. Please try another one.
+                                Handle has been modified. Please verify the new
+                                handle to continue.
                               </span>
-                            </>
+                            </div>
                           )}
                         </div>
+                      </div>
+
+                      {/* Steam Integration Section - Only show if interested in Steam games */}
+                      {interestedInSteam === true && (
+                        <SteamConnection
+                          steamConnected={steamConnected}
+                          steamUserInfo={steamUserInfo}
+                          onSteamInfoReceived={onSteamInfoReceived}
+                        />
                       )}
 
-                      {verifiedHandle && verifiedHandle !== handleInput && (
-                        <div className="flex items-center gap-2 text-sm p-3 rounded-lg bg-yellow-50 dark:bg-yellow-950/30 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800">
-                          <X className="h-4 w-4" />
-                          <span>
-                            Handle has been modified. Please verify the new
-                            handle to continue.
-                          </span>
+                      {/* Show success message for book-only users */}
+                      {interestedInSteam === false && (
+                        <div className="p-4 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+                          <div className="flex items-start gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5" />
+                            <div className="text-sm">
+                              <p className="font-medium text-green-700 dark:text-green-300">
+                                Great! You're all set for book bundles.
+                              </p>
+                              <p className="text-green-600 dark:text-green-400">
+                                You can start exploring our eBook collection
+                                right away. If you decide to purchase Steam
+                                games later, you can connect your Steam account
+                                anytime from your account settings.
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       )}
-                    </div>
-                  </div>
-
-                  {/* Steam Integration Section */}
-                  <SteamConnection
-                    steamConnected={steamConnected}
-                    steamUserInfo={steamUserInfo}
-                    onSteamInfoReceived={onSteamInfoReceived}
-                  />
+                    </>
+                  )}
                 </div>
               </div>
             )}
@@ -738,14 +846,14 @@ export function OnboardingForm() {
 
           {/* Navigation Buttons */}
           <div className="flex justify-between mt-8 pt-6 border-t border-border">
-            <Button
+            {/* <Button
               variant="outline"
               onClick={prevSection}
               disabled={currentSection === 0}
               className="hover:bg-muted"
             >
               Previous
-            </Button>
+            </Button> */}
 
             <div className="flex gap-2">
               {currentSection < formSections.length - 1 ? (

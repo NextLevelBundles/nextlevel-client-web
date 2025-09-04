@@ -259,22 +259,22 @@ export default function SteamConnection({
                 Connect Your Steam Account
               </h3>
               <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                Link your Steam account to receive game keys directly to your library
-                and ensure you get region-appropriate keys based on your Steam country.
+                To purchase Steam game bundles, you need to connect your Steam account. 
+                This is required to ensure proper key allocation and compatibility.
               </p>
 
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                  <span>Instant game key delivery to your Steam library</span>
+                  <span>Allocate region-appropriate Steam keys for your account</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                  <span>Region-specific keys matched to your Steam country</span>
+                  <span>Ensure key compatibility with your Steam region</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-                  <span>Track your gaming achievements and stats (Coming soon)</span>
+                  <span>Provide better customer support for your purchases</span>
                 </div>
               </div>
             </div>
