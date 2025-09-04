@@ -25,7 +25,12 @@ export function BundleImageDeck({
 
   if (displayImages.length === 0) {
     return (
-      <div className={cn("relative w-full h-full bg-gray-200 dark:bg-gray-800 rounded-2xl", containerClassName)}>
+      <div
+        className={cn(
+          "relative w-full h-full bg-gray-200 dark:bg-gray-800 rounded-2xl",
+          containerClassName
+        )}
+      >
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="text-gray-400">No image available</span>
         </div>
@@ -36,7 +41,12 @@ export function BundleImageDeck({
   // If only one image, display it normally with aspect ratio
   if (displayImages.length === 1) {
     return (
-      <div className={cn("relative w-full h-full flex items-center justify-center", containerClassName)}>
+      <div
+        className={cn(
+          "relative w-full h-full flex items-center justify-center",
+          containerClassName
+        )}
+      >
         <div className="relative w-full h-full">
           <Image
             fill
@@ -52,42 +62,49 @@ export function BundleImageDeck({
   }
 
   return (
-    <div className={cn("relative w-full h-full flex items-center justify-center", containerClassName)}>
+    <div
+      className={cn(
+        "relative w-full h-full flex items-center justify-center",
+        containerClassName
+      )}
+    >
       <div className="relative w-full h-full">
         {displayImages.map((image, index) => {
           const isHovered = hoveredIndex === index;
           const totalImages = displayImages.length;
-          
+
           // Create a straight stack with cards spread out more horizontally
           // Cards are straight by default, only rotate on hover
-          const spreadFactor = 45; // Increased spread for better visibility
+          const spreadFactor = 65; // Increased spread for better visibility
           const baseTranslateX = (index - (totalImages - 1) / 2) * spreadFactor;
-          
+
           // No rotation by default, only on hover
           const baseRotation = 0;
-          
+
           // Z-index: maintain stacking order left to right
           // Hovered card only gets higher z-index than cards to its left
           const baseZIndex = index * 10;
           const zIndex = isHovered ? baseZIndex + 5 : baseZIndex;
-          
+
           // Calculate hover effects - subtle lift without breaking visual hierarchy
           const hoverRotation = isHovered ? -3 : baseRotation;
-          const hoverTranslateX = isHovered ? baseTranslateX - 20 : baseTranslateX; // Move left when hovered
+          const hoverTranslateX = isHovered
+            ? baseTranslateX - 20
+            : baseTranslateX; // Move left when hovered
           const hoverTranslateY = isHovered ? -15 : 0; // Lift up slightly
           const hoverScale = isHovered ? 1.03 : 1; // Subtle scale increase
 
           // Card dimensions to maintain aspect ratio
           const cardWidthPercent = 38; // Width as percentage of container (narrower for better spread visibility)
-          const cardHeightPercent = 85; // Height as percentage of container
+          const cardHeightPercent = 95; // Height as percentage of container
 
           return (
             <div
               key={image.id}
               className="absolute"
               style={{
-                left: '50%',
-                top: '50%',
+                left: "50%",
+                top: "50%",
                 width: `${cardWidthPercent}%`,
                 height: `${cardHeightPercent}%`,
                 transform: `
@@ -107,16 +124,16 @@ export function BundleImageDeck({
               {/* Card container with aspect ratio */}
               <div className="relative w-full h-full">
                 {/* Shadow effect */}
-                <div 
+                <div
                   className="absolute inset-0 rounded"
                   style={{
-                    boxShadow: isHovered 
-                      ? "0 15px 30px -8px rgba(0, 0, 0, 0.4), 0 8px 16px -4px rgba(0, 0, 0, 0.25)" 
+                    boxShadow: isHovered
+                      ? "0 15px 30px -8px rgba(0, 0, 0, 0.4), 0 8px 16px -4px rgba(0, 0, 0, 0.25)"
                       : "0 10px 25px -8px rgba(0, 0, 0, 0.3), 0 4px 10px -4px rgba(0, 0, 0, 0.15)",
                     transition: "box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   }}
                 />
-                
+
                 {/* Image container with 600x900 aspect ratio (2:3) */}
                 <div className="relative w-full h-full rounded overflow-hidden bg-gray-800">
                   <Image
@@ -131,17 +148,17 @@ export function BundleImageDeck({
                       className
                     )}
                     style={{
-                      objectPosition: 'center',
+                      objectPosition: "center",
                     }}
                   />
-                  
+
                   {/* Subtle gradient overlay for depth */}
-                  <div 
+                  <div
                     className="absolute inset-0 pointer-events-none"
                     style={{
-                      background: isHovered 
-                        ? 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.15) 100%)'
-                        : 'linear-gradient(to bottom, transparent 70%, rgba(0,0,0,0.05) 100%)',
+                      background: isHovered
+                        ? "linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.15) 100%)"
+                        : "linear-gradient(to bottom, transparent 70%, rgba(0,0,0,0.05) 100%)",
                       transition: "all 0.3s ease",
                     }}
                   />
