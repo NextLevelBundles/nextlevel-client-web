@@ -90,7 +90,7 @@ export function BookDetailDrawer({
               <div className="relative aspect-[3/4] rounded-lg overflow-hidden">
                 <Image
                   fill
-                  src={product.headerImage}
+                  src={product.coverImage?.url || "/placeholder.jpg"}
                   alt={product.title}
                   className="object-cover"
                 />

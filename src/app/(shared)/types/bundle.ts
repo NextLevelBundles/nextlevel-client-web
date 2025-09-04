@@ -9,7 +9,7 @@ export enum BundleType {
 export interface BundleListItem {
   id: string;
   title: string;
-  imageMedia: MediaData;
+  imageMedia: MediaData[];
   description: string;
   minPrice: number;
   suggestedPrice: number;
@@ -48,7 +48,6 @@ export interface Product {
   id: string;
   title: string;
   description: string;
-  headerImage: string;
   price: number;
   curatorComment: string;
   type: ProductType;
@@ -56,6 +55,7 @@ export interface Product {
   bundleId: string;
   listingId: string;
   bundleTierId?: string | null;
+  coverImage?: MediaData;
   steamGameMetadata: SteamGameMetadata | null;
   ebookMetadata: EBookMetadata | null;
   audioMetadata: Record<string, never> | null; // empty object
@@ -74,7 +74,6 @@ export interface EBookMetadata {
   genre?: string;
   tags?: string[];
   description?: string;
-  coverImage?: MediaData;
   availableFormats?: string[];
 }
 

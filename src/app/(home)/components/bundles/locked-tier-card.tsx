@@ -53,7 +53,7 @@ export function LockedTierCard({
                 fill={true}
                 sizes="500px"
                 quality={80}
-                src={product.headerImage}
+                src={product.coverImage?.url || "/placeholder.jpg"}
                 alt={product.title}
                 className="h-full w-full object-cover blur-[2px] brightness-[0.4] dark:brightness-50 transition-all duration-500 group-hover:blur-0 group-hover:brightness-[0.6] dark:group-hover:brightness-75 will-change-transform"
               />
@@ -89,7 +89,7 @@ export function LockedTierCard({
           >
             <p className="text-xl text-white/90 font-semibold flex items-center justify-center gap-2">
               +{totalGamesToUnlock}{" "}
-              {bundle.bundleType === BundleType.EBook ? "Books" : "Games"} at $
+              {((bundle as any).type === "EBook" || bundle.bundleType === BundleType.EBook) ? "Books" : "Games"} at $
               {tier.price.toFixed(2)}
             </p>
             <p className="text-white/90 text-sm font-semibold bg-linear-to-r from-primary/90 to-secondary/90 bg-clip-text">

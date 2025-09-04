@@ -77,7 +77,7 @@ export function BundleProgress({
             <div className="flex items-center gap-2 text-sm font-medium text-primary animate-pulse dark:text-primary/90">
               <PartyPopper className="h-4 w-4" />
               All {allProducts.length}{" "}
-              {bundle.bundleType === BundleType.EBook ? "books" : "games"}{" "}
+              {((bundle as any).type === "EBook" || bundle.bundleType === BundleType.EBook) ? "books" : "games"}{" "}
               unlocked 🎉
             </div>
           ) : (
@@ -86,7 +86,7 @@ export function BundleProgress({
                 {unlockedProducts.length}
               </span>{" "}
               of {allProducts.length}{" "}
-              {bundle.bundleType === BundleType.EBook ? "books" : "games"}{" "}
+              {((bundle as any).type === "EBook" || bundle.bundleType === BundleType.EBook) ? "books" : "games"}{" "}
               unlocked
             </span>
           )}

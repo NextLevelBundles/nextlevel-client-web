@@ -2,9 +2,9 @@
 
 import { Card } from "@/shared/components/ui/card";
 import { Timer, BookOpen, Gamepad2, Package } from "lucide-react";
-import Image from "next/image";
 import { Bundle, BundleType } from "@/app/(shared)/types/bundle";
 import { useCountdownTimer } from "@/app/(shared)/hooks/useCountdownTimer";
+import { BundleImageDeck } from "./bundle-image-deck";
 
 interface BundleHeroProps {
   bundle: Bundle;
@@ -17,12 +17,9 @@ export function BundleHero({ bundle }: BundleHeroProps) {
     <div className="relative h-[40vh] overflow-hidden">
       <div className="absolute inset-0">
         <div className="relative h-full">
-          <Image
-            fill={true}
-            sizes="100vw"
-            quality={80}
-            src={bundle.imageMedia?.url || ""}
-            alt={bundle.title}
+          <BundleImageDeck
+            images={bundle.imageMedia}
+            title={bundle.title}
             className="h-full w-full object-cover"
           />
         </div>
@@ -36,12 +33,12 @@ export function BundleHero({ bundle }: BundleHeroProps) {
               {/* Bundle Type Badge - Prominent */}
               <div
                 className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm ${
-                  bundle.bundleType === BundleType.EBook
+                  (bundle as any).type === "EBook" || bundle.bundleType === BundleType.EBook
                     ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/30"
                     : "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-500/30"
                 } backdrop-blur-md`}
               >
-                {bundle.bundleType === BundleType.EBook ? (
+                {((bundle as any).type === "EBook" || bundle.bundleType === BundleType.EBook) ? (
                   <>
                     <BookOpen className="h-5 w-5" /> Book Bundle
                   </>
@@ -88,7 +85,7 @@ export function BundleHero({ bundle }: BundleHeroProps) {
               </Card>
               <Card
                 className={`backdrop-blur-xs border-white/20 ${
-                  bundle.bundleType === BundleType.EBook
+                  (bundle as any).type === "EBook" || bundle.bundleType === BundleType.EBook
                     ? "bg-amber-500/10"
                     : "bg-blue-500/10"
                 }`}
@@ -100,7 +97,7 @@ export function BundleHero({ bundle }: BundleHeroProps) {
                   </div>
                   <div className="text-2xl font-mono font-bold text-white">
                     {bundle.products?.length || 0}{" "}
-                    {bundle.bundleType === BundleType.EBook ? "Books" : "Games"}
+                    {((bundle as any).type === "EBook" || bundle.bundleType === BundleType.EBook) ? "Books" : "Games"}
                   </div>
                 </div>
               </Card>
