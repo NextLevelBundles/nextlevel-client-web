@@ -24,6 +24,7 @@ export interface Customer {
   updatedAt: string;
   steamId?: string;
   steamConnectedAt?: string;
+  steamCountry?: string;
   billingAddress?: BillingAddress;
   contact: Contact;
 }
