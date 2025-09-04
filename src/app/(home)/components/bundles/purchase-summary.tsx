@@ -74,14 +74,18 @@ export function PurchaseSummary({
 
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
-            {((bundle as any).type === "EBook" || bundle.bundleType === BundleType.EBook) ? (
+            {(bundle as any).type === "EBook" ||
+            bundle.bundleType === BundleType.EBook ? (
               <BookOpen className="h-4 w-4 text-primary" />
             ) : (
               <Gift className="h-4 w-4 text-primary" />
             )}
             <span className="text-sm font-medium">
               You&apos;re getting ${unlockedProductsValue.toFixed(2)} worth of
-              {((bundle as any).type === "EBook" || bundle.bundleType === BundleType.EBook) ? " books" : " games"}
+              {(bundle as any).type === "EBook" ||
+              bundle.bundleType === BundleType.EBook
+                ? " books"
+                : " games"}
             </span>
           </div>
           <p className="text-xs text-muted-foreground mb-3">
@@ -157,7 +161,7 @@ export function PurchaseSummary({
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-sm font-medium">Revenue Distribution</h4>
               <span className="text-xs text-muted-foreground">
-                {isDonationTier ? "Charity Tier" : "Fixed split"}
+                {isDonationTier ? "Charity Tier" : ""}
               </span>
             </div>
 
