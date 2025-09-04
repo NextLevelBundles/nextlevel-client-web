@@ -22,6 +22,7 @@ import {
   SearchIcon,
   XIcon,
   SparklesIcon,
+  ArchiveIcon,
 } from "lucide-react";
 import {
   Tooltip,
@@ -83,13 +84,6 @@ export default function KeysPage() {
   const [selectedGiftKey, setSelectedGiftKey] =
     useState<SteamKeyAssignment | null>(null);
   const [isGiftModalOpen, setIsGiftModalOpen] = useState(false);
-  const [flippingStates, setFlippingStates] = useState<{
-    [key: string]: {
-      isFlipping: boolean;
-      showKey: boolean;
-      revealedKeyValue?: string;
-    };
-  }>({});
 
   // Debounce search query
   useEffect(() => {
@@ -236,57 +230,44 @@ export default function KeysPage() {
   };
 
   const handleRevealKey = async (keyId: string) => {
-    setFlippingStates((prev) => ({
-      ...prev,
-      [keyId]: { isFlipping: true, showKey: false },
-    }));
-
     try {
-      // Wait for half of the flip animation before showing the key
-      await new Promise((resolve) => setTimeout(resolve, 400));
-
       // Call the API to reveal the key
       const revealedKey = await revealKeyMutation.mutateAsync(keyId);
-
-      setFlippingStates((prev) => ({
-        ...prev,
-        [keyId]: {
-          isFlipping: true,
-          showKey: true,
-          revealedKeyValue: revealedKey.steamKeyValue,
-        },
-      }));
-
-      // Trigger confetti
-      triggerConfetti();
-
-      // Wait for 2 seconds before flipping back
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      setFlippingStates((prev) => ({
-        ...prev,
-        [keyId]: {
-          isFlipping: false,
-          showKey: false,
-          revealedKeyValue: undefined,
-        },
-      }));
-    } catch {
-      // Reset flipping state on error
-      setFlippingStates((prev) => ({
-        ...prev,
-        [keyId]: {
-          isFlipping: false,
-          showKey: false,
-          revealedKeyValue: undefined,
-        },
-      }));
+      
+      if (revealedKey.steamKeyValue) {
+        // Open Steam registration page with the key
+        window.open(`https://store.steampowered.com/account/registerkey?key=${revealedKey.steamKeyValue}`, '_blank');
+        
+        // Trigger confetti
+        triggerConfetti();
+        
+        toast.success("Opening Steam to redeem your key!", {
+          icon: (
+            <motion.div
+              initial={{ rotate: -20 }}
+              animate={{ rotate: 20 }}
+              transition={{ duration: 0.3, repeat: 3, repeatType: "reverse" }}
+            >
+              <SparklesIcon className="h-5 w-5 text-yellow-400" />
+            </motion.div>
+          ),
+          duration: 2000,
+        });
+      }
+    } catch (error) {
+      console.error("Error revealing key:", error);
+      toast.error("Failed to reveal the key. Please try again.");
     }
   };
 
+  const handleSendToVault = async (keyId: string) => {
+    // TODO: Implement vault functionality
+    toast.info("Vault feature coming soon!");
+  };
+
   const handleActivateOnSteam = (key: string) => {
-    // Steam activation URL
-    window.open(`steam://open/activateproduct?key=${key}`);
+    // Open Steam registration page with the key
+    window.open(`https://store.steampowered.com/account/registerkey?key=${key}`, '_blank');
   };
 
   const handleGiftKey = (key: SteamKeyAssignment) => {
@@ -511,50 +492,8 @@ export default function KeysPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   whileHover={{ scale: 1.01 }}
-                  className={`relative flex flex-col gap-4 rounded-lg border bg-card/30 p-4 sm:flex-row sm:items-center sm:justify-between transition-all duration-200 hover:bg-card/50 hover:shadow-lg dark:hover:bg-[#1d2233]/60 dark:hover:shadow-blue-500/5 ${
-                    flippingStates[key.id]?.isFlipping
-                      ? "animate-flip-reveal"
-                      : ""
-                  }`}
+                  className="relative flex flex-col gap-4 rounded-lg border bg-card/30 p-4 sm:flex-row sm:items-center sm:justify-between transition-all duration-200 hover:bg-card/50 hover:shadow-lg dark:hover:bg-[#1d2233]/60 dark:hover:shadow-blue-500/5"
                 >
-                  <AnimatePresence>
-                    {flippingStates[key.id]?.isFlipping && (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className={`absolute inset-0 flex items-center justify-center rounded-lg ${
-                          flippingStates[key.id]?.showKey
-                            ? "bg-primary/20"
-                            : "bg-primary/10"
-                        } backdrop-blur-xs flip-content`}
-                      >
-                        {flippingStates[key.id]?.showKey ? (
-                          <div className="flex flex-col items-center gap-4">
-                            <div className="text-2xl font-bold text-primary">
-                              {flippingStates[key.id]?.revealedKeyValue ||
-                                "XXXX-YYYY-ZZZZ"}
-                            </div>
-                            <div className="text-sm text-primary/80">
-                              Your new game key!
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2 text-lg font-semibold text-primary">
-                            <KeyIcon className="h-6 w-6 animate-bounce" />
-                            <motion.span
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              transition={{ delay: 0.2 }}
-                            >
-                              Revealing your key...
-                            </motion.span>
-                          </div>
-                        )}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <h3 className="font-semibold">{key.productTitle}</h3>
@@ -617,41 +556,6 @@ export default function KeysPage() {
                             </TooltipTrigger>
                             <TooltipContent>Copy key</TooltipContent>
                           </Tooltip>
-
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <motion.div whileTap={{ scale: 0.95 }}>
-                                <Button
-                                  size="icon"
-                                  className="h-8 w-8 transition-all duration-200 bg-linear-to-r from-primary to-primary/90"
-                                  onClick={() =>
-                                    handleActivateOnSteam(getKeyValue(key)!)
-                                  }
-                                >
-                                  <ExternalLinkIcon className="h-4 w-4" />
-                                </Button>
-                              </motion.div>
-                            </TooltipTrigger>
-                            <TooltipContent>Activate on Steam</TooltipContent>
-                          </Tooltip>
-
-                          {!key.isGift && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <motion.div whileTap={{ scale: 0.95 }}>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 transition-all duration-200"
-                                    onClick={() => handleGiftKey(key)}
-                                  >
-                                    <GiftIcon className="h-4 w-4" />
-                                  </Button>
-                                </motion.div>
-                              </TooltipTrigger>
-                              <TooltipContent>Gift this game</TooltipContent>
-                            </Tooltip>
-                          )}
                         </TooltipProvider>
                       </>
                     ) : key.status === "Assigned" ? (
@@ -671,31 +575,53 @@ export default function KeysPage() {
                               className="cursor-pointer gap-2 bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60"
                               onClick={() => handleRevealKey(key.id)}
                             >
-                              <KeyIcon className="h-4 w-4" />
-                              Reveal Key
+                              <ExternalLinkIcon className="h-4 w-4" />
+                              Redeem on Steam
                             </Button>
                           </motion.div>
                         )}
                         {!key.isGift && (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <motion.div whileTap={{ scale: 0.95 }}>
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8 transition-all duration-200"
-                                    onClick={() => handleGiftKey(key)}
-                                  >
-                                    <GiftIcon className="h-4 w-4" />
-                                  </Button>
-                                </motion.div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                Gift this game without revealing
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
+                          <>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <motion.div whileTap={{ scale: 0.95 }}>
+                                    <Button
+                                      variant="outline"
+                                      className="gap-2"
+                                      onClick={() => handleGiftKey(key)}
+                                    >
+                                      <GiftIcon className="h-4 w-4" />
+                                      Gift
+                                    </Button>
+                                  </motion.div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  Gift this game to someone
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <motion.div whileTap={{ scale: 0.95 }}>
+                                    <Button
+                                      variant="outline"
+                                      className="gap-2"
+                                      onClick={() => handleSendToVault(key.id)}
+                                    >
+                                      <ArchiveIcon className="h-4 w-4" />
+                                      Send to Vault
+                                    </Button>
+                                  </motion.div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  Save this key to your vault for later
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </>
                         )}
                       </>
                     ) : key.isGift && key.giftAccepted === null ? (
