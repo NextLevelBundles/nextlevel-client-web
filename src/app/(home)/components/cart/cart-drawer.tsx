@@ -276,13 +276,13 @@ export function CartDrawer() {
                       )}
 
                       <div className="flex gap-4">
-                        <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-muted">
+                        <div className="relative w-16 h-24 rounded-lg overflow-hidden bg-muted">
                           <Image
-                            width={200}
-                            height={200}
+                            fill
+                            sizes="64px"
                             src={item.snapshotImageUrl ?? ""}
                             alt={item.snapshotTitle ?? "Cart item image"}
-                            className="w-full h-full object-cover"
+                            className="object-cover"
                           />
                           {/* Bundle type indicator */}
                           <div className={`absolute bottom-1 left-1 p-1 rounded-full ${
