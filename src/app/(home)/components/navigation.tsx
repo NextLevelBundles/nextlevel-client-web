@@ -54,6 +54,12 @@ export function Navigation() {
             >
               Bundles
             </Link>
+             <Link
+               href="/exchange"
+               className="text-sm font-medium hover:text-primary transition-colors"
+             >
+               Exchange
+             </Link>
             <a href="#" className="text-sm font-medium hover:text-primary">
               Blog
             </a>
@@ -107,6 +113,12 @@ export function Navigation() {
                 >
                   Bundles
                 </Link>
+                 <Link
+                   href="/exchange"
+                   className="text-sm font-medium text-foreground/90 hover:text-primary transition-colors"
+                 >
+                   Exchange
+                 </Link>
                 <a
                   href="#"
                   className="text-sm font-medium text-foreground/90 hover:text-primary transition-colors"
