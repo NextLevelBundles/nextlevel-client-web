@@ -704,7 +704,7 @@ export function OnboardingForm() {
                             htmlFor="handle"
                             className="text-sm font-medium"
                           >
-                            Gaming Handle *
+                            Your preferred username *
                           </Label>
                           <TooltipProvider>
                             <Tooltip>
@@ -733,6 +733,9 @@ export function OnboardingForm() {
                             </Tooltip>
                           </TooltipProvider>
                         </div>
+                        <p className="text-xs text-muted-foreground mb-2">
+                          This will be displayed on your profile
+                        </p>
                         <div className="space-y-3">
                           <div className="relative">
                             <Input
@@ -741,7 +744,7 @@ export function OnboardingForm() {
                               onChange={(e) =>
                                 handleHandleChange(e.target.value)
                               }
-                              placeholder="Your preferred gaming username"
+                              placeholder="Choose your username"
                               className="mt-1"
                             />
                             {isCheckingHandle && (
@@ -752,8 +755,7 @@ export function OnboardingForm() {
                           </div>
 
                           <p className="text-xs text-muted-foreground">
-                            This will be displayed on your profile and
-                            leaderboards
+                            This will be unique to your account
                           </p>
 
                           {/* Checking indicator */}
