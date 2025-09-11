@@ -14,6 +14,7 @@ import {
   MapPin,
   Info,
   Download,
+  AlertCircle,
 } from "lucide-react";
 import { cn } from "@/shared/utils/tailwind";
 import { Bundle, Tier, BundleType } from "@/app/(shared)/types/bundle";
@@ -50,15 +51,22 @@ export function PurchaseSummary({
   const { user } = useAuth();
   const isAuthenticated = !!user;
   const router = useRouter();
-  
+
   // Only fetch location data if user is authenticated
-  const { data: locationData, isLoading: isLoadingLocation } = useCustomerLocation(isAuthenticated);
+  const { data: locationData, isLoading: isLoadingLocation } =
+    useCustomerLocation(isAuthenticated);
   const minimumPrice = tiers[0].price;
   const isDonationTier = currentTier?.isDonationTier || false;
-  
+
   // Check if this is a Steam bundle and user hasn't connected Steam
-  const isSteamBundle = (bundle as any).type === "SteamGame" || bundle.bundleType === BundleType.SteamGame;
-  const needsSteamConnection = isSteamBundle && isAuthenticated && locationData && !locationData.isSteamLinked;
+  const isSteamBundle =
+    (bundle as any).type === "SteamGame" ||
+    bundle.bundleType === BundleType.SteamGame;
+  const needsSteamConnection =
+    isSteamBundle &&
+    isAuthenticated &&
+    locationData &&
+    !locationData.isSteamLinked;
 
   // Find the previous tier (the one before the charity tier)
   const currentTierIndex = tiers.findIndex((t) => t.id === currentTier?.id);
@@ -89,7 +97,7 @@ export function PurchaseSummary({
   }
 
   return (
-    <div className="lg:sticky lg:top-20 lg:h-fit space-y-4 lg:w-[350px] w-full animate-fade-up">
+    <div className="lg:sticky lg:top-20 lg:h-fit space-y-4 lg:w-[370px] w-full animate-fade-up">
       <Card className="p-6 bg-white dark:bg-card/70 backdrop-blur-xs border border-gray-100 dark:border-border shadow-xs hover:shadow-md transition-all duration-300 rounded-xl">
         <h3 className="font-rajdhani text-xl font-bold mb-4">Bundle Summary</h3>
 
@@ -278,13 +286,18 @@ export function PurchaseSummary({
           </div>
 
           {needsSteamConnection ? (
-            <Button
-              onClick={() => router.push("/customer/settings/steam")}
-              className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
-            >
-              <Gamepad2 className="mr-2 h-4 w-4" />
-              Connect Steam Account
-            </Button>
+            <div className="space-y-2">
+              <Button
+                onClick={() => router.push("/customer/settings/steam")}
+                className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
+              >
+                <Gamepad2 className="mr-2 h-4 w-4" />
+                Connect Steam Account
+              </Button>
+              <p className="text-xs text-center text-muted-foreground">
+                Connect your Steam account to be able to Add to Cart this bundle
+              </p>
+            </div>
           ) : (
             <AddToCartButton
               bundleId={bundle.id}
@@ -317,69 +330,56 @@ export function PurchaseSummary({
                         Detecting your location...
                       </span>
                     </div>
-                  ) : locationData ? (
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">
-                        Keys will be allocated for:
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">
-                          {locationData.hasSteamCountry &&
-                          locationData.steamCountryFlag ? (
-                            <>
-                              <span className="text-base mr-1">
-                                {locationData.steamCountryFlag}
-                              </span>
-                              {locationData.steamCountryName ||
-                                locationData.steamCountryCode}
-                            </>
-                          ) : locationData.hasIpCountry &&
-                            locationData.ipCountryFlag ? (
-                            <>
-                              <span className="text-base mr-1">
-                                {locationData.ipCountryFlag}
-                              </span>
-                              {locationData.ipCountryName ||
-                                locationData.ipCountryCode}
-                            </>
-                          ) : (
-                            "Global"
-                          )}
-                        </span>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <Info className="h-3 w-3 text-muted-foreground" />
-                            </TooltipTrigger>
-                            <TooltipContent className="max-w-xs">
-                              {locationData.hasSteamCountry ? (
+                  ) : locationData?.profileCountry ? (
+                    <div className="space-y-2">
+                      <div className="space-y-1">
+                        <p className="text-xs text-muted-foreground">
+                          Keys will be allocated for:
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium flex items-center gap-1">
+                            <span className="text-base">
+                              {locationData.profileCountry.flag}
+                            </span>
+                            {locationData.profileCountry.name}
+                          </span>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger>
+                                <Info className="h-3 w-3 text-muted-foreground" />
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-xs">
                                 <p className="text-xs">
-                                  Based on your Steam account country setting.
-                                  Keys are region-locked to ensure compatibility.
+                                  Based on your Digiphile profile country setting.
+                                  Steam keys are region-locked and will be allocated
+                                  for this region.
                                 </p>
-                              ) : locationData.hasIpCountry ? (
-                                <p className="text-xs">
-                                  Based on your current IP address location.
-                                  Connect your Steam account for more accurate
-                                  region detection.
-                                </p>
-                              ) : (
-                                <p className="text-xs">
-                                  Unable to detect location. Global keys will be
-                                  provided.
-                                </p>
-                              )}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Using your profile country setting
+                        </p>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {locationData.hasSteamCountry
-                          ? "Using your Steam account region"
-                          : locationData.hasIpCountry
-                            ? "Using your IP address location"
-                            : "Region could not be determined"}
-                      </p>
+                      
+                      {/* Show warning if IP country doesn't match profile country */}
+                      {locationData.ipCountry && 
+                       locationData.ipCountry.id !== locationData.profileCountry.id && (
+                        <div className="flex items-start gap-2 p-2 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900">
+                          <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                          <div className="flex-1">
+                            <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">
+                              Location mismatch detected
+                            </p>
+                            <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                              Your current location ({locationData.ipCountry.flag} {locationData.ipCountry.name}) 
+                              differs from your profile country. Steam keys will be allocated for 
+                              {" "}{locationData.profileCountry.flag} {locationData.profileCountry.name} as per your profile settings.
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <p className="text-xs text-muted-foreground">

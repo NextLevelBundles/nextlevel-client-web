@@ -1,3 +1,9 @@
+export interface LocationCountry {
+  id: string;
+  name: string;
+  flag: string;
+}
+
 export interface CustomerLocation {
   isSteamLinked: boolean;
   steamId: string | null;
@@ -10,4 +16,6 @@ export interface CustomerLocation {
   ipCountryFlag: string | null;
   hasSteamCountry: boolean;
   hasIpCountry: boolean;
+  ipCountry: LocationCountry | null;
+  profileCountry: LocationCountry;
 }

@@ -455,6 +455,9 @@
   * {
     @apply border-border;
   }
+  html {
+    scrollbar-gutter: stable;
+  }
   body {
     @apply bg-background text-foreground bg-[radial-gradient(ellipse_at_top,rgba(57,130,245,0.1),transparent_70%),radial-gradient(ellipse_at_bottom,rgba(249,113,20,0.07),transparent_70%)];
   }

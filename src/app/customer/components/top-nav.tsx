@@ -95,7 +95,7 @@ export function TopNav({ user }: TopNavProps) {
 
           {/* User Menu */}
 
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
