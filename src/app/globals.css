@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -311,24 +311,24 @@
       transform: translate(0px, 0px) scale(1);
     }
   }
-  
+
   .animate-blob {
     animation: blob 7s infinite;
   }
-  
+
   .animation-delay-2000 {
     animation-delay: 2s;
   }
-  
+
   .animation-delay-4000 {
     animation-delay: 4s;
   }
   .font-orbitron {
-    font-family: 'Orbitron', sans-serif;
+    font-family: "Orbitron", sans-serif;
   }
 
   .font-rajdhani {
-    font-family: 'Rajdhani', sans-serif;
+    font-family: "Rajdhani", sans-serif;
   }
 
   :root {
@@ -357,7 +357,7 @@
     --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
     --secondary: 24 95% 53%;
-    --secondary-foreground: 0 0% 7%;
+    --secondary-foreground: 210 20% 98%;
     --muted: 210 20% 96%;
     --muted-foreground: 215 25% 27%;
     --accent: 217 91% 97%;
@@ -484,7 +484,6 @@
 }
 
 @layer utilities {
-  
   @keyframes value-change {
     from {
       transform: translateY(5px);

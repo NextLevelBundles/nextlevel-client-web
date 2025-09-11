@@ -47,7 +47,7 @@ export default function SettingsLayout({
                 </div>
               </TabsTrigger>
             </Link>
-            <Link href="/customer/settings/billing" className="flex">
+            {/* <Link href="/customer/settings/billing" className="flex">
               <TabsTrigger
                 value="billing"
                 className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
@@ -79,7 +79,7 @@ export default function SettingsLayout({
                   Security & Support
                 </div>
               </TabsTrigger>
-            </Link>
+            </Link> */}
             <Link href="/customer/settings/steam" className="flex">
               <TabsTrigger
                 value="steam"

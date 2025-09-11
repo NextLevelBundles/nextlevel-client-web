@@ -19,12 +19,15 @@ export interface Customer {
   id: string;
   identityId: string;
   name: string;
+  email: string;
   handle: string;
   createdAt: string;
   updatedAt: string;
   steamId?: string;
   steamConnectedAt?: string;
   steamCountry?: string;
+  countryCode: string;
+  countryLastChangedAt?: string | null;
   billingAddress?: BillingAddress;
   contact: Contact;
 }

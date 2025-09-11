@@ -140,7 +140,7 @@ export function TopNav({ user }: TopNavProps) {
                     </DropdownMenuItem> */}
               <DropdownMenuItem className="rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary">
                 <SettingsIcon className="mr-2 h-4 w-4" />
-                <Link href="settings" className="flex-1">
+                <Link href="/customer/settings" className="flex-1">
                   Settings
                 </Link>
               </DropdownMenuItem>
@@ -148,7 +148,7 @@ export function TopNav({ user }: TopNavProps) {
                 asChild
                 className="rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary"
               >
-                <Link href="support" className="flex items-center">
+                <Link href="/customer/support" className="flex items-center">
                   <MessageCircleIcon className="mr-2 h-4 w-4" />
                   <span className="flex-1">Support</span>
                 </Link>

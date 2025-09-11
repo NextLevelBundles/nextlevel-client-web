@@ -41,4 +41,8 @@ export class UserApi {
       steamCountry
     });
   }
+
+  async updateCountry(countryCode: string): Promise<Customer> {
+    return await this.client.put<Customer, { countryCode: string }>("/customer/country", { countryCode });
+  }
 }
