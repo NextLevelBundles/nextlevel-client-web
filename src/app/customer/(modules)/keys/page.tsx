@@ -330,9 +330,9 @@ export default function KeysPage() {
     setExchangeDialog((prev) => ({ ...prev, isLoading: true }));
     try {
       const exchangeApi = new ExchangeApi(apiClient);
-      const result = await exchangeApi.exchangeSteamKey(exchangeDialog.keyId);
+      const result = await exchangeApi.exchangeSteamKeyForCredits(exchangeDialog.keyId);
       if (result.success) {
-        toast.success(`Steam key exchanged for ${result.points} points!`);
+        toast.success(`Steam key exchanged for ${result.credits} credits!`);
       } else {
         toast.error("Exchange failed. Please try again.");
       }
@@ -701,7 +701,7 @@ export default function KeysPage() {
                                   </motion.div>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  Exchange this key for 10 points
+                                  Exchange this key for credits
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
