@@ -8,22 +8,45 @@ import type { ExchangeableSteamKeyDto } from "@/lib/api/types/exchange";
 export default function ExchangePage() {
   const [exchangeableKeys, setExchangeableKeys] = useState<ExchangeableSteamKeyDto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [exchangingId, setExchangingId] = useState<string | null>(null);
+  const [exchangeResult, setExchangeResult] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const fetchKeys = async () => {
       setLoading(true);
+      setError(null);
       try {
         const api = new ExchangeApi(apiClient);
         const keys = await api.getExchangeableSteamKeys();
         setExchangeableKeys(keys);
       } catch {
-        // Handle error silently for now
+        setError("Failed to load exchangeable keys.");
       } finally {
         setLoading(false);
       }
     };
     fetchKeys();
   }, []);
+
+  const handleExchange = async (keyId: string) => {
+    setExchangingId(keyId);
+    setExchangeResult((prev) => ({ ...prev, [keyId]: "" }));
+    try {
+      const api = new ExchangeApi(apiClient);
+      const result = await api.exchangeCreditsForSteamKey(keyId);
+      if (result.success) {
+        setExchangeResult((prev) => ({ ...prev, [keyId]: `Exchanged for ${result.credits} credits!` }));
+        setExchangeableKeys((prev) => prev.filter((k) => k.id !== keyId));
+      } else {
+        setExchangeResult((prev) => ({ ...prev, [keyId]: "Exchange failed." }));
+      }
+    } catch {
+      setExchangeResult((prev) => ({ ...prev, [keyId]: "Exchange failed." }));
+    } finally {
+      setExchangingId(null);
+    }
+  };
 
   return (
     <main className="max-w-5xl mx-auto py-12 px-4">
@@ -59,6 +82,8 @@ export default function ExchangePage() {
           <h2 className="text-xl font-semibold mb-2">Use Credits for digiphile Exchange</h2>
           {loading ? (
             <div>Loading exchangeable games...</div>
+          ) : error ? (
+            <div className="text-red-600">{error}</div>
           ) : exchangeableKeys.length === 0 ? (
             <div>No exchangeable games available.</div>
           ) : (
@@ -77,9 +102,19 @@ export default function ExchangePage() {
                     Cost:{" "}
                     <span className="text-red-600 font-bold">{key.creditsRequired} Credits</span>
                   </div>
-                  <button className="mt-auto bg-gray-900 text-white px-2 py-1 rounded hover:bg-gray-700 transition text-xs">
-                    View Bundle →
+                  <button
+                    style={{ position: "relative", zIndex: 9999 }}
+                    className="mt-2 bg-blue-700 text-white px-3 py-1 rounded hover:bg-blue-800 transition text-xs disabled:opacity-60"
+                    onClick={() => {
+                      console.log('Clicked Exchange for', key.id);
+                      handleExchange(key.id);
+                    }}
+                  >
+                    {exchangingId === key.id ? "Exchanging..." : "Exchange"}
                   </button>
+                  {exchangeResult[key.id] && (
+                    <div className="text-xs text-green-600 mt-1">{exchangeResult[key.id]}</div>
+                  )}
                 </div>
               ))}
             </div>
