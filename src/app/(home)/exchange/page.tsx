@@ -1,16 +1,30 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { Dialog } from "@/shared/components/ui/dialog";
+import { DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/shared/components/ui/dialog";
+import { Button } from "@/shared/components/ui/button";
 import { ExchangeApi } from "@/lib/api/clients/exchange";
 import { apiClient } from "@/lib/api/client-api";
+import { SteamKeyApi } from "@/lib/api/clients/steam-key";
 import type { ExchangeableSteamKeyDto } from "@/lib/api/types/exchange";
+import type { SteamKeyAssignment } from "@/lib/api/types/steam-key";
 
 export default function ExchangePage() {
   const [exchangeableKeys, setExchangeableKeys] = useState<ExchangeableSteamKeyDto[]>([]);
+  const [inventoryKeys, setInventoryKeys] = useState<SteamKeyAssignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [exchangingId, setExchangingId] = useState<string | null>(null);
   const [exchangeResult, setExchangeResult] = useState<Record<string, string>>({});
+
+  // Add to Exchange dialog state
+  const [addToExchangeDialog, setAddToExchangeDialog] = useState<{
+    isOpen: boolean;
+    keyId: string | null;
+    isLoading: boolean;
+    result: string;
+  }>({ isOpen: false, keyId: null, isLoading: false, result: "" });
 
   useEffect(() => {
     const fetchKeys = async () => {
@@ -20,8 +34,12 @@ export default function ExchangePage() {
         const api = new ExchangeApi(apiClient);
         const keys = await api.getExchangeableSteamKeys();
         setExchangeableKeys(keys);
+        // Fetch inventory keys
+        const steamKeyApi = new SteamKeyApi(apiClient);
+        const invKeys = await steamKeyApi.getSteamKeys();
+        setInventoryKeys(invKeys);
       } catch {
-        setError("Failed to load exchangeable keys.");
+        setError("Failed to load exchangeable keys or inventory.");
       } finally {
         setLoading(false);
       }
@@ -48,6 +66,33 @@ export default function ExchangePage() {
     }
   };
 
+  // Add to Exchange handler
+  const handleAddToExchange = (keyId: string) => {
+    setAddToExchangeDialog({ isOpen: true, keyId, isLoading: false, result: "" });
+  };
+
+  const handleAddToExchangeConfirm = async () => {
+    if (!addToExchangeDialog.keyId) return;
+    setAddToExchangeDialog((prev) => ({ ...prev, isLoading: true, result: "" }));
+    try {
+      const api = new ExchangeApi(apiClient);
+      // The API expects { SteamKeyAssignmentId }
+      const result = await api.exchangeSteamKeyForCredits(addToExchangeDialog.keyId);
+      if (result.success) {
+        setAddToExchangeDialog((prev) => ({ ...prev, isLoading: false, result: `Added to exchange for ${result.credits} credits!` }));
+        setInventoryKeys((prev) => prev.filter((k) => k.id !== addToExchangeDialog.keyId));
+      } else {
+        setAddToExchangeDialog((prev) => ({ ...prev, isLoading: false, result: "Add to exchange failed." }));
+      }
+    } catch (err: any) {
+      let msg = "Add to exchange failed.";
+      if (err?.response?.data?.message) {
+        msg = err.response.data.message;
+      }
+      setAddToExchangeDialog((prev) => ({ ...prev, isLoading: false, result: msg }));
+    }
+  };
+
   return (
     <main className="max-w-5xl mx-auto py-12 px-4">
       <h1 className="text-4xl font-bold text-center mb-2">Digiphile Exchange</h1>
@@ -58,24 +103,58 @@ export default function ExchangePage() {
         {/* Inventory Section */}
         <section className="bg-white rounded-lg shadow p-6 flex flex-col">
           <h2 className="text-xl font-semibold mb-2">Your inventory</h2>
-          <p className="mb-2">3 Games</p>
-          <div className="flex gap-2 mb-4">
-            {/* Game covers - replace with dynamic images */}
-            <img src="/images/hero-background.jpg" alt="Game 1" className="w-20 h-28 object-cover rounded" />
-            <img src="/images/hero-background.jpg" alt="Game 2" className="w-20 h-28 object-cover rounded" />
-            <img src="/images/hero-background.jpg" alt="Game 3" className="w-20 h-28 object-cover rounded" />
-          </div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="bg-blue-900 text-white px-3 py-1 rounded-full text-xs font-semibold">WCreds.</span>
-            <span className="font-bold text-lg">100</span>
-          </div>
-          <p className="text-sm mb-1">
-            <span className="font-semibold text-red-600">*</span> Select inventory items only to convert to credits
-          </p>
-          <div className="bg-gray-800 text-green-400 px-4 py-2 rounded mb-2 font-semibold text-center">
-            -190 Credits Convertible
-          </div>
-          <p className="text-xs text-gray-400">Working Time 3 Weeks max</p>
+          {loading ? (
+            <div>Loading inventory...</div>
+          ) : error ? (
+            <div className="text-red-600">{error}</div>
+          ) : inventoryKeys.length === 0 ? (
+            <div>No games in inventory.</div>
+          ) : (
+            <div className="flex gap-2 mb-4 overflow-x-auto">
+              {inventoryKeys.map((key) => (
+                <div key={key.id} className="flex flex-col items-center border rounded p-2 min-w-[120px]">
+                  <img
+                    src={key.steamGameMetadata?.screenshotUrlsJson ? JSON.parse(key.steamGameMetadata.screenshotUrlsJson)[0] : "/images/hero-background.jpg"}
+                    alt={key.productTitle}
+                    className="w-24 h-32 object-cover rounded mb-2"
+                  />
+                  <div className="font-semibold text-center text-sm mb-1">{key.productTitle}</div>
+                  <div className="text-xs text-gray-500 text-center mb-1">{key.productId}</div>
+                  <div className="text-xs text-gray-500 text-center mb-1">{key.status}</div>
+                  <button
+                    style={{ position: "relative", zIndex: 9999 }}
+                    className="mt-2 bg-blue-700 text-white px-3 py-1 rounded hover:bg-blue-800 transition text-xs disabled:opacity-60"
+                    onClick={() => handleAddToExchange(key.id)}
+                  >
+                    Add to exchange
+                  </button>
+                </div>
+              ))}
+              {/* Add to Exchange Confirmation Dialog */}
+              <Dialog open={addToExchangeDialog.isOpen} onOpenChange={(open) => setAddToExchangeDialog((prev) => ({ ...prev, isOpen: open }))}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add Key to Exchange?</DialogTitle>
+                    <DialogDescription>
+                      Are you sure you want to add this Steam key to the exchange for <b>10 points</b>? This action cannot be undone.
+                    </DialogDescription>
+                  </DialogHeader>
+                  {addToExchangeDialog.result ? (
+                    <div className="text-green-600 text-center py-2">{addToExchangeDialog.result}</div>
+                  ) : (
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setAddToExchangeDialog({ isOpen: false, keyId: null, isLoading: false, result: "" })} disabled={addToExchangeDialog.isLoading}>
+                        Cancel
+                      </Button>
+                      <Button onClick={handleAddToExchangeConfirm} disabled={addToExchangeDialog.isLoading}>
+                        {addToExchangeDialog.isLoading ? "Adding..." : "Continue"}
+                      </Button>
+                    </DialogFooter>
+                  )}
+                </DialogContent>
+              </Dialog>
+            </div>
+          )}
         </section>
         {/* Exchange Section */}
         <section className="bg-white rounded-lg shadow p-6 flex flex-col">
