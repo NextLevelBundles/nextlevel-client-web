@@ -9,7 +9,15 @@ import { HeroImage } from "./hero-image";
 import { serverApiClient } from "@/lib/server-api";
 
 export async function HeroSection() {
-  const bundle = await serverApiClient.getFeaturedBundle();
+  let bundle = null;
+  
+  try {
+    bundle = await serverApiClient.getFeaturedBundle();
+  } catch (error) {
+    console.error("Error fetching featured bundle:", error);
+    // Return null to gracefully handle the error
+    return null;
+  }
 
   if (!bundle) {
     console.log("No featured bundle available");
