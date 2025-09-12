@@ -8,13 +8,13 @@ import { DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFoot
 import { Button } from "@/shared/components/ui/button";
 import { ExchangeApi } from "@/lib/api/clients/exchange";
 import { apiClient } from "@/lib/api/client-api";
-import { SteamKeyApi } from "@/lib/api/clients/steam-key";
+
 import type { ExchangeableSteamKeyDto } from "@/lib/api/types/exchange";
 import type { SteamKeyAssignment } from "@/lib/api/types/steam-key";
 
 export default function ExchangePage() {
-  // Simulate credits balance (replace with real API call if available)
-  const [credits, setCredits] = useState<number>(2500);
+  // Credits balance from API
+  const [credits, setCredits] = useState<number>(0);
   const [exchangeableKeys, setExchangeableKeys] = useState<ExchangeableSteamKeyDto[]>([]);
   const [inventoryKeys, setInventoryKeys] = useState<SteamKeyAssignment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,23 +31,27 @@ export default function ExchangePage() {
   }>({ isOpen: false, keyId: null, isLoading: false, result: "" });
 
   useEffect(() => {
-    const fetchKeys = async () => {
+    const fetchAll = async () => {
       setLoading(true);
       setError(null);
       try {
         const api = new ExchangeApi(apiClient);
+        // Fetch credits
+        const creditsRes = await api.getCustomerCredits();
+        setCredits(creditsRes.netCredits ?? 0);
+        // Fetch exchangeable keys
         const keys = await api.getExchangeableSteamKeys();
         setExchangeableKeys(keys);
-  // Fetch inventory keys using getToBeExchangeableSteamKeys
-  const invKeys = await api.getToBeExchangeableSteamKeys();
-  setInventoryKeys(invKeys);
+        // Fetch inventory keys
+        const invKeys = await api.getToBeExchangeableSteamKeys();
+        setInventoryKeys(invKeys);
       } catch {
         setError("Failed to load exchangeable keys or inventory.");
       } finally {
         setLoading(false);
       }
     };
-    fetchKeys();
+    fetchAll();
   }, []);
 
   const handleExchange = async (keyId: string) => {
@@ -97,7 +101,7 @@ export default function ExchangePage() {
   };
 
   return (
-    <main className="max-w-5xl mx-auto py-8 px-4">
+  <main className="max-w-[1600px] mx-auto py-8 px-6 md:px-12 lg:px-20 xl:px-32">
       {/* Credits Balance and Exchange History */}
       <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
         <div className="flex items-center gap-3">

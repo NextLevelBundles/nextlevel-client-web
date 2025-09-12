@@ -1,3 +1,4 @@
+
 import { ClientApi } from "../client-api";
 import { ExchangeableSteamKeyDto } from "../types/exchange";
 
@@ -33,6 +34,13 @@ export class ExchangeApi {
    async getToBeExchangeableSteamKeys(): Promise<ExchangeableSteamKeyDto[]> {
     return await this.client.get<ExchangeableSteamKeyDto[]>(
       "/customer/steam-keys/to-be-exchangeable-keys"
+    );
+  }
+
+  async getCustomerCredits(): Promise<{ netCredits: number }> {
+    // Returns { netCredits, ... } from /customer/steam-keys/credits
+    return await this.client.get<{ netCredits: number }>(
+      "/customer/steam-keys/credits"
     );
   }
 }
