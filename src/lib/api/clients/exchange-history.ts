@@ -9,9 +9,19 @@ export class ExchangeHistoryApi {
   }
 
   async getExchangeHistory(params: ExchangeHistoryParams): Promise<ExchangeHistoryResponse> {
-    return await this.client.get<ExchangeHistoryResponse>(
-      "/customer/steam-keys/exchange-history",
-      params
-    );
+    const queryParams = new URLSearchParams();
+    
+    if (params.Type !== undefined) queryParams.append("Type", params.Type.toString());
+    if (params.StartDate) queryParams.append("StartDate", params.StartDate);
+    if (params.EndDate) queryParams.append("EndDate", params.EndDate);
+    if (params.Page !== undefined) queryParams.append("Page", params.Page.toString());
+    if (params.PageSize !== undefined) queryParams.append("PageSize", params.PageSize.toString());
+    
+    const queryString = queryParams.toString();
+    const endpoint = queryString 
+      ? `/customer/steam-keys/exchange-history?${queryString}`
+      : "/customer/steam-keys/exchange-history";
+    
+    return await this.client.get<ExchangeHistoryResponse>(endpoint);
   }
 }

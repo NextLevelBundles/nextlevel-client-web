@@ -10,13 +10,12 @@ import { ExchangeApi } from "@/lib/api/clients/exchange";
 import { apiClient } from "@/lib/api/client-api";
 
 import type { ExchangeableSteamKeyDto } from "@/lib/api/types/exchange";
-import type { SteamKeyAssignment } from "@/lib/api/types/steam-key";
 
 export default function ExchangePage() {
   // Credits balance from API
   const [credits, setCredits] = useState<number>(0);
   const [exchangeableKeys, setExchangeableKeys] = useState<ExchangeableSteamKeyDto[]>([]);
-  const [inventoryKeys, setInventoryKeys] = useState<SteamKeyAssignment[]>([]);
+  const [inventoryKeys, setInventoryKeys] = useState<ExchangeableSteamKeyDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [exchangingId, setExchangingId] = useState<string | null>(null);

@@ -313,7 +313,6 @@ export default function KeysPage() {
     }
   };
 
-
   // Dialog state for exchange confirmation
   const [exchangeDialog, setExchangeDialog] = useState<{
     isOpen: boolean;
@@ -330,7 +329,9 @@ export default function KeysPage() {
     setExchangeDialog((prev) => ({ ...prev, isLoading: true }));
     try {
       const exchangeApi = new ExchangeApi(apiClient);
-      const result = await exchangeApi.exchangeSteamKeyForCredits(exchangeDialog.keyId);
+      const result = await exchangeApi.exchangeSteamKeyForCredits(
+        exchangeDialog.keyId
+      );
       if (result.success === true || typeof result.credits === "number") {
         toast.success(`Steam key exchanged for ${result.credits} credits!`);
       } else {
@@ -685,7 +686,6 @@ export default function KeysPage() {
                               </Tooltip>
                             </TooltipProvider>
 
-
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
@@ -693,7 +693,9 @@ export default function KeysPage() {
                                     <Button
                                       variant="outline"
                                       className="gap-2"
-                                      onClick={() => handleSendToVault(key.steamKeyId)}
+                                      onClick={() =>
+                                        handleSendToVault(key.steamKeyId)
+                                      }
                                     >
                                       <ArchiveIcon className="h-4 w-4" />
                                       Send to Exchange
@@ -705,25 +707,55 @@ export default function KeysPage() {
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
-      {/* Exchange Confirmation Dialog */}
-      <Dialog open={exchangeDialog.isOpen} onOpenChange={(open) => setExchangeDialog((prev) => ({ ...prev, isOpen: open }))}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Exchange Steam Key?</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to exchange this Steam key for credits? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setExchangeDialog({ isOpen: false, keyId: null, isLoading: false })} disabled={exchangeDialog.isLoading}>
-              Cancel
-            </Button>
-            <Button onClick={handleExchangeConfirm} loading={exchangeDialog.isLoading} disabled={exchangeDialog.isLoading}>
-              Continue
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+                            {/* Exchange Confirmation Dialog */}
+                            <Dialog
+                              open={exchangeDialog.isOpen}
+                              onOpenChange={(open) =>
+                                setExchangeDialog((prev) => ({
+                                  ...prev,
+                                  isOpen: open,
+                                }))
+                              }
+                            >
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Exchange Steam Key?</DialogTitle>
+                                  <DialogDescription>
+                                    Are you sure you want to exchange this Steam
+                                    key for credits? This action cannot be
+                                    undone.
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <DialogFooter>
+                                  <Button
+                                    variant="outline"
+                                    onClick={() =>
+                                      setExchangeDialog({
+                                        isOpen: false,
+                                        keyId: null,
+                                        isLoading: false,
+                                      })
+                                    }
+                                    disabled={exchangeDialog.isLoading}
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    onClick={handleExchangeConfirm}
+                                    disabled={exchangeDialog.isLoading}
+                                  >
+                                    {exchangeDialog.isLoading ? (
+                                      <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Processing...
+                                      </>
+                                    ) : (
+                                      "Continue"
+                                    )}
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
                           </>
                         )}
                       </>
