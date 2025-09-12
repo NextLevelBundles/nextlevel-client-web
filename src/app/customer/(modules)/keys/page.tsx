@@ -58,6 +58,8 @@ import {
 } from "@/lib/api/types/steam-key";
 import { GiftFilterType } from "@/lib/api/types/purchase";
 import { GiftKeyModal } from "@/customer/components/steam-keys/gift-key-modal";
+import { ExchangeApi } from "@/lib/api/clients/exchange";
+import { apiClient } from "@/lib/api/client-api";
 import { FilterDropdown } from "@/customer/components/filter-dropdown";
 import { SteamKeyGiftIndicator } from "@/customer/components/steam-keys/steam-key-gift-indicator";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
@@ -311,9 +313,34 @@ export default function KeysPage() {
     }
   };
 
-  const handleSendToVault = async (keyId: string) => {
-    // TODO: Implement vault functionality
-    toast.info("Vault feature coming soon!");
+
+  // Dialog state for exchange confirmation
+  const [exchangeDialog, setExchangeDialog] = useState<{
+    isOpen: boolean;
+    keyId: string | null;
+    isLoading: boolean;
+  }>({ isOpen: false, keyId: null, isLoading: false });
+
+  const handleSendToVault = (steamKeyId: string) => {
+    setExchangeDialog({ isOpen: true, keyId: steamKeyId, isLoading: false });
+  };
+
+  const handleExchangeConfirm = async () => {
+    if (!exchangeDialog.keyId) return;
+    setExchangeDialog((prev) => ({ ...prev, isLoading: true }));
+    try {
+      const exchangeApi = new ExchangeApi(apiClient);
+      const result = await exchangeApi.exchangeSteamKeyForCredits(exchangeDialog.keyId);
+      if (result.success === true || typeof result.credits === "number") {
+        toast.success(`Steam key exchanged for ${result.credits} credits!`);
+      } else {
+        toast.error("Exchange failed. Please try again.");
+      }
+    } catch (error) {
+      toast.error("Exchange failed. Please try again.");
+    } finally {
+      setExchangeDialog({ isOpen: false, keyId: null, isLoading: false });
+    }
   };
 
   const handleActivateOnSteam = (key: string) => {
@@ -658,6 +685,7 @@ export default function KeysPage() {
                               </Tooltip>
                             </TooltipProvider>
 
+
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
@@ -665,18 +693,37 @@ export default function KeysPage() {
                                     <Button
                                       variant="outline"
                                       className="gap-2"
-                                      onClick={() => handleSendToVault(key.id)}
+                                      onClick={() => handleSendToVault(key.steamKeyId)}
                                     >
                                       <ArchiveIcon className="h-4 w-4" />
-                                      Send to Vault
+                                      Send to Exchange
                                     </Button>
                                   </motion.div>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  Save this key to your vault for later
+                                  Exchange this key for credits
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
+      {/* Exchange Confirmation Dialog */}
+      <Dialog open={exchangeDialog.isOpen} onOpenChange={(open) => setExchangeDialog((prev) => ({ ...prev, isOpen: open }))}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Exchange Steam Key?</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to exchange this Steam key for credits? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setExchangeDialog({ isOpen: false, keyId: null, isLoading: false })} disabled={exchangeDialog.isLoading}>
+              Cancel
+            </Button>
+            <Button onClick={handleExchangeConfirm} loading={exchangeDialog.isLoading} disabled={exchangeDialog.isLoading}>
+              Continue
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
                           </>
                         )}
                       </>
