@@ -34,10 +34,9 @@ export default function ExchangePage() {
         const api = new ExchangeApi(apiClient);
         const keys = await api.getExchangeableSteamKeys();
         setExchangeableKeys(keys);
-        // Fetch inventory keys
-        const steamKeyApi = new SteamKeyApi(apiClient);
-        const invKeys = await steamKeyApi.getSteamKeys();
-        setInventoryKeys(invKeys);
+  // Fetch inventory keys using getToBeExchangeableSteamKeys
+  const invKeys = await api.getToBeExchangeableSteamKeys();
+  setInventoryKeys(invKeys);
       } catch {
         setError("Failed to load exchangeable keys or inventory.");
       } finally {
@@ -119,8 +118,11 @@ export default function ExchangePage() {
                     className="w-24 h-32 object-cover rounded mb-2"
                   />
                   <div className="font-semibold text-center text-sm mb-1">{key.productTitle}</div>
-                  <div className="text-xs text-gray-500 text-center mb-1">{key.productId}</div>
-                  <div className="text-xs text-gray-500 text-center mb-1">{key.status}</div>
+                  <div className="text-xs text-gray-500 text-center mb-1">{key.packageName}</div>
+                  <div className="text-xs text-gray-500 text-center mb-1">{key.publisherName}</div>
+                  <div className="text-xs text-green-700 text-center mb-1 font-medium">
+                    You will get: <span className="font-bold">{key.creditsRequired}</span> credits
+                  </div>
                   <button
                     style={{ position: "relative", zIndex: 9999 }}
                     className="mt-2 bg-blue-700 text-white px-3 py-1 rounded hover:bg-blue-800 transition text-xs disabled:opacity-60"

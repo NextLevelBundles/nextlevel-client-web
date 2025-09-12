@@ -27,4 +27,10 @@ export class ExchangeApi {
       "/customer/steam-keys/exchangeable-keys"
     );
   }
+
+   async getToBeExchangeableSteamKeys(): Promise<ExchangeableSteamKeyDto[]> {
+    return await this.client.get<ExchangeableSteamKeyDto[]>(
+      "/customer/steam-keys/to-be-exchangeable-keys"
+    );
+  }
 }
