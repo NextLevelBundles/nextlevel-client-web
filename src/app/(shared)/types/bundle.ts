@@ -16,7 +16,7 @@ export interface BundleListItem {
   isEarlyAccess: boolean;
   isLimitedKeys: boolean;
   isFeatured: boolean;
-  bundleType: BundleType;
+  type: BundleType;
   startsAt: string; // ISO date string
   endsAt: string;
   status: string;

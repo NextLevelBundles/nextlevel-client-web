@@ -62,9 +62,7 @@ export function PurchaseSummary({
   const isDonationTier = currentTier?.isDonationTier || false;
 
   // Check if this is a Steam bundle and user hasn't connected Steam
-  const isSteamBundle =
-    (bundle as any).type === "SteamGame" ||
-    bundle.bundleType === BundleType.SteamGame;
+  const isSteamBundle = bundle.type === BundleType.SteamGame;
   const needsSteamConnection =
     isSteamBundle &&
     isAuthenticated &&
@@ -103,8 +101,8 @@ export function PurchaseSummary({
   const getAllUniqueFormats = () => {
     if (!bookFormats?.products) return [];
     const allFormats = new Set<string>();
-    bookFormats.products.forEach(product => {
-      product.availableFormats.forEach(format => allFormats.add(format));
+    bookFormats.products.forEach((product) => {
+      product.availableFormats.forEach((format) => allFormats.add(format));
     });
     return Array.from(allFormats).sort();
   };
@@ -118,18 +116,14 @@ export function PurchaseSummary({
 
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
-            {(bundle as any).type === "EBook" ||
-            bundle.bundleType === BundleType.EBook ? (
+            {bundle.type === BundleType.EBook ? (
               <BookOpen className="h-4 w-4 text-primary" />
             ) : (
               <Gift className="h-4 w-4 text-primary" />
             )}
             <span className="text-sm font-medium">
               You&apos;re getting ${unlockedProductsValue.toFixed(2)} worth of
-              {(bundle as any).type === "EBook" ||
-              bundle.bundleType === BundleType.EBook
-                ? " books"
-                : " games"}
+              {bundle.type === BundleType.EBook ? " books" : " games"}
             </span>
           </div>
           <p className="text-xs text-muted-foreground mb-3">
@@ -325,8 +319,7 @@ export function PurchaseSummary({
       </Card>
 
       {/* Only show Steam keys section for SteamGame bundle type */}
-      {((bundle as any).type === "SteamGame" ||
-        bundle.bundleType === BundleType.SteamGame) && (
+      {bundle.type === BundleType.SteamGame && (
         <Card className="p-4 bg-white dark:bg-card/70 backdrop-blur-xs border border-gray-100 dark:border-border shadow-xs rounded-xl space-y-3">
           <div className="flex items-center gap-2 text-sm font-medium">
             <Steam className="h-4 w-4 text-primary" />
@@ -365,9 +358,9 @@ export function PurchaseSummary({
                               </TooltipTrigger>
                               <TooltipContent className="max-w-xs">
                                 <p className="text-xs">
-                                  Based on your Digiphile profile country setting.
-                                  Steam keys are region-locked and will be allocated
-                                  for this region.
+                                  Based on your Digiphile profile country
+                                  setting. Steam keys are region-locked and will
+                                  be allocated for this region.
                                 </p>
                               </TooltipContent>
                             </Tooltip>
@@ -377,24 +370,29 @@ export function PurchaseSummary({
                           Using your profile country setting
                         </p>
                       </div>
-                      
+
                       {/* Show warning if IP country doesn't match profile country */}
-                      {locationData.ipCountry && 
-                       locationData.ipCountry.id !== locationData.profileCountry.id && (
-                        <div className="flex items-start gap-2 p-2 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900">
-                          <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
-                          <div className="flex-1">
-                            <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">
-                              Location mismatch detected
-                            </p>
-                            <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                              Your current location ({locationData.ipCountry.flag} {locationData.ipCountry.name}) 
-                              differs from your profile country. Steam keys will be allocated for 
-                              {" "}{locationData.profileCountry.flag} {locationData.profileCountry.name} as per your profile settings.
-                            </p>
+                      {locationData.ipCountry &&
+                        locationData.ipCountry.id !==
+                          locationData.profileCountry.id && (
+                          <div className="flex items-start gap-2 p-2 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900">
+                            <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                            <div className="flex-1">
+                              <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">
+                                Location mismatch detected
+                              </p>
+                              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                                Your current location (
+                                {locationData.ipCountry.flag}{" "}
+                                {locationData.ipCountry.name}) differs from your
+                                profile country. Steam keys will be allocated
+                                for {locationData.profileCountry.flag}{" "}
+                                {locationData.profileCountry.name} as per your
+                                profile settings.
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
                     </div>
                   ) : (
                     <p className="text-xs text-muted-foreground">
@@ -424,8 +422,7 @@ export function PurchaseSummary({
       )}
 
       {/* Show eBook delivery section for EBook bundle type */}
-      {((bundle as any).type === "EBook" ||
-        bundle.bundleType === BundleType.EBook) && (
+      {bundle.type === BundleType.EBook && (
         <Card className="p-4 bg-white dark:bg-card/70 backdrop-blur-xs border border-gray-100 dark:border-border shadow-xs rounded-xl space-y-3">
           <div className="flex items-center gap-2 text-sm font-medium">
             <BookOpen className="h-4 w-4 text-primary" />
@@ -438,9 +435,9 @@ export function PurchaseSummary({
               <div className="flex-1">
                 <div className="flex items-center gap-1">
                   <p className="text-xs text-muted-foreground">
-                    {uniqueFormats.length > 0 
-                      ? `${uniqueFormats.length} format${uniqueFormats.length > 1 ? 's' : ''} available (${uniqueFormats.join(', ')})`
-                      : 'Multiple formats available'}
+                    {uniqueFormats.length > 0
+                      ? `${uniqueFormats.length} format${uniqueFormats.length > 1 ? "s" : ""} available (${uniqueFormats.join(", ")})`
+                      : "Multiple formats available"}
                   </p>
                   {bookFormats && bookFormats.products.length > 0 && (
                     <TooltipProvider>
@@ -450,11 +447,19 @@ export function PurchaseSummary({
                         </TooltipTrigger>
                         <TooltipContent side="left" className="w-96 p-0">
                           <div className="p-4">
-                            <p className="font-semibold text-sm mb-3">Available Book Formats</p>
+                            <p className="font-semibold text-sm mb-3">
+                              Available Book Formats
+                            </p>
                             <div className="space-y-2 max-h-96 overflow-y-auto">
                               {bookFormats.products.map((product) => (
-                                <div key={product.productId} className="flex items-center justify-between gap-3 border-b border-border last:border-0 pb-2 last:pb-0">
-                                  <p className="text-xs font-medium flex-1 truncate min-w-0" title={product.title}>
+                                <div
+                                  key={product.productId}
+                                  className="flex items-center justify-between gap-3 border-b border-border last:border-0 pb-2 last:pb-0"
+                                >
+                                  <p
+                                    className="text-xs font-medium flex-1 truncate min-w-0"
+                                    title={product.title}
+                                  >
                                     {product.title}
                                   </p>
                                   <div className="flex flex-shrink-0 gap-1">

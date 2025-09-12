@@ -89,13 +89,13 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
               <div
                 className={`inline-flex items-center gap-2 text-xs font-bold rounded-full px-3 py-1.5 transition-all group-hover:scale-105 ${
                   (bundle as any).type === "EBook" ||
-                  bundle.bundleType === BundleType.EBook
+                  bundle.type === BundleType.EBook
                     ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-500/20"
                     : "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md shadow-blue-500/20"
                 }`}
               >
                 {(bundle as any).type === "EBook" ||
-                bundle.bundleType === BundleType.EBook ? (
+                bundle.type === BundleType.EBook ? (
                   <>
                     <BookOpen className="h-3.5 w-3.5" />
                     <span>Book Bundle</span>

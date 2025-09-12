@@ -76,7 +76,7 @@ export function LockedTierCard({
           >
             <p className="text-xl text-white/90 font-semibold flex items-center justify-center gap-2">
               +{totalGamesToUnlock}{" "}
-              {((bundle as any).type === "EBook" || bundle.bundleType === BundleType.EBook) ? "Books" : "Games"} at $
+              {bundle.type === BundleType.EBook ? "Books" : "Games"} at $
               {tier.price.toFixed(2)}
             </p>
             <p className="text-white/90 text-sm font-semibold bg-gradient-to-r from-primary/90 to-secondary/90 bg-clip-text">

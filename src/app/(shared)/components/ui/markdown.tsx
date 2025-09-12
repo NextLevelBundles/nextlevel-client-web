@@ -36,47 +36,48 @@ export function Markdown({ content, className }: MarkdownProps) {
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-        // Custom link renderer to handle external links
-        a: ({ node, children, href, ...props }) => {
-          const isExternal = href?.startsWith("http");
-          return (
-            <a
-              href={href}
-              target={isExternal ? "_blank" : undefined}
-              rel={isExternal ? "noopener noreferrer" : undefined}
-              className="text-primary hover:underline"
-              {...props}
-            >
-              {children}
-            </a>
-          );
-        },
-        // Custom code block renderer
-        pre: ({ children, ...props }) => {
-          return (
-            <pre
-              className="bg-muted p-4 rounded-lg overflow-x-auto"
-              {...props}
-            >
-              {children}
-            </pre>
-          );
-        },
-        // Custom inline code renderer
-        code: ({ node, inline, children, ...props }) => {
-          if (inline) {
+          // Custom link renderer to handle external links
+          a: ({ node, children, href, ...props }) => {
+            const isExternal = href?.startsWith("http");
             return (
-              <code
-                className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono"
+              <a
+                href={href}
+                target={isExternal ? "_blank" : undefined}
+                rel={isExternal ? "noopener noreferrer" : undefined}
+                className="text-primary hover:underline"
                 {...props}
               >
                 {children}
-              </code>
+              </a>
             );
-          }
-          return <code {...props}>{children}</code>;
-        },
-      }}
+          },
+          // Custom code block renderer
+          pre: ({ children, ...props }) => {
+            return (
+              <pre
+                className="bg-muted p-4 rounded-lg overflow-x-auto"
+                {...props}
+              >
+                {children}
+              </pre>
+            );
+          },
+          // Custom inline code renderer
+          code: ({ node, children, ...props }: any) => {
+            const inline = !props.className?.includes("language-");
+            if (inline) {
+              return (
+                <code
+                  className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono"
+                  {...props}
+                >
+                  {children}
+                </code>
+              );
+            }
+            return <code {...props}>{children}</code>;
+          },
+        }}
       >
         {content}
       </ReactMarkdown>

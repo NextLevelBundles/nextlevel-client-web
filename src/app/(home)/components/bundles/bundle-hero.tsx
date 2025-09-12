@@ -32,14 +32,12 @@ export function BundleHero({ bundle }: BundleHeroProps) {
           <div className="flex justify-center">
             <div
               className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm uppercase tracking-wide ${
-                (bundle as any).type === "EBook" ||
-                bundle.bundleType === BundleType.EBook
+                bundle.type === BundleType.EBook
                   ? "bg-gradient-to-r from-amber-500/90 to-orange-500/90 text-white shadow-2xl shadow-amber-500/50"
                   : "bg-gradient-to-r from-blue-500/90 to-indigo-500/90 text-white shadow-2xl shadow-blue-500/50"
               } backdrop-blur-sm border border-white/20`}
             >
-              {(bundle as any).type === "EBook" ||
-              bundle.bundleType === BundleType.EBook ? (
+              {bundle.type === BundleType.EBook ? (
                 <>
                   <BookOpen className="h-5 w-5" />
                   Book Bundle
@@ -83,10 +81,7 @@ export function BundleHero({ bundle }: BundleHeroProps) {
                 <div className="text-2xl font-mono font-bold text-white">
                   {bundle.products?.length || 0}{" "}
                   <span className="text-lg font-normal text-white/90">
-                    {(bundle as any).type === "EBook" ||
-                    bundle.bundleType === BundleType.EBook
-                      ? "Books"
-                      : "Games"}
+                    {bundle.type === BundleType.EBook ? "Books" : "Games"}
                   </span>
                 </div>
               </div>

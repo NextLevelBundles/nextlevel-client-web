@@ -15,12 +15,10 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
   const [totalAmount, setTotalAmount] = useState(bundle.minPrice);
   const tiers = useMemo(() => bundle.tiers || [], [bundle]);
   const allProducts = bundle.products;
-  
+
   // Fetch book formats for book bundles
   // Check both 'type' and 'bundleType' properties for compatibility
-  const isBookBundle = bundle.bundleType === BundleType.EBook || 
-                       bundle.bundleType === 'EBook' || 
-                       (bundle as any).type === 'EBook';
+  const isBookBundle = bundle.type === BundleType.EBook;
   const { data: bookFormats } = useBundleBookFormats(bundle.id, isBookBundle);
 
   const unlockedTiers = tiers.filter((tier) => tier.price <= totalAmount) ?? [];
@@ -42,17 +40,19 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
     (sum, game) => sum + game.price,
     0
   );
-  
+
   // Calculate charity amount based on the same logic as PurchaseSummary
   const isDonationTier = currentTier?.isDonationTier || false;
-  const previousTier = currentTierIndex > 0 ? tiers[currentTierIndex - 1] : null;
-  
+  const previousTier =
+    currentTierIndex > 0 ? tiers[currentTierIndex - 1] : null;
+
   let charityAmountForDisplay = 0;
   if (isDonationTier && previousTier && currentTier) {
     const baseCharityOn5Percent = previousTier.price * 0.05;
     const tierDifference = currentTier.price - previousTier.price;
     const extraAboveTier = Math.max(0, totalAmount - currentTier.price);
-    charityAmountForDisplay = baseCharityOn5Percent + tierDifference + extraAboveTier;
+    charityAmountForDisplay =
+      baseCharityOn5Percent + tierDifference + extraAboveTier;
   } else {
     charityAmountForDisplay = totalAmount * 0.05;
   }
@@ -100,7 +100,7 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
                 {bundle.curatorComment && (
                   <CuratorComments content={bundle.curatorComment} compact />
                 )}
-                
+
                 <PurchaseSummary
                   bundle={bundle}
                   tiers={tiers}

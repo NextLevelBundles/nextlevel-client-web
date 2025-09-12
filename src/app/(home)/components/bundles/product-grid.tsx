@@ -38,8 +38,7 @@ export function ProductGrid({
   bookFormats,
 }: ProductGridProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const isBookBundle =
-    (bundle as any).type === "EBook" || bundle.bundleType === BundleType.EBook;
+  const isBookBundle = bundle.type === BundleType.EBook;
 
   // Get locked tiers
   const selectedTierIndex = tiers.findIndex(
@@ -65,9 +64,9 @@ export function ProductGrid({
   // Create properly ordered products array: unlocked products first (by tier), then locked products (by tier)
   const orderedProducts = [
     ...unlockedProducts,
-    ...lockedTiers.flatMap(tier => 
-      products.filter(p => p.bundleTierId === tier.id)
-    )
+    ...lockedTiers.flatMap((tier) =>
+      products.filter((p) => p.bundleTierId === tier.id)
+    ),
   ];
 
   const getFormatIcon = (format: string) => {
@@ -89,7 +88,9 @@ export function ProductGrid({
   // Helper function to get formats for a specific product
   const getProductFormats = (productId: string): string[] => {
     if (!bookFormats) return [];
-    const productFormat = bookFormats.products.find(p => p.productId === productId);
+    const productFormat = bookFormats.products.find(
+      (p) => p.productId === productId
+    );
     return productFormat?.availableFormats || [];
   };
 
@@ -138,10 +139,11 @@ export function ProductGrid({
                   {(() => {
                     // Use actual formats from API if available, otherwise fall back to metadata
                     const formats = getProductFormats(product.id);
-                    const displayFormats = formats.length > 0 
-                      ? formats 
-                      : product.ebookMetadata?.availableFormats || [];
-                    
+                    const displayFormats =
+                      formats.length > 0
+                        ? formats
+                        : product.ebookMetadata?.availableFormats || [];
+
                     if (displayFormats.length > 0) {
                       return (
                         <div className="flex flex-wrap gap-1">
