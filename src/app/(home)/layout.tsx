@@ -10,7 +10,7 @@ export default async function RootLayout({
 
   return (
     <main className="min-h-screen bg-background relative">
-      <div className="absolute inset-0 bg-mesh opacity-20 dark:opacity-10" />
+      <div className="absolute inset-0 bg-mesh opacity-20 dark:opacity-10 pointer-events-none" />
       <CartProvider initialCart={null}>{children}</CartProvider>
     </main>
   );

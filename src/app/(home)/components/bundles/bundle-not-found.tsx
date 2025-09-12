@@ -145,33 +145,35 @@ export function BundleNotFound() {
           <div className="flex flex-col items-center space-y-6">
             {/* Primary Actions */}
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link href="/bundles">
-                <Button 
-                  size="lg" 
-                  className="group min-w-[200px] gap-2"
-                >
+              <Button 
+                size="lg" 
+                className="group min-w-[200px] gap-2"
+                asChild
+              >
+                <Link href="/bundles">
                   <Gamepad2 className="h-4 w-4" />
                   Browse Bundles
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
               
-              <Link href="/">
-                <Button 
-                  variant="outline" 
-                  size="lg"
-                  className="min-w-[200px] gap-2 group"
-                >
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="min-w-[200px] gap-2 group"
+                asChild
+              >
+                <Link href="/">
                   <Home className="h-4 w-4" />
                   Back to Home
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
 
             {/* Help Links */}
             <div className="flex items-center gap-6 text-sm">
               <Link 
-                href="/customer/settings" 
+                href="/customer/settings#country" 
                 className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 group"
               >
                 <MapPin className="h-3 w-3" />
