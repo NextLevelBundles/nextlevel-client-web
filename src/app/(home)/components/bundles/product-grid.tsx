@@ -4,8 +4,7 @@ import { useState } from "react";
 import { Card } from "@/shared/components/ui/card";
 import { cn } from "@/shared/utils/tailwind";
 import { LockedTierCard } from "./locked-tier-card";
-import { GameDetailDrawer } from "./game-detail-drawer";
-import { BookDetailDrawer } from "./book-detail-drawer";
+import { ProductDetailModal } from "./product-detail-modal";
 import Image from "next/image";
 import {
   Bundle,
@@ -59,6 +58,14 @@ export function ProductGrid({
       totalItemsToUnlock: itemsInCurrentAndPreviousLockedTiers,
     };
   });
+
+  // Create properly ordered products array: unlocked products first (by tier), then locked products (by tier)
+  const orderedProducts = [
+    ...unlockedProducts,
+    ...lockedTiers.flatMap(tier => 
+      products.filter(p => p.bundleTierId === tier.id)
+    )
+  ];
 
   const getFormatIcon = (format: string) => {
     switch (format.toLowerCase()) {
@@ -151,29 +158,17 @@ export function ProductGrid({
           />
         ))}
 
-        {/* Use appropriate detail drawer based on product type */}
+        {/* Use unified product detail modal */}
         {selectedProduct && (
-          <>
-            {selectedProduct.type === ProductType.EBook ? (
-              <BookDetailDrawer
-                bundle={bundle}
-                product={selectedProduct}
-                isOpen={selectedProduct !== null}
-                onClose={() => setSelectedProduct(null)}
-                onNavigateToBook={setSelectedProduct}
-                unlockedProducts={unlockedProducts}
-              />
-            ) : (
-              <GameDetailDrawer
-                bundle={bundle}
-                product={selectedProduct}
-                isOpen={selectedProduct !== null}
-                onClose={() => setSelectedProduct(null)}
-                onNavigateToGame={setSelectedProduct}
-                unlockedProducts={unlockedProducts}
-              />
-            )}
-          </>
+          <ProductDetailModal
+            bundle={bundle}
+            product={selectedProduct}
+            allProducts={orderedProducts}
+            unlockedProducts={unlockedProducts}
+            isOpen={selectedProduct !== null}
+            onClose={() => setSelectedProduct(null)}
+            onNavigateToProduct={setSelectedProduct}
+          />
         )}
       </div>
     </Card>

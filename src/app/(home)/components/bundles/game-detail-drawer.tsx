@@ -39,6 +39,12 @@ export function GameDetailDrawer({
   const [isPlaying, setIsPlaying] = useState(false);
 
   if (!product) return null;
+  
+  // Ensure trailer URL uses HTTPS
+  const getSecureTrailerUrl = (url: string | undefined) => {
+    if (!url) return undefined;
+    return url.startsWith('http://') ? url.replace('http://', 'https://') : url;
+  };
 
   const currentIndex = unlockedProducts.findIndex((g) => g.id === product.id);
   const nextGame =
@@ -62,11 +68,11 @@ export function GameDetailDrawer({
       >
         <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
           <div className="relative aspect-16/9 overflow-hidden">
-            {product.steamGameMetadata?.trailerUrl ? (
+            {getSecureTrailerUrl(product.steamGameMetadata?.trailerUrl) ? (
               <div className="relative w-full h-full">
                 {isPlaying ? (
                   <iframe
-                    src={`${product.steamGameMetadata?.trailerUrl}?autoplay=1&mute=1`}
+                    src={`${getSecureTrailerUrl(product.steamGameMetadata?.trailerUrl)}?autoplay=1&mute=1`}
                     allow="autoplay; encrypted-media"
                     className="absolute inset-0 w-full h-full"
                     frameBorder="0"
