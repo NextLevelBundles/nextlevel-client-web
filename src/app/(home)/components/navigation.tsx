@@ -60,12 +60,6 @@ export function Navigation() {
             >
               Exchange
             </Link>
-            <Link
-              href="/exchange-history"
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              Exchange History
-            </Link>
             <a href="#" className="text-sm font-medium hover:text-primary">
               Blog
             </a>
@@ -124,12 +118,6 @@ export function Navigation() {
                   className="text-sm font-medium text-foreground/90 hover:text-primary transition-colors"
                 >
                   Exchange
-                </Link>
-                <Link
-                  href="/exchange-history"
-                  className="text-sm font-medium text-foreground/90 hover:text-primary transition-colors"
-                >
-                  Exchange History
                 </Link>
                 <a
                   href="#"
