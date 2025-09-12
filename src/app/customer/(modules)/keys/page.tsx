@@ -331,7 +331,7 @@ export default function KeysPage() {
     try {
       const exchangeApi = new ExchangeApi(apiClient);
       const result = await exchangeApi.exchangeSteamKeyForCredits(exchangeDialog.keyId);
-      if (result.success) {
+      if (result.success === true || typeof result.credits === "number") {
         toast.success(`Steam key exchanged for ${result.credits} credits!`);
       } else {
         toast.error("Exchange failed. Please try again.");

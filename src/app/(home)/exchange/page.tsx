@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { SparklesIcon, HistoryIcon } from "lucide-react";
 import { Dialog } from "@/shared/components/ui/dialog";
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
@@ -11,6 +13,8 @@ import type { ExchangeableSteamKeyDto } from "@/lib/api/types/exchange";
 import type { SteamKeyAssignment } from "@/lib/api/types/steam-key";
 
 export default function ExchangePage() {
+  // Simulate credits balance (replace with real API call if available)
+  const [credits, setCredits] = useState<number>(2500);
   const [exchangeableKeys, setExchangeableKeys] = useState<ExchangeableSteamKeyDto[]>([]);
   const [inventoryKeys, setInventoryKeys] = useState<SteamKeyAssignment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,7 +56,7 @@ export default function ExchangePage() {
     try {
       const api = new ExchangeApi(apiClient);
       const result = await api.exchangeCreditsForSteamKey(keyId);
-      if (result.success) {
+      if (result.success === true || typeof result.credits === "number") {
         setExchangeResult((prev) => ({ ...prev, [keyId]: `Exchanged for ${result.credits} credits!` }));
         setExchangeableKeys((prev) => prev.filter((k) => k.id !== keyId));
       } else {
@@ -77,7 +81,7 @@ export default function ExchangePage() {
       const api = new ExchangeApi(apiClient);
       // The API expects { SteamKeyAssignmentId }
       const result = await api.exchangeSteamKeyForCredits(addToExchangeDialog.keyId);
-      if (result.success) {
+      if (result.success === true || typeof result.credits === "number") {
         setAddToExchangeDialog((prev) => ({ ...prev, isLoading: false, result: `Added to exchange for ${result.credits} credits!` }));
         setInventoryKeys((prev) => prev.filter((k) => k.id !== addToExchangeDialog.keyId));
       } else {
@@ -93,7 +97,27 @@ export default function ExchangePage() {
   };
 
   return (
-    <main className="max-w-5xl mx-auto py-12 px-4">
+    <main className="max-w-5xl mx-auto py-8 px-4">
+      {/* Credits Balance and Exchange History */}
+      <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
+        <div className="flex items-center gap-3">
+          <span className="text-lg font-semibold text-primary">Credits:</span>
+          <span className="text-2xl font-bold text-green-600">{credits}</span>
+        </div>
+        <a
+          href="/customer/exchange-history"
+          className="flex items-center gap-2 text-blue-700 hover:underline text-sm font-medium pointer-events-auto"
+          style={{ zIndex: 30, position: 'relative' }}
+        >
+          <HistoryIcon className="h-4 w-4" />
+          View Exchange History
+        </a>
+      </div>
+      {/* Benefit Banner */}
+      <div className="flex items-center justify-center bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg py-3 px-4 mb-6 gap-2">
+        <SparklesIcon className="h-5 w-5 text-primary" />
+        <span className="text-sm text-gray-700 font-medium">Exchange unused games for credits and unlock premium titles & bundles!</span>
+      </div>
       <h1 className="text-4xl font-bold text-center mb-2">Digiphile Exchange</h1>
       <p className="text-center text-gray-500 mb-10">
         Trade games from your inventory for credits that can be used to acquire premium games & bundles.
@@ -103,19 +127,28 @@ export default function ExchangePage() {
         <section className="bg-white rounded-lg shadow p-6 flex flex-col">
           <h2 className="text-xl font-semibold mb-2">Your inventory</h2>
           {loading ? (
-            <div>Loading inventory...</div>
+            <div className="flex flex-col items-center justify-center min-h-[180px]">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mb-2" />
+              <span className="text-sm text-muted-foreground">Loading inventory...</span>
+            </div>
           ) : error ? (
             <div className="text-red-600">{error}</div>
           ) : inventoryKeys.length === 0 ? (
-            <div>No games in inventory.</div>
+            <div className="flex flex-col items-center justify-center min-h-[180px] gap-3 relative" style={{ zIndex: 20 }}>
+              <img src="/images/hero-background.jpg" alt="No games" className="w-24 h-24 opacity-40 mb-2" />
+              <span className="font-medium text-gray-500">No games in inventory.</span>
+              <Link href="/bundles" passHref legacyBehavior>
+                <a className="mt-2 bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800 transition text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 pointer-events-auto" style={{ zIndex: 30, position: 'relative' }}>Browse Bundles</a>
+              </Link>
+            </div>
           ) : (
             <div className="flex gap-2 mb-4 overflow-x-auto">
               {inventoryKeys.map((key) => (
-                <div key={key.id} className="flex flex-col items-center border rounded p-2 min-w-[120px]">
+                <div key={key.id} className="flex flex-col items-center border rounded-lg p-3 min-w-[140px] bg-gradient-to-br from-blue-50 to-white shadow hover:shadow-lg transition group relative">
                   <img
                     src={key.steamGameMetadata?.screenshotUrlsJson ? JSON.parse(key.steamGameMetadata.screenshotUrlsJson)[0] : "/images/hero-background.jpg"}
                     alt={key.productTitle}
-                    className="w-24 h-32 object-cover rounded mb-2"
+                    className="w-24 h-32 object-cover rounded mb-2 group-hover:scale-105 transition"
                   />
                   <div className="font-semibold text-center text-sm mb-1">{key.productTitle}</div>
                   <div className="text-xs text-gray-500 text-center mb-1">{key.packageName}</div>
@@ -125,10 +158,10 @@ export default function ExchangePage() {
                   </div>
                   <button
                     style={{ position: "relative", zIndex: 9999 }}
-                    className="mt-2 bg-blue-700 text-white px-3 py-1 rounded hover:bg-blue-800 transition text-xs disabled:opacity-60"
+                    className="mt-2 bg-blue-700 text-white px-3 py-1 rounded hover:bg-blue-800 transition text-xs disabled:opacity-60 shadow"
                     onClick={() => handleAddToExchange(key.id)}
                   >
-                    Add to exchange
+                    Send to Exchange
                   </button>
                 </div>
               ))}
@@ -136,20 +169,20 @@ export default function ExchangePage() {
               <Dialog open={addToExchangeDialog.isOpen} onOpenChange={(open) => setAddToExchangeDialog((prev) => ({ ...prev, isOpen: open }))}>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Add Key to Exchange?</DialogTitle>
+                    <DialogTitle>Send Game to Exchange?</DialogTitle>
                     <DialogDescription>
-                      Are you sure you want to add this Steam key to the exchange for <b>10 points</b>? This action cannot be undone.
+                      Are you sure you want to send this Steam key to the exchange? You will receive credits and this action cannot be undone.
                     </DialogDescription>
                   </DialogHeader>
                   {addToExchangeDialog.result ? (
-                    <div className="text-green-600 text-center py-2">{addToExchangeDialog.result}</div>
+                    <div className="text-green-600 text-center py-2 font-semibold">{addToExchangeDialog.result}</div>
                   ) : (
                     <DialogFooter>
                       <Button variant="outline" onClick={() => setAddToExchangeDialog({ isOpen: false, keyId: null, isLoading: false, result: "" })} disabled={addToExchangeDialog.isLoading}>
                         Cancel
                       </Button>
                       <Button onClick={handleAddToExchangeConfirm} disabled={addToExchangeDialog.isLoading}>
-                        {addToExchangeDialog.isLoading ? "Adding..." : "Continue"}
+                        {addToExchangeDialog.isLoading ? "Sending..." : "Confirm"}
                       </Button>
                     </DialogFooter>
                   )}
@@ -162,39 +195,41 @@ export default function ExchangePage() {
         <section className="bg-white rounded-lg shadow p-6 flex flex-col">
           <h2 className="text-xl font-semibold mb-2">Use Credits for digiphile Exchange</h2>
           {loading ? (
-            <div>Loading exchangeable games...</div>
+            <div className="flex flex-col items-center justify-center min-h-[180px]">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mb-2" />
+              <span className="text-sm text-muted-foreground">Loading exchangeable games...</span>
+            </div>
           ) : error ? (
             <div className="text-red-600">{error}</div>
           ) : exchangeableKeys.length === 0 ? (
-            <div>No exchangeable games available.</div>
+            <div className="flex flex-col items-center justify-center min-h-[180px] gap-3">
+              <img src="/images/hero-background.jpg" alt="No games" className="w-24 h-24 opacity-40 mb-2" />
+              <span className="font-medium text-gray-500">No exchangeable games available.</span>
+            </div>
           ) : (
             <div className="flex gap-2 mb-4 overflow-x-auto">
               {exchangeableKeys.map((key) => (
-                <div key={key.id} className="flex flex-col items-center border rounded p-2 min-w-[120px]">
+                <div key={key.id} className="flex flex-col items-center border rounded-lg p-3 min-w-[140px] bg-gradient-to-br from-purple-50 to-white shadow hover:shadow-lg transition group relative">
                   <img
                     src={key.steamGameMetadata?.screenshotUrlsJson ? JSON.parse(key.steamGameMetadata.screenshotUrlsJson)[0] : "/images/hero-background.jpg"}
                     alt={key.productTitle}
-                    className="w-24 h-32 object-cover rounded mb-2"
+                    className="w-24 h-32 object-cover rounded mb-2 group-hover:scale-105 transition"
                   />
                   <div className="font-semibold text-center text-sm mb-1">{key.productTitle}</div>
                   <div className="text-xs text-gray-500 text-center mb-1">{key.packageName}</div>
                   <div className="text-xs text-gray-500 text-center mb-1">{key.publisherName}</div>
                   <div className="text-xs text-gray-700 text-center mb-1">
-                    Cost:{" "}
-                    <span className="text-red-600 font-bold">{key.creditsRequired} Credits</span>
+                    Cost: <span className="text-red-600 font-bold">{key.creditsRequired} Credits</span>
                   </div>
                   <button
                     style={{ position: "relative", zIndex: 9999 }}
-                    className="mt-2 bg-blue-700 text-white px-3 py-1 rounded hover:bg-blue-800 transition text-xs disabled:opacity-60"
-                    onClick={() => {
-                      console.log('Clicked Exchange for', key.id);
-                      handleExchange(key.id);
-                    }}
+                    className="mt-2 bg-blue-700 text-white px-3 py-1 rounded hover:bg-blue-800 transition text-xs disabled:opacity-60 shadow"
+                    onClick={() => handleExchange(key.id)}
                   >
                     {exchangingId === key.id ? "Exchanging..." : "Exchange"}
                   </button>
                   {exchangeResult[key.id] && (
-                    <div className="text-xs text-green-600 mt-1">{exchangeResult[key.id]}</div>
+                    <div className="text-xs text-green-600 mt-1 font-semibold">{exchangeResult[key.id]}</div>
                   )}
                 </div>
               ))}
