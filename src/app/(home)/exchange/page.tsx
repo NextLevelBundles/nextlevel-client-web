@@ -161,8 +161,7 @@ export default function ExchangePage() {
                     You will get: <span className="font-bold">{key.creditsRequired}</span> credits
                   </div>
                   <button
-                    style={{ position: "relative", zIndex: 9999 }}
-                    className="mt-2 bg-blue-700 text-white px-3 py-1 rounded hover:bg-blue-800 transition text-xs disabled:opacity-60 shadow"
+                    className="mt-2 bg-blue-700 text-white px-3 py-1 rounded hover:bg-blue-800 transition text-xs disabled:opacity-60 shadow pointer-events-auto"
                     onClick={() => handleAddToExchange(key.id)}
                   >
                     Send to Exchange
@@ -171,7 +170,7 @@ export default function ExchangePage() {
               ))}
               {/* Add to Exchange Confirmation Dialog */}
               <Dialog open={addToExchangeDialog.isOpen} onOpenChange={(open) => setAddToExchangeDialog((prev) => ({ ...prev, isOpen: open }))}>
-                <DialogContent>
+                <DialogContent className="z-[100]">
                   <DialogHeader>
                     <DialogTitle>Send Game to Exchange?</DialogTitle>
                     <DialogDescription>
