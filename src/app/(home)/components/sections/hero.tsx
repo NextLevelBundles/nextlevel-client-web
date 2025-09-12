@@ -4,30 +4,19 @@ import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { TowerControl as GameController } from "lucide-react";
 import { TimerCountdown } from "./timer-countdown";
-import { Bundle } from "@/app/(shared)/types/bundle";
 import Link from "next/link";
 import { HeroImage } from "./hero-image";
+import { serverApiClient } from "@/lib/server-api";
 
 export async function HeroSection() {
-  const response = await fetch(
-    `${process.env.API_URL}/customer/bundles/featured`
-  );
+  const bundle = await serverApiClient.getFeaturedBundle();
 
-  const text = await response.text();
-
-  if (!text) return null;
-
-  let bundle: Bundle | null = null;
-  try {
-    bundle = JSON.parse(text);
-  } catch (error) {
-    console.error("Failed to parse JSON:", error);
+  if (!bundle) {
+    console.log("No featured bundle available");
     return null;
   }
 
   console.log("Hero Section Response:", bundle);
-
-  if (!bundle) return null;
 
   return (
     <section className="relative overflow-hidden py-20 lg:py-32 bg-linear-to-b from-background via-background/95 to-background">

@@ -6,7 +6,6 @@ import { serverApiClient } from "@/lib/server-api";
 
 export async function CurrentBundles() {
   const bundles = await serverApiClient.getBundles();
-  console.log(bundles);
 
   return (
     <section className="relative py-24 px-6 md:px-12">
