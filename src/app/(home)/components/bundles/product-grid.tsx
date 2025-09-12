@@ -14,6 +14,7 @@ import {
   ProductType,
 } from "@/app/(shared)/types/bundle";
 import { BookOpen, FileText, FileAudio, FileType } from "lucide-react";
+import { BundleBookFormatsResponse } from "@/lib/api/types/bundle";
 
 interface ProductGridProps {
   id?: string;
@@ -23,6 +24,7 @@ interface ProductGridProps {
   tiers: Tier[];
   unlockedProducts: Product[];
   setTotalAmount: (amount: number) => void;
+  bookFormats?: BundleBookFormatsResponse | null;
 }
 
 export function ProductGrid({
@@ -33,6 +35,7 @@ export function ProductGrid({
   unlockedProducts,
   tiers,
   setTotalAmount,
+  bookFormats,
 }: ProductGridProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const isBookBundle =
@@ -83,6 +86,13 @@ export function ProductGrid({
     }
   };
 
+  // Helper function to get formats for a specific product
+  const getProductFormats = (productId: string): string[] => {
+    if (!bookFormats) return [];
+    const productFormat = bookFormats.products.find(p => p.productId === productId);
+    return productFormat?.availableFormats || [];
+  };
+
   return (
     <Card
       id={id}
@@ -118,29 +128,37 @@ export function ProductGrid({
               </div>
 
               {/* Show book metadata for book products */}
-              {product.type === ProductType.EBook && product.ebookMetadata && (
+              {product.type === ProductType.EBook && (
                 <div className="mt-3 space-y-2">
-                  {product.ebookMetadata.author && (
+                  {product.ebookMetadata?.author && (
                     <p className="text-sm text-muted-foreground">
                       by {product.ebookMetadata.author}
                     </p>
                   )}
-                  {product.ebookMetadata.availableFormats &&
-                    product.ebookMetadata.availableFormats.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {product.ebookMetadata.availableFormats.map(
-                          (format) => (
+                  {(() => {
+                    // Use actual formats from API if available, otherwise fall back to metadata
+                    const formats = getProductFormats(product.id);
+                    const displayFormats = formats.length > 0 
+                      ? formats 
+                      : product.ebookMetadata?.availableFormats || [];
+                    
+                    if (displayFormats.length > 0) {
+                      return (
+                        <div className="flex flex-wrap gap-1">
+                          {displayFormats.map((format) => (
                             <span
                               key={format}
                               className="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-500 ring-1 ring-amber-500/10"
                             >
                               {getFormatIcon(format)}
-                              {format}
+                              {format.toUpperCase()}
                             </span>
-                          )
-                        )}
-                      </div>
-                    )}
+                          ))}
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
               )}
             </div>
@@ -168,6 +186,7 @@ export function ProductGrid({
             isOpen={selectedProduct !== null}
             onClose={() => setSelectedProduct(null)}
             onNavigateToProduct={setSelectedProduct}
+            bookFormats={bookFormats}
           />
         )}
       </div>

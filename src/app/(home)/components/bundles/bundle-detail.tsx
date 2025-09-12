@@ -8,12 +8,20 @@ import { ProductGrid } from "./product-grid";
 import { CharityHighlight } from "./charity-highlight";
 import { PurchaseSummary } from "./purchase-summary";
 import { CuratorComments } from "./curator-comments";
-import { Bundle } from "@/app/(shared)/types/bundle";
+import { Bundle, BundleType } from "@/app/(shared)/types/bundle";
+import { useBundleBookFormats } from "@/hooks/queries/useBundleBookFormats";
 
 export function BundleDetail({ bundle }: { bundle: Bundle }) {
   const [totalAmount, setTotalAmount] = useState(bundle.minPrice);
   const tiers = useMemo(() => bundle.tiers || [], [bundle]);
   const allProducts = bundle.products;
+  
+  // Fetch book formats for book bundles
+  // Check both 'type' and 'bundleType' properties for compatibility
+  const isBookBundle = bundle.bundleType === BundleType.EBook || 
+                       bundle.bundleType === 'EBook' || 
+                       (bundle as any).type === 'EBook';
+  const { data: bookFormats } = useBundleBookFormats(bundle.id, isBookBundle);
 
   const unlockedTiers = tiers.filter((tier) => tier.price <= totalAmount) ?? [];
 
@@ -76,6 +84,7 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
                   selectedTier={currentTier}
                   tiers={tiers}
                   setTotalAmount={setTotalAmount}
+                  bookFormats={bookFormats}
                 />
               )}
 
@@ -99,6 +108,7 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
                   totalAmount={totalAmount}
                   unlockedProductsValue={unlockedProductsValue}
                   setTotalAmount={setTotalAmount}
+                  bookFormats={bookFormats}
                 />
               </div>
             )}

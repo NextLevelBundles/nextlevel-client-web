@@ -7,6 +7,7 @@ import { DashboardApi } from "./clients/dashboard";
 import { GiftApi } from "./clients/gift";
 import { BookClient } from "./clients/book";
 import { CommonClient } from "./clients/common";
+import { BundleApi } from "./clients/bundle";
 
 // Default instance
 const apiClient = new ClientApi();
@@ -20,3 +21,4 @@ export const dashboardApi = new DashboardApi(apiClient);
 export const giftApi = new GiftApi(apiClient);
 export const bookApi = new BookClient(apiClient);
 export const commonApi = new CommonClient(apiClient);
+export const bundleApi = new BundleApi(apiClient);

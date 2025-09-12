@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/shared/utils/tailwind";
 import { Bundle, Tier, BundleType } from "@/app/(shared)/types/bundle";
+import { BundleBookFormatsResponse } from "@/lib/api/types/bundle";
 import { AddToCartButton } from "../cart/add-to-cart-button";
 import { useCustomerLocation } from "@/hooks/queries/useCustomerLocation";
 import {
@@ -36,6 +37,7 @@ interface PurchaseSummaryProps {
   totalAmount: number;
   unlockedProductsValue: number;
   setTotalAmount: (amount: number) => void;
+  bookFormats?: BundleBookFormatsResponse | null;
 }
 
 export function PurchaseSummary({
@@ -45,6 +47,7 @@ export function PurchaseSummary({
   currentTier,
   unlockedProductsValue,
   setTotalAmount,
+  bookFormats,
 }: PurchaseSummaryProps) {
   const [customInputValue, setCustomInputValue] = useState("");
   const [inputTimeout, setInputTimeout] = useState<NodeJS.Timeout>();
@@ -95,6 +98,18 @@ export function PurchaseSummary({
     publisherAmount = totalAmount * 0.75;
     platformAmount = totalAmount * 0.2;
   }
+
+  // Get unique formats from all books
+  const getAllUniqueFormats = () => {
+    if (!bookFormats?.products) return [];
+    const allFormats = new Set<string>();
+    bookFormats.products.forEach(product => {
+      product.availableFormats.forEach(format => allFormats.add(format));
+    });
+    return Array.from(allFormats).sort();
+  };
+
+  const uniqueFormats = getAllUniqueFormats();
 
   return (
     <div className="lg:sticky lg:top-20 lg:h-fit space-y-4 lg:w-[370px] w-full animate-fade-up">
@@ -421,9 +436,46 @@ export function PurchaseSummary({
             <div className="flex items-start gap-2">
               <Download className="h-4 w-4 text-muted-foreground mt-0.5" />
               <div className="flex-1">
-                <p className="text-xs text-muted-foreground">
-                  Multiple formats available (PDF, EPUB, MOBI)
-                </p>
+                <div className="flex items-center gap-1">
+                  <p className="text-xs text-muted-foreground">
+                    {uniqueFormats.length > 0 
+                      ? `${uniqueFormats.length} format${uniqueFormats.length > 1 ? 's' : ''} available (${uniqueFormats.join(', ')})`
+                      : 'Multiple formats available'}
+                  </p>
+                  {bookFormats && bookFormats.products.length > 0 && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent side="left" className="w-96 p-0">
+                          <div className="p-4">
+                            <p className="font-semibold text-sm mb-3">Available Book Formats</p>
+                            <div className="space-y-2 max-h-96 overflow-y-auto">
+                              {bookFormats.products.map((product) => (
+                                <div key={product.productId} className="flex items-center justify-between gap-3 border-b border-border last:border-0 pb-2 last:pb-0">
+                                  <p className="text-xs font-medium flex-1 truncate min-w-0" title={product.title}>
+                                    {product.title}
+                                  </p>
+                                  <div className="flex flex-shrink-0 gap-1">
+                                    {product.availableFormats.map((format) => (
+                                      <span
+                                        key={`${product.productId}-${format}`}
+                                        className="inline-flex items-center rounded-full bg-amber-50 dark:bg-amber-500/20 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-400 ring-1 ring-amber-500/10"
+                                      >
+                                        {format.toUpperCase()}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
               </div>
             </div>
 

@@ -27,6 +27,7 @@ import {
   Gamepad2,
 } from "lucide-react";
 import { Markdown } from "@/app/(shared)/components/ui/markdown";
+import { BundleBookFormatsResponse } from "@/lib/api/types/bundle";
 
 interface ProductDetailModalProps {
   bundle: Bundle;
@@ -36,6 +37,7 @@ interface ProductDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   onNavigateToProduct: (product: Product) => void;
+  bookFormats?: BundleBookFormatsResponse | null;
 }
 
 export function ProductDetailModal({
@@ -46,6 +48,7 @@ export function ProductDetailModal({
   isOpen,
   onClose,
   onNavigateToProduct,
+  bookFormats,
 }: ProductDetailModalProps) {
   const [, setIsPlaying] = useState(false);
   const [, setSelectedImageIndex] = useState(0);
@@ -78,6 +81,13 @@ export function ProductDetailModal({
   const getSecureTrailerUrl = (url: string | undefined) => {
     if (!url) return undefined;
     return url.startsWith("http://") ? url.replace("http://", "https://") : url;
+  };
+
+  // Helper function to get formats for the current product
+  const getProductFormats = (): string[] => {
+    if (!bookFormats || !product) return [];
+    const productFormat = bookFormats.products.find(p => p.productId === product.id);
+    return productFormat?.availableFormats || [];
   };
 
   return (
@@ -219,17 +229,20 @@ export function ProductDetailModal({
                     }
                   </div>
                 )}
-                {isGame && getSecureTrailerUrl(product.steamGameMetadata?.trailerUrl) && (
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={() => setShowTrailerModal(true)}
-                    className="h-7 px-3 text-xs"
-                  >
-                    <Play className="h-3 w-3 mr-1.5" />
-                    Watch Trailer
-                  </Button>
-                )}
+                {isGame &&
+                  getSecureTrailerUrl(
+                    product.steamGameMetadata?.trailerUrl
+                  ) && (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => setShowTrailerModal(true)}
+                      className="h-7 px-3 text-xs"
+                    >
+                      <Play className="h-3 w-3 mr-1.5" />
+                      Watch Trailer
+                    </Button>
+                  )}
               </div>
 
               {/* Media section for games */}
@@ -237,41 +250,43 @@ export function ProductDetailModal({
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium">Screenshots</h4>
                   <div className="grid grid-cols-3 lg:grid-cols-4 gap-1.5 lg:gap-2">
-                          {screenshots.slice(0, 7).map((screenshot: string, index: number) => (
-                            <button
-                              key={index}
-                              onClick={() => {
-                                setModalScreenshotIndex(index);
-                                setShowScreenshotModal(true);
-                              }}
-                              className="relative aspect-video rounded overflow-hidden border border-border hover:border-primary/50 transition-all group"
-                            >
-                              <Image
-                                fill
-                                sizes="(max-width: 1024px) 100px, 150px"
-                                src={screenshot}
-                                alt={`Screenshot ${index + 1}`}
-                                className="object-cover group-hover:scale-105 transition-transform"
-                              />
-                            </button>
-                          ))}
-                          {screenshots.length > 7 && (
-                            <button
-                              onClick={() => {
-                                setModalScreenshotIndex(0);
-                                setShowScreenshotModal(true);
-                              }}
-                              className="relative aspect-video rounded overflow-hidden border border-border hover:border-primary/50 transition-all group bg-muted/50"
-                            >
-                              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                <span className="text-2xl font-bold text-muted-foreground">
-                                  +{screenshots.length - 7}
-                                </span>
-                                <span className="text-xs text-muted-foreground">
-                                  more
-                                </span>
-                              </div>
-                            </button>
+                    {screenshots
+                      .slice(0, 7)
+                      .map((screenshot: string, index: number) => (
+                        <button
+                          key={index}
+                          onClick={() => {
+                            setModalScreenshotIndex(index);
+                            setShowScreenshotModal(true);
+                          }}
+                          className="relative aspect-video rounded overflow-hidden border border-border hover:border-primary/50 transition-all group"
+                        >
+                          <Image
+                            fill
+                            sizes="(max-width: 1024px) 100px, 150px"
+                            src={screenshot}
+                            alt={`Screenshot ${index + 1}`}
+                            className="object-cover group-hover:scale-105 transition-transform"
+                          />
+                        </button>
+                      ))}
+                    {screenshots.length > 7 && (
+                      <button
+                        onClick={() => {
+                          setModalScreenshotIndex(0);
+                          setShowScreenshotModal(true);
+                        }}
+                        className="relative aspect-video rounded overflow-hidden border border-border hover:border-primary/50 transition-all group bg-muted/50"
+                      >
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <span className="text-2xl font-bold text-muted-foreground">
+                            +{screenshots.length - 7}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            more
+                          </span>
+                        </div>
+                      </button>
                     )}
                   </div>
                 </div>
@@ -281,7 +296,7 @@ export function ProductDetailModal({
               {isGame ? (
                 <GameDetails product={product} />
               ) : isBook ? (
-                <BookDetails product={product} />
+                <BookDetails product={product} formats={getProductFormats()} />
               ) : (
                 <div className="text-muted-foreground">
                   <p>{product.description}</p>
@@ -391,7 +406,7 @@ export function ProductDetailModal({
                   size="sm"
                   onClick={() =>
                     window.open(
-                      `https://store.steampowered.com/app/${product.steamGameMetadata.steamAppId}`,
+                      `https://store.steampowered.com/app/${product.steamGameMetadata?.steamAppId}`,
                       "_blank"
                     )
                   }
@@ -596,7 +611,7 @@ function GameDetails({ product }: { product: Product }) {
 }
 
 // Book-specific details component
-function BookDetails({ product }: { product: Product }) {
+function BookDetails({ product, formats }: { product: Product; formats?: string[] }) {
   const metadata = product.ebookMetadata;
 
   return (
@@ -682,20 +697,30 @@ function BookDetails({ product }: { product: Product }) {
       </div>
 
       {/* Formats */}
-      {metadata?.availableFormats && metadata.availableFormats.length > 0 && (
-        <div>
-          <h4 className="text-xs lg:text-sm font-medium mb-1.5 lg:mb-2">
-            Available Formats
-          </h4>
-          <div className="flex gap-1.5 lg:gap-2">
-            {metadata.availableFormats.map((format) => (
-              <Badge key={format} variant="secondary">
-                {format}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      )}
+      {(() => {
+        // Use actual formats from API if available, otherwise fall back to metadata
+        const displayFormats = formats && formats.length > 0 
+          ? formats 
+          : metadata?.availableFormats || [];
+        
+        if (displayFormats.length > 0) {
+          return (
+            <div>
+              <h4 className="text-xs lg:text-sm font-medium mb-1.5 lg:mb-2">
+                Available Formats
+              </h4>
+              <div className="flex gap-1.5 lg:gap-2">
+                {displayFormats.map((format) => (
+                  <Badge key={format} variant="secondary">
+                    {format.toUpperCase()}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          );
+        }
+        return null;
+      })()}
 
       {/* Tags/Genres */}
       {metadata?.tags && metadata.tags.length > 0 && (
