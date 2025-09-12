@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-  "dev": "npx copyfiles .env.dev .env && npx cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 next dev --turbopack --experimental-https",
+  "dev": "cp .env.dev .env && npx cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 next dev --turbopack --experimental-https",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-  "build:development": "npx copyfiles .env.dev .env && next build",
-  "build:staging": "npx copyfiles .env.staging .env && next build",
-  "build:production": "npx copyfiles .env.prod .env && next build"
+  "build:development": "cp .env.dev .env && next build",
+  "build:staging": "cp .env.staging .env && next build",
+  "build:production": "cp .env.prod .env && next build"
   },
   "dependencies": {
     "@aws-amplify/adapter-nextjs": "^1.6.8",
