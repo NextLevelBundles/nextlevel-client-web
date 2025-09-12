@@ -108,6 +108,7 @@ export default function BooksLibraryPage() {
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
   const [giftFilter, setGiftFilter] = useState<"All" | "Owned" | "ReceivedByMe">("All");
+  const [downloadingFiles, setDownloadingFiles] = useState<Set<string>>(new Set());
 
   // Debounce search query
   useEffect(() => {
@@ -196,26 +197,24 @@ export default function BooksLibraryPage() {
   };
 
   const handleDownload = (assignmentId: string, bookFileId: string, fileName: string) => {
+    // Track downloading state
+    const fileKey = `${assignmentId}-${bookFileId}`;
+    setDownloadingFiles(prev => new Set(prev).add(fileKey));
+    
+    // The mutation now handles all the download logic and progress
     generateDownloadUrl.mutate(
       { assignmentId, bookFileId, fileName },
       {
         onSuccess: () => {
-          const message = downloadMessages[Math.floor(Math.random() * downloadMessages.length)];
-          
-          // Create a small confetti burst for download action
+          // Trigger confetti only on successful download
           triggerConfetti();
-          
-          toast.success(message, {
-            icon: (
-              <motion.div
-                initial={{ rotate: -20 }}
-                animate={{ rotate: 20 }}
-                transition={{ duration: 0.3, repeat: 3, repeatType: "reverse" }}
-              >
-                <SparklesIcon className="h-5 w-5 text-yellow-400" />
-              </motion.div>
-            ),
-            duration: 2000,
+        },
+        onSettled: () => {
+          // Remove from downloading state when complete
+          setDownloadingFiles(prev => {
+            const next = new Set(prev);
+            next.delete(fileKey);
+            return next;
           });
         }
       }
@@ -409,8 +408,7 @@ export default function BooksLibraryPage() {
                     key={book.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    whileHover={{ scale: 1.01 }}
-                    className="relative flex flex-col gap-4 rounded-lg border bg-card/30 p-4 sm:flex-row sm:items-center sm:justify-between transition-all duration-200 hover:bg-card/50 hover:shadow-lg dark:hover:bg-[#1d2233]/60 dark:hover:shadow-blue-500/5"
+                    className="relative flex flex-col gap-4 rounded-lg border bg-card/30 p-4 sm:flex-row sm:items-center sm:justify-between transition-all duration-200 hover:bg-card/50 hover:shadow-lg hover:border-primary/20 dark:hover:bg-[#1d2233]/60 dark:hover:shadow-blue-500/5"
                   >
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
@@ -437,14 +435,16 @@ export default function BooksLibraryPage() {
                           {book.assignedAt
                             ? new Date(book.assignedAt).toLocaleDateString()
                             : "Unknown"}
-                          {book.downloadCount > 0 && (
+                          {book.downloadCount > 0 ? (
                             <>
                               {" "}
                               • Downloaded {book.downloadCount} time{book.downloadCount !== 1 ? 's' : ''}
+                              {book.lastDownloadAt && (
+                                <> • Last: {dayjs(book.lastDownloadAt).fromNow()}</>
+                              )}
                             </>
-                          )}
-                          {book.lastDownloadAt && (
-                            <> • Last: {dayjs(book.lastDownloadAt).fromNow()}</>
+                          ) : (
+                            <> • Never downloaded</>
                           )}
                         </p>
                         <div className="flex items-center gap-3 text-xs text-muted-foreground">
@@ -463,17 +463,12 @@ export default function BooksLibraryPage() {
                         <>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <motion.div
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
+                              <Button
+                                className="cursor-pointer gap-2 bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60 focus:outline-none focus-visible:outline-none"
                               >
-                                <Button
-                                  className="cursor-pointer gap-2 bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60"
-                                >
-                                  <Download className="h-4 w-4" />
-                                  Download
-                                </Button>
-                              </motion.div>
+                                <Download className="h-4 w-4" />
+                                Download
+                              </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-48">
                               {activeFiles.length === 0 ? (
@@ -481,21 +476,38 @@ export default function BooksLibraryPage() {
                                   No files available
                                 </DropdownMenuItem>
                               ) : (
-                                activeFiles.map((file) => (
-                                  <DropdownMenuItem
-                                    key={file.id}
-                                    onClick={() => handleDownload(book.id, file.id, file.fileName)}
-                                    className="flex items-center justify-between cursor-pointer"
-                                  >
-                                    <span className="flex items-center gap-2">
-                                      {getFormatIcon(file.fileFormat)}
-                                      {file.fileFormat.toUpperCase()}
-                                    </span>
-                                    <span className="text-xs text-muted-foreground">
-                                      {formatBytes(file.fileSizeBytes)}
-                                    </span>
-                                  </DropdownMenuItem>
-                                ))
+                                activeFiles.map((file) => {
+                                  const fileKey = `${book.id}-${file.id}`;
+                                  const isDownloading = downloadingFiles.has(fileKey);
+                                  
+                                  return (
+                                    <DropdownMenuItem
+                                      key={file.id}
+                                      onClick={() => !isDownloading && handleDownload(book.id, file.id, file.fileName)}
+                                      className="flex items-center justify-between cursor-pointer"
+                                      disabled={isDownloading}
+                                    >
+                                      <span className="flex items-center gap-2">
+                                        {isDownloading ? (
+                                          <>
+                                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                                            <span className="text-muted-foreground">Downloading...</span>
+                                          </>
+                                        ) : (
+                                          <>
+                                            {getFormatIcon(file.fileFormat)}
+                                            {file.fileFormat.toUpperCase()}
+                                          </>
+                                        )}
+                                      </span>
+                                      {!isDownloading && (
+                                        <span className="text-xs text-muted-foreground">
+                                          {formatBytes(file.fileSizeBytes)}
+                                        </span>
+                                      )}
+                                    </DropdownMenuItem>
+                                  );
+                                })
                               )}
                             </DropdownMenuContent>
                           </DropdownMenu>
