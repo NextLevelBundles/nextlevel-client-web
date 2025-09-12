@@ -30,6 +30,7 @@ export interface Bundle extends BundleListItem {
   products: Product[];
   charities: BundleCharity[];
   publishers: BundlePublisher[];
+  curatorComment?: string;
 }
 
 export interface Tier {

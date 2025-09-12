@@ -7,6 +7,7 @@ import { BundleProgress } from "./bundle-progress";
 import { ProductGrid } from "./product-grid";
 import { CharityHighlight } from "./charity-highlight";
 import { PurchaseSummary } from "./purchase-summary";
+import { CuratorComments } from "./curator-comments";
 import { Bundle } from "@/app/(shared)/types/bundle";
 
 export function BundleDetail({ bundle }: { bundle: Bundle }) {
@@ -85,14 +86,21 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
             </div>
 
             {currentTier && (
-              <PurchaseSummary
-                bundle={bundle}
-                tiers={tiers}
-                currentTier={currentTier}
-                totalAmount={totalAmount}
-                unlockedProductsValue={unlockedProductsValue}
-                setTotalAmount={setTotalAmount}
-              />
+              <div className="space-y-4">
+                {/* Curator Comments - Compact version in right column */}
+                {bundle.curatorComment && (
+                  <CuratorComments content={bundle.curatorComment} compact />
+                )}
+                
+                <PurchaseSummary
+                  bundle={bundle}
+                  tiers={tiers}
+                  currentTier={currentTier}
+                  totalAmount={totalAmount}
+                  unlockedProductsValue={unlockedProductsValue}
+                  setTotalAmount={setTotalAmount}
+                />
+              </div>
             )}
           </div>
 
