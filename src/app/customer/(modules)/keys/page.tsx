@@ -321,8 +321,8 @@ export default function KeysPage() {
     isLoading: boolean;
   }>({ isOpen: false, keyId: null, isLoading: false });
 
-  const handleSendToVault = (keyId: string) => {
-    setExchangeDialog({ isOpen: true, keyId, isLoading: false });
+  const handleSendToVault = (steamKeyId: string) => {
+    setExchangeDialog({ isOpen: true, keyId: steamKeyId, isLoading: false });
   };
 
   const handleExchangeConfirm = async () => {
@@ -693,10 +693,10 @@ export default function KeysPage() {
                                     <Button
                                       variant="outline"
                                       className="gap-2"
-                                      onClick={() => handleSendToVault(key.id)}
+                                      onClick={() => handleSendToVault(key.steamKeyId)}
                                     >
                                       <ArchiveIcon className="h-4 w-4" />
-                                      Send to Vault
+                                      Send to Exchange
                                     </Button>
                                   </motion.div>
                                 </TooltipTrigger>
@@ -711,7 +711,7 @@ export default function KeysPage() {
           <DialogHeader>
             <DialogTitle>Exchange Steam Key?</DialogTitle>
             <DialogDescription>
-              Are you sure you want to exchange this Steam key for <b>10 points</b>? This action cannot be undone.
+              Are you sure you want to exchange this Steam key for credits? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
