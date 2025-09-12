@@ -8,10 +8,10 @@ export class ExchangeApi {
     this.client = client;
   }
 
-  async exchangeSteamKeyForCredits(SteamKeyAssignmentId: string): Promise<{ success: boolean; credits: number }> {
-    return await this.client.post<{ success: boolean; credits: number }, { SteamKeyAssignmentId: string }>(
+  async exchangeSteamKeyForCredits(steamKeyId: string): Promise<{ success: boolean; credits: number }> {
+    return await this.client.post<{ success: boolean; credits: number }, { steamKeyId: string }>(
       "/customer/steam-keys/exchange-key-for-credits",
-      { SteamKeyAssignmentId }
+      { steamKeyId }
     );
   }
 
