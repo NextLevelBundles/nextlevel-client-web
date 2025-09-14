@@ -21,6 +21,7 @@ import { Bundle, Tier, BundleType } from "@/app/(shared)/types/bundle";
 import { BundleBookFormatsResponse } from "@/lib/api/types/bundle";
 import { AddToCartButton } from "../cart/add-to-cart-button";
 import { useCustomerLocation } from "@/hooks/queries/useCustomerLocation";
+import { useCustomer } from "@/hooks/queries/useCustomer";
 import {
   Tooltip,
   TooltipContent,
@@ -58,16 +59,23 @@ export function PurchaseSummary({
   // Only fetch location data if user is authenticated
   const { data: locationData, isLoading: isLoadingLocation } =
     useCustomerLocation(isAuthenticated);
+
+  // Fetch customer data to check Steam connection status
+  const { data: customer } = useCustomer();
   const minimumPrice = tiers[0].price;
   const isDonationTier = currentTier?.isDonationTier || false;
 
   // Check if this is a Steam bundle and user hasn't connected Steam
   const isSteamBundle = bundle.type === BundleType.SteamGame;
+
+  // Determine Steam connection status from customer data (more reliable than locationData)
+  const isSteamConnected = customer && customer.steamId;
+
   const needsSteamConnection =
     isSteamBundle &&
     isAuthenticated &&
-    locationData &&
-    !locationData.isSteamLinked;
+    !isSteamConnected;
+
 
   // Find the previous tier (the one before the charity tier)
   const currentTierIndex = tiers.findIndex((t) => t.id === currentTier?.id);
