@@ -1,3 +1,5 @@
+import MediaData from "@/app/(shared)/types/media";
+
 export interface ExchangeableSteamKeyDto {
     id: string;
     packageId: string;
@@ -6,6 +8,7 @@ export interface ExchangeableSteamKeyDto {
     publisherName: string;
     productId: string;
     productTitle: string;
+    coverImage?: MediaData;
     steamGameMetadata?: {
         website?: string;
         protonDbTier?: string;

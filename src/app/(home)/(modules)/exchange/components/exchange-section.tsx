@@ -13,13 +13,13 @@ interface ExchangeSectionProps {
 
 function ExchangeSkeleton() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="border rounded-lg p-4 space-y-3">
-          <Skeleton className="w-full h-28 rounded-md" />
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-3 w-1/2" />
-          <Skeleton className="h-8 w-full" />
+        <div key={i} className="border rounded-lg p-3 space-y-2">
+          <Skeleton className="w-full aspect-square rounded-md" />
+          <Skeleton className="h-3 w-3/4" />
+          <Skeleton className="h-2 w-1/2" />
+          <Skeleton className="h-6 w-full" />
         </div>
       ))}
     </div>
@@ -61,7 +61,7 @@ export function ExchangeSection({
         ) : exchangeableKeys.length === 0 ? (
           <EmptyExchange />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
             {exchangeableKeys.map((key) => {
               const canAfford = userCredits >= key.creditsRequired;
               return (

@@ -20,16 +20,16 @@ export function ExchangeHeader({ credits, isLoading }: ExchangeHeaderProps) {
         </p>
       </div>
 
-      <Card className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 border-primary/20">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <SparklesIcon className="h-6 w-6 text-primary" />
+      <Card className="p-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 border-primary/20">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <SparklesIcon className="h-5 w-5 text-primary" />
             <div className="flex items-center gap-2">
-              <span className="text-lg font-semibold">Available Credits:</span>
+              <span className="text-sm font-medium">Available Credits:</span>
               {isLoading ? (
-                <Skeleton className="w-16 h-8" />
+                <Skeleton className="w-14 h-6" />
               ) : (
-                <Badge variant="secondary" className="text-lg px-3 py-1">
+                <Badge variant="secondary" className="text-base px-2 py-0.5">
                   {credits.toLocaleString()}
                 </Badge>
               )}
@@ -42,15 +42,6 @@ export function ExchangeHeader({ credits, isLoading }: ExchangeHeaderProps) {
               Exchange History
             </Link>
           </Button>
-        </div>
-
-        <div className="mt-4 pt-4 border-t border-primary/10">
-          <div className="flex items-start gap-2">
-            <InfoIcon className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-            <p className="text-sm text-muted-foreground">
-              Exchange credits for games. All exchanges are processed instantly and securely.
-            </p>
-          </div>
         </div>
       </Card>
     </div>

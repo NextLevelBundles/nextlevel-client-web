@@ -1,8 +1,8 @@
 import { Card, CardContent, CardFooter } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
-import Image from 'next/image';
 import type { ExchangeableSteamKeyDto } from '@/lib/api/types/exchange';
+import { GameImageDeck } from './game-image-deck';
 
 interface GameCardProps {
   game: ExchangeableSteamKeyDto;
@@ -25,38 +25,29 @@ export function GameCard({
   creditsLabel = 'Credits:',
   disabled = false
 }: GameCardProps) {
-  const imageUrl = game.steamGameMetadata?.screenshotUrlsJson
-    ? JSON.parse(game.steamGameMetadata.screenshotUrlsJson)[0]
-    : "/images/hero-background.jpg";
-
   return (
     <Card className="group hover:shadow-lg transition-all duration-200">
-      <CardContent className="p-4">
-        <div className="relative mb-3">
-          <Image
-            src={imageUrl}
-            alt={game.productTitle}
-            width={200}
-            height={112}
-            className="w-full h-28 object-cover rounded-md group-hover:scale-105 transition-transform"
+      <CardContent className="p-2">
+        <div className="relative mb-2">
+          <GameImageDeck
+            coverImage={game.coverImage}
+            screenshotUrlsJson={game.steamGameMetadata?.screenshotUrlsJson}
+            title={game.productTitle}
+            className="group-hover:scale-105 transition-transform"
           />
           {game.isFromBundle && (
-            <Badge className="absolute top-2 right-2" variant="secondary">
+            <Badge className="absolute top-1 right-1 text-xs px-1 py-0" variant="secondary">
               Bundle
             </Badge>
           )}
         </div>
 
-        <h3 className="font-semibold text-sm mb-1 line-clamp-2">
+        <h3 className="font-medium text-xs mb-1 line-clamp-2 leading-tight">
           {game.productTitle}
         </h3>
 
-        <p className="text-xs text-muted-foreground mb-1">
+        <p className="text-xs text-muted-foreground mb-1 line-clamp-1">
           {game.publisherName}
-        </p>
-
-        <p className="text-xs text-muted-foreground/80 mb-2">
-          {game.packageName}
         </p>
 
         {showCredits && (
@@ -69,13 +60,13 @@ export function GameCard({
         )}
       </CardContent>
 
-      <CardFooter className="pt-0 px-4 pb-4">
+      <CardFooter className="pt-0 px-2 pb-2">
         <Button
           onClick={onAction}
           disabled={isLoading || disabled}
           variant={actionVariant}
-          size="sm"
-          className="w-full"
+          size="xs"
+          className="w-full text-xs h-7"
         >
           {isLoading ? 'Processing...' : actionLabel}
         </Button>
