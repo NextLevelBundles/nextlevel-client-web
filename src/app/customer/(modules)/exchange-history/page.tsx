@@ -76,7 +76,7 @@ function TransactionCard({ transaction }: { transaction: ExchangeTransactionDto 
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           <img
-            src={transaction.steamGameMetadata?.headerImage || "/images/hero-background.jpg"}
+            src={transaction.coverImage?.url || transaction.steamGameMetadata?.headerImage || "/images/hero-background.jpg"}
             alt={transaction.productTitle}
             className="w-16 h-16 rounded-lg object-cover"
           />
@@ -123,7 +123,7 @@ function TransactionTableRow({ transaction }: { transaction: ExchangeTransaction
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
           <img
-            src={transaction.steamGameMetadata?.headerImage || "/images/hero-background.jpg"}
+            src={transaction.coverImage?.url || transaction.steamGameMetadata?.headerImage || "/images/hero-background.jpg"}
             alt={transaction.productTitle}
             className="w-10 h-10 rounded object-cover"
           />

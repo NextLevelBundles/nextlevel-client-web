@@ -1,3 +1,5 @@
+import MediaData from '../../app/(shared)/types/media';
+
 export interface ExchangeHistoryParams {
   Type?: number;        // 0 = KeyForCredits (earned), 1 = CreditsForKey (spent)
   StartDate?: string;   // ISO date format
@@ -26,6 +28,7 @@ export interface ExchangeTransactionDto {
   createdAt: string;              // ISO date string
   productId: string;
   productTitle: string;
+  coverImage?: MediaData;          // Game cover image
   steamGameMetadata?: {
     name?: string;
     headerImage?: string;
