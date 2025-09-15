@@ -1,7 +1,8 @@
 export interface ExchangeHistoryParams {
-  Type?: number;        // 0 = Sent keys for credits, 1 = Used credits for keys
+  Type?: number;        // 0 = KeyForCredits (earned), 1 = CreditsForKey (spent)
   StartDate?: string;   // ISO date format
   EndDate?: string;     // ISO date format
+  SearchTerm?: string;  // Search by game title or publisher
   Page?: number;        // Default: 1
   PageSize?: number;    // Default: 20, Max: 100
 }
@@ -17,8 +18,8 @@ export interface ExchangeHistoryResponse {
 
 export interface ExchangeTransactionDto {
   id: string;
-  type: number;                    // 0 = KeyForCredits, 1 = CreditsForKey
-  creditAmount: number;            // Credits involved in transaction
+  type: number;                    // 0 = KeyForCredits (earned), 1 = CreditsForKey (spent)
+  creditAmount: number;            // Credits involved in transaction (always positive)
   productPrice: number;            // Price used for calculation
   isFromBundle: boolean;           // Was this from a bundle?
   tierPrice?: number;              // Bundle tier price (if applicable)

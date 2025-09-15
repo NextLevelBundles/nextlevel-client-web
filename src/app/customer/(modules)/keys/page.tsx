@@ -698,7 +698,7 @@ export default function KeysPage() {
                                       }
                                     >
                                       <ArchiveIcon className="h-4 w-4" />
-                                      Send to Exchange
+                                      Add to Exchange
                                     </Button>
                                   </motion.div>
                                 </TooltipTrigger>
