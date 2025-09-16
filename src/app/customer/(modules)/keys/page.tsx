@@ -88,6 +88,24 @@ const copyMessages = [
   "🗝️ Another one in your collection!",
 ];
 
+function ExchangeCreditsDisplay({ credits }: { credits?: number | null }) {
+  if (!credits) {
+    return (
+      <div className="flex flex-col items-end">
+        <span className="text-xs text-muted-foreground">Trade-in Exchange</span>
+        <span className="text-sm font-semibold text-muted-foreground">-</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-end">
+      <span className="text-xs text-muted-foreground">Trade-in Exchange</span>
+      <span className="text-sm font-semibold text-primary">{credits} Credits</span>
+    </div>
+  );
+}
+
 export default function KeysPage() {
   const { user } = useAuth();
   const currentCustomerId = user?.id;
@@ -686,27 +704,30 @@ export default function KeysPage() {
                               </Tooltip>
                             </TooltipProvider>
 
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <motion.div whileTap={{ scale: 0.95 }}>
-                                    <Button
-                                      variant="outline"
-                                      className="gap-2"
-                                      onClick={() =>
-                                        handleSendToVault(key.steamKeyId)
-                                      }
-                                    >
-                                      <ArchiveIcon className="h-4 w-4" />
-                                      Add to Exchange
-                                    </Button>
-                                  </motion.div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  Exchange this key for credits
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+                            <div className="flex items-center gap-2">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <motion.div whileTap={{ scale: 0.95 }}>
+                                      <Button
+                                        variant="outline"
+                                        className="gap-2"
+                                        onClick={() =>
+                                          handleSendToVault(key.steamKeyId)
+                                        }
+                                      >
+                                        <ArchiveIcon className="h-4 w-4" />
+                                        Add to Exchange
+                                      </Button>
+                                    </motion.div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    Exchange this key for credits
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              <ExchangeCreditsDisplay credits={key.exchangeCredits} />
+                            </div>
                             {/* Exchange Confirmation Dialog */}
                             <Dialog
                               open={exchangeDialog.isOpen}

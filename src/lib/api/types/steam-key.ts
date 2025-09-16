@@ -53,6 +53,7 @@ export interface SteamKeyAssignment {
   giftRecipientName?: string;
   giftMessage?: string;
   giftedAt?: string;
+  exchangeCredits?: number | null;
 }
 
 export interface SteamKeyQueryParams {

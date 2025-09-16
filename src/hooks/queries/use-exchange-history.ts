@@ -1,7 +1,9 @@
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { ExchangeHistoryApi } from '@/lib/api/clients/exchange-history';
+import { ExchangeApi } from '@/lib/api/clients/exchange';
 import { apiClient } from '@/lib/api/client-api';
 import type { ExchangeHistoryParams, ExchangeHistoryResponse } from '@/lib/api/types/exchange-history';
+import type { ExchangeableSteamKeyDto } from '@/lib/api/types/exchange';
 
 export function useExchangeHistory(params: ExchangeHistoryParams) {
   const exchangeHistoryApi = new ExchangeHistoryApi(apiClient);
@@ -38,3 +40,16 @@ export function useExchangeSummary() {
     staleTime: 60000, // 1 minute
   });
 }
+
+export function useToBeExchangeableKeys() {
+  const exchangeApi = new ExchangeApi(apiClient);
+
+  return useQuery<ExchangeableSteamKeyDto[]>({
+    queryKey: ['to-be-exchangeable-keys'],
+    queryFn: async () => {
+      return await exchangeApi.getToBeExchangeableSteamKeys();
+    },
+    staleTime: 300000, // 5 minutes
+  });
+}
+
