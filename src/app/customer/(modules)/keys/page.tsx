@@ -338,9 +338,9 @@ export default function KeysPage() {
     isLoading: boolean;
   }>({ isOpen: false, keyId: null, isLoading: false });
 
-  const handleSendToVault = (steamKeyId: string) => {
-    setExchangeDialog({ isOpen: true, keyId: steamKeyId, isLoading: false });
-  };
+  const handleSendToVault = (assignmentId: string) => {
+    setExchangeDialog({ isOpen: true, keyId: assignmentId, isLoading: false });
+  }
 
   const handleExchangeConfirm = async () => {
     if (!exchangeDialog.keyId) return;
@@ -355,7 +355,7 @@ export default function KeysPage() {
       } else {
         toast.error("Exchange failed. Please try again.");
       }
-    } catch (error) {
+    } catch {
       toast.error("Exchange failed. Please try again.");
     } finally {
       setExchangeDialog({ isOpen: false, keyId: null, isLoading: false });
@@ -713,7 +713,7 @@ export default function KeysPage() {
                                         variant="outline"
                                         className="gap-2"
                                         onClick={() =>
-                                          handleSendToVault(key.steamKeyId)
+                                          handleSendToVault(key.id)
                                         }
                                       >
                                         <ArchiveIcon className="h-4 w-4" />

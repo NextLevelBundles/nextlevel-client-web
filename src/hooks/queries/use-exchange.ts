@@ -24,7 +24,7 @@ export function useExchangeForCredits() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (keyId: string) => exchangeApi.exchangeSteamKeyForCredits(keyId),
+  mutationFn: (assignmentId: string) => exchangeApi.exchangeSteamKeyForCredits(assignmentId),
     onSuccess: (data) => {
       toast.success(`Game exchanged for ${data.credits} credits!`);
       queryClient.invalidateQueries({ queryKey: ['exchange-data'] });
