@@ -76,7 +76,7 @@ function TransactionCard({ transaction }: { transaction: ExchangeTransactionDto 
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           <img
-            src={transaction.coverImage?.url || transaction.steamGameMetadata?.headerImage || "/images/hero-background.jpg"}
+            src={transaction.coverImage?.url}
             alt={transaction.productTitle}
             className="w-16 h-16 rounded-lg object-cover"
           />
@@ -97,33 +97,33 @@ function TransactionCard({ transaction }: { transaction: ExchangeTransactionDto 
               <span className={`font-bold ${isEarned ? 'text-green-600' : 'text-red-600'}`}>
                 {isEarned ? '+' : '-'}{transaction.creditAmount} credits
               </span>
-            </div>
-            {transaction.isFromBundle && (
-              <div className="mt-1">
-                <Badge variant="outline" className="text-xs">
-                  Bundle (${transaction.tierPrice})
-                </Badge>
-              </div>
-            )}
+            </div>      
           </div>
         </div>
       </CardContent>
     </Card>
   );
 }
-
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(amount);
+  };
 
 function TransactionTableRow({ transaction }: { transaction: ExchangeTransactionDto }) {
   // 0 = KeyForCredits (customer sends key, earns credits)
   // 1 = CreditsForKey (customer spends credits, gets key)
   const isEarned = isEarnedType(transaction.type);
 
+  
+
   return (
     <tr className="hover:bg-muted/50 transition-colors">
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
           <img
-            src={transaction.coverImage?.url || transaction.steamGameMetadata?.headerImage || "/images/hero-background.jpg"}
+            src={transaction.coverImage?.url}
             alt={transaction.productTitle}
             className="w-10 h-10 rounded object-cover"
           />
@@ -147,16 +147,7 @@ function TransactionTableRow({ transaction }: { transaction: ExchangeTransaction
         </span>
       </td>
       <td className="px-4 py-3 text-right">
-        <span className="text-sm">${transaction.productPrice}</span>
-      </td>
-      <td className="px-4 py-3">
-        {transaction.isFromBundle ? (
-          <Badge variant="outline" className="text-xs">
-            Tier ${transaction.tierPrice}
-          </Badge>
-        ) : (
-          <span className="text-sm text-muted-foreground">-</span>
-        )}
+        <span className="text-sm">{formatCurrency(transaction.price)}</span>
       </td>
     </tr>
   );
@@ -460,9 +451,6 @@ export default function CustomerExchangeHistoryPage() {
                     </th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Price
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                      Bundle
                     </th>
                   </tr>
                 </thead>
