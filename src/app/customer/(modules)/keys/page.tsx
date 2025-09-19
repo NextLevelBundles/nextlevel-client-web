@@ -388,18 +388,25 @@ export default function KeysPage() {
   };
 
   const handleRefreshSteamLibrary = () => {
+    console.log("Button clicked, mutation state:", {
+      isPending: syncSteamLibraryMutation?.isPending,
+      isIdle: syncSteamLibraryMutation?.isIdle
+    });
+    
     syncSteamLibraryMutation?.mutate(undefined, {
       onSuccess: (result) => {
+        console.log("Mutation success:", result);
         if (result.isSuccess && result.lastSyncedAt) {
           setLastSyncTime(result.lastSyncedAt);
           // Auto-reset after 5 seconds
           setTimeout(() => {
             setLastSyncTime(null);
+            syncSteamLibraryMutation?.reset();
           }, 5000);
         }
       },
       onError: (error) => {
-        console.error("Sync failed:", error);
+        console.error("Mutation error:", error);
       }
     });
   };
@@ -411,6 +418,13 @@ export default function KeysPage() {
 
   // Get button text based on state
   const getButtonText = () => {
+    console.log("Button state check:", {
+      isPending: syncSteamLibraryMutation?.isPending,
+      isError: syncSteamLibraryMutation?.isError,
+      isSuccess: syncSteamLibraryMutation?.isSuccess,
+      lastSyncTime
+    });
+    
     if (syncSteamLibraryMutation?.isPending) {
       return "🔄 Refreshing...";
     }
