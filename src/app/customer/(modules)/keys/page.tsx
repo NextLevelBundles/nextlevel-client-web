@@ -27,6 +27,9 @@ import {
   Loader2,
   ShieldAlert,
   CheckCircle2,
+  RefreshCw,
+  X,
+  Check,
 } from "lucide-react";
 import {
   Tooltip,
@@ -418,18 +421,38 @@ export default function KeysPage() {
     });
     
     if (syncSteamLibraryMutation?.isPending) {
-      return "🔄 Refreshing...";
+      return (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Refreshing...
+        </>
+      );
     }
     
     if (syncSteamLibraryMutation?.isError) {
-      return "❌ Refresh failed - Try Again";
+      return (
+        <>
+          <X className="h-4 w-4" />
+          Refresh failed - Try Again
+        </>
+      );
     }
     
     if (lastSyncTime && syncSteamLibraryMutation?.isSuccess) {
-      return `✅ Steam Library Refreshed ${formatSyncTime(lastSyncTime)}`;
+      return (
+        <>
+          <Check className="h-4 w-4" />
+          Steam Library Refreshed {formatSyncTime(lastSyncTime)}
+        </>
+      );
     }
     
-    return "🔄 Refresh Steam Library";
+    return (
+      <>
+        <RefreshCw className="h-4 w-4" />
+        Refresh Steam Library
+      </>
+    );
   };
 
   return (
