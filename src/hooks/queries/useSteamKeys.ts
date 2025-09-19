@@ -60,8 +60,8 @@ export function useGiftKey() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ assignmentId, giftData }: { assignmentId: string; giftData: GiftKeyRequest }) => 
-      steamKeyApi.giftKey(assignmentId, giftData),
+    mutationFn: (giftData: GiftKeyRequest) =>
+      steamKeyApi.giftKey(giftData),
     onSuccess: () => {
       // Invalidate and refetch steam keys
       queryClient.invalidateQueries({ queryKey: steamKeyKeys.all });

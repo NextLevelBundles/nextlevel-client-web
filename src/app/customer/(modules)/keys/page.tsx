@@ -357,11 +357,8 @@ export default function KeysPage() {
     setIsGiftModalOpen(true);
   };
 
-  const handleGiftSubmit = async (
-    assignmentId: string,
-    giftData: GiftKeyRequest
-  ) => {
-    await giftKeyMutation.mutateAsync({ assignmentId, giftData });
+  const handleGiftSubmit = async (giftData: GiftKeyRequest) => {
+    await giftKeyMutation.mutateAsync(giftData);
   };
 
   return (

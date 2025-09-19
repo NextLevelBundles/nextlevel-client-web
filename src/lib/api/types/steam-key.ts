@@ -72,9 +72,10 @@ export interface ViewKeyResponse {
 }
 
 export interface GiftKeyRequest {
-  recipientEmail: string;
-  recipientName?: string;
-  message?: string;
+  steamKeyAssignmentId: string;
+  giftRecipientEmail: string;
+  giftRecipientName?: string;
+  giftMessage?: string;
 }
 
 export interface GiftKeyResponse {

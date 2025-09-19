@@ -16,7 +16,9 @@ export class SteamKeyApi {
     this.client = client;
   }
 
-  async getSteamKeys(params?: SteamKeyQueryParams): Promise<SteamKeyAssignment[]> {
+  async getSteamKeys(
+    params?: SteamKeyQueryParams
+  ): Promise<SteamKeyAssignment[]> {
     const searchParams = new URLSearchParams();
 
     if (params?.searchQuery) {
@@ -49,17 +51,21 @@ export class SteamKeyApi {
   }
 
   async getGiftableKeys(): Promise<SteamKeyAssignment[]> {
-    return await this.client.get<SteamKeyAssignment[]>("/customer/steam-keys/giftable");
+    return await this.client.get<SteamKeyAssignment[]>(
+      "/customer/steam-keys/giftable"
+    );
   }
 
-  async giftKey(assignmentId: string, giftData: GiftKeyRequest): Promise<GiftKeyResponse> {
+  async giftKey(giftData: GiftKeyRequest): Promise<GiftKeyResponse> {
     return await this.client.post<GiftKeyResponse, GiftKeyRequest>(
-      `/customer/steam-keys/${assignmentId}/gift`,
+      `/customer/steam-key-gifts/gift`,
       giftData
     );
   }
 
   async getStatusCounts(): Promise<StatusCount[]> {
-    return await this.client.get<StatusCount[]>("/customer/steam-keys/status-counts");
+    return await this.client.get<StatusCount[]>(
+      "/customer/steam-keys/status-counts"
+    );
   }
 }
