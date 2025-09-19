@@ -768,7 +768,7 @@ export default function KeysPage() {
                                 }
                               >
                                 <ExternalLinkIcon className="h-4 w-4" />
-                                Redeem on Steam
+                                {key.isExisting ? "CONGRATS! You already own this title" : "Redeem on Steam"}
                               </Button>
                             </motion.div>
                           </>
@@ -813,7 +813,7 @@ export default function KeysPage() {
                                         }
                                       >
                                         <ArchiveIcon className="h-4 w-4" />
-                                        Add to Exchange
+                                        {!key.isExisting ? "CONGRATS! You can now redeem this title" : "Add to Exchange"}
                                       </Button>
                                     </motion.div>
                                   </TooltipTrigger>
