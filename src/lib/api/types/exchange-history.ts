@@ -1,7 +1,10 @@
+import MediaData from '../../app/(shared)/types/media';
+
 export interface ExchangeHistoryParams {
-  Type?: number;        // 0 = Sent keys for credits, 1 = Used credits for keys
+  Type?: number;        // 0 = KeyForCredits (earned), 1 = CreditsForKey (spent)
   StartDate?: string;   // ISO date format
   EndDate?: string;     // ISO date format
+  SearchTerm?: string;  // Search by game title or publisher
   Page?: number;        // Default: 1
   PageSize?: number;    // Default: 20, Max: 100
 }
@@ -17,23 +20,56 @@ export interface ExchangeHistoryResponse {
 
 export interface ExchangeTransactionDto {
   id: string;
-  type: number;                    // 0 = KeyForCredits, 1 = CreditsForKey
-  creditAmount: number;            // Credits involved in transaction
-  productPrice: number;            // Price used for calculation
-  isFromBundle: boolean;           // Was this from a bundle?
-  tierPrice?: number;              // Bundle tier price (if applicable)
-  createdAt: string;              // ISO date string
+  type: number; // ExchangeTransactionType (enum)
+  creditAmount: number;
+  price: number;
+  createdAt: string; // ISO date string
+
+  // Product information
   productId: string;
   productTitle: string;
+  coverImage?: MediaData;
   steamGameMetadata?: {
-    name?: string;
-    headerImage?: string;
-    shortDescription?: string;
+    website?: string;
+    protonDbTier?: string;
+    pcRequirements?: {
+      minimum?: string;
+      recommended?: string;
+    };
+    macRequirements?: {
+      minimum?: string;
+      recommended?: string;
+    };
+    linuxRequirements?: {
+      minimum?: string;
+      recommended?: string;
+    };
+    developers?: Array<{
+      name: string;
+      website?: string;
+    }>;
+    publishers?: Array<{
+      name: string;
+      website?: string;
+    }>;
+    releaseDate?: {
+      date: string;
+    } | null;
+    platforms?: string[];
+    trailerUrl?: string;
+    screenshotUrlsJson?: string | null;
+    steamAppId?: number;
   };
+
+  // Steam key information
   steamKeyId: string;
-  steamKeyAssignmentId?: string;   // Only for type 0 transactions
+  steamKeyAssignmentId?: string;
+
+  // Package information
   packageId: string;
   packageName: string;
+
+  // Publisher information
   publisherId: string;
   publisherName: string;
 }

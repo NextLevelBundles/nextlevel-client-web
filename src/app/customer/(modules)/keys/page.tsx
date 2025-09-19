@@ -50,6 +50,7 @@ import {
   useViewKey,
   useGiftKey,
   useSteamKeyStatusCounts,
+  useSyncSteamLibrary,
 } from "@/hooks/queries/useSteamKeys";
 import {
   SteamKeyAssignment,
@@ -88,6 +89,24 @@ const copyMessages = [
   "🗝️ Another one in your collection!",
 ];
 
+function ExchangeCreditsDisplay({ credits }: { credits?: number | null }) {
+  if (!credits) {
+    return (
+      <div className="flex flex-col items-end">
+        <span className="text-xs text-muted-foreground">Trade-in Exchange</span>
+        <span className="text-sm font-semibold text-muted-foreground">-</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-end">
+      <span className="text-xs text-muted-foreground">Trade-in Exchange</span>
+      <span className="text-sm font-semibold text-primary">{credits} Credits</span>
+    </div>
+  );
+}
+
 export default function KeysPage() {
   const { user } = useAuth();
   const currentCustomerId = user?.id;
@@ -99,6 +118,7 @@ export default function KeysPage() {
   const [selectedGiftKey, setSelectedGiftKey] =
     useState<SteamKeyAssignment | null>(null);
   const [isGiftModalOpen, setIsGiftModalOpen] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
   const [redeemConfirmDialog, setRedeemConfirmDialog] = useState<{
     isOpen: boolean;
     keyId: string | null;
@@ -145,6 +165,9 @@ export default function KeysPage() {
 
   // Gift key mutation
   const giftKeyMutation = useGiftKey();
+
+  // Sync Steam library mutation
+  const syncSteamLibraryMutation = useSyncSteamLibrary();
 
   // Fetch status counts
   const { data: statusCounts, isLoading: isLoadingStatusCounts } =
@@ -320,9 +343,9 @@ export default function KeysPage() {
     isLoading: boolean;
   }>({ isOpen: false, keyId: null, isLoading: false });
 
-  const handleSendToVault = (steamKeyId: string) => {
-    setExchangeDialog({ isOpen: true, keyId: steamKeyId, isLoading: false });
-  };
+  const handleSendToVault = (assignmentId: string) => {
+    setExchangeDialog({ isOpen: true, keyId: assignmentId, isLoading: false });
+  }
 
   const handleExchangeConfirm = async () => {
     if (!exchangeDialog.keyId) return;
@@ -337,7 +360,7 @@ export default function KeysPage() {
       } else {
         toast.error("Exchange failed. Please try again.");
       }
-    } catch (error) {
+    } catch {
       toast.error("Exchange failed. Please try again.");
     } finally {
       setExchangeDialog({ isOpen: false, keyId: null, isLoading: false });
@@ -359,6 +382,54 @@ export default function KeysPage() {
 
   const handleGiftSubmit = async (giftData: GiftKeyRequest) => {
     await giftKeyMutation.mutateAsync(giftData);
+  };
+
+  const handleRefreshSteamLibrary = () => {
+    console.log("Button clicked, mutation state:", {
+      isPending: syncSteamLibraryMutation?.isPending,
+      isIdle: syncSteamLibraryMutation?.isIdle
+    });
+    
+    syncSteamLibraryMutation?.mutate(undefined, {
+      onSuccess: (result) => {
+        console.log("Mutation success:", result);
+        if (result.isSuccess && result.lastSyncedAt) {
+          setLastSyncTime(result.lastSyncedAt);
+        }
+      },
+      onError: (error) => {
+        console.error("Mutation error:", error);
+      }
+    });
+  };
+
+  // Format sync time for display
+  const formatSyncTime = (dateString: string) => {
+    return dayjs(dateString).format("M/D h:mma") + " CT";
+  };
+
+  // Get button text based on state
+  const getButtonText = () => {
+    console.log("Button state check:", {
+      isPending: syncSteamLibraryMutation?.isPending,
+      isError: syncSteamLibraryMutation?.isError,
+      isSuccess: syncSteamLibraryMutation?.isSuccess,
+      lastSyncTime
+    });
+    
+    if (syncSteamLibraryMutation?.isPending) {
+      return "🔄 Refreshing...";
+    }
+    
+    if (syncSteamLibraryMutation?.isError) {
+      return "❌ Refresh failed - Try Again";
+    }
+    
+    if (lastSyncTime && syncSteamLibraryMutation?.isSuccess) {
+      return `✅ Steam Library Refreshed ${formatSyncTime(lastSyncTime)}`;
+    }
+    
+    return "🔄 Refresh Steam Library";
   };
 
   return (
@@ -447,14 +518,31 @@ export default function KeysPage() {
 
       <Card className="bg-linear-to-br from-card to-card/95 dark:from-[#1a1d2e] dark:to-[#1a1d2e]/95 shadow-md">
         <CardHeader>
-          <CardTitle>
-            Available Keys
-            {steamKeys.length > 0 && (
-              <span className="text-sm text-muted-foreground">
-                &nbsp; ({steamKeys.length} found)
-              </span>
-            )}
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>
+              Available Keys
+              {steamKeys.length > 0 && (
+                <span className="text-sm text-muted-foreground">
+                  &nbsp; ({steamKeys.length} found)
+                </span>
+              )}
+            </CardTitle>
+            <button
+              onClick={handleRefreshSteamLibrary}
+              disabled={syncSteamLibraryMutation?.isPending}
+              className={`flex items-center gap-2 px-3 py-2 text-sm border rounded-md transition-colors ${
+                syncSteamLibraryMutation?.isPending
+                  ? "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed"
+                  : syncSteamLibraryMutation?.isError
+                  ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
+                  : lastSyncTime && syncSteamLibraryMutation?.isSuccess
+                  ? "border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
+                  : "border-gray-300 hover:bg-gray-100"
+              }`}
+            >
+              {getButtonText()}
+            </button>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -699,27 +787,30 @@ export default function KeysPage() {
                               </Tooltip>
                             </TooltipProvider>
 
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <motion.div whileTap={{ scale: 0.95 }}>
-                                    <Button
-                                      variant="outline"
-                                      className="gap-2"
-                                      onClick={() =>
-                                        handleSendToVault(key.steamKeyId)
-                                      }
-                                    >
-                                      <ArchiveIcon className="h-4 w-4" />
-                                      Send to Exchange
-                                    </Button>
-                                  </motion.div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  Exchange this key for credits
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+                            <div className="flex items-center gap-2">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <motion.div whileTap={{ scale: 0.95 }}>
+                                      <Button
+                                        variant="outline"
+                                        className="gap-2"
+                                        onClick={() =>
+                                          handleSendToVault(key.id)
+                                        }
+                                      >
+                                        <ArchiveIcon className="h-4 w-4" />
+                                        Add to Exchange
+                                      </Button>
+                                    </motion.div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    Exchange this key for credits
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              <ExchangeCreditsDisplay credits={key.exchangeCredits} />
+                            </div>
                             {/* Exchange Confirmation Dialog */}
                             <Dialog
                               open={exchangeDialog.isOpen}

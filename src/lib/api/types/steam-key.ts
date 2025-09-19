@@ -55,6 +55,7 @@ export interface SteamKeyAssignment {
   giftRecipientName?: string;
   giftMessage?: string;
   giftedAt?: string;
+  exchangeCredits?: number | null;
 }
 
 export interface SteamKeyQueryParams {
@@ -87,4 +88,11 @@ export interface StatusCount {
   status: string | null;
   label: string;
   count: number;
+}
+
+export interface SyncSteamLibraryResponse {
+  isSuccess: boolean;
+  lastSyncedAt: string;
+  lastSyncWasSuccessful: boolean;
+  errorMessage?: string;
 }
