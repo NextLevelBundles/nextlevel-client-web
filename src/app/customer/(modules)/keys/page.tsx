@@ -398,11 +398,6 @@ export default function KeysPage() {
         console.log("Mutation success:", result);
         if (result.isSuccess && result.lastSyncedAt) {
           setLastSyncTime(result.lastSyncedAt);
-          // Auto-reset after 5 seconds
-          setTimeout(() => {
-            setLastSyncTime(null);
-            syncSteamLibraryMutation?.reset();
-          }, 5000);
         }
       },
       onError: (error) => {
