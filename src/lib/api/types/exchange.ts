@@ -1,7 +1,7 @@
 import MediaData from "@/app/(shared)/types/media";
 
 export interface ExchangeableSteamKeyDto {
-    id: string;
+    steamKeyAssignmentId: string;
     packageId: string;
     packageName: string;
     publisherId: string;
@@ -40,10 +40,6 @@ export interface ExchangeableSteamKeyDto {
         screenshotUrlsJson?: string | null;
         steamAppId?: number;
     };
-    effectivePrice: number;
-    isFromBundle: boolean;
     tierPrice?: number;
-    productPrice: number;
     creditsRequired: number;
-    addedToExchangeAt: string;
 }

@@ -76,9 +76,9 @@ export function InventorySection({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {inventoryKeys.map((key) => (
               <GameCard
-                key={key.id}
+                key={key.steamKeyAssignmentId}
                 game={key}
-                onAction={() => onExchange(key.id)}
+                onAction={() => onExchange(key.steamKeyAssignmentId)}
                 actionLabel="Send to Exchange"
                 actionVariant="default"
                 isLoading={isExchanging}

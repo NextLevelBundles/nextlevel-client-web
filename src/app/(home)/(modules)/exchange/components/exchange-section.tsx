@@ -66,9 +66,9 @@ export function ExchangeSection({
               const canAfford = userCredits >= key.creditsRequired;
               return (
                 <GameCard
-                  key={key.id}
+                  key={key.steamKeyAssignmentId}
                   game={key}
-                  onAction={() => onExchange(key.id)}
+                  onAction={() => onExchange(key.steamKeyAssignmentId)}
                   actionLabel={canAfford ? 'Exchange' : `Need ${key.creditsRequired - userCredits} more credits`}
                   actionVariant={canAfford ? 'default' : 'outline'}
                   isLoading={isExchanging}
