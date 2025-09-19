@@ -743,27 +743,35 @@ export default function KeysPage() {
                       </>
                     ) : key.status === "Assigned" ? (
                       <>
-                        {/* Only show Reveal Key button if:
+                        {/* Only show buttons if:
                             1. Key is not a gift, OR
                             2. Key is a received gift that has been accepted */}
                         {(!key.isGift ||
                           (key.isGift &&
                             key.customerId !== currentCustomerId &&
                             key.giftAccepted === true)) && (
-                          <motion.div
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            <Button
-                              className="cursor-pointer gap-2 bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60"
-                              onClick={() =>
-                                handleRevealKey(key.id, key.productTitle)
-                              }
+                          <>
+                            {/* Redeem on Steam button - enabled only if isExisting is false */}
+                            <motion.div
+                              whileHover={{ scale: key.isExisting ? 1 : 1.05 }}
+                              whileTap={{ scale: key.isExisting ? 1 : 0.95 }}
                             >
-                              <ExternalLinkIcon className="h-4 w-4" />
-                              Redeem on Steam
-                            </Button>
-                          </motion.div>
+                              <Button
+                                className={`cursor-pointer gap-2 ${
+                                  key.isExisting 
+                                    ? 'opacity-50 cursor-not-allowed' 
+                                    : 'bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60'
+                                }`}
+                                disabled={key.isExisting}
+                                onClick={() =>
+                                  !key.isExisting && handleRevealKey(key.id, key.productTitle)
+                                }
+                              >
+                                <ExternalLinkIcon className="h-4 w-4" />
+                                Redeem on Steam
+                              </Button>
+                            </motion.div>
+                          </>
                         )}
                         {!key.isGift && (
                           <>
@@ -791,12 +799,17 @@ export default function KeysPage() {
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <motion.div whileTap={{ scale: 0.95 }}>
+                                    <motion.div whileTap={{ scale: key.isExisting ? 0.95 : 1 }}>
                                       <Button
                                         variant="outline"
-                                        className="gap-2"
+                                        className={`gap-2 ${
+                                          !key.isExisting 
+                                            ? 'opacity-50 cursor-not-allowed' 
+                                            : ''
+                                        }`}
+                                        disabled={!key.isExisting}
                                         onClick={() =>
-                                          handleSendToVault(key.id)
+                                          key.isExisting && handleSendToVault(key.id)
                                         }
                                       >
                                         <ArchiveIcon className="h-4 w-4" />
@@ -805,7 +818,10 @@ export default function KeysPage() {
                                     </motion.div>
                                   </TooltipTrigger>
                                   <TooltipContent>
-                                    Exchange this key for credits
+                                    {key.isExisting 
+                                      ? "Exchange this key for credits"
+                                      : "This game is not in your Steam library yet"
+                                    }
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
