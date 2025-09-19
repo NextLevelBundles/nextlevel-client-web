@@ -1,14 +1,14 @@
-import { Card, CardContent, CardFooter } from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
-import { Badge } from '@/shared/components/ui/badge';
-import type { ExchangeableSteamKeyDto } from '@/lib/api/types/exchange';
-import { GameImageDeck } from './game-image-deck';
+import { Card, CardContent, CardFooter } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Badge } from "@/shared/components/ui/badge";
+import type { ExchangeableSteamKeyDto } from "@/lib/api/types/exchange";
+import { GameImageDeck } from "./game-image-deck";
 
 interface GameCardProps {
   game: ExchangeableSteamKeyDto;
   onAction: () => void;
   actionLabel: string;
-  actionVariant?: 'default' | 'destructive' | 'outline';
+  actionVariant?: "default" | "destructive" | "outline";
   isLoading?: boolean;
   showCredits?: boolean;
   creditsLabel?: string;
@@ -19,11 +19,11 @@ export function GameCard({
   game,
   onAction,
   actionLabel,
-  actionVariant = 'default',
+  actionVariant = "default",
   isLoading = false,
   showCredits = true,
-  creditsLabel = 'Credits:',
-  disabled = false
+  creditsLabel = "Credits:",
+  disabled = false,
 }: GameCardProps) {
   return (
     <Card className="group hover:shadow-lg transition-all duration-200">
@@ -35,11 +35,11 @@ export function GameCard({
             title={game.productTitle}
             className="group-hover:scale-105 transition-transform"
           />
-          {game.isFromBundle && (
+          {/* {game.isFromBundle && (
             <Badge className="absolute top-1 right-1 text-xs px-1 py-0" variant="secondary">
               Bundle
             </Badge>
-          )}
+          )} */}
         </div>
 
         <h3 className="font-medium text-xs mb-1 line-clamp-2 leading-tight">
@@ -65,10 +65,10 @@ export function GameCard({
           onClick={onAction}
           disabled={isLoading || disabled}
           variant={actionVariant}
-          size="xs"
+          size="sm"
           className="w-full text-xs h-7"
         >
-          {isLoading ? 'Processing...' : actionLabel}
+          {isLoading ? "Processing..." : actionLabel}
         </Button>
       </CardFooter>
     </Card>

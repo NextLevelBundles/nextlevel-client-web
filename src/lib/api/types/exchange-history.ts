@@ -1,12 +1,12 @@
-import MediaData from '../../app/(shared)/types/media';
+import MediaData from "@/app/(shared)/types/media";
 
 export interface ExchangeHistoryParams {
-  Type?: number;        // 0 = KeyForCredits (earned), 1 = CreditsForKey (spent)
-  StartDate?: string;   // ISO date format
-  EndDate?: string;     // ISO date format
-  SearchTerm?: string;  // Search by game title or publisher
-  Page?: number;        // Default: 1
-  PageSize?: number;    // Default: 20, Max: 100
+  Type?: number; // 0 = KeyForCredits (earned), 1 = CreditsForKey (spent)
+  StartDate?: string; // ISO date format
+  EndDate?: string; // ISO date format
+  SearchTerm?: string; // Search by game title or publisher
+  Page?: number; // Default: 1
+  PageSize?: number; // Default: 20, Max: 100
 }
 
 export interface ExchangeHistoryResponse {
