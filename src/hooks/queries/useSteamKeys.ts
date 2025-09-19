@@ -86,3 +86,31 @@ export function useSteamKeyStatusCounts() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
+
+export function useSyncSteamLibrary() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => steamKeyApi.syncSteamLibrary(),
+    onSuccess: (data) => {
+      // Invalidate and refetch steam keys to get new data
+      queryClient.invalidateQueries({ queryKey: steamKeyKeys.all });
+      
+      if (data.isSuccess) {
+        toast.success("🔄 Steam Library Synced!", {
+          description: "Your game library has been refreshed successfully.",
+        });
+      } else {
+        toast.error("Sync failed", {
+          description: data.errorMessage || "Failed to sync your Steam library.",
+        });
+      }
+    },
+    onError: (error) => {
+      toast.error("Sync failed", {
+        description:
+          error instanceof Error ? error.message : "Something went wrong during sync.",
+      });
+    },
+  });
+}

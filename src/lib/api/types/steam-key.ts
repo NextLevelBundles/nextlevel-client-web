@@ -86,3 +86,10 @@ export interface StatusCount {
   label: string;
   count: number;
 }
+
+export interface SyncSteamLibraryResponse {
+  isSuccess: boolean;
+  lastSyncedAt: string;
+  lastSyncWasSuccessful: boolean;
+  errorMessage?: string;
+}

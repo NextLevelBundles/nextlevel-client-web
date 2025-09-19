@@ -50,6 +50,7 @@ import {
   useViewKey,
   useGiftKey,
   useSteamKeyStatusCounts,
+  useSyncSteamLibrary,
 } from "@/hooks/queries/useSteamKeys";
 import {
   SteamKeyAssignment,
@@ -117,6 +118,7 @@ export default function KeysPage() {
   const [selectedGiftKey, setSelectedGiftKey] =
     useState<SteamKeyAssignment | null>(null);
   const [isGiftModalOpen, setIsGiftModalOpen] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
   const [redeemConfirmDialog, setRedeemConfirmDialog] = useState<{
     isOpen: boolean;
     keyId: string | null;
@@ -163,6 +165,9 @@ export default function KeysPage() {
 
   // Gift key mutation
   const giftKeyMutation = useGiftKey();
+
+  // Sync Steam library mutation
+  const syncSteamLibraryMutation = useSyncSteamLibrary();
 
   // Fetch status counts
   const { data: statusCounts, isLoading: isLoadingStatusCounts } =
@@ -383,7 +388,42 @@ export default function KeysPage() {
   };
 
   const handleRefreshSteamLibrary = () => {
-    console.log("Refresh Steam Library clicked");
+    syncSteamLibraryMutation?.mutate(undefined, {
+      onSuccess: (result) => {
+        if (result.isSuccess && result.lastSyncedAt) {
+          setLastSyncTime(result.lastSyncedAt);
+          // Auto-reset after 5 seconds
+          setTimeout(() => {
+            setLastSyncTime(null);
+          }, 5000);
+        }
+      },
+      onError: (error) => {
+        console.error("Sync failed:", error);
+      }
+    });
+  };
+
+  // Format sync time for display
+  const formatSyncTime = (dateString: string) => {
+    return dayjs(dateString).format("M/D h:mma") + " CT";
+  };
+
+  // Get button text based on state
+  const getButtonText = () => {
+    if (syncSteamLibraryMutation?.isPending) {
+      return "🔄 Refreshing...";
+    }
+    
+    if (syncSteamLibraryMutation?.isError) {
+      return "❌ Refresh failed - Try Again";
+    }
+    
+    if (lastSyncTime && syncSteamLibraryMutation?.isSuccess) {
+      return `✅ Steam Library Refreshed ${formatSyncTime(lastSyncTime)}`;
+    }
+    
+    return "🔄 Refresh Steam Library";
   };
 
   return (
@@ -483,9 +523,18 @@ export default function KeysPage() {
             </CardTitle>
             <button
               onClick={handleRefreshSteamLibrary}
-              className="flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-100 transition-colors"
+              disabled={syncSteamLibraryMutation?.isPending}
+              className={`flex items-center gap-2 px-3 py-2 text-sm border rounded-md transition-colors ${
+                syncSteamLibraryMutation?.isPending
+                  ? "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed"
+                  : syncSteamLibraryMutation?.isError
+                  ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
+                  : lastSyncTime && syncSteamLibraryMutation?.isSuccess
+                  ? "border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
+                  : "border-gray-300 hover:bg-gray-100"
+              }`}
             >
-              🔄 Refresh Steam Library
+              {getButtonText()}
             </button>
           </div>
         </CardHeader>
