@@ -576,43 +576,59 @@ export default function KeysPage() {
                   whileHover={{ scale: 1.01 }}
                   className="relative flex flex-col gap-4 rounded-lg border bg-card/30 p-4 sm:flex-row sm:items-center sm:justify-between transition-all duration-200 hover:bg-card/50 hover:shadow-lg dark:hover:bg-[#1d2233]/60 dark:hover:shadow-blue-500/5"
                 >
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold">{key.productTitle}</h3>
-                      {isNewlyAssigned(key) && (
-                        <Badge
-                          variant="outline"
-                          className="animate-subtle-pulse bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800"
-                        >
-                          <SparklesIcon className="h-3 w-3 mr-1" />
-                          New
-                        </Badge>
-                      )}
-                      {key.isGift && (
-                        <SteamKeyGiftIndicator
-                          steamKey={key}
-                          currentCustomerId={currentCustomerId}
-                          currentUserEmail={currentUserEmail || undefined}
-                          onGiftAccepted={() => {
-                            window.location.reload();
-                          }}
+                  <div className="flex gap-4 flex-1">
+                    {/* Product Cover Image - 2:3 aspect ratio */}
+                    <div className="flex-shrink-0">
+                      <div className="h-20 aspect-[2/3]">
+                        <img
+                          src={
+                            key.productCoverImage?.url ||
+                            "https://static.digiphile.co/product-placeholder-image.jpg"
+                          }
+                          alt={key.productTitle || "Product"}
+                          className="w-full h-full object-cover rounded-lg shadow-md"
                         />
-                      )}
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">
-                        Assigned on{" "}
-                        {key.assignedAt
-                          ? new Date(key.assignedAt).toLocaleDateString()
-                          : "Unknown"}
-                        {key.status === "Assigned" && key.expiresAt && (
-                          <>
-                            {" "}
-                            • Expires on{" "}
-                            {new Date(key.expiresAt).toLocaleDateString()}
-                          </>
+
+                    <div className="space-y-2 flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold">{key.productTitle}</h3>
+                        {isNewlyAssigned(key) && (
+                          <Badge
+                            variant="outline"
+                            className="animate-subtle-pulse bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800"
+                          >
+                            <SparklesIcon className="h-3 w-3 mr-1" />
+                            New
+                          </Badge>
                         )}
-                      </p>
+                        {key.isGift && (
+                          <SteamKeyGiftIndicator
+                            steamKey={key}
+                            currentCustomerId={currentCustomerId}
+                            currentUserEmail={currentUserEmail || undefined}
+                            onGiftAccepted={() => {
+                              window.location.reload();
+                            }}
+                          />
+                        )}
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">
+                          Assigned on{" "}
+                          {key.assignedAt
+                            ? new Date(key.assignedAt).toLocaleDateString()
+                            : "Unknown"}
+                          {key.status === "Assigned" && key.expiresAt && (
+                            <>
+                              {" "}
+                              • Expires on{" "}
+                              {new Date(key.expiresAt).toLocaleDateString()}
+                            </>
+                          )}
+                        </p>
+                      </div>
                     </div>
                   </div>
 

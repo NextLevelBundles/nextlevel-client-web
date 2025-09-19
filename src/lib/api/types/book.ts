@@ -1,12 +1,14 @@
+import MediaData from "@/app/(shared)/types/media";
+
 export enum BookAssignmentStatus {
-  Active = 'Active',
-  Inactive = 'Inactive'
+  Active = "Active",
+  Inactive = "Inactive",
 }
 
 export enum BookFileStatus {
-  Active = 'Active',
-  Inactive = 'Inactive',
-  Deleted = 'Deleted'
+  Active = "Active",
+  Inactive = "Inactive",
+  Deleted = "Deleted",
 }
 
 export interface BookFileDto {
@@ -23,6 +25,7 @@ export interface BookAssignmentDto {
   customerId: string;
   productId: string;
   productTitle?: string;
+  productCoverImage?: MediaData;
   bookTitle?: string;
   availableFiles?: BookFileDto[];
   status: BookAssignmentStatus;
@@ -38,5 +41,5 @@ export interface BookDownloadUrlResponse {
 }
 
 export interface BookAssignmentQueryParams {
-  giftFilter?: 'All' | 'ReceivedByMe' | 'Owned';
+  giftFilter?: "All" | "ReceivedByMe" | "Owned";
 }

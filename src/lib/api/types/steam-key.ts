@@ -1,3 +1,4 @@
+import MediaData from "@/app/(shared)/types/media";
 import { GiftFilterType } from "./purchase";
 
 export interface SteamKeyAssignment {
@@ -6,6 +7,7 @@ export interface SteamKeyAssignment {
   customerId: string;
   productId: string;
   productTitle: string;
+  productCoverImage?: MediaData;
   steamGameMetadata?: {
     website?: string;
     protonDbTier?: string;

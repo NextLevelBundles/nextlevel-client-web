@@ -38,7 +38,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
-import { useBookAssignments, useGenerateDownloadUrl } from "@/hooks/queries/useBooks";
+import {
+  useBookAssignments,
+  useGenerateDownloadUrl,
+} from "@/hooks/queries/useBooks";
 import { BookAssignmentDto } from "@/lib/api/types/book";
 import { FilterDropdown } from "@/customer/components/filter-dropdown";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
@@ -74,19 +77,19 @@ function formatBytes(bytes: number): string {
   const k = 1024;
   const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i];
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
 }
 
 function getFormatIcon(format: string) {
   switch (format.toLowerCase()) {
-    case 'pdf':
+    case "pdf":
       return <FileText className="h-4 w-4" />;
-    case 'epub':
+    case "epub":
       return <BookOpen className="h-4 w-4" />;
-    case 'mobi':
+    case "mobi":
       return <FileType className="h-4 w-4" />;
-    case 'mp3':
-    case 'audio':
+    case "mp3":
+    case "audio":
       return <FileAudio className="h-4 w-4" />;
     default:
       return <FileType className="h-4 w-4" />;
@@ -107,8 +110,12 @@ export default function BooksLibraryPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
-  const [giftFilter, setGiftFilter] = useState<"All" | "Owned" | "ReceivedByMe">("All");
-  const [downloadingFiles, setDownloadingFiles] = useState<Set<string>>(new Set());
+  const [giftFilter, setGiftFilter] = useState<
+    "All" | "Owned" | "ReceivedByMe"
+  >("All");
+  const [downloadingFiles, setDownloadingFiles] = useState<Set<string>>(
+    new Set()
+  );
 
   // Debounce search query
   useEffect(() => {
@@ -120,7 +127,12 @@ export default function BooksLibraryPage() {
   }, [searchQuery]);
 
   // Fetch book assignments
-  const { data: bookAssignments = [], isLoading, isError, error } = useBookAssignments({ giftFilter });
+  const {
+    data: bookAssignments = [],
+    isLoading,
+    isError,
+    error,
+  } = useBookAssignments({ giftFilter });
   const generateDownloadUrl = useGenerateDownloadUrl();
 
   // Filter books based on search and status
@@ -129,7 +141,9 @@ export default function BooksLibraryPage() {
       // Search filter
       if (debouncedSearchQuery) {
         const searchLower = debouncedSearchQuery.toLowerCase();
-        const titleMatch = (book.bookTitle || book.productTitle || '').toLowerCase().includes(searchLower);
+        const titleMatch = (book.bookTitle || book.productTitle || "")
+          .toLowerCase()
+          .includes(searchLower);
         if (!titleMatch) return false;
       }
 
@@ -196,11 +210,15 @@ export default function BooksLibraryPage() {
     });
   };
 
-  const handleDownload = (assignmentId: string, bookFileId: string, fileName: string) => {
+  const handleDownload = (
+    assignmentId: string,
+    bookFileId: string,
+    fileName: string
+  ) => {
     // Track downloading state
     const fileKey = `${assignmentId}-${bookFileId}`;
-    setDownloadingFiles(prev => new Set(prev).add(fileKey));
-    
+    setDownloadingFiles((prev) => new Set(prev).add(fileKey));
+
     // The mutation now handles all the download logic and progress
     generateDownloadUrl.mutate(
       { assignmentId, bookFileId, fileName },
@@ -211,12 +229,12 @@ export default function BooksLibraryPage() {
         },
         onSettled: () => {
           // Remove from downloading state when complete
-          setDownloadingFiles(prev => {
+          setDownloadingFiles((prev) => {
             const next = new Set(prev);
             next.delete(fileKey);
             return next;
           });
-        }
+        },
       }
     );
   };
@@ -265,7 +283,9 @@ export default function BooksLibraryPage() {
               label="Ownership"
               options={ownershipOptionsWithCounts}
               value={giftFilter}
-              onChange={(value) => setGiftFilter(value as "All" | "Owned" | "ReceivedByMe")}
+              onChange={(value) =>
+                setGiftFilter(value as "All" | "Owned" | "ReceivedByMe")
+              }
               placeholder="All Books"
               searchPlaceholder="Search ownership..."
               showCounts={false}
@@ -322,7 +342,9 @@ export default function BooksLibraryPage() {
               <div className="mb-4 rounded-full bg-red-100 p-3">
                 <BookOpen className="h-8 w-8 text-red-600" />
               </div>
-              <h3 className="mb-2 text-xl font-semibold">Error loading books</h3>
+              <h3 className="mb-2 text-xl font-semibold">
+                Error loading books
+              </h3>
               <p className="mb-6 max-w-md text-muted-foreground">
                 {error instanceof Error
                   ? error.message
@@ -335,7 +357,9 @@ export default function BooksLibraryPage() {
                 Try Again
               </Button>
             </motion.div>
-          ) : filteredBooks.length === 0 && !debouncedSearchQuery && statusFilter === "All" ? (
+          ) : filteredBooks.length === 0 &&
+            !debouncedSearchQuery &&
+            statusFilter === "All" ? (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -401,8 +425,11 @@ export default function BooksLibraryPage() {
           ) : (
             <div className="space-y-4">
               {filteredBooks.map((book) => {
-                const activeFiles = book.availableFiles?.filter(file => file.status === 'Active') || [];
-                
+                const activeFiles =
+                  book.availableFiles?.filter(
+                    (file) => file.status === "Active"
+                  ) || [];
+
                 return (
                   <motion.div
                     key={book.id}
@@ -410,50 +437,77 @@ export default function BooksLibraryPage() {
                     animate={{ opacity: 1, y: 0 }}
                     className="relative flex flex-col gap-4 rounded-lg border bg-card/30 p-4 sm:flex-row sm:items-center sm:justify-between transition-all duration-200 hover:bg-card/50 hover:shadow-lg hover:border-primary/20 dark:hover:bg-[#1d2233]/60 dark:hover:shadow-blue-500/5"
                   >
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{book.bookTitle || book.productTitle}</h3>
-                        {isNewlyAssigned(book) && (
-                          <Badge
-                            variant="outline"
-                            className="animate-subtle-pulse bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800"
-                          >
-                            <SparklesIcon className="h-3 w-3 mr-1" />
-                            New
-                          </Badge>
-                        )}
-                        {book.isGift && (
-                          <Badge variant="secondary" className="gap-1">
-                            <GiftIcon className="h-3 w-3" />
-                            Gift
-                          </Badge>
-                        )}
+                    <div className="flex gap-4 flex-1">
+                      {/* Product Cover Image - 2:3 aspect ratio */}
+                      <div className="flex-shrink-0">
+                        <div className="h-20 aspect-[2/3]">
+                          <img
+                            src={
+                              book.productCoverImage?.url ||
+                              "https://static.digiphile.co/product-placeholder-image.jpg"
+                            }
+                            alt={book.bookTitle || book.productTitle || "Book"}
+                            className="w-full h-full object-cover rounded-lg shadow-md"
+                          />
+                        </div>
                       </div>
-                      <div className="space-y-1">
-                        <p className="text-sm text-muted-foreground">
-                          Added on{" "}
-                          {book.assignedAt
-                            ? new Date(book.assignedAt).toLocaleDateString()
-                            : "Unknown"}
-                          {book.downloadCount > 0 ? (
-                            <>
-                              {" "}
-                              • Downloaded {book.downloadCount} time{book.downloadCount !== 1 ? 's' : ''}
-                              {book.lastDownloadAt && (
-                                <> • Last: {dayjs(book.lastDownloadAt).fromNow()}</>
-                              )}
-                            </>
-                          ) : (
-                            <> • Never downloaded</>
+
+                      <div className="space-y-2 flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold">
+                            {book.bookTitle || book.productTitle}
+                          </h3>
+                          {isNewlyAssigned(book) && (
+                            <Badge
+                              variant="outline"
+                              className="animate-subtle-pulse bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800"
+                            >
+                              <SparklesIcon className="h-3 w-3 mr-1" />
+                              New
+                            </Badge>
                           )}
-                        </p>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                          {activeFiles.map((file, index) => (
-                            <span key={file.id} className="flex items-center gap-1">
-                              {getFormatIcon(file.fileFormat)}
-                              {file.fileFormat.toUpperCase()} ({formatBytes(file.fileSizeBytes)})
-                            </span>
-                          ))}
+                          {book.isGift && (
+                            <Badge variant="secondary" className="gap-1">
+                              <GiftIcon className="h-3 w-3" />
+                              Gift
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-sm text-muted-foreground">
+                            Added on{" "}
+                            {book.assignedAt
+                              ? new Date(book.assignedAt).toLocaleDateString()
+                              : "Unknown"}
+                            {book.downloadCount > 0 ? (
+                              <>
+                                {" "}
+                                • Downloaded {book.downloadCount} time
+                                {book.downloadCount !== 1 ? "s" : ""}
+                                {book.lastDownloadAt && (
+                                  <>
+                                    {" "}
+                                    • Last:{" "}
+                                    {dayjs(book.lastDownloadAt).fromNow()}
+                                  </>
+                                )}
+                              </>
+                            ) : (
+                              <> • Never downloaded</>
+                            )}
+                          </p>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            {activeFiles.map((file, index) => (
+                              <span
+                                key={file.id}
+                                className="flex items-center gap-1"
+                              >
+                                {getFormatIcon(file.fileFormat)}
+                                {file.fileFormat.toUpperCase()} (
+                                {formatBytes(file.fileSizeBytes)})
+                              </span>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -463,9 +517,7 @@ export default function BooksLibraryPage() {
                         <>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button
-                                className="cursor-pointer gap-2 bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60 focus:outline-none focus-visible:outline-none"
-                              >
+                              <Button className="cursor-pointer gap-2 bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60 focus:outline-none focus-visible:outline-none">
                                 <Download className="h-4 w-4" />
                                 Download
                               </Button>
@@ -478,12 +530,20 @@ export default function BooksLibraryPage() {
                               ) : (
                                 activeFiles.map((file) => {
                                   const fileKey = `${book.id}-${file.id}`;
-                                  const isDownloading = downloadingFiles.has(fileKey);
-                                  
+                                  const isDownloading =
+                                    downloadingFiles.has(fileKey);
+
                                   return (
                                     <DropdownMenuItem
                                       key={file.id}
-                                      onClick={() => !isDownloading && handleDownload(book.id, file.id, file.fileName)}
+                                      onClick={() =>
+                                        !isDownloading &&
+                                        handleDownload(
+                                          book.id,
+                                          file.id,
+                                          file.fileName
+                                        )
+                                      }
                                       className="flex items-center justify-between cursor-pointer"
                                       disabled={isDownloading}
                                     >
@@ -491,7 +551,9 @@ export default function BooksLibraryPage() {
                                         {isDownloading ? (
                                           <>
                                             <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                                            <span className="text-muted-foreground">Downloading...</span>
+                                            <span className="text-muted-foreground">
+                                              Downloading...
+                                            </span>
                                           </>
                                         ) : (
                                           <>
