@@ -382,6 +382,10 @@ export default function KeysPage() {
     await giftKeyMutation.mutateAsync({ assignmentId, giftData });
   };
 
+  const handleRefreshSteamLibrary = () => {
+    console.log("Refresh Steam Library clicked");
+  };
+
   return (
     <div className="grid gap-6">
       <div className="flex items-center justify-between">
@@ -468,14 +472,22 @@ export default function KeysPage() {
 
       <Card className="bg-linear-to-br from-card to-card/95 dark:from-[#1a1d2e] dark:to-[#1a1d2e]/95 shadow-md">
         <CardHeader>
-          <CardTitle>
-            Available Keys
-            {steamKeys.length > 0 && (
-              <span className="text-sm text-muted-foreground">
-                &nbsp; ({steamKeys.length} found)
-              </span>
-            )}
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>
+              Available Keys
+              {steamKeys.length > 0 && (
+                <span className="text-sm text-muted-foreground">
+                  &nbsp; ({steamKeys.length} found)
+                </span>
+              )}
+            </CardTitle>
+            <button
+              onClick={handleRefreshSteamLibrary}
+              className="flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-100 transition-colors"
+            >
+              🔄 Refresh Steam Library
+            </button>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
