@@ -97,3 +97,8 @@ export interface SyncSteamLibraryResponse {
   lastSyncWasSuccessful: boolean;
   errorMessage?: string;
 }
+
+export interface SteamLibraryStatusResponse {
+  lastSyncedAt: string | null;
+  lastSyncWasSuccessful: boolean | null;
+}

@@ -95,7 +95,9 @@ export function useSyncSteamLibrary() {
     onSuccess: (data) => {
       // Invalidate and refetch steam keys to get new data
       queryClient.invalidateQueries({ queryKey: steamKeyKeys.all });
-      
+      // Also invalidate steam library status
+      queryClient.invalidateQueries({ queryKey: ["steam-library-status"] });
+
       if (data.isSuccess) {
         toast.success("🔄 Steam Library Synced!", {
           description: "Your game library has been refreshed successfully.",
@@ -112,5 +114,13 @@ export function useSyncSteamLibrary() {
           error instanceof Error ? error.message : "Something went wrong during sync.",
       });
     },
+  });
+}
+
+export function useSteamLibraryStatus() {
+  return useQuery({
+    queryKey: ["steam-library-status"],
+    queryFn: () => steamKeyApi.getSteamLibraryStatus(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }

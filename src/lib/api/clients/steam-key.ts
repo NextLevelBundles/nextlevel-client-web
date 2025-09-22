@@ -8,6 +8,7 @@ import {
   GiftKeyResponse,
   StatusCount,
   SyncSteamLibraryResponse,
+  SteamLibraryStatusResponse,
 } from "../types/steam-key";
 
 export class SteamKeyApi {
@@ -72,5 +73,9 @@ export class SteamKeyApi {
 
   async syncSteamLibrary(): Promise<SyncSteamLibraryResponse> {
     return await this.client.get<SyncSteamLibraryResponse>("/customer/sync-steam-library");
+  }
+
+  async getSteamLibraryStatus(): Promise<SteamLibraryStatusResponse> {
+    return await this.client.get<SteamLibraryStatusResponse>("/customer/steam-library-status");
   }
 }

@@ -13,7 +13,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Badge } from "@/shared/components/ui/badge";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   KeyIcon,
   ExternalLinkIcon,
@@ -54,6 +54,7 @@ import {
   useGiftKey,
   useSteamKeyStatusCounts,
   useSyncSteamLibrary,
+  useSteamLibraryStatus,
 } from "@/hooks/queries/useSteamKeys";
 import {
   SteamKeyAssignment,
@@ -134,6 +135,16 @@ export default function KeysPage() {
     isLoading: false,
   });
 
+  const [steamSyncWarningDialog, setSteamSyncWarningDialog] = useState<{
+    isOpen: boolean;
+    keyId: string | null;
+    productTitle: string;
+  }>({
+    isOpen: false,
+    keyId: null,
+    productTitle: "",
+  });
+
   // Debounce search query
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -175,6 +186,9 @@ export default function KeysPage() {
   // Fetch status counts
   const { data: statusCounts, isLoading: isLoadingStatusCounts } =
     useSteamKeyStatusCounts();
+
+  // Fetch Steam library status
+  const { data: steamLibraryStatus } = useSteamLibraryStatus();
 
   // Transform status counts to filter options
   const statusOptions = React.useMemo(() => {
@@ -224,6 +238,24 @@ export default function KeysPage() {
     const thirtyDaysAgo = dayjs().subtract(30, "day");
 
     return assignedDate.isAfter(thirtyDaysAgo);
+  };
+
+  // Helper function to check if Steam library sync is needed
+  const isSteamSyncNeeded = (): boolean => {
+    // If no sync status data available, assume sync is needed
+    if (!steamLibraryStatus) return true;
+
+    // If never synced, sync is needed
+    if (!steamLibraryStatus.lastSyncedAt) return true;
+
+    // If last sync was unsuccessful, sync is needed
+    if (!steamLibraryStatus.lastSyncWasSuccessful) return true;
+
+    // Check if last sync was more than 1 week ago
+    const lastSyncDate = dayjs(steamLibraryStatus.lastSyncedAt);
+    const oneWeekAgo = dayjs().subtract(1, "week");
+
+    return lastSyncDate.isBefore(oneWeekAgo);
   };
 
   // Helper function to get the key value
@@ -282,6 +314,17 @@ export default function KeysPage() {
   };
 
   const handleRevealKey = (keyId: string, productTitle: string) => {
+    // Check if Steam library sync is needed
+    if (isSteamSyncNeeded()) {
+      setSteamSyncWarningDialog({
+        isOpen: true,
+        keyId,
+        productTitle,
+      });
+      return;
+    }
+
+    // If sync is not needed, proceed with normal redeem flow
     setRedeemConfirmDialog({
       isOpen: true,
       keyId,
@@ -370,13 +413,6 @@ export default function KeysPage() {
     }
   };
 
-  const handleActivateOnSteam = (key: string) => {
-    // Open Steam registration page with the key
-    window.open(
-      `https://store.steampowered.com/account/registerkey?key=${key}`,
-      "_blank"
-    );
-  };
 
   const handleGiftKey = (key: SteamKeyAssignment) => {
     setSelectedGiftKey(key);
@@ -385,6 +421,40 @@ export default function KeysPage() {
 
   const handleGiftSubmit = async (giftData: GiftKeyRequest) => {
     await giftKeyMutation.mutateAsync(giftData);
+  };
+
+  const handleSyncWarningRefresh = () => {
+    // Close the warning dialog
+    setSteamSyncWarningDialog({
+      isOpen: false,
+      keyId: null,
+      productTitle: "",
+    });
+
+    // Trigger Steam library refresh
+    handleRefreshSteamLibrary();
+  };
+
+  const handleSyncWarningProceed = () => {
+    const keyId = steamSyncWarningDialog.keyId;
+    const productTitle = steamSyncWarningDialog.productTitle;
+
+    // Close the warning dialog
+    setSteamSyncWarningDialog({
+      isOpen: false,
+      keyId: null,
+      productTitle: "",
+    });
+
+    // Proceed with normal redeem flow
+    if (keyId && productTitle) {
+      setRedeemConfirmDialog({
+        isOpen: true,
+        keyId,
+        productTitle,
+        isLoading: false,
+      });
+    }
   };
 
   const handleRefreshSteamLibrary = () => {
@@ -967,7 +1037,7 @@ export default function KeysPage() {
                 </Alert>
 
                 <div className="space-y-3 text-sm text-muted-foreground">
-                  <p>You're about to reveal the Steam key for:</p>
+                  <p>You&apos;re about to reveal the Steam key for:</p>
                   <div className="rounded-lg border bg-muted/30 p-3">
                     <p className="font-medium text-foreground">
                       {redeemConfirmDialog.productTitle}
@@ -1044,6 +1114,88 @@ export default function KeysPage() {
               </motion.div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Steam Sync Warning Dialog */}
+      <Dialog
+        open={steamSyncWarningDialog.isOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSteamSyncWarningDialog({
+              isOpen: false,
+              keyId: null,
+              productTitle: "",
+            });
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader className="space-y-4">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/20">
+              <AlertTriangle className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
+            </div>
+            <DialogTitle className="text-center text-xl font-semibold">
+              Steam Library Not Refreshed
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <Alert className="border-yellow-200 bg-yellow-50 dark:border-yellow-900/50 dark:bg-yellow-950/20">
+              <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+              <AlertDescription className="text-sm">
+                <strong>Please note:</strong> Your Steam library hasn&apos;t been refreshed{" "}
+                {!steamLibraryStatus?.lastSyncedAt
+                  ? "yet"
+                  : "recently (within the last week)"
+                }. We recommend refreshing it first to ensure optimal key assignment.
+              </AlertDescription>
+            </Alert>
+
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <p>You&apos;re about to redeem a Steam key for:</p>
+              <div className="rounded-lg border bg-muted/30 p-3">
+                <p className="font-medium text-foreground">
+                  {steamSyncWarningDialog.productTitle}
+                </p>
+              </div>
+              <p className="text-xs">
+                Refreshing your Steam library helps us:
+              </p>
+              <ul className="space-y-1 text-xs list-disc list-inside ml-2">
+                <li>Check if you already own this game</li>
+                <li>Provide better recommendations</li>
+                <li>Optimize your key assignments</li>
+              </ul>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={handleSyncWarningRefresh}
+              className="gap-2"
+              disabled={syncSteamLibraryMutation?.isPending}
+            >
+              {syncSteamLibraryMutation?.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Refreshing...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4" />
+                  Refresh Library
+                </>
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={handleSyncWarningProceed}
+            >
+              Proceed Anyway
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
