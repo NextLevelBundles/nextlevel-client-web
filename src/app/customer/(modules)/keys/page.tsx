@@ -918,7 +918,7 @@ export default function KeysPage() {
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
-                              <ExchangeCreditsDisplay credits={key.exchangeCredits} />
+                              {key.isExisting && <ExchangeCreditsDisplay credits={key.exchangeCredits} />}
                             </div>
                             {/* Exchange Confirmation Dialog */}
                             <Dialog
