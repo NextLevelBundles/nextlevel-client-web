@@ -6,7 +6,7 @@ import type { ExchangeableSteamKeyDto } from '@/lib/api/types/exchange';
 interface ExchangeSectionProps {
   exchangeableKeys: ExchangeableSteamKeyDto[];
   isLoading: boolean;
-  onExchange: (keyId: string) => void;
+  onExchange: (keyId: number) => void;
   isExchanging: boolean;
   userCredits: number;
 }
@@ -66,9 +66,9 @@ export function ExchangeSection({
               const canAfford = userCredits >= key.creditsRequired;
               return (
                 <GameCard
-                  key={key.steamKeyAssignmentId}
+                  key={key.steamAppId}
                   game={key}
-                  onAction={() => onExchange(key.steamKeyAssignmentId)}
+                  onAction={() => onExchange(key.steamAppId)}
                   actionLabel={canAfford ? 'Exchange' : `Need ${key.creditsRequired - userCredits} more credits`}
                   actionVariant={canAfford ? 'default' : 'outline'}
                   isLoading={isExchanging}
