@@ -1068,8 +1068,8 @@ export default function KeysPage() {
           {!redeemConfirmDialog.isLoading ? (
             <>
               <DialogHeader className="space-y-4">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/20">
-                  <ShieldAlert className="h-8 w-8 text-orange-600 dark:text-orange-400" />
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-md border bg-background shadow-sm">
+                  <ShieldAlert className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <DialogTitle className="text-center text-xl font-semibold">
                   Important: Refund Policy Notice
