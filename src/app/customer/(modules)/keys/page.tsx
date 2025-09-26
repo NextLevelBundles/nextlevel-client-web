@@ -49,6 +49,7 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import confetti from "canvas-confetti";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useSteamKeys,
   useRevealKey,
@@ -112,6 +113,7 @@ export default function KeysPage() {
   const { user } = useAuth();
   const currentCustomerId = user?.id;
   const currentUserEmail = user?.email;
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
@@ -423,6 +425,9 @@ export default function KeysPage() {
       );
       if (result.success === true || typeof result.credits === "number") {
         toast.success(`Steam key exchanged for ${result.credits} credits!`);
+        // Invalidate queries to refresh the keys data
+        queryClient.invalidateQueries({ queryKey: ["steam-keys"] });
+        queryClient.invalidateQueries({ queryKey: ["steam-keys", "status-counts"] });
       } else {
         toast.error("Exchange failed. Please try again.");
       }
@@ -1068,8 +1073,8 @@ export default function KeysPage() {
           {!redeemConfirmDialog.isLoading ? (
             <>
               <DialogHeader className="space-y-4">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/20">
-                  <ShieldAlert className="h-8 w-8 text-orange-600 dark:text-orange-400" />
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-md border bg-background shadow-sm">
+                  <ShieldAlert className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <DialogTitle className="text-center text-xl font-semibold">
                   Important: Refund Policy Notice
@@ -1087,10 +1092,10 @@ export default function KeysPage() {
                 </Alert>
 
                 {redeemConfirmDialog.alreadyOwned && (
-                  <Alert className="border-blue-200 bg-blue-50 dark:border-blue-900/50 dark:bg-blue-950/20">
-                    <AlertTriangle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  <Alert className="border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/20">
+                    <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
                     <AlertDescription className="text-sm">
-                      <strong>Already owned:</strong> You already own this game on Steam. 
+                      <strong>Already owned:</strong> You already own this game on Steam.
                       Redeeming this key will result in a duplicate copy that you won&apos;t be able to use.
                     </AlertDescription>
                   </Alert>
