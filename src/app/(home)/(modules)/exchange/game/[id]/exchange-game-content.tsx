@@ -20,9 +20,13 @@ import {
   Package,
   Gamepad2,
   Coins,
+  Loader2,
 } from "lucide-react";
 import { Markdown } from "@/app/(shared)/components/ui/markdown";
 import { ExchangeGame } from "@/lib/api/types/exchange-game";
+import { useExchangeCreditsForKey } from "@/hooks/queries/use-exchange";
+import { useUserCredits } from "@/hooks/queries/use-user-credits";
+import { useRouter } from "next/navigation";
 
 interface ExchangeGameContentProps {
   game: ExchangeGame;
@@ -31,8 +35,25 @@ interface ExchangeGameContentProps {
 export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [showTrailerModal, setShowTrailerModal] = useState(false);
+  const exchangeCreditsForKeyMutation = useExchangeCreditsForKey();
+  const { data: userCredits = 0 } = useUserCredits();
+  const router = useRouter();
 
   const steamApp = game.steamApp;
+  const isExchanging = exchangeCreditsForKeyMutation.isPending;
+  const canAfford = userCredits >= game.inputCredits;
+
+  const handleExchange = () => {
+    if (!canAfford || isExchanging) return;
+
+    // The API expects the Steam App ID as a number
+    exchangeCreditsForKeyMutation.mutate(steamApp.id, {
+      onSuccess: () => {
+        // Optionally redirect to customer dashboard or refresh the page
+        router.push('/customer/dashboard');
+      }
+    });
+  };
   const screenshots = steamApp.screenshots || [];
   const videos = steamApp.movies || [];
   const mainVideo = videos.find(v => v.highlight) || videos[0];
@@ -85,12 +106,12 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
         <div className="lg:w-2/3 space-y-6">
           {/* Main Media Display */}
           {allMedia.length > 0 && (
-            <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+            <div className="relative aspect-video bg-muted/50 border rounded-lg overflow-hidden">
               <Image
                 fill
                 src={getSecureUrl(allMedia[selectedImageIndex]) || "/placeholder.jpg"}
                 alt={`${steamApp.name} screenshot`}
-                className="object-cover"
+                className="object-contain bg-black/5"
               />
               {mainVideo && selectedImageIndex === 0 && (
                 <button
@@ -131,10 +152,10 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
                     key={idx}
                     onClick={() => setSelectedImageIndex(idx)}
                     className={cn(
-                      "relative flex-shrink-0 w-32 aspect-video rounded-md overflow-hidden border-2 transition-all",
+                      "relative flex-shrink-0 w-32 aspect-video rounded-md overflow-hidden border-2 transition-all bg-muted/30",
                       selectedImageIndex === idx
-                        ? "border-primary"
-                        : "border-transparent hover:border-border"
+                        ? "border-primary ring-2 ring-primary/20"
+                        : "border-border/50 hover:border-border"
                     )}
                   >
                     <Image
@@ -250,14 +271,52 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
                   <span className="font-semibold text-lg">{game.inputCredits}</span>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Spend {game.inputCredits} credits to claim this game and add it to your library.
-              </p>
+
+              {/* Show user's current credits */}
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Your Credits</span>
+                <div className="flex items-center gap-1">
+                  <Coins className="h-3 w-3 text-muted-foreground" />
+                  <span className={userCredits >= game.inputCredits ? "text-green-600" : "text-red-600"}>
+                    {userCredits}
+                  </span>
+                </div>
+              </div>
+
+              {userCredits >= game.inputCredits ? (
+                <p className="text-xs text-muted-foreground">
+                  Spend {game.inputCredits} credits to claim this game and add it to your library.
+                </p>
+              ) : (
+                <p className="text-xs text-red-600">
+                  You need {game.inputCredits - userCredits} more credits to claim this game.
+                </p>
+              )}
             </div>
 
-            <Button className="w-full" size="lg">
-              <Gamepad2 className="h-4 w-4 mr-2" />
-              Claim Game
+            <Button
+              className="w-full"
+              size="lg"
+              disabled={!canAfford || isExchanging}
+              variant={canAfford ? "default" : "secondary"}
+              onClick={handleExchange}
+            >
+              {isExchanging ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : canAfford ? (
+                <>
+                  <Gamepad2 className="h-4 w-4 mr-2" />
+                  Claim Game
+                </>
+              ) : (
+                <>
+                  <Coins className="h-4 w-4 mr-2" />
+                  Need {game.inputCredits - userCredits} More Credits
+                </>
+              )}
             </Button>
           </div>
 
