@@ -49,6 +49,7 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import confetti from "canvas-confetti";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useSteamKeys,
   useRevealKey,
@@ -112,6 +113,7 @@ export default function KeysPage() {
   const { user } = useAuth();
   const currentCustomerId = user?.id;
   const currentUserEmail = user?.email;
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
@@ -423,6 +425,9 @@ export default function KeysPage() {
       );
       if (result.success === true || typeof result.credits === "number") {
         toast.success(`Steam key exchanged for ${result.credits} credits!`);
+        // Invalidate queries to refresh the keys data
+        queryClient.invalidateQueries({ queryKey: ["steam-keys"] });
+        queryClient.invalidateQueries({ queryKey: ["steam-keys", "status-counts"] });
       } else {
         toast.error("Exchange failed. Please try again.");
       }
