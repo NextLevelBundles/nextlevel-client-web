@@ -1047,16 +1047,21 @@ export default function KeysPage() {
                         Awaiting acceptance
                       </Badge>
                     ) : (
-                      <Badge
-                        variant={key.status === "AddedToExchange" || key.status === "ReceivedFromExchange" ? "secondary" : "outline"}
-                        className={`${
-                          key.status === "AddedToExchange" || key.status === "ReceivedFromExchange"
-                            ? "text-sm font-semibold px-3 py-1.5"
-                            : "text-muted-foreground"
+                      <div
+                        className={`inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium pointer-events-none ${
+                          key.status === "AddedToExchange"
+                            ? "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400"
+                            : key.status === "ReceivedFromExchange"
+                            ? "bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400"
+                            : key.status === "Expired"
+                            ? "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400"
+                            : key.status === "Refunded"
+                            ? "bg-orange-50 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400"
+                            : "bg-gray-50 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400"
                         }`}
                       >
                         {getStatusDisplayName(key.status)}
-                      </Badge>
+                      </div>
                     )}
                   </div>
                 </motion.div>
