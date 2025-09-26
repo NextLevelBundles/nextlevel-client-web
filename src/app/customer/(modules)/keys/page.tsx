@@ -330,7 +330,7 @@ export default function KeysPage() {
   const handleRevealKey = (keyId: string, productTitle: string) => {
     // Find the key to check if already owned
     const key = steamKeys.find(k => k.id === keyId);
-    const alreadyOwned = key?.AlreadyOwnedOnSteam || false;
+    const alreadyOwned = key?.alreadyOwnedOnSteam || false;
 
     console.log("Key found:", key);
     console.log("Already owned:", alreadyOwned);
@@ -473,7 +473,7 @@ export default function KeysPage() {
     if (keyId && productTitle) {
       // Find the key to check if already owned
       const key = steamKeys.find(k => k.id === keyId);
-      const alreadyOwned = key?.AlreadyOwnedOnSteam || false;
+      const alreadyOwned = key?.alreadyOwnedOnSteam || false;
 
       setRedeemConfirmDialog({
         isOpen: true,
@@ -889,20 +889,20 @@ export default function KeysPage() {
                             key.customerId !== currentCustomerId &&
                             key.giftAccepted === true)) && (
                           <>
-                            {/* Redeem on Steam button - enabled only if AlreadyOwnedOnSteam is false */}
+                            {/* Redeem on Steam button - disabled only if AlreadyOwnedOnSteam is true AND exchangeCredits > 0 */}
                             <motion.div
-                              whileHover={{ scale: key.AlreadyOwnedOnSteam ? 1 : 1.05 }}
-                              whileTap={{ scale: key.AlreadyOwnedOnSteam ? 1 : 0.95 }}
+                              whileHover={{ scale: (key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0) ? 1 : 1.05 }}
+                              whileTap={{ scale: (key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0) ? 1 : 0.95 }}
                             >
                               <Button
                                 className={`cursor-pointer gap-2 ${
-                                  key.AlreadyOwnedOnSteam 
-                                    ? 'opacity-50 cursor-not-allowed' 
+                                  (key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0)
+                                    ? 'opacity-50 cursor-not-allowed'
                                     : 'bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60'
                                 }`}
-                                disabled={key.AlreadyOwnedOnSteam}
+                                disabled={key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0}
                                 onClick={() =>
-                                  !key.AlreadyOwnedOnSteam && handleRevealKey(key.id, key.productTitle)
+                                  !(key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0) && handleRevealKey(key.id, key.productTitle)
                                 }
                               >
                                 <ExternalLinkIcon className="h-4 w-4" />
@@ -937,17 +937,17 @@ export default function KeysPage() {
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <motion.div whileTap={{ scale: key.AlreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0 ? 0.95 : 1 }}>
+                                    <motion.div whileTap={{ scale: key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0 ? 0.95 : 1 }}>
                                       <Button
                                         variant="outline"
                                         className={`gap-2 ${
-                                          !(key.AlreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0)
+                                          !(key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0)
                                             ? 'opacity-50 cursor-not-allowed' 
                                             : ''
                                         }`}
-                                        disabled={!(key.AlreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0)}
+                                        disabled={!(key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0)}
                                         onClick={() =>
-                                          key.AlreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0 && handleSendToVault(key.id)
+                                          key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0 && handleSendToVault(key.id)
                                         }
                                       >
                                         <ArchiveIcon className="h-4 w-4" />
@@ -956,16 +956,16 @@ export default function KeysPage() {
                                     </motion.div>
                                   </TooltipTrigger>
                                   <TooltipContent>
-                                    {key.AlreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0
+                                    {key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0
                                       ? "Exchange this key for credits"
-                                      : !key.AlreadyOwnedOnSteam
+                                      : !key.alreadyOwnedOnSteam
                                       ? "This game is not in your Steam library yet"
                                       : "No exchange credits available for this game"
                                     }
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
-                              {key.AlreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0 && <ExchangeCreditsDisplay credits={key.exchangeCredits} />}
+                              {key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0 && <ExchangeCreditsDisplay credits={key.exchangeCredits} />}
                             </div>
                             {/* Exchange Confirmation Dialog */}
                             <Dialog

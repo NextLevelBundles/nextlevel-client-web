@@ -81,7 +81,7 @@ export interface SteamKeyAssignment {
   giftMessage?: string;
   giftedAt?: string;
   exchangeCredits?: number | null;
-  AlreadyOwnedOnSteam: boolean;
+  alreadyOwnedOnSteam: boolean;
 }
 
 export interface SteamKeyQueryParams {
