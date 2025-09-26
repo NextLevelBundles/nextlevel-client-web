@@ -1087,10 +1087,10 @@ export default function KeysPage() {
                 </Alert>
 
                 {redeemConfirmDialog.alreadyOwned && (
-                  <Alert className="border-blue-200 bg-blue-50 dark:border-blue-900/50 dark:bg-blue-950/20">
-                    <AlertTriangle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  <Alert className="border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/20">
+                    <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
                     <AlertDescription className="text-sm">
-                      <strong>Already owned:</strong> You already own this game on Steam. 
+                      <strong>Already owned:</strong> You already own this game on Steam.
                       Redeeming this key will result in a duplicate copy that you won&apos;t be able to use.
                     </AlertDescription>
                   </Alert>
