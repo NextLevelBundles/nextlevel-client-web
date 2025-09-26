@@ -96,6 +96,20 @@ const copyMessages = [
   "🗝️ Another one in your collection!",
 ];
 
+// Function to convert technical status names to user-friendly ones
+const getStatusDisplayName = (status: string): string => {
+  const statusMap: Record<string, string> = {
+    "AddedToExchange": "Exchanged",
+    "ReceivedFromExchange": "Received",
+    "Assigned": "Available",
+    "Revealed": "Redeemed",
+    "Expired": "Expired",
+    "Refunded": "Refunded",
+  };
+
+  return statusMap[status] || status;
+};
+
 function ExchangeCreditsDisplay({ credits }: { credits?: number | null }) {
   if (!credits || credits === 0) {
     return null;
@@ -1034,10 +1048,14 @@ export default function KeysPage() {
                       </Badge>
                     ) : (
                       <Badge
-                        variant="outline"
-                        className="text-muted-foreground"
+                        variant={key.status === "AddedToExchange" || key.status === "ReceivedFromExchange" ? "secondary" : "outline"}
+                        className={`${
+                          key.status === "AddedToExchange" || key.status === "ReceivedFromExchange"
+                            ? "text-sm font-semibold px-3 py-1.5"
+                            : "text-muted-foreground"
+                        }`}
                       >
-                        {key.status}
+                        {getStatusDisplayName(key.status)}
                       </Badge>
                     )}
                   </div>
@@ -1198,8 +1216,8 @@ export default function KeysPage() {
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader className="space-y-4">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/20">
-              <AlertTriangle className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-md border bg-background shadow-sm">
+              <AlertTriangle className="h-6 w-6 text-muted-foreground" />
             </div>
             <DialogTitle className="text-center text-xl font-semibold">
               Steam Library Not Refreshed
