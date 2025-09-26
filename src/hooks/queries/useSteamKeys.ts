@@ -99,16 +99,16 @@ export function useSyncSteamLibrary() {
       // Also invalidate steam library status
       queryClient.invalidateQueries({ queryKey: ["steam-library-status"] });
 
-      if (data.steamLibrarySyncStatus === SteamLibrarySyncStatus.SyncSucceeded) {
+      if (data.steamLibrarySyncStatus === "SyncSucceeded") {
         toast.success("🔄 Steam Library Synced!", {
           description: "Your game library has been refreshed successfully.",
         });
-      } else if (data.steamLibrarySyncStatus === SteamLibrarySyncStatus.SyncFailed) {
+      } else if (data.steamLibrarySyncStatus === "SyncFailed") {
         toast.error("Sync failed", {
           description: data.errorMessage || "Failed to sync your Steam library.",
         });
       }
-      else if (data.steamLibrarySyncStatus === SteamLibrarySyncStatus.SyncError) {
+      else if (data.steamLibrarySyncStatus === "SyncError") {
         toast.error("Sync error", {
           description: data.errorMessage || "Failed to sync your Steam library because of technical issues.",
         });

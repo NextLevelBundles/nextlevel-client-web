@@ -510,7 +510,7 @@ export default function KeysPage() {
     syncSteamLibraryMutation?.mutate(undefined, {
       onSuccess: (result) => {
         console.log("Mutation success:", result);
-        if (result.isSuccess && result.lastSyncedAt) {
+        if (result.steamLibrarySyncStatus === "SyncSucceeded" && result.lastSyncedAt) {
           setLastSyncTime(result.lastSyncedAt);
         }
       },
@@ -916,7 +916,7 @@ export default function KeysPage() {
                                     ? 'opacity-50 cursor-not-allowed'
                                     : 'bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60'
                                 }`}
-                                disabled={key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0}
+                                disabled={!!(key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0)}
                                 onClick={() =>
                                   !(key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0) && handleRevealKey(key.id, key.productTitle)
                                 }
@@ -1049,9 +1049,9 @@ export default function KeysPage() {
                     ) : (
                       <div
                         className={`inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium pointer-events-none ${
-                          key.status === "AddedToExchange"
+                          (key.status as string) === "AddedToExchange"
                             ? "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400"
-                            : key.status === "ReceivedFromExchange"
+                            : (key.status as string) === "ReceivedFromExchange"
                             ? "bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400"
                             : key.status === "Expired"
                             ? "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400"
