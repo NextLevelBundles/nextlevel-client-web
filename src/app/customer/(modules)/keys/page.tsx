@@ -398,7 +398,7 @@ export default function KeysPage() {
         // Trigger confetti
         triggerConfetti();
 
-        toast.success("Steam key revealed! Redirecting to Steam...", {
+        toast.success("Steam key redeemed! Redirecting to Steam...", {
           icon: (
             <motion.div
               initial={{ rotate: -20 }}
@@ -414,7 +414,7 @@ export default function KeysPage() {
     } catch (error) {
       console.error("Error revealing key:", error);
       setRedeemConfirmDialog((prev) => ({ ...prev, isLoading: false }));
-      toast.error("Failed to reveal the key. Please try again.");
+      toast.error("Failed to redeem the key. Please try again.");
     }
   };
 
@@ -1106,7 +1106,7 @@ export default function KeysPage() {
             <Alert className="border-orange-200 bg-orange-50 dark:border-orange-900/50 dark:bg-orange-950/20">
               <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
               <AlertDescription className="text-sm">
-                <strong>Please note:</strong> Once you reveal and redeem
+                <strong>Please note:</strong> Once you redeem
                 this Steam key, the entire bundle containing this game
                 becomes <strong>non-refundable</strong>.
               </AlertDescription>
@@ -1123,7 +1123,7 @@ export default function KeysPage() {
             )}
 
             <div className="space-y-3 text-sm text-muted-foreground">
-              <p>You&apos;re about to reveal the Steam key for:</p>
+              <p>You&apos;re about to redeem the Steam key for:</p>
               <div className="rounded-lg border bg-muted/30 p-3">
                 <p className="font-medium text-foreground">
                   {redeemConfirmDialog.productTitle}
@@ -1133,7 +1133,7 @@ export default function KeysPage() {
                 By proceeding, you acknowledge that:
               </p>
               <ul className="space-y-1 text-xs list-disc list-inside">
-                <li>The Steam key will be permanently revealed</li>
+                <li>The Steam key will be permanently redeemed</li>
                 <li>The bundle containing this key cannot be refunded</li>
                 <li>This action cannot be undone</li>
               </ul>
@@ -1164,12 +1164,12 @@ export default function KeysPage() {
               {redeemConfirmDialog.isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Revealing key...
+                  Redeeming key...
                 </>
               ) : (
                 <>
                   <KeyIcon className="h-4 w-4 mr-2" />
-                  I Understand, Reveal Key
+                  I Understand, Redeem Key
                 </>
               )}
             </Button>
