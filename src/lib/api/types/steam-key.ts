@@ -81,7 +81,7 @@ export interface SteamKeyAssignment {
   giftMessage?: string;
   giftedAt?: string;
   exchangeCredits?: number | null;
-  isExisting: boolean;
+  AlreadyOwnedOnSteam: boolean;
 }
 
 export interface SteamKeyQueryParams {
@@ -118,11 +118,11 @@ export interface StatusCount {
 
 export interface SyncSteamLibraryResponse {
   lastSyncedAt: string;
-  steamLibrarySyncStatus: SteamLibrarySyncStatus;
+  steamLibrarySyncStatus: string; // API returns string values like "SyncSucceeded", "NeverSynced", etc.
   errorMessage?: string;
 }
 
 export interface SteamLibraryStatusResponse {
   lastSyncedAt: string;
-  steamLibrarySyncStatus: SteamLibrarySyncStatus;
+  steamLibrarySyncStatus: string; // API returns string values like "SyncSucceeded", "NeverSynced", etc.
 }
