@@ -64,7 +64,7 @@ export function ExchangeGameCard({ game }: ExchangeGameCardProps) {
                 Exchange Rate
               </p>
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold">{game.inputCredits}</span>
+                <span className="text-2xl font-bold">{game.outputCredits}</span>
                 <span className="text-sm text-muted-foreground">credits</span>
               </div>
             </div>

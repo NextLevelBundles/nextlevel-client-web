@@ -40,7 +40,7 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
 
   const steamApp = game.steamApp;
   const isExchanging = exchangeCreditsForKeyMutation.isPending;
-  const canAfford = userCredits >= game.inputCredits;
+  const canAfford = userCredits >= game.outputCredits;
 
   const handleExchange = () => {
     if (!canAfford || isExchanging) return;
@@ -273,7 +273,7 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
                 <span className="text-sm text-muted-foreground">Credits Required</span>
                 <div className="flex items-center gap-1">
                   <Coins className="h-4 w-4 text-primary" />
-                  <span className="font-semibold text-lg">{game.inputCredits}</span>
+                  <span className="font-semibold text-lg">{game.outputCredits}</span>
                 </div>
               </div>
 
@@ -282,19 +282,19 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
                 <span className="text-muted-foreground">Your Credits</span>
                 <div className="flex items-center gap-1">
                   <Coins className="h-3 w-3 text-muted-foreground" />
-                  <span className={userCredits >= game.inputCredits ? "text-green-600" : "text-red-600"}>
+                  <span className={userCredits >= game.outputCredits ? "text-green-600" : "text-red-600"}>
                     {userCredits}
                   </span>
                 </div>
               </div>
 
-              {userCredits >= game.inputCredits ? (
+              {userCredits >= game.outputCredits ? (
                 <p className="text-xs text-muted-foreground">
-                  Spend {game.inputCredits} credits to claim this game and add it to your library.
+                  Spend {game.outputCredits} credits to claim this game and add it to your library.
                 </p>
               ) : (
                 <p className="text-xs text-red-600">
-                  You need {game.inputCredits - userCredits} more credits to claim this game.
+                  You need {game.outputCredits - userCredits} more credits to claim this game.
                 </p>
               )}
             </div>
@@ -319,7 +319,7 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
               ) : (
                 <>
                   <Coins className="h-4 w-4 mr-2" />
-                  Need {game.inputCredits - userCredits} More Credits
+                  Need {game.outputCredits - userCredits} More Credits
                 </>
               )}
             </Button>
