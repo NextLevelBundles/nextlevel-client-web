@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { Cart } from "./api/types/cart";
 import { Bundle, BundleListItem } from "@/app/(shared)/types/bundle";
+import { ExchangeGame } from "./api/types/exchange-game";
 
 const API_BASE_URL = process.env.API_URL ?? "";
 
@@ -247,6 +248,54 @@ class ServerApiClient {
     } catch (error) {
       console.error("Error fetching featured bundle:", error);
       return null;
+    }
+  }
+
+  async getExchangeGameDetails(id: string): Promise<ExchangeGame | null> {
+    try {
+      const headers = await this.getAuthHeaders();
+      const response = await this.fetchWithRetry(
+        `${API_BASE_URL}/customer/exchange/games/${id}`,
+        {
+          method: "GET",
+          headers,
+          cache: "no-store",
+        }
+      );
+
+      // Handle 404 specifically
+      if (response.status === 404) {
+        return null;
+      }
+
+      // Check other error statuses
+      if (!response.ok) {
+        console.error(
+          `Failed to fetch exchange game: ${response.status} ${response.statusText}`
+        );
+        throw new Error(`Failed to fetch exchange game: ${response.statusText}`);
+      }
+
+      // Read response as text first to handle empty responses
+      const text = await response.text();
+      if (!text || text.trim() === "") {
+        console.warn("Empty response from exchange game API");
+        return null;
+      }
+
+      // Try to parse JSON
+      try {
+        return JSON.parse(text) as ExchangeGame;
+      } catch (parseError) {
+        console.error(
+          "Failed to parse exchange game response:",
+          text.substring(0, 100)
+        );
+        throw new Error("Invalid exchange game response from server");
+      }
+    } catch (error) {
+      console.error("Error fetching exchange game:", error);
+      throw error;
     }
   }
 }
