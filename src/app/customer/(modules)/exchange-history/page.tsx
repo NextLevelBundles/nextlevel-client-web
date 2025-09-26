@@ -104,19 +104,11 @@ function TransactionCard({ transaction }: { transaction: ExchangeTransactionDto 
     </Card>
   );
 }
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
 
 function TransactionTableRow({ transaction }: { transaction: ExchangeTransactionDto }) {
   // 0 = KeyForCredits (customer sends key, earns credits)
   // 1 = CreditsForKey (customer spends credits, gets key)
   const isEarned = isEarnedType(transaction.type);
-
-  
 
   return (
     <tr className="hover:bg-muted/50 transition-colors">
@@ -145,9 +137,6 @@ function TransactionTableRow({ transaction }: { transaction: ExchangeTransaction
         <span className={`font-semibold ${isEarned ? 'text-green-600' : 'text-red-600'}`}>
           {isEarned ? '+' : '-'}{transaction.creditAmount}
         </span>
-      </td>
-      <td className="px-4 py-3 text-right">
-        <span className="text-sm">{formatCurrency(transaction.price)}</span>
       </td>
     </tr>
   );
@@ -448,9 +437,6 @@ export default function CustomerExchangeHistoryPage() {
                     </th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Credits
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                      Price
                     </th>
                   </tr>
                 </thead>

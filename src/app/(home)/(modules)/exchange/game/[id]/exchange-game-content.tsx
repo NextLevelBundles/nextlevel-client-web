@@ -22,7 +22,6 @@ import {
   Coins,
   Loader2,
 } from "lucide-react";
-import { Markdown } from "@/app/(shared)/components/ui/markdown";
 import { ExchangeGame } from "@/lib/api/types/exchange-game";
 import { useExchangeCreditsForKey } from "@/hooks/queries/use-exchange";
 import { useUserCredits } from "@/hooks/queries/use-user-credits";
@@ -179,9 +178,15 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
           <div className="prose prose-invert max-w-none">
             <h2 className="text-2xl font-bold mb-4">About This Game</h2>
             {steamApp.aboutTheGame ? (
-              <Markdown content={steamApp.aboutTheGame} />
+              <div
+                className="[&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg [&>h4]:text-base [&>h5]:text-sm [&>ul]:list-disc [&>ul]:ml-6 [&>ol]:list-decimal [&>ol]:ml-6 [&>p]:mb-4 [&>img]:max-w-full [&>img]:h-auto"
+                dangerouslySetInnerHTML={{ __html: steamApp.aboutTheGame }}
+              />
             ) : steamApp.shortDescription ? (
-              <p>{steamApp.shortDescription}</p>
+              <div
+                className="[&>p]:mb-4"
+                dangerouslySetInnerHTML={{ __html: steamApp.shortDescription }}
+              />
             ) : (
               <p className="text-muted-foreground">No description available.</p>
             )}

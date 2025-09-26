@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import dayjs from "dayjs";
-import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
   Card,
   CardContent,
@@ -45,7 +44,6 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogPortal,
 } from "@/shared/components/ui/dialog";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import confetti from "canvas-confetti";
@@ -1042,50 +1040,44 @@ export default function KeysPage() {
                                 }))
                               }
                             >
-                              <DialogPortal>
-                                <DialogPrimitive.Content className="fixed left-[50%] top-[50%] z-[100] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg">
-                                  <DialogHeader>
-                                    <DialogTitle>Exchange Steam Key?</DialogTitle>
-                                    <DialogDescription>
-                                      Are you sure you want to exchange this Steam
-                                      key for credits? This action cannot be
-                                      undone.
-                                    </DialogDescription>
-                                  </DialogHeader>
-                                  <DialogFooter>
-                                    <Button
-                                      variant="outline"
-                                      onClick={() =>
-                                        setExchangeDialog({
-                                          isOpen: false,
-                                          keyId: null,
-                                          isLoading: false,
-                                        })
-                                      }
-                                      disabled={exchangeDialog.isLoading}
-                                    >
-                                      Cancel
-                                    </Button>
-                                    <Button
-                                      onClick={handleExchangeConfirm}
-                                      disabled={exchangeDialog.isLoading}
-                                    >
-                                      {exchangeDialog.isLoading ? (
-                                        <>
-                                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                          Processing...
-                                        </>
-                                      ) : (
-                                        "Continue"
-                                      )}
-                                    </Button>
-                                  </DialogFooter>
-                                  <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-                                    <X className="h-4 w-4" />
-                                    <span className="sr-only">Close</span>
-                                  </DialogPrimitive.Close>
-                                </DialogPrimitive.Content>
-                              </DialogPortal>
+                              <DialogContent className="sm:max-w-md">
+                                <DialogHeader>
+                                  <DialogTitle>Exchange Steam Key?</DialogTitle>
+                                  <DialogDescription>
+                                    Are you sure you want to exchange this Steam
+                                    key for credits? This action cannot be
+                                    undone.
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <DialogFooter>
+                                  <Button
+                                    variant="outline"
+                                    onClick={() =>
+                                      setExchangeDialog({
+                                        isOpen: false,
+                                        keyId: null,
+                                        isLoading: false,
+                                      })
+                                    }
+                                    disabled={exchangeDialog.isLoading}
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    onClick={handleExchangeConfirm}
+                                    disabled={exchangeDialog.isLoading}
+                                  >
+                                    {exchangeDialog.isLoading ? (
+                                      <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Processing...
+                                      </>
+                                    ) : (
+                                      "Continue"
+                                    )}
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
                             </Dialog>
                           </>
                         )}
