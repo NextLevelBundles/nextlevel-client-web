@@ -11,6 +11,7 @@ import SignInButton from "./SignInButton";
 import SignUpButton from "./SignUpButton";
 import { CartDrawer } from "./cart/cart-drawer";
 import Logo from "@/app/(shared)/components/logo";
+import { UserCredits } from "@/app/(shared)/components/user-credits";
 
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -69,6 +70,7 @@ export function Navigation() {
           </div>
 
           <div className="hidden md:flex md:items-center md:gap-2">
+            <UserCredits variant="compact" />
             <ThemeToggle />
             <CartDrawer />
             <UserProfile />
