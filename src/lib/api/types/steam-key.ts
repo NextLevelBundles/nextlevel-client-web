@@ -1,6 +1,31 @@
 import MediaData from "@/app/(shared)/types/media";
 import { GiftFilterType } from "./purchase";
 
+/**
+ * Represents the synchronization status of a Steam library
+ */
+export enum SteamLibrarySyncStatus {
+  /**
+   * Library has never been synchronized
+   */
+  NeverSynced = 1,
+
+  /**
+   * Synchronization completed successfully
+   */
+  SyncSucceeded = 2,
+
+  /**
+   * Synchronization encountered a technical error (network issue, API error, etc.)
+   */
+  SyncError = 3,
+
+  /**
+   * Synchronization completed but didn't achieve the expected result (e.g., validation failed, incomplete data, user profile is private)
+   */
+  SyncFailed = 4
+}
+
 export interface SteamKeyAssignment {
   id: string;
   steamKeyId: string;
@@ -56,7 +81,7 @@ export interface SteamKeyAssignment {
   giftMessage?: string;
   giftedAt?: string;
   exchangeCredits?: number | null;
-  isExisting: boolean;
+  alreadyOwnedOnSteam: boolean;
 }
 
 export interface SteamKeyQueryParams {
@@ -92,8 +117,12 @@ export interface StatusCount {
 }
 
 export interface SyncSteamLibraryResponse {
-  isSuccess: boolean;
   lastSyncedAt: string;
-  lastSyncWasSuccessful: boolean;
+  steamLibrarySyncStatus: string; // API returns string values like "SyncSucceeded", "NeverSynced", etc.
   errorMessage?: string;
+}
+
+export interface SteamLibraryStatusResponse {
+  lastSyncedAt: string;
+  steamLibrarySyncStatus: string; // API returns string values like "SyncSucceeded", "NeverSynced", etc.
 }

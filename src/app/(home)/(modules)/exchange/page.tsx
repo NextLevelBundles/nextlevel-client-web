@@ -12,7 +12,7 @@ export default function ExchangePage() {
   const { data, isLoading, error } = useExchangeData();
   const exchangeCreditsForKeyMutation = useExchangeCreditsForKey();
 
-  const handleExchangeCreditsForKey = (keyId: string) => {
+  const handleExchangeCreditsForKey = (keyId: number) => {
     exchangeCreditsForKeyMutation.mutate(keyId);
   };
 

@@ -7,7 +7,7 @@ import type { ExchangeableSteamKeyDto } from '@/lib/api/types/exchange';
 interface InventorySectionProps {
   inventoryKeys: ExchangeableSteamKeyDto[];
   isLoading: boolean;
-  onExchange: (keyId: string) => void;
+  onExchange: (keyId: number) => void;
   isExchanging: boolean;
 }
 
@@ -76,9 +76,9 @@ export function InventorySection({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {inventoryKeys.map((key) => (
               <GameCard
-                key={key.steamKeyAssignmentId}
+                key={key.steamAppId}
                 game={key}
-                onAction={() => onExchange(key.steamKeyAssignmentId)}
+                onAction={() => onExchange(key.steamAppId)}
                 actionLabel="Send to Exchange"
                 actionVariant="default"
                 isLoading={isExchanging}

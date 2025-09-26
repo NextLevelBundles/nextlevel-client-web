@@ -3,6 +3,7 @@ import { steamKeyApi } from "@/lib/api";
 import { 
   SteamKeyQueryParams,
   GiftKeyRequest,
+  SteamLibrarySyncStatus,
 } from "@/lib/api/types/steam-key";
 import { toast } from "sonner";
 
@@ -95,22 +96,37 @@ export function useSyncSteamLibrary() {
     onSuccess: (data) => {
       // Invalidate and refetch steam keys to get new data
       queryClient.invalidateQueries({ queryKey: steamKeyKeys.all });
-      
-      if (data.isSuccess) {
+      // Also invalidate steam library status
+      queryClient.invalidateQueries({ queryKey: ["steam-library-status"] });
+
+      if (data.steamLibrarySyncStatus === SteamLibrarySyncStatus.SyncSucceeded) {
         toast.success("🔄 Steam Library Synced!", {
           description: "Your game library has been refreshed successfully.",
         });
-      } else {
+      } else if (data.steamLibrarySyncStatus === SteamLibrarySyncStatus.SyncFailed) {
         toast.error("Sync failed", {
           description: data.errorMessage || "Failed to sync your Steam library.",
         });
       }
+      else if (data.steamLibrarySyncStatus === SteamLibrarySyncStatus.SyncError) {
+        toast.error("Sync error", {
+          description: data.errorMessage || "Failed to sync your Steam library because of technical issues.",
+        });
+      }
     },
     onError: (error) => {
-      toast.error("Sync failed", {
+      toast.error("Sync error", {
         description:
-          error instanceof Error ? error.message : "Something went wrong during sync.",
+          error instanceof Error ? error.message : "Failed to sync your Steam library because of technical issues.",
       });
     },
+  });
+}
+
+export function useSteamLibraryStatus() {
+  return useQuery({
+    queryKey: ["steam-library-status"],
+    queryFn: () => steamKeyApi.getSteamLibraryStatus(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
