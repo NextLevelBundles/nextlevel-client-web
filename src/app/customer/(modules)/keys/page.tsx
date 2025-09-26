@@ -96,6 +96,20 @@ const copyMessages = [
   "🗝️ Another one in your collection!",
 ];
 
+// Function to convert technical status names to user-friendly ones
+const getStatusDisplayName = (status: string): string => {
+  const statusMap: Record<string, string> = {
+    "AddedToExchange": "Exchanged",
+    "ReceivedFromExchange": "Received",
+    "Assigned": "Available",
+    "Revealed": "Redeemed",
+    "Expired": "Expired",
+    "Refunded": "Refunded",
+  };
+
+  return statusMap[status] || status;
+};
+
 function ExchangeCreditsDisplay({ credits }: { credits?: number | null }) {
   if (!credits || credits === 0) {
     return null;
@@ -1033,12 +1047,21 @@ export default function KeysPage() {
                         Awaiting acceptance
                       </Badge>
                     ) : (
-                      <Badge
-                        variant="outline"
-                        className="text-muted-foreground"
+                      <div
+                        className={`inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium pointer-events-none ${
+                          key.status === "AddedToExchange"
+                            ? "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400"
+                            : key.status === "ReceivedFromExchange"
+                            ? "bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400"
+                            : key.status === "Expired"
+                            ? "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400"
+                            : key.status === "Refunded"
+                            ? "bg-orange-50 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400"
+                            : "bg-gray-50 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400"
+                        }`}
                       >
-                        {key.status}
-                      </Badge>
+                        {getStatusDisplayName(key.status)}
+                      </div>
                     )}
                   </div>
                 </motion.div>
@@ -1198,8 +1221,8 @@ export default function KeysPage() {
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader className="space-y-4">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/20">
-              <AlertTriangle className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-md border bg-background shadow-sm">
+              <AlertTriangle className="h-6 w-6 text-muted-foreground" />
             </div>
             <DialogTitle className="text-center text-xl font-semibold">
               Steam Library Not Refreshed
