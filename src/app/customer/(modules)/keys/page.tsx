@@ -136,6 +136,8 @@ export default function KeysPage() {
     useState<SteamKeyAssignment | null>(null);
   const [isGiftModalOpen, setIsGiftModalOpen] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
+  const [syncErrorMessage, setSyncErrorMessage] = useState<string | null>(null);
+  const [showSteamPrivacyHelp, setShowSteamPrivacyHelp] = useState(false);
   const [redeemConfirmDialog, setRedeemConfirmDialog] = useState<{
     isOpen: boolean;
     keyId: string | null;
@@ -398,7 +400,7 @@ export default function KeysPage() {
         // Trigger confetti
         triggerConfetti();
 
-        toast.success("Steam key revealed! Redirecting to Steam...", {
+        toast.success("Steam key redeemed! Redirecting to Steam...", {
           icon: (
             <motion.div
               initial={{ rotate: -20 }}
@@ -414,7 +416,7 @@ export default function KeysPage() {
     } catch (error) {
       console.error("Error revealing key:", error);
       setRedeemConfirmDialog((prev) => ({ ...prev, isLoading: false }));
-      toast.error("Failed to reveal the key. Please try again.");
+      toast.error("Failed to redeem the key. Please try again.");
     }
   };
 
@@ -506,16 +508,25 @@ export default function KeysPage() {
       isPending: syncSteamLibraryMutation?.isPending,
       isIdle: syncSteamLibraryMutation?.isIdle
     });
-    
+
+    // Clear any previous error message
+    setSyncErrorMessage(null);
+
     syncSteamLibraryMutation?.mutate(undefined, {
       onSuccess: (result) => {
         console.log("Mutation success:", result);
         if (result.steamLibrarySyncStatus === "SyncSucceeded" && result.lastSyncedAt) {
           setLastSyncTime(result.lastSyncedAt);
+          setSyncErrorMessage(null);
+        } else if (result.steamLibrarySyncStatus === "SyncFailed") {
+          setSyncErrorMessage("profile-private");
+        } else if (result.steamLibrarySyncStatus === "SyncError") {
+          setSyncErrorMessage("Technical error occurred while syncing. Please try again later.");
         }
       },
       onError: (error) => {
         console.error("Mutation error:", error);
+        setSyncErrorMessage("Failed to connect to Steam. Please try again later.");
       }
     });
   };
@@ -532,9 +543,10 @@ export default function KeysPage() {
       isError: syncSteamLibraryMutation?.isError,
       isSuccess: syncSteamLibraryMutation?.isSuccess,
       lastSyncTime,
+      syncErrorMessage,
       steamLibraryStatus: steamLibraryStatus?.steamLibrarySyncStatus
     });
-    
+
     if (syncSteamLibraryMutation?.isPending) {
       return (
         <>
@@ -543,7 +555,18 @@ export default function KeysPage() {
         </>
       );
     }
-    
+
+    // Show error state if there's a sync error message
+    if (syncErrorMessage) {
+      const syncTime = lastSyncTime || steamLibraryStatus?.lastSyncedAt;
+      return (
+        <>
+          <X className="h-4 w-4" />
+          Steam Library Sync Failed {syncTime && formatSyncTime(syncTime)}
+        </>
+      );
+    }
+
     if (syncSteamLibraryMutation?.isError) {
       return (
         <>
@@ -552,9 +575,9 @@ export default function KeysPage() {
         </>
       );
     }
-    
+
     // Show success state if mutation was successful OR if we have successful sync status from API
-    if ((lastSyncTime && syncSteamLibraryMutation?.isSuccess) || 
+    if ((lastSyncTime && syncSteamLibraryMutation?.isSuccess && !syncErrorMessage) ||
         (steamLibraryStatus?.steamLibrarySyncStatus === "SyncSucceeded" && steamLibraryStatus?.lastSyncedAt)) {
       const syncTime = lastSyncTime || steamLibraryStatus?.lastSyncedAt;
       return (
@@ -564,7 +587,7 @@ export default function KeysPage() {
         </>
       );
     }
-    
+
     return (
       <>
         <RefreshCw className="h-4 w-4" />
@@ -675,9 +698,11 @@ export default function KeysPage() {
                 className={`flex items-center gap-2 px-3 py-2 text-sm border rounded-md transition-colors ${
                   syncSteamLibraryMutation?.isPending
                     ? "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed"
+                    : syncErrorMessage
+                    ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
                     : syncSteamLibraryMutation?.isError
                     ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
-                    : (lastSyncTime && syncSteamLibraryMutation?.isSuccess) || 
+                    : (lastSyncTime && syncSteamLibraryMutation?.isSuccess && !syncErrorMessage) ||
                       (steamLibraryStatus?.steamLibrarySyncStatus === "SyncSucceeded" && steamLibraryStatus?.lastSyncedAt)
                     ? "border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
                     : "border-gray-300 hover:bg-gray-100"
@@ -687,7 +712,31 @@ export default function KeysPage() {
               </button>
             )}
           </div>
-          {steamKeys.length > 0 && steamLibraryStatus?.steamLibrarySyncStatus === "NeverSynced" && (
+          {/* Sync Error Message */}
+          {syncErrorMessage && (
+            <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 flex-shrink-0" />
+                <p className="text-sm text-red-700 dark:text-red-300">
+                  {syncErrorMessage === "profile-private" ? (
+                    <>
+                      Your Steam profile is not public. Unable to sync your Steam library.{" "}
+                      <button
+                        onClick={() => setShowSteamPrivacyHelp(true)}
+                        className="text-red-800 dark:text-red-200 underline hover:no-underline font-medium"
+                      >
+                        Learn more
+                      </button>
+                    </>
+                  ) : (
+                    syncErrorMessage
+                  )}
+                </p>
+              </div>
+            </div>
+          )}
+          {/* Never Synced Message */}
+          {steamKeys.length > 0 && steamLibraryStatus?.steamLibrarySyncStatus === "NeverSynced" && !syncErrorMessage && (
             <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
@@ -1093,116 +1142,87 @@ export default function KeysPage() {
         }}
       >
         <DialogContent className="sm:max-w-md">
-          {!redeemConfirmDialog.isLoading ? (
-            <>
-              <DialogHeader className="space-y-4">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-md border bg-background shadow-sm">
-                  <ShieldAlert className="h-6 w-6 text-muted-foreground" />
-                </div>
-                <DialogTitle className="text-center text-xl font-semibold">
-                  Important: Refund Policy Notice
-                </DialogTitle>
-              </DialogHeader>
-
-              <div className="space-y-4 py-4">
-                <Alert className="border-orange-200 bg-orange-50 dark:border-orange-900/50 dark:bg-orange-950/20">
-                  <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                  <AlertDescription className="text-sm">
-                    <strong>Please note:</strong> Once you reveal and redeem
-                    this Steam key, the entire bundle containing this game
-                    becomes <strong>non-refundable</strong>.
-                  </AlertDescription>
-                </Alert>
-
-                {redeemConfirmDialog.alreadyOwned && (
-                  <Alert className="border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/20">
-                    <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
-                    <AlertDescription className="text-sm">
-                      <strong>Already owned:</strong> You already own this game on Steam.
-                      Redeeming this key will result in a duplicate copy that you won&apos;t be able to use.
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                <div className="space-y-3 text-sm text-muted-foreground">
-                  <p>You&apos;re about to reveal the Steam key for:</p>
-                  <div className="rounded-lg border bg-muted/30 p-3">
-                    <p className="font-medium text-foreground">
-                      {redeemConfirmDialog.productTitle}
-                    </p>
-                  </div>
-                  <p className="text-xs">
-                    By proceeding, you acknowledge that:
-                  </p>
-                  <ul className="space-y-1 text-xs list-disc list-inside">
-                    <li>The Steam key will be permanently revealed</li>
-                    <li>The bundle containing this key cannot be refunded</li>
-                    <li>This action cannot be undone</li>
-                  </ul>
-                </div>
-              </div>
-
-              <DialogFooter className="gap-2 sm:gap-0">
-                <Button
-                  variant="ghost"
-                  onClick={() =>
-                    setRedeemConfirmDialog({
-                      isOpen: false,
-                      keyId: null,
-                      productTitle: "",
-                      isLoading: false,
-                      alreadyOwned: false,
-                    })
-                  }
-                >
-                  Cancel
-                </Button>
-                <Button
-                  className="bg-linear-to-r from-primary to-primary/90"
-                  onClick={handleConfirmRedeem}
-                >
-                  <KeyIcon className="h-4 w-4 mr-2" />I Understand, Reveal Key
-                </Button>
-              </DialogFooter>
-            </>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-12 space-y-4">
-              <div className="relative">
-                <div className="h-20 w-20 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
-                <KeyIcon className="absolute inset-0 m-auto h-8 w-8 text-primary animate-pulse" />
-              </div>
-              <div className="space-y-2 text-center">
-                <p className="text-lg font-medium">
-                  Revealing your Steam key...
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Please wait while we process your request
-                </p>
-              </div>
-              <motion.div
-                className="flex gap-1"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-              >
-                <motion.span
-                  className="h-2 w-2 rounded-full bg-primary"
-                  animate={{ scale: [1, 1.5, 1] }}
-                  transition={{ duration: 1, repeat: Infinity, delay: 0 }}
-                />
-                <motion.span
-                  className="h-2 w-2 rounded-full bg-primary"
-                  animate={{ scale: [1, 1.5, 1] }}
-                  transition={{ duration: 1, repeat: Infinity, delay: 0.2 }}
-                />
-                <motion.span
-                  className="h-2 w-2 rounded-full bg-primary"
-                  animate={{ scale: [1, 1.5, 1] }}
-                  transition={{ duration: 1, repeat: Infinity, delay: 0.4 }}
-                />
-              </motion.div>
+          <DialogHeader className="space-y-4">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-md border bg-background shadow-sm">
+              <ShieldAlert className="h-6 w-6 text-muted-foreground" />
             </div>
-          )}
+            <DialogTitle className="text-center text-xl font-semibold">
+              Important: Refund Policy Notice
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <Alert className="border-orange-200 bg-orange-50 dark:border-orange-900/50 dark:bg-orange-950/20">
+              <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+              <AlertDescription className="text-sm">
+                <strong>Please note:</strong> Once you redeem
+                this Steam key, the entire bundle containing this game
+                becomes <strong>non-refundable</strong>.
+              </AlertDescription>
+            </Alert>
+
+            {redeemConfirmDialog.alreadyOwned && (
+              <Alert className="border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/20">
+                <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                <AlertDescription className="text-sm">
+                  <strong>Already owned:</strong> You already own this game on Steam.
+                  Redeeming this key will result in a duplicate copy that you won&apos;t be able to use.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <p>You&apos;re about to redeem the Steam key for:</p>
+              <div className="rounded-lg border bg-muted/30 p-3">
+                <p className="font-medium text-foreground">
+                  {redeemConfirmDialog.productTitle}
+                </p>
+              </div>
+              <p className="text-xs">
+                By proceeding, you acknowledge that:
+              </p>
+              <ul className="space-y-1 text-xs list-disc list-inside">
+                <li>The Steam key will be permanently redeemed</li>
+                <li>The bundle containing this key cannot be refunded</li>
+                <li>This action cannot be undone</li>
+              </ul>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="ghost"
+              onClick={() =>
+                setRedeemConfirmDialog({
+                  isOpen: false,
+                  keyId: null,
+                  productTitle: "",
+                  isLoading: false,
+                  alreadyOwned: false,
+                })
+              }
+              disabled={redeemConfirmDialog.isLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-linear-to-r from-primary to-primary/90"
+              onClick={handleConfirmRedeem}
+              disabled={redeemConfirmDialog.isLoading}
+            >
+              {redeemConfirmDialog.isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Redeeming key...
+                </>
+              ) : (
+                <>
+                  <KeyIcon className="h-4 w-4 mr-2" />
+                  I Understand, Redeem Key
+                </>
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -1288,6 +1308,60 @@ export default function KeysPage() {
               onClick={handleSyncWarningProceed}
             >
               Proceed Anyway
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Steam Privacy Help Dialog */}
+      <Dialog
+        open={showSteamPrivacyHelp}
+        onOpenChange={setShowSteamPrivacyHelp}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader className="space-y-4">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-md border bg-background shadow-sm">
+              <ShieldAlert className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <DialogTitle className="text-center text-xl font-semibold">
+              How to Make Your Steam Profile Public
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-3 text-sm">
+              <p className="text-muted-foreground">
+                To sync your Steam library and enable exchange options, your Steam profile needs to be public. Follow these steps:
+              </p>
+
+              <ol className="space-y-2 list-decimal list-inside text-muted-foreground">
+                <li>Log in to Steam</li>
+                <li>Click on your username in the top menu</li>
+                <li>Select "Profile" from the dropdown</li>
+                <li>Click "Edit Profile"</li>
+                <li>Go to "Privacy Settings"</li>
+                <li>Set "My Profile" to <strong className="text-foreground">Public</strong></li>
+                <li>Set "Game Details" to <strong className="text-foreground">Public</strong></li>
+                <li>Save your changes</li>
+              </ol>           
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="ghost"
+              onClick={() => setShowSteamPrivacyHelp(false)}
+            >
+              Close
+            </Button>
+            <Button
+              className="bg-linear-to-r from-primary to-primary/90"
+              onClick={() => {
+                window.open("https://help.steampowered.com/en/faqs/view/588C-C67D-0251-C276", "_blank");
+              }}
+            >
+              <ExternalLinkIcon className="h-4 w-4 mr-2" />
+              Steam Privacy Guide
             </Button>
           </DialogFooter>
         </DialogContent>
