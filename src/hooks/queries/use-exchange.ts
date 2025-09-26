@@ -9,16 +9,13 @@ export function useExchangeData() {
   return useQuery({
     queryKey: ['exchange-data'],
     queryFn: async () => {
-      const [credits, exchangeGames, inventoryKeys] = await Promise.all([
+      const [credits, exchangeGames] = await Promise.all([
         exchangeApi.getCustomerCredits(),
-        exchangeApi.getExchangeGames('Active'),
-        exchangeApi.getToBeExchangeableSteamKeys()
+        exchangeApi.getExchangeGames('Active')
       ]);
       return {
         credits: credits.netCredits ?? 0,
         exchangeGames,
-        exchangeableKeys: [], // Keep for backward compatibility, will remove later
-        inventoryKeys
       };
     },
     staleTime: 30000, // 30 seconds

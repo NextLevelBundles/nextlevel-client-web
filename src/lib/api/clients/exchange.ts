@@ -1,6 +1,5 @@
 
 import { ClientApi } from "../client-api";
-import { ExchangeableSteamKeyDto } from "../types/exchange";
 import { ExchangeGame } from "../types/exchange-game";
 
 export class ExchangeApi {
@@ -23,18 +22,6 @@ export class ExchangeApi {
     return await this.client.post<{ credits: number; success?: boolean }, { steamAppId: number }>(
       "/customer/steam-keys/exchange-credits-for-key",
       { steamAppId }
-    );
-  }
-
-  async getExchangeableSteamKeys(): Promise<ExchangeableSteamKeyDto[]> {
-    return await this.client.get<ExchangeableSteamKeyDto[]>(
-      "/customer/steam-keys/exchangeable-keys"
-    );
-  }
-
-   async getToBeExchangeableSteamKeys(): Promise<ExchangeableSteamKeyDto[]> {
-    return await this.client.get<ExchangeableSteamKeyDto[]>(
-      "/customer/steam-keys/to-be-exchangeable-keys"
     );
   }
 
