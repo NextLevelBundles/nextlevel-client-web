@@ -26,6 +26,8 @@ import {
 import { Markdown } from "@/app/(shared)/components/ui/markdown";
 import { useExchangeGameDetails } from "@/hooks/queries/use-exchange-game-details";
 import { Skeleton } from "@/shared/components/ui/skeleton";
+import { Navigation } from "@/home/components/navigation";
+import { Footer } from "@/home/components/sections/footer";
 
 export default function ExchangeGameDetailsPage() {
   const params = useParams();
@@ -37,39 +39,47 @@ export default function ExchangeGameDetailsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col lg:flex-row gap-8">
-            <div className="lg:w-1/3">
-              <Skeleton className="aspect-[2/3] w-full rounded-lg" />
-            </div>
-            <div className="lg:w-2/3 space-y-6">
-              <Skeleton className="h-12 w-3/4" />
-              <Skeleton className="h-24 w-full" />
-              <div className="flex gap-4">
-                <Skeleton className="h-10 w-32" />
-                <Skeleton className="h-10 w-32" />
+      <>
+        <Navigation />
+        <div className="min-h-screen bg-background pt-16">
+          <div className="container mx-auto px-4 py-8">
+            <div className="flex flex-col lg:flex-row gap-8">
+              <div className="lg:w-1/3">
+                <Skeleton className="aspect-[2/3] w-full rounded-lg" />
               </div>
-              <Skeleton className="h-64 w-full" />
+              <div className="lg:w-2/3 space-y-6">
+                <Skeleton className="h-12 w-3/4" />
+                <Skeleton className="h-24 w-full" />
+                <div className="flex gap-4">
+                  <Skeleton className="h-10 w-32" />
+                  <Skeleton className="h-10 w-32" />
+                </div>
+                <Skeleton className="h-64 w-full" />
+              </div>
             </div>
           </div>
         </div>
-      </div>
+        <Footer />
+      </>
     );
   }
 
   if (error || !game) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <h2 className="text-2xl font-bold">Game not found</h2>
-          <p className="text-muted-foreground">The game you're looking for doesn't exist or has been removed.</p>
-          <Button onClick={() => window.history.back()}>
-            <ChevronLeft className="h-4 w-4 mr-2" />
-            Go Back
-          </Button>
+      <>
+        <Navigation />
+        <div className="min-h-screen bg-background pt-16 flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <h2 className="text-2xl font-bold">Game not found</h2>
+            <p className="text-muted-foreground">The game you're looking for doesn't exist or has been removed.</p>
+            <Button onClick={() => window.history.back()}>
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              Go Back
+            </Button>
+          </div>
         </div>
-      </div>
+        <Footer />
+      </>
     );
   }
 
@@ -79,7 +89,6 @@ export default function ExchangeGameDetailsPage() {
   const mainVideo = videos.find(v => v.highlight) || videos[0];
 
   const allMedia = [
-    steamApp.headerImage,
     ...screenshots.map(s => s.pathFull),
   ].filter(Boolean);
 
@@ -89,50 +98,37 @@ export default function ExchangeGameDetailsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <div className="relative h-[400px] lg:h-[500px] overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            fill
-            src={steamApp.background || steamApp.backgroundRaw || steamApp.headerImage || "/placeholder.jpg"}
-            alt={steamApp.name}
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-        </div>
-        <div className="relative container mx-auto px-4 h-full flex items-end pb-12">
-          <div className="space-y-4">
-            <h1 className="text-4xl lg:text-6xl font-bold text-white drop-shadow-lg">
+    <>
+      <Navigation />
+      <div className="min-h-screen bg-background pt-16">
+        {/* Main Content */}
+        <div className="container mx-auto px-4 py-8">
+          {/* Title and Platforms */}
+          <div className="mb-6">
+            <h1 className="text-3xl lg:text-4xl font-bold mb-3">
               {steamApp.name}
             </h1>
             <div className="flex flex-wrap gap-2">
               {steamApp.platforms?.windows && (
-                <Badge variant="secondary" className="bg-background/80 backdrop-blur">
+                <Badge variant="secondary">
                   <AppWindow className="h-3 w-3 mr-1" />
                   Windows
                 </Badge>
               )}
               {steamApp.platforms?.mac && (
-                <Badge variant="secondary" className="bg-background/80 backdrop-blur">
+                <Badge variant="secondary">
                   <Apple className="h-3 w-3 mr-1" />
                   macOS
                 </Badge>
               )}
               {steamApp.platforms?.linux && (
-                <Badge variant="secondary" className="bg-background/80 backdrop-blur">
+                <Badge variant="secondary">
                   <MonitorSmartphone className="h-3 w-3 mr-1" />
                   Linux
                 </Badge>
               )}
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Column - Media */}
           <div className="lg:w-2/3 space-y-6">
@@ -234,17 +230,19 @@ export default function ExchangeGameDetailsPage() {
                         {steamApp.pcRequirements.minimum && (
                           <div className="space-y-2">
                             <h4 className="font-medium text-sm text-muted-foreground">Minimum</h4>
-                            <div className="prose prose-sm prose-invert">
-                              <Markdown content={steamApp.pcRequirements.minimum} />
-                            </div>
+                            <div
+                              className="prose prose-sm prose-invert"
+                              dangerouslySetInnerHTML={{ __html: steamApp.pcRequirements.minimum }}
+                            />
                           </div>
                         )}
                         {steamApp.pcRequirements.recommended && (
                           <div className="space-y-2">
                             <h4 className="font-medium text-sm text-muted-foreground">Recommended</h4>
-                            <div className="prose prose-sm prose-invert">
-                              <Markdown content={steamApp.pcRequirements.recommended} />
-                            </div>
+                            <div
+                              className="prose prose-sm prose-invert"
+                              dangerouslySetInnerHTML={{ __html: steamApp.pcRequirements.recommended }}
+                            />
                           </div>
                         )}
                       </div>
@@ -260,17 +258,19 @@ export default function ExchangeGameDetailsPage() {
                         {steamApp.macRequirements.minimum && (
                           <div className="space-y-2">
                             <h4 className="font-medium text-sm text-muted-foreground">Minimum</h4>
-                            <div className="prose prose-sm prose-invert">
-                              <Markdown content={steamApp.macRequirements.minimum} />
-                            </div>
+                            <div
+                              className="prose prose-sm prose-invert"
+                              dangerouslySetInnerHTML={{ __html: steamApp.macRequirements.minimum }}
+                            />
                           </div>
                         )}
                         {steamApp.macRequirements.recommended && (
                           <div className="space-y-2">
                             <h4 className="font-medium text-sm text-muted-foreground">Recommended</h4>
-                            <div className="prose prose-sm prose-invert">
-                              <Markdown content={steamApp.macRequirements.recommended} />
-                            </div>
+                            <div
+                              className="prose prose-sm prose-invert"
+                              dangerouslySetInnerHTML={{ __html: steamApp.macRequirements.recommended }}
+                            />
                           </div>
                         )}
                       </div>
@@ -286,17 +286,19 @@ export default function ExchangeGameDetailsPage() {
                         {steamApp.linuxRequirements.minimum && (
                           <div className="space-y-2">
                             <h4 className="font-medium text-sm text-muted-foreground">Minimum</h4>
-                            <div className="prose prose-sm prose-invert">
-                              <Markdown content={steamApp.linuxRequirements.minimum} />
-                            </div>
+                            <div
+                              className="prose prose-sm prose-invert"
+                              dangerouslySetInnerHTML={{ __html: steamApp.linuxRequirements.minimum }}
+                            />
                           </div>
                         )}
                         {steamApp.linuxRequirements.recommended && (
                           <div className="space-y-2">
                             <h4 className="font-medium text-sm text-muted-foreground">Recommended</h4>
-                            <div className="prose prose-sm prose-invert">
-                              <Markdown content={steamApp.linuxRequirements.recommended} />
-                            </div>
+                            <div
+                              className="prose prose-sm prose-invert"
+                              dangerouslySetInnerHTML={{ __html: steamApp.linuxRequirements.recommended }}
+                            />
                           </div>
                         )}
                       </div>
@@ -311,36 +313,24 @@ export default function ExchangeGameDetailsPage() {
           <div className="lg:w-1/3 space-y-6">
             {/* Exchange Info Card */}
             <div className="rounded-lg border bg-card p-6 space-y-4">
-              <h2 className="text-xl font-bold">Exchange Details</h2>
+              <h2 className="text-xl font-bold">Claim This Game</h2>
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Status</span>
-                  <Badge variant={game.status === 'Active' ? 'default' : 'secondary'}>
-                    {game.status}
-                  </Badge>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Input Credits</span>
+                  <span className="text-sm text-muted-foreground">Credits Required</span>
                   <div className="flex items-center gap-1">
                     <Coins className="h-4 w-4 text-primary" />
-                    <span className="font-semibold">{game.inputCredits}</span>
+                    <span className="font-semibold text-lg">{game.inputCredits}</span>
                   </div>
                 </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Output Credits</span>
-                  <div className="flex items-center gap-1">
-                    <Coins className="h-4 w-4 text-primary" />
-                    <span className="font-semibold">{game.outputCredits}</span>
-                  </div>
-                </div>
+                <p className="text-xs text-muted-foreground">
+                  Spend {game.inputCredits} credits to claim this game and add it to your library.
+                </p>
               </div>
 
               <Button className="w-full" size="lg">
-                <ArrowLeftRight className="h-4 w-4 mr-2" />
-                Exchange Now
+                <Gamepad2 className="h-4 w-4 mr-2" />
+                Claim Game
               </Button>
             </div>
 
@@ -471,31 +461,33 @@ export default function ExchangeGameDetailsPage() {
         </div>
       </div>
 
-      {/* Trailer Modal */}
-      {showTrailerModal && mainVideo && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
-          onClick={() => setShowTrailerModal(false)}
-        >
+        {/* Trailer Modal */}
+        {showTrailerModal && mainVideo && (
           <div
-            className="relative w-full max-w-4xl aspect-video bg-black rounded-lg overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+            onClick={() => setShowTrailerModal(false)}
           >
-            <video
-              autoPlay
-              controls
-              className="w-full h-full"
-              src={getSecureUrl(mainVideo.webm?.videoMax || mainVideo.mp4?.videoMax)}
-            />
-            <button
-              onClick={() => setShowTrailerModal(false)}
-              className="absolute top-4 right-4 p-2 rounded-full bg-background/80 backdrop-blur hover:bg-background/90"
+            <div
+              className="relative w-full max-w-4xl aspect-video bg-black rounded-lg overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
             >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
+              <video
+                autoPlay
+                controls
+                className="w-full h-full"
+                src={getSecureUrl(mainVideo.webm?.videoMax || mainVideo.mp4?.videoMax)}
+              />
+              <button
+                onClick={() => setShowTrailerModal(false)}
+                className="absolute top-4 right-4 p-2 rounded-full bg-background/80 backdrop-blur hover:bg-background/90"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+      <Footer />
+    </>
   );
 }
