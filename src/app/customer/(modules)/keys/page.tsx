@@ -128,11 +128,13 @@ export default function KeysPage() {
     keyId: string | null;
     productTitle: string;
     isLoading: boolean;
+    alreadyOwned?: boolean;
   }>({
     isOpen: false,
     keyId: null,
     productTitle: "",
     isLoading: false,
+    alreadyOwned: false,
   });
 
   const [steamSyncWarningDialog, setSteamSyncWarningDialog] = useState<{
@@ -190,6 +192,13 @@ export default function KeysPage() {
   // Fetch Steam library status
   const { data: steamLibraryStatus } = useSteamLibraryStatus();
 
+  // Initialize lastSyncTime based on Steam library status
+  useEffect(() => {
+    if (steamLibraryStatus?.lastSyncedAt && !lastSyncTime) {
+      setLastSyncTime(steamLibraryStatus.lastSyncedAt);
+    }
+  }, [steamLibraryStatus, lastSyncTime]);
+
   // Transform status counts to filter options
   const statusOptions = React.useMemo(() => {
     if (!statusCounts) return [];
@@ -242,20 +251,25 @@ export default function KeysPage() {
 
   // Helper function to check if Steam library sync is needed
   const isSteamSyncNeeded = (): boolean => {
+    console.log("Checking sync status:", steamLibraryStatus);
+    
     // If no sync status data available, assume sync is needed
     if (!steamLibraryStatus) return true;
 
     // If never synced, sync is needed
-    if (!steamLibraryStatus.lastSyncedAt) return true;
+    if (!steamLibraryStatus.lastSyncedAt || steamLibraryStatus.steamLibrarySyncStatus === "NeverSynced") return true;
 
     // If last sync was unsuccessful, sync is needed
-    if (!steamLibraryStatus.lastSyncWasSuccessful) return true;
+    if (steamLibraryStatus.steamLibrarySyncStatus !== "SyncSucceeded") return true;
 
     // Check if last sync was more than 1 week ago
     const lastSyncDate = dayjs(steamLibraryStatus.lastSyncedAt);
     const oneWeekAgo = dayjs().subtract(1, "week");
 
-    return lastSyncDate.isBefore(oneWeekAgo);
+    const isOlderThanWeek = lastSyncDate.isBefore(oneWeekAgo);
+    console.log("Sync date check:", { lastSyncDate: lastSyncDate.format(), oneWeekAgo: oneWeekAgo.format(), isOlderThanWeek });
+
+    return isOlderThanWeek;
   };
 
   // Helper function to get the key value
@@ -314,6 +328,13 @@ export default function KeysPage() {
   };
 
   const handleRevealKey = (keyId: string, productTitle: string) => {
+    // Find the key to check if already owned
+    const key = steamKeys.find(k => k.id === keyId);
+    const alreadyOwned = key?.AlreadyOwnedOnSteam || false;
+
+    console.log("Key found:", key);
+    console.log("Already owned:", alreadyOwned);
+
     // Check if Steam library sync is needed
     if (isSteamSyncNeeded()) {
       setSteamSyncWarningDialog({
@@ -324,12 +345,13 @@ export default function KeysPage() {
       return;
     }
 
-    // If sync is not needed, proceed with normal redeem flow
+    // Always proceed to confirmation dialog (don't skip it)
     setRedeemConfirmDialog({
       isOpen: true,
       keyId,
       productTitle,
       isLoading: false,
+      alreadyOwned,
     });
   };
 
@@ -351,6 +373,7 @@ export default function KeysPage() {
           keyId: null,
           productTitle: "",
           isLoading: false,
+          alreadyOwned: false,
         });
 
         // Open Steam registration page with the key
@@ -448,11 +471,16 @@ export default function KeysPage() {
 
     // Proceed with normal redeem flow
     if (keyId && productTitle) {
+      // Find the key to check if already owned
+      const key = steamKeys.find(k => k.id === keyId);
+      const alreadyOwned = key?.AlreadyOwnedOnSteam || false;
+
       setRedeemConfirmDialog({
         isOpen: true,
         keyId,
         productTitle,
         isLoading: false,
+        alreadyOwned,
       });
     }
   };
@@ -487,7 +515,8 @@ export default function KeysPage() {
       isPending: syncSteamLibraryMutation?.isPending,
       isError: syncSteamLibraryMutation?.isError,
       isSuccess: syncSteamLibraryMutation?.isSuccess,
-      lastSyncTime
+      lastSyncTime,
+      steamLibraryStatus: steamLibraryStatus?.steamLibrarySyncStatus
     });
     
     if (syncSteamLibraryMutation?.isPending) {
@@ -508,11 +537,14 @@ export default function KeysPage() {
       );
     }
     
-    if (lastSyncTime && syncSteamLibraryMutation?.isSuccess) {
+    // Show success state if mutation was successful OR if we have successful sync status from API
+    if ((lastSyncTime && syncSteamLibraryMutation?.isSuccess) || 
+        (steamLibraryStatus?.steamLibrarySyncStatus === "SyncSucceeded" && steamLibraryStatus?.lastSyncedAt)) {
+      const syncTime = lastSyncTime || steamLibraryStatus?.lastSyncedAt;
       return (
         <>
           <Check className="h-4 w-4" />
-          Steam Library Refreshed {formatSyncTime(lastSyncTime)}
+          Steam Library Refreshed {syncTime && formatSyncTime(syncTime)}
         </>
       );
     }
@@ -620,22 +652,35 @@ export default function KeysPage() {
                 </span>
               )}
             </CardTitle>
-            <button
-              onClick={handleRefreshSteamLibrary}
-              disabled={syncSteamLibraryMutation?.isPending}
-              className={`flex items-center gap-2 px-3 py-2 text-sm border rounded-md transition-colors ${
-                syncSteamLibraryMutation?.isPending
-                  ? "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed"
-                  : syncSteamLibraryMutation?.isError
-                  ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
-                  : lastSyncTime && syncSteamLibraryMutation?.isSuccess
-                  ? "border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
-                  : "border-gray-300 hover:bg-gray-100"
-              }`}
-            >
-              {getButtonText()}
-            </button>
+            {steamKeys.length > 0 && (
+              <button
+                onClick={handleRefreshSteamLibrary}
+                disabled={syncSteamLibraryMutation?.isPending}
+                className={`flex items-center gap-2 px-3 py-2 text-sm border rounded-md transition-colors ${
+                  syncSteamLibraryMutation?.isPending
+                    ? "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed"
+                    : syncSteamLibraryMutation?.isError
+                    ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
+                    : (lastSyncTime && syncSteamLibraryMutation?.isSuccess) || 
+                      (steamLibraryStatus?.steamLibrarySyncStatus === "SyncSucceeded" && steamLibraryStatus?.lastSyncedAt)
+                    ? "border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
+                    : "border-gray-300 hover:bg-gray-100"
+                }`}
+              >
+                {getButtonText()}
+              </button>
+            )}
           </div>
+          {steamKeys.length > 0 && steamLibraryStatus?.steamLibrarySyncStatus === "NeverSynced" && (
+            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  Sync your Steam library to unlock exchange options for games you already own
+                </p>
+              </div>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -844,20 +889,20 @@ export default function KeysPage() {
                             key.customerId !== currentCustomerId &&
                             key.giftAccepted === true)) && (
                           <>
-                            {/* Redeem on Steam button - enabled only if isExisting is false */}
+                            {/* Redeem on Steam button - enabled only if AlreadyOwnedOnSteam is false */}
                             <motion.div
-                              whileHover={{ scale: key.isExisting ? 1 : 1.05 }}
-                              whileTap={{ scale: key.isExisting ? 1 : 0.95 }}
+                              whileHover={{ scale: key.AlreadyOwnedOnSteam ? 1 : 1.05 }}
+                              whileTap={{ scale: key.AlreadyOwnedOnSteam ? 1 : 0.95 }}
                             >
                               <Button
                                 className={`cursor-pointer gap-2 ${
-                                  key.isExisting 
+                                  key.AlreadyOwnedOnSteam 
                                     ? 'opacity-50 cursor-not-allowed' 
                                     : 'bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60'
                                 }`}
-                                disabled={key.isExisting}
+                                disabled={key.AlreadyOwnedOnSteam}
                                 onClick={() =>
-                                  !key.isExisting && handleRevealKey(key.id, key.productTitle)
+                                  !key.AlreadyOwnedOnSteam && handleRevealKey(key.id, key.productTitle)
                                 }
                               >
                                 <ExternalLinkIcon className="h-4 w-4" />
@@ -892,17 +937,17 @@ export default function KeysPage() {
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <motion.div whileTap={{ scale: key.isExisting ? 0.95 : 1 }}>
+                                    <motion.div whileTap={{ scale: key.AlreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0 ? 0.95 : 1 }}>
                                       <Button
                                         variant="outline"
                                         className={`gap-2 ${
-                                          !key.isExisting 
+                                          !(key.AlreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0)
                                             ? 'opacity-50 cursor-not-allowed' 
                                             : ''
                                         }`}
-                                        disabled={!key.isExisting}
+                                        disabled={!(key.AlreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0)}
                                         onClick={() =>
-                                          key.isExisting && handleSendToVault(key.id)
+                                          key.AlreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0 && handleSendToVault(key.id)
                                         }
                                       >
                                         <ArchiveIcon className="h-4 w-4" />
@@ -911,14 +956,16 @@ export default function KeysPage() {
                                     </motion.div>
                                   </TooltipTrigger>
                                   <TooltipContent>
-                                    {key.isExisting 
+                                    {key.AlreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0
                                       ? "Exchange this key for credits"
-                                      : "This game is not in your Steam library yet"
+                                      : !key.AlreadyOwnedOnSteam
+                                      ? "This game is not in your Steam library yet"
+                                      : "No exchange credits available for this game"
                                     }
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
-                              {key.isExisting && <ExchangeCreditsDisplay credits={key.exchangeCredits} />}
+                              {key.AlreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0 && <ExchangeCreditsDisplay credits={key.exchangeCredits} />}
                             </div>
                             {/* Exchange Confirmation Dialog */}
                             <Dialog
@@ -1036,6 +1083,16 @@ export default function KeysPage() {
                   </AlertDescription>
                 </Alert>
 
+                {redeemConfirmDialog.alreadyOwned && (
+                  <Alert className="border-blue-200 bg-blue-50 dark:border-blue-900/50 dark:bg-blue-950/20">
+                    <AlertTriangle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    <AlertDescription className="text-sm">
+                      <strong>Already owned:</strong> You already own this game on Steam. 
+                      Redeeming this key will result in a duplicate copy that you won&apos;t be able to use.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 <div className="space-y-3 text-sm text-muted-foreground">
                   <p>You&apos;re about to reveal the Steam key for:</p>
                   <div className="rounded-lg border bg-muted/30 p-3">
@@ -1063,6 +1120,7 @@ export default function KeysPage() {
                       keyId: null,
                       productTitle: "",
                       isLoading: false,
+                      alreadyOwned: false,
                     })
                   }
                 >
@@ -1144,11 +1202,10 @@ export default function KeysPage() {
             <Alert className="border-yellow-200 bg-yellow-50 dark:border-yellow-900/50 dark:bg-yellow-950/20">
               <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
               <AlertDescription className="text-sm">
-                <strong>Please note:</strong> Your Steam library hasn&apos;t been refreshed{" "}
-                {!steamLibraryStatus?.lastSyncedAt
-                  ? "yet"
-                  : "recently (within the last week)"
-                }. We recommend refreshing it first to ensure optimal key assignment.
+                <strong>Please note:</strong> {!steamLibraryStatus?.lastSyncedAt
+                  ? "You have never synced your Steam library with our system"
+                  : "Your Steam library hasn't been refreshed recently (within the last week)"
+                }. We recommend refreshing it first to enable exchange options for already owned games.
               </AlertDescription>
             </Alert>
 
@@ -1160,12 +1217,18 @@ export default function KeysPage() {
                 </p>
               </div>
               <p className="text-xs">
-                Refreshing your Steam library helps us:
+                {!steamLibraryStatus?.lastSyncedAt
+                  ? "Syncing your Steam library for the first time helps us:"
+                  : "Refreshing your Steam library helps us:"
+                }
               </p>
               <ul className="space-y-1 text-xs list-disc list-inside ml-2">
                 <li>Check if you already own this game</li>
                 <li>Provide better recommendations</li>
                 <li>Optimize your key assignments</li>
+                {!steamLibraryStatus?.lastSyncedAt && (
+                  <li>Enable exchange options for duplicate games</li>
+                )}
               </ul>
             </div>
           </div>
