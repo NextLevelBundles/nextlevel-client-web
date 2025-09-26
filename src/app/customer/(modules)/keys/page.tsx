@@ -94,13 +94,8 @@ const copyMessages = [
 ];
 
 function ExchangeCreditsDisplay({ credits }: { credits?: number | null }) {
-  if (!credits) {
-    return (
-      <div className="flex flex-col items-end">
-        <span className="text-xs text-muted-foreground">Trade-in Exchange</span>
-        <span className="text-sm font-semibold text-muted-foreground">-</span>
-      </div>
-    );
+  if (!credits || credits === 0) {
+    return null;
   }
 
   return (
@@ -965,7 +960,7 @@ export default function KeysPage() {
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
-                              {key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0 && <ExchangeCreditsDisplay credits={key.exchangeCredits} />}
+                              {key.alreadyOwnedOnSteam && key.exchangeCredits != null && key.exchangeCredits > 0 && <ExchangeCreditsDisplay credits={key.exchangeCredits} />}
                             </div>
                             {/* Exchange Confirmation Dialog */}
                             <Dialog
