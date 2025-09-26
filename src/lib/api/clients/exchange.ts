@@ -50,4 +50,10 @@ export class ExchangeApi {
       `/customer/exchange/games/${id}`
     );
   }
+
+  async getExchangeGames(status: 'Active' | 'Inactive' = 'Active'): Promise<ExchangeGame[]> {
+    return await this.client.get<ExchangeGame[]>(
+      `/customer/exchange/games?status=${status}`
+    );
+  }
 }
