@@ -1040,7 +1040,7 @@ export default function KeysPage() {
                                 }))
                               }
                             >
-                              <DialogContent className="sm:max-w-md">
+                              <DialogContent className="sm:max-w-md bg-card">
                                 <DialogHeader>
                                   <DialogTitle>Exchange Steam Key?</DialogTitle>
                                   <DialogDescription>
