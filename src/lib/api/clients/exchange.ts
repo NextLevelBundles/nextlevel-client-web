@@ -1,6 +1,7 @@
 
 import { ClientApi } from "../client-api";
 import { ExchangeableSteamKeyDto } from "../types/exchange";
+import { ExchangeGame } from "../types/exchange-game";
 
 export class ExchangeApi {
   private client: ClientApi;
@@ -41,6 +42,12 @@ export class ExchangeApi {
     // Returns { netCredits, ... } from /customer/steam-keys/credits
     return await this.client.get<{ netCredits: number }>(
       "/customer/steam-keys/credits"
+    );
+  }
+
+  async getExchangeGameDetails(id: string): Promise<ExchangeGame> {
+    return await this.client.get<ExchangeGame>(
+      `/customer/exchange/games/${id}`
     );
   }
 }

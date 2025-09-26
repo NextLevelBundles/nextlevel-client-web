@@ -19,6 +19,9 @@ const nextConfig: NextConfig = {
       {
         hostname: "avatars.steamstatic.com",
       },
+      {
+        hostname: "store.akamai.steamstatic.com",
+      },
     ],
   },
   async redirects() {
