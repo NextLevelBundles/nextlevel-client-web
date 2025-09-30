@@ -9,6 +9,8 @@ import { AuthProvider } from "./(shared)/providers/auth-provider";
 import { AmplifyAuthListener } from "./(shared)/providers/amplify-auth-listener";
 import { QueryClientProviderWrapper } from "./(shared)/providers/query-client";
 import AmplifyClientLoader from "./(shared)/components/amplify/load-amplify";
+import { TrackdeskScript } from "./(shared)/components/trackdesk/trackdesk-script";
+import { TrackdeskProvider } from "./(shared)/providers/trackdesk-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -39,6 +41,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <AmplifyClientLoader />
+        <TrackdeskScript />
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <Toaster
             position="bottom-right"
@@ -62,7 +65,9 @@ export default function RootLayout({
 
           <AuthProvider>
             <AmplifyAuthListener />
-            <QueryClientProviderWrapper>{children}</QueryClientProviderWrapper>
+            <QueryClientProviderWrapper>
+              <TrackdeskProvider>{children}</TrackdeskProvider>
+            </QueryClientProviderWrapper>
           </AuthProvider>
         </ThemeProvider>
       </body>
