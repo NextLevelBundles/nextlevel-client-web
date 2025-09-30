@@ -19,6 +19,7 @@ import { GiftForm } from "./gift-form";
 import { TurnstileCaptcha } from "./turnstile-captcha";
 import { useCart } from "@/app/(shared)/contexts/cart/cart-provider";
 import { isBookBundle } from "@/app/(shared)/utils/cart";
+import { getTrackdeskCid } from "@/app/(shared)/lib/trackdesk";
 import {
   Sheet,
   SheetContent,
@@ -119,7 +120,10 @@ export function CartDrawer() {
 
     setIsCheckoutLoading(true);
     try {
-      const response = await reserveCart(captchaToken);
+      // Capture Trackdesk cid for conversion tracking
+      const trackdeskCid = getTrackdeskCid();
+
+      const response = await reserveCart(captchaToken, trackdeskCid);
       // Redirect to Stripe checkout
       window.location.href = response.url;
     } catch (error) {
@@ -137,7 +141,10 @@ export function CartDrawer() {
     // Now proceed with the actual checkout
     setIsCheckoutLoading(true);
     try {
-      const response = await reserveCart(token);
+      // Capture Trackdesk cid for conversion tracking
+      const trackdeskCid = getTrackdeskCid();
+
+      const response = await reserveCart(token, trackdeskCid);
       // Redirect to Stripe checkout
       window.location.href = response.url;
     } catch (error) {

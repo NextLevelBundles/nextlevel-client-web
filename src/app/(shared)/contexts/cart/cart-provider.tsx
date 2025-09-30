@@ -170,11 +170,12 @@ export default function CartProvider({
   };
 
   const reserveCart = async (
-    turnstileToken?: string
+    turnstileToken?: string,
+    trackdeskCid?: string | null
   ): Promise<{ url: string }> => {
     dispatch({ type: "SET_LOADING", payload: true });
     try {
-      const response = await cartApi.reserveCart(turnstileToken);
+      const response = await cartApi.reserveCart(turnstileToken, trackdeskCid);
       return response;
     } catch (error) {
       dispatch({ type: "SET_ERROR", payload: "Failed to reserve cart" });
