@@ -10,7 +10,6 @@ import { AmplifyAuthListener } from "./(shared)/providers/amplify-auth-listener"
 import { QueryClientProviderWrapper } from "./(shared)/providers/query-client";
 import AmplifyClientLoader from "./(shared)/components/amplify/load-amplify";
 import { TrackdeskScript } from "./(shared)/components/trackdesk/trackdesk-script";
-import { TrackdeskProvider } from "./(shared)/providers/trackdesk-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -66,7 +65,7 @@ export default function RootLayout({
           <AuthProvider>
             <AmplifyAuthListener />
             <QueryClientProviderWrapper>
-              <TrackdeskProvider>{children}</TrackdeskProvider>
+              {children}
             </QueryClientProviderWrapper>
           </AuthProvider>
         </ThemeProvider>
