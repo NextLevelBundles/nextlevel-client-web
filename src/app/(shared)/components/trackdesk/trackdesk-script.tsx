@@ -31,7 +31,30 @@ export function TrackdeskScript() {
             // Wait for trackdesk to be available, then initialize
             function initTrackdesk() {
               if (typeof trackdesk !== 'undefined') {
-                trackdesk("${tenantId}", "click");
+                trackdesk("${tenantId}", "click", {}, (data) => {
+                  // Extract click ID from Trackdesk cookie
+                  const cookies = document.cookie.split(";");
+                  let clickId = null;
+
+                  for (const cookie of cookies) {
+                    const [name, value] = cookie.trim().split("=");
+                    if (name === "trakdesk_cid" || name === "trackdesk_cid") {
+                      try {
+                        const decodedValue = decodeURIComponent(value);
+                        const parsed = JSON.parse(decodedValue);
+                        clickId = parsed.cid || decodedValue;
+                      } catch {
+                        clickId = decodeURIComponent(value);
+                      }
+                      break;
+                    }
+                  }
+
+                  if (clickId) {
+                    localStorage.setItem('trackdesk_click_id', clickId);
+                  }
+                });
+
               } else {
                 setTimeout(initTrackdesk, 100);
               }
