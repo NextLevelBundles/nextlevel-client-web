@@ -38,10 +38,14 @@ export class CartApi {
     await this.client.put<void>("/customer/cart/clear");
   }
 
-  async reserveCart(turnstileToken?: string): Promise<{ url: string }> {
+  async reserveCart(turnstileToken?: string, trackdeskCid?: string | null, affS1?: string | null): Promise<{ url: string }> {
     return await this.client.post<{ url: string }>(
       "/customer/checkout/reserve",
-      { turnstileToken }
+      {
+        turnstileToken,
+        trackdeskCid: trackdeskCid || undefined,
+        affS1: affS1 || undefined
+      }
     );
   }
 

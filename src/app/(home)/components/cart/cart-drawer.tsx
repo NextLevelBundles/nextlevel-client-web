@@ -19,6 +19,7 @@ import { GiftForm } from "./gift-form";
 import { TurnstileCaptcha } from "./turnstile-captcha";
 import { useCart } from "@/app/(shared)/contexts/cart/cart-provider";
 import { isBookBundle } from "@/app/(shared)/utils/cart";
+import { getTrackdeskCid, getAffS1 } from "@/app/(shared)/lib/trackdesk";
 import {
   Sheet,
   SheetContent,
@@ -119,7 +120,18 @@ export function CartDrawer() {
 
     setIsCheckoutLoading(true);
     try {
-      const response = await reserveCart(captchaToken);
+      // Capture Trackdesk cid and affS1 for conversion tracking
+      const trackdeskCid = getTrackdeskCid();
+      const affS1 = getAffS1();
+
+      // Validate: if affS1 exists, trackdeskCid must also exist
+      if (affS1 && !trackdeskCid) {
+        toast.error("Affiliate tracking error. Please try again or contact support.");
+        setIsCheckoutLoading(false);
+        return;
+      }
+
+      const response = await reserveCart(captchaToken, trackdeskCid, affS1);
       // Redirect to Stripe checkout
       window.location.href = response.url;
     } catch (error) {
@@ -137,7 +149,19 @@ export function CartDrawer() {
     // Now proceed with the actual checkout
     setIsCheckoutLoading(true);
     try {
-      const response = await reserveCart(token);
+      // Capture Trackdesk cid and affS1 for conversion tracking
+      const trackdeskCid = getTrackdeskCid();
+      const affS1 = getAffS1();
+
+      // Validate: if affS1 exists, trackdeskCid must also exist
+      if (affS1 && !trackdeskCid) {
+        toast.error("Affiliate tracking error. Please try again or contact support.");
+        setCaptchaToken(null);
+        setIsCheckoutLoading(false);
+        return;
+      }
+
+      const response = await reserveCart(token, trackdeskCid, affS1);
       // Redirect to Stripe checkout
       window.location.href = response.url;
     } catch (error) {
