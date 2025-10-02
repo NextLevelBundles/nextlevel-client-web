@@ -51,7 +51,14 @@ export function TrackdeskScript() {
                   }
 
                   if (clickId) {
-                    localStorage.setItem('trackdesk_click_id', clickId);
+                    // Store in the unified trackdesk_data object
+                    try {
+                      const trackdeskData = JSON.parse(localStorage.getItem('trackdesk_data') || '{}');
+                      trackdeskData.clickId = clickId;
+                      localStorage.setItem('trackdesk_data', JSON.stringify(trackdeskData));
+                    } catch (e) {
+                      console.error('Error storing trackdesk data:', e);
+                    }
                   }
                 });
 
