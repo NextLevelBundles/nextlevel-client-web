@@ -15,9 +15,10 @@ import {
   Info,
   Download,
   AlertCircle,
+  X,
 } from "lucide-react";
 import { cn } from "@/shared/utils/tailwind";
-import { Bundle, Tier, BundleType } from "@/app/(shared)/types/bundle";
+import { Bundle, Tier, BundleType, TierType } from "@/app/(shared)/types/bundle";
 import { BundleBookFormatsResponse } from "@/lib/api/types/bundle";
 import { AddToCartButton } from "../cart/add-to-cart-button";
 import { useCustomerLocation } from "@/hooks/queries/useCustomerLocation";
@@ -35,19 +36,29 @@ interface PurchaseSummaryProps {
   bundle: Bundle;
   tiers: Tier[];
   currentTier: Tier;
+  baseAmount: number;
   totalAmount: number;
   unlockedProductsValue: number;
-  setTotalAmount: (amount: number) => void;
+  setBaseAmount: (amount: number) => void;
+  isCharitySelected: boolean;
+  isUpsellSelected: boolean;
+  setIsCharitySelected: (selected: boolean) => void;
+  setIsUpsellSelected: (selected: boolean) => void;
   bookFormats?: BundleBookFormatsResponse | null;
 }
 
 export function PurchaseSummary({
   bundle,
   tiers,
+  baseAmount,
   totalAmount,
   currentTier,
   unlockedProductsValue,
-  setTotalAmount,
+  setBaseAmount,
+  isCharitySelected,
+  isUpsellSelected,
+  setIsCharitySelected,
+  setIsUpsellSelected,
   bookFormats,
 }: PurchaseSummaryProps) {
   const [customInputValue, setCustomInputValue] = useState("");
@@ -62,8 +73,13 @@ export function PurchaseSummary({
 
   // Fetch customer data to check Steam connection status
   const { data: customer } = useCustomer();
-  const minimumPrice = tiers[0].price;
-  const isDonationTier = currentTier?.isDonationTier || false;
+
+  // Separate tiers by type
+  const baseTiers = tiers.filter((tier) => tier.type === TierType.Base);
+  const charityTier = tiers.find((tier) => tier.type === TierType.Charity);
+  const upsellTier = tiers.find((tier) => tier.type === TierType.Upsell);
+
+  const minimumPrice = baseTiers[0]?.price || tiers[0].price;
 
   // Check if this is a Steam bundle and user hasn't connected Steam
   const isSteamBundle = bundle.type === BundleType.SteamGame;
@@ -77,32 +93,50 @@ export function PurchaseSummary({
     !isSteamConnected;
 
 
-  // Find the previous tier (the one before the charity tier)
-  const currentTierIndex = tiers.findIndex((t) => t.id === currentTier?.id);
-  const previousTier =
-    currentTierIndex > 0 ? tiers[currentTierIndex - 1] : null;
+  // Get the highest base tier price
+  const highestBaseTierPrice = baseTiers.length > 0
+    ? baseTiers[baseTiers.length - 1].price
+    : 0;
 
-  // Calculate charity amount based on new logic
+  // Calculate charity amount based on addon model and custom amounts
   let totalCharityAmount = 0;
   let publisherAmount = 0;
   let platformAmount = 0;
+  let developerSupportAmount = 0;
 
-  if (isDonationTier && previousTier) {
-    // For charity tier: 5% of previous tier price + difference between tiers + any extra
-    const baseCharityOn5Percent = previousTier.price * 0.05;
-    const tierDifference = currentTier.price - previousTier.price;
-    const extraAboveTier = Math.max(0, totalAmount - currentTier.price);
-    totalCharityAmount =
-      baseCharityOn5Percent + tierDifference + extraAboveTier;
+  // If upsell addon is selected, full amount goes to developers
+  if (isUpsellSelected && upsellTier) {
+    developerSupportAmount = upsellTier.price;
+  }
 
-    // Rest goes to publishers (75%) and platform (20%) based on previous tier price
-    publisherAmount = previousTier.price * 0.75;
-    platformAmount = previousTier.price * 0.2;
-  } else {
-    // Standard distribution: 5% charity, 75% publishers, 20% platform
-    totalCharityAmount = totalAmount * 0.05;
-    publisherAmount = totalAmount * 0.75;
-    platformAmount = totalAmount * 0.2;
+  // Calculate amounts based on the scenario
+  // First, determine how much of the base amount goes to standard distribution
+  const effectiveBaseForDistribution = Math.min(baseAmount, highestBaseTierPrice);
+
+  // Base distribution (75/20/5) for the standard portion
+  const basePublisherAmount = effectiveBaseForDistribution * 0.75;
+  const basePlatformAmount = effectiveBaseForDistribution * 0.2;
+  const baseCharityAmount = effectiveBaseForDistribution * 0.05;
+
+  // Start with base distribution
+  publisherAmount = basePublisherAmount;
+  platformAmount = basePlatformAmount;
+  totalCharityAmount = baseCharityAmount;
+
+  // Add developer support to publishers if selected
+  if (developerSupportAmount > 0) {
+    publisherAmount += developerSupportAmount;
+  }
+
+  // Handle charity tier if selected
+  if (isCharitySelected && charityTier) {
+    totalCharityAmount += charityTier.price;
+  }
+
+  // Handle any extra amount above highest base tier (goes to charity)
+  if (baseAmount > highestBaseTierPrice) {
+    const extraForCharity = baseAmount - highestBaseTierPrice;
+    totalCharityAmount += extraForCharity;
   }
 
   // Get unique formats from all books
@@ -140,28 +174,25 @@ export function PurchaseSummary({
           </p>
 
           <div className="grid grid-cols-3 gap-2">
-            {tiers.map((tier) => (
+            {baseTiers.map((tier) => (
               <Button
                 key={tier.id}
                 variant={currentTier?.id === tier.id ? "default" : "outline"}
                 onClick={() => {
                   setCustomInputValue("");
-                  setTotalAmount(tier.price);
+                  setBaseAmount(tier.price);
                 }}
                 className={cn(
                   "w-full font-mono transition-all duration-300 relative",
                   totalAmount === tier.price &&
-                    "bg-primary text-white font-semibold shadow-md shadow-primary/20 dark:shadow-primary/30 hover:shadow-lg hover:shadow-primary/30 dark:hover:shadow-primary/40 border-primary hover:scale-[1.02]",
-                  tier.isDonationTier && "border-rose-300 hover:border-rose-400"
+                    "bg-primary text-white font-semibold shadow-md shadow-primary/20 dark:shadow-primary/30 hover:shadow-lg hover:shadow-primary/30 dark:hover:shadow-primary/40 border-primary hover:scale-[1.02]"
                 )}
               >
-                {tier.isDonationTier && (
-                  <Heart className="absolute top-1 right-1 h-3 w-3 text-rose-500 fill-rose-500" />
-                )}
                 ${tier.price}
               </Button>
             ))}
           </div>
+
         </div>
 
         <div className="mb-6">
@@ -183,14 +214,14 @@ export function PurchaseSummary({
                 // Set new timeout
                 const timeout = setTimeout(() => {
                   if (inputValue === "") {
-                    setTotalAmount(0);
+                    setBaseAmount(0);
                     return;
                   }
 
                   const parsedValue = parseFloat(inputValue);
                   if (!isNaN(parsedValue) && parsedValue >= minimumPrice) {
                     const roundedValue = Math.round(parsedValue);
-                    setTotalAmount(roundedValue);
+                    setBaseAmount(roundedValue);
                   }
                 }, 300);
 
@@ -206,25 +237,22 @@ export function PurchaseSummary({
           <div className="relative">
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-sm font-medium">Revenue Distribution</h4>
-              <span className="text-xs text-muted-foreground">
-                {isDonationTier ? "Charity Tier" : ""}
-              </span>
             </div>
 
             {/* Distribution Bar */}
-            <div className="relative h-6 rounded-lg overflow-hidden flex">
+            <div className="relative h-6 rounded-lg overflow-hidden flex bg-gray-200 dark:bg-gray-700">
               <div
                 className="bg-yellow-400 dark:bg-yellow-600 transition-all"
-                style={{ width: `${(publisherAmount / totalAmount) * 100}%` }}
+                style={{ width: `${Math.max(0, (publisherAmount / totalAmount) * 100)}%` }}
               />
               <div
                 className="bg-blue-400 dark:bg-blue-600 transition-all"
-                style={{ width: `${(platformAmount / totalAmount) * 100}%` }}
+                style={{ width: `${Math.max(0, (platformAmount / totalAmount) * 100)}%` }}
               />
               <div
                 className="bg-rose-400 dark:bg-rose-600 transition-all"
                 style={{
-                  width: `${(totalCharityAmount / totalAmount) * 100}%`,
+                  width: `${Math.max(0, (totalCharityAmount / totalAmount) * 100)}%`,
                 }}
               />
             </div>
@@ -235,7 +263,7 @@ export function PurchaseSummary({
                 <div className="flex items-center gap-1">
                   <div className="w-3 h-3 rounded bg-yellow-400 dark:bg-yellow-600" />
                   <span className="text-sm font-medium">
-                    Publishers{!isDonationTier ? " (75%)" : ""}
+                    Publishers{developerSupportAmount > 0 ? " & Developers" : " (75%)"}
                   </span>
                 </div>
                 <span className="text-sm font-bold">
@@ -246,50 +274,134 @@ export function PurchaseSummary({
                 <div className="flex items-center gap-1">
                   <div className="w-3 h-3 rounded bg-blue-400 dark:bg-blue-600" />
                   <span className="text-sm font-medium">
-                    Platform{!isDonationTier ? " (20%)" : ""}
+                    Platform (20%)
                   </span>
                 </div>
                 <span className="text-sm font-bold">
                   ${platformAmount.toFixed(2)}
                 </span>
               </div>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded bg-rose-400 dark:bg-rose-600" />
-                  <span className="text-sm font-medium">
-                    {/* <Heart className="inline h-3 w-3 mr-1" /> */}
-                    Charity{!isDonationTier ? " (5%)" : ""}
+              {totalCharityAmount > 0 && (
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 rounded bg-rose-400 dark:bg-rose-600" />
+                    <span className="text-sm font-medium">
+                      Charity{!isCharitySelected ? " (5%)" : ""}
+                    </span>
+                  </div>
+                  <span className="text-sm font-bold">
+                    ${totalCharityAmount.toFixed(2)}
                   </span>
                 </div>
-                <span className="text-sm font-bold">
-                  ${totalCharityAmount.toFixed(2)}
-                </span>
-              </div>
+              )}
             </div>
 
-            {isDonationTier && previousTier && (
-              <div className="mt-4 p-3 bg-rose-50 dark:bg-rose-950/30 rounded-lg border border-rose-200 dark:border-rose-800">
-                <div className="space-y-1">
-                  <p className="text-xs font-semibold text-rose-700 dark:text-rose-300">
-                    <Heart className="inline h-3 w-3 mr-1 fill-rose-500" />
-                    Charity Tier Active!
-                  </p>
-                  <p className="text-xs text-rose-600 dark:text-rose-400">
-                    • Base: ${(previousTier.price * 0.05).toFixed(2)}
-                  </p>
-                  <p className="text-xs text-rose-600 dark:text-rose-400">
-                    • Charity tier: $
-                    {(currentTier.price - previousTier.price).toFixed(2)}
-                  </p>
-                  {totalAmount > currentTier.price && (
-                    <p className="text-xs text-rose-600 dark:text-rose-400">
-                      • Your extra contribution: $
-                      {(totalAmount - currentTier.price).toFixed(2)}
+            {charityTier && (
+              <div
+                className={cn(
+                  "mt-4 p-3 rounded-lg border relative cursor-pointer transition-all",
+                  isCharitySelected
+                    ? "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-950/40"
+                    : "bg-gray-50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800/40"
+                )}
+                onClick={() => setIsCharitySelected(!isCharitySelected)}
+                role="button"
+                tabIndex={0}
+                aria-pressed={isCharitySelected}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1 flex-1">
+                    <p className={cn(
+                      "text-xs font-semibold",
+                      isCharitySelected
+                        ? "text-rose-700 dark:text-rose-300"
+                        : "text-gray-600 dark:text-gray-400"
+                    )}>
+                      <Heart className={cn(
+                        "inline h-3 w-3 mr-1",
+                        isCharitySelected ? "fill-rose-500 text-rose-500" : "text-gray-400"
+                      )} />
+                      Charity Tier {isCharitySelected ? "Included" : "Not Included"}
                     </p>
-                  )}
-                  <p className="text-xs font-semibold text-rose-700 dark:text-rose-300 pt-1 border-t border-rose-200 dark:border-rose-700">
-                    Total to charity: ${totalCharityAmount.toFixed(2)}
-                  </p>
+                    <p className={cn(
+                      "text-xs",
+                      isCharitySelected
+                        ? "text-rose-600 dark:text-rose-400"
+                        : "text-gray-500 dark:text-gray-500"
+                    )}>
+                      {isCharitySelected
+                        ? `100% of charity tier ($${charityTier.price}) goes to charity`
+                        : `Click to add $${charityTier.price} for charity`
+                      }
+                    </p>
+                  </div>
+                  <div className={cn(
+                    "ml-2 p-1 rounded-full",
+                    isCharitySelected
+                      ? "bg-rose-200 dark:bg-rose-800"
+                      : "bg-gray-200 dark:bg-gray-700"
+                  )}>
+                    {isCharitySelected ? (
+                      <X className="h-3 w-3 text-rose-600 dark:text-rose-400" />
+                    ) : (
+                      <Heart className="h-3 w-3 text-gray-500 dark:text-gray-400" />
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {upsellTier && (
+              <div
+                className={cn(
+                  "mt-4 p-3 rounded-lg border relative cursor-pointer transition-all",
+                  isUpsellSelected
+                    ? "bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-950/40"
+                    : "bg-gray-50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800/40"
+                )}
+                onClick={() => setIsUpsellSelected(!isUpsellSelected)}
+                role="button"
+                tabIndex={0}
+                aria-pressed={isUpsellSelected}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1 flex-1">
+                    <p className={cn(
+                      "text-xs font-semibold",
+                      isUpsellSelected
+                        ? "text-purple-700 dark:text-purple-300"
+                        : "text-gray-600 dark:text-gray-400"
+                    )}>
+                      <Gamepad2 className={cn(
+                        "inline h-3 w-3 mr-1",
+                        isUpsellSelected ? "text-purple-500" : "text-gray-400"
+                      )} />
+                      Extra Items {isUpsellSelected ? "Included" : "Not Included"}
+                    </p>
+                    <p className={cn(
+                      "text-xs",
+                      isUpsellSelected
+                        ? "text-purple-600 dark:text-purple-400"
+                        : "text-gray-500 dark:text-gray-500"
+                    )}>
+                      {isUpsellSelected
+                        ? `100% of developer tier ($${upsellTier.price}) goes to developers`
+                        : `Click to add $${upsellTier.price} for developers`
+                      }
+                    </p>
+                  </div>
+                  <div className={cn(
+                    "ml-2 p-1 rounded-full",
+                    isUpsellSelected
+                      ? "bg-purple-200 dark:bg-purple-800"
+                      : "bg-gray-200 dark:bg-gray-700"
+                  )}>
+                    {isUpsellSelected ? (
+                      <X className="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                    ) : (
+                      <Gamepad2 className="h-3 w-3 text-gray-500 dark:text-gray-400" />
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -320,7 +432,8 @@ export function PurchaseSummary({
               bundleId={bundle.id}
               selectedTierId={currentTier.id}
               totalAmount={totalAmount}
-              isDonationTier={isDonationTier}
+              charityAmount={isCharitySelected && charityTier ? charityTier.price : undefined}
+              upsellAmount={isUpsellSelected && upsellTier ? upsellTier.price : undefined}
             />
           )}
         </div>

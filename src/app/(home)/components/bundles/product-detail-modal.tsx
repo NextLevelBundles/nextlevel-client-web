@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { Badge } from "@/shared/components/ui/badge";
 import { ScrollArea, ScrollBar } from "@/shared/components/ui/scroll-area";
 import { cn } from "@/shared/utils/tailwind";
 import Image from "next/image";
-import { Bundle, Product, ProductType } from "@/app/(shared)/types/bundle";
+import { Bundle, Product, ProductType, TierType, Tier } from "@/app/(shared)/types/bundle";
 import {
   ExternalLink,
   ChevronLeft,
@@ -25,6 +25,8 @@ import {
   Hash,
   Package,
   Gamepad2,
+  Heart,
+  Sparkles,
 } from "lucide-react";
 import { Markdown } from "@/app/(shared)/components/ui/markdown";
 import { BundleBookFormatsResponse } from "@/lib/api/types/bundle";
@@ -38,6 +40,7 @@ interface ProductDetailModalProps {
   onClose: () => void;
   onNavigateToProduct: (product: Product) => void;
   bookFormats?: BundleBookFormatsResponse | null;
+  allTiers?: Tier[];
 }
 
 export function ProductDetailModal({
@@ -49,12 +52,47 @@ export function ProductDetailModal({
   onClose,
   onNavigateToProduct,
   bookFormats,
+  allTiers,
 }: ProductDetailModalProps) {
   const [, setIsPlaying] = useState(false);
   const [, setSelectedImageIndex] = useState(0);
   const [showTrailerModal, setShowTrailerModal] = useState(false);
   const [showScreenshotModal, setShowScreenshotModal] = useState(false);
   const [modalScreenshotIndex, setModalScreenshotIndex] = useState(0);
+
+  // Sort products by tier order
+  const sortedProducts = useMemo(() => {
+    if (!allTiers || allTiers.length === 0) return allProducts;
+
+    // Create a tier order map: Base tiers first (sorted by price), then Charity, then Upsell
+    const baseTiers = allTiers
+      .filter(t => t.type === TierType.Base)
+      .sort((a, b) => a.price - b.price);
+    const charityTiers = allTiers.filter(t => t.type === TierType.Charity);
+    const upsellTiers = allTiers.filter(t => t.type === TierType.Upsell);
+
+    const orderedTiers = [...baseTiers, ...charityTiers, ...upsellTiers];
+
+    // Sort products based on tier order
+    const sorted = [...allProducts].sort((a, b) => {
+      const tierIndexA = orderedTiers.findIndex(t => t.id === a.bundleTierId);
+      const tierIndexB = orderedTiers.findIndex(t => t.id === b.bundleTierId);
+
+      // If both have tiers, sort by tier order
+      if (tierIndexA !== -1 && tierIndexB !== -1) {
+        return tierIndexA - tierIndexB;
+      }
+
+      // Products without tiers come first
+      if (tierIndexA === -1 && tierIndexB !== -1) return -1;
+      if (tierIndexA !== -1 && tierIndexB === -1) return 1;
+
+      // If neither has a tier or both are in same tier, maintain original order
+      return 0;
+    });
+
+    return sorted;
+  }, [allProducts, allTiers]);
 
   useEffect(() => {
     // Reset state when product changes
@@ -65,7 +103,24 @@ export function ProductDetailModal({
   if (!product) return null;
 
   const isUnlocked = unlockedProducts.some((p) => p.id === product.id);
-  const currentIndex = allProducts.findIndex((p) => p.id === product.id);
+  const currentIndex = sortedProducts.findIndex((p) => p.id === product.id);
+
+  // Get tier information for the product
+  const getTierInfo = (productToCheck: Product) => {
+    const tier = bundle.tiers.find((t) => t.id === productToCheck.bundleTierId);
+    if (!tier) return null;
+
+    return {
+      tier,
+      type: tier.type,
+      price: tier.price,
+      isBase: tier.type === TierType.Base,
+      isCharity: tier.type === TierType.Charity,
+      isUpsell: tier.type === TierType.Upsell,
+    };
+  };
+
+  const currentTierInfo = getTierInfo(product);
 
   // Parse screenshots from JSON string
   const screenshots = product.steamGameMetadata?.screenshotUrlsJson
@@ -219,15 +274,33 @@ export function ProductDetailModal({
                   <span className="font-semibold">${product.price}</span>
                   <span className="ml-1">Value</span>
                 </Badge>
-                {product.bundleTierId && (
-                  <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 px-2.5 py-1 rounded-full">
-                    <Lock className="h-3 w-3" />
-                    Tier $
-                    {
-                      bundle.tiers.find((t) => t.id === product.bundleTierId)
-                        ?.price
-                    }
-                  </div>
+                {currentTierInfo && (
+                  <>
+                    <div className={cn(
+                      "inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full",
+                      currentTierInfo.isCharity
+                        ? "bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300"
+                        : currentTierInfo.isUpsell
+                        ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
+                        : "bg-muted/50 text-muted-foreground"
+                    )}>
+                      {currentTierInfo.isCharity ? (
+                        <Heart className="h-3 w-3 fill-current" />
+                      ) : currentTierInfo.isUpsell ? (
+                        <Sparkles className="h-3 w-3" />
+                      ) : (
+                        <Lock className="h-3 w-3" />
+                      )}
+                      {currentTierInfo.isCharity
+                        ? "Charity Tier"
+                        : currentTierInfo.isUpsell
+                        ? "Extra Items Tier"
+                        : `Base Tier`}
+                    </div>
+                    <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 px-2.5 py-1 rounded-full">
+                      Unlocks at ${currentTierInfo.price}
+                    </div>
+                  </>
                 )}
                 {isGame &&
                   getSecureTrailerUrl(
@@ -330,25 +403,25 @@ export function ProductDetailModal({
                 size="icon"
                 onClick={() => {
                   const prevIndex =
-                    (currentIndex - 1 + allProducts.length) %
-                    allProducts.length;
-                  onNavigateToProduct(allProducts[prevIndex]);
+                    (currentIndex - 1 + sortedProducts.length) %
+                    sortedProducts.length;
+                  onNavigateToProduct(sortedProducts[prevIndex]);
                 }}
-                disabled={allProducts.length <= 1}
+                disabled={sortedProducts.length <= 1}
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <span className="text-sm text-muted-foreground">
-                {currentIndex + 1} / {allProducts.length}
+                {currentIndex + 1} / {sortedProducts.length}
               </span>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => {
-                  const nextIndex = (currentIndex + 1) % allProducts.length;
-                  onNavigateToProduct(allProducts[nextIndex]);
+                  const nextIndex = (currentIndex + 1) % sortedProducts.length;
+                  onNavigateToProduct(sortedProducts[nextIndex]);
                 }}
-                disabled={allProducts.length <= 1}
+                disabled={sortedProducts.length <= 1}
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -357,7 +430,7 @@ export function ProductDetailModal({
             {/* Product carousel */}
             <ScrollArea className="flex-1 mx-2 lg:mx-4">
               <div className="flex gap-1.5 lg:gap-2 justify-center">
-                {allProducts.map((p) => (
+                {sortedProducts.map((p) => (
                   <button
                     key={p.id}
                     onClick={() => onNavigateToProduct(p)}
@@ -382,16 +455,35 @@ export function ProductDetailModal({
                         <Lock className="h-4 w-4 text-white" />
                       </div>
                     )}
-                    {p.type === ProductType.EBook && (
-                      <div className="absolute top-1 right-1 bg-secondary/80 rounded-full p-1">
-                        <BookOpen className="h-3 w-3 text-white" />
-                      </div>
-                    )}
-                    {p.type === ProductType.SteamGame && (
-                      <div className="absolute top-1 right-1 bg-primary/80 rounded-full p-1">
-                        <Gamepad2 className="h-3 w-3 text-white" />
-                      </div>
-                    )}
+                    {(() => {
+                      const tierInfo = getTierInfo(p);
+                      if (tierInfo?.isCharity) {
+                        return (
+                          <div className="absolute top-1 right-1 bg-rose-500/80 rounded-full p-1">
+                            <Heart className="h-3 w-3 text-white fill-white" />
+                          </div>
+                        );
+                      } else if (tierInfo?.isUpsell) {
+                        return (
+                          <div className="absolute top-1 right-1 bg-purple-500/80 rounded-full p-1">
+                            <Sparkles className="h-3 w-3 text-white" />
+                          </div>
+                        );
+                      } else if (p.type === ProductType.EBook) {
+                        return (
+                          <div className="absolute top-1 right-1 bg-secondary/80 rounded-full p-1">
+                            <BookOpen className="h-3 w-3 text-white" />
+                          </div>
+                        );
+                      } else if (p.type === ProductType.SteamGame) {
+                        return (
+                          <div className="absolute top-1 right-1 bg-primary/80 rounded-full p-1">
+                            <Gamepad2 className="h-3 w-3 text-white" />
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                   </button>
                 ))}
               </div>

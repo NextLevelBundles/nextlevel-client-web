@@ -13,7 +13,8 @@ interface AddToCartButtonProps {
   bundleId: string;
   selectedTierId?: string;
   totalAmount: number;
-  isDonationTier?: boolean;
+  charityAmount?: number;
+  upsellAmount?: number;
   className?: string;
   children?: React.ReactNode;
 }
@@ -22,7 +23,8 @@ export function AddToCartButton({
   bundleId,
   selectedTierId,
   totalAmount,
-  isDonationTier = false,
+  charityAmount,
+  upsellAmount,
   className,
   children,
 }: AddToCartButtonProps) {
@@ -39,10 +41,8 @@ export function AddToCartButton({
         bundleId,
         tierId: selectedTierId!,
         price: totalAmount,
-        ...(isDonationTier && {
-          isDonationTier: true,
-          donationAmount: totalAmount,
-        }),
+        ...(charityAmount && { charityAmount }),
+        ...(upsellAmount && { upsellAmount }),
       };
 
       await addToCart(cartItem);

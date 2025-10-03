@@ -18,7 +18,7 @@ export default async function BundleDetailPage({ params }: { params: any }) {
 
   try {
     bundle = await serverApiClient.getBundleById(id);
-
+    console.log("Fetched bundle:", bundle);
     if (!bundle) {
       isNotFound = true;
     }

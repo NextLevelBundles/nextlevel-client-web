@@ -33,10 +33,16 @@ export interface Bundle extends BundleListItem {
   curatorComment?: string;
 }
 
+export enum TierType {
+  Base = "Base",
+  Charity = "Charity",
+  Upsell = "Upsell",
+}
+
 export interface Tier {
   id: string;
   price: number;
-  isDonationTier?: boolean;
+  type: TierType;
 }
 
 export enum ProductType {

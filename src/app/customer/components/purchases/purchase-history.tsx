@@ -401,9 +401,7 @@ export function PurchaseHistory() {
                           </div>
                           <GiftIndicator
                             isGift={purchase.isGift}
-                            giftedByCustomerName={purchase.giftedByCustomerName}
                             giftMessage={purchase.giftMessage}
-                            giftedAt={purchase.giftedAt}
                             giftRecipientEmail={purchase.giftRecipientEmail}
                             giftRecipientName={purchase.giftRecipientName}
                             giftAccepted={purchase.giftAccepted}
@@ -438,9 +436,7 @@ export function PurchaseHistory() {
                       </TableCell>
                       <TableCell>${purchase.price.toFixed(2)}</TableCell>
                       <TableCell>
-                        ${purchase.isDonationTierSelected 
-                          ? ((purchase.donationTierAmount || 0) - (purchase.snapshotTierPrice || 0) + (purchase.price * 0.05)).toFixed(2)
-                          : (purchase.price * 0.05).toFixed(2)}
+                        ${(purchase.charityAmount || purchase.price * 0.05).toFixed(2)}
                       </TableCell>
                       <TableCell className="text-center">
                         <BundleProductsPopup purchase={purchase} />

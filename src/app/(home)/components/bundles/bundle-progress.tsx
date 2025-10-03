@@ -8,7 +8,7 @@ import {
   TooltipTrigger,
 } from "@/shared/components/ui/tooltip";
 import { cn } from "@/shared/utils/tailwind";
-import { Bundle, Product, Tier, BundleType } from "@/app/(shared)/types/bundle";
+import { Bundle, Product, Tier, BundleType, TierType } from "@/app/(shared)/types/bundle";
 import { Fragment } from "react";
 
 interface BundleProgressProps {
@@ -27,10 +27,22 @@ export function BundleProgress({
   className,
   setTotalAmount,
 }: BundleProgressProps) {
-  const tiers = bundle.tiers || [];
+  const allTiers = bundle.tiers || [];
+  // Only use base tiers for the progress bar
+  const tiers = allTiers.filter((tier) => tier.type === TierType.Base);
   const allProducts = bundle.products;
+  // Only count base tier products for progress
+  const baseTierProducts = allProducts.filter((p) =>
+    !p.bundleTierId || tiers.some(t => t.id === p.bundleTierId)
+  );
 
-  const progress = (unlockedProducts.length / allProducts.length) * 100;
+  // Calculate progress based only on base tier products
+  const unlockedBaseTierProducts = unlockedProducts.filter((p) =>
+    !p.bundleTierId || tiers.some(t => t.id === p.bundleTierId)
+  );
+  const progress = baseTierProducts.length > 0
+    ? (unlockedBaseTierProducts.length / baseTierProducts.length) * 100
+    : 0;
   const isComplete = progress === 100;
 
   const handleProgressClick = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -44,9 +56,9 @@ export function BundleProgress({
         const tierGames = tiers
           .slice(0, tiers.findIndex((x) => x.id == tier.id) + 1)
           .flatMap((t) =>
-            allProducts.filter((product) => product.bundleTierId == t.id)
+            baseTierProducts.filter((product) => product.bundleTierId == t.id)
           );
-        return (tierGames.length / allProducts.length) * 100 >= percentage;
+        return (tierGames.length / baseTierProducts.length) * 100 >= percentage;
       }) + 1;
 
     const targetTier =
@@ -58,7 +70,7 @@ export function BundleProgress({
   };
 
   const calculateTierValue = (tierId: string) => {
-    return allProducts
+    return baseTierProducts
       .filter((x) => x.bundleTierId == tierId)
       .reduce((sum, game) => sum + game.price, 0);
   };
@@ -76,15 +88,15 @@ export function BundleProgress({
           {isComplete ? (
             <div className="flex items-center gap-2 text-sm font-medium text-primary animate-pulse dark:text-primary/90">
               <PartyPopper className="h-4 w-4" />
-              All {allProducts.length}{" "}
+              All {baseTierProducts.length}{" "}
               {bundle.type === BundleType.EBook ? "books" : "games"} unlocked 🎉
             </div>
           ) : (
             <span className="text-sm text-muted-foreground">
               <span className="text-primary font-semibold">
-                {unlockedProducts.length}
+                {unlockedBaseTierProducts.length}
               </span>{" "}
-              of {allProducts.length}{" "}
+              of {baseTierProducts.length}{" "}
               {bundle.type === BundleType.EBook ? "books" : "games"} unlocked
             </span>
           )}
@@ -125,9 +137,9 @@ export function BundleProgress({
             const tierGames = tiers
               .slice(0, index + 1)
               .flatMap((t) =>
-                allProducts.filter((product) => product.bundleTierId == t.id)
+                baseTierProducts.filter((product) => product.bundleTierId == t.id)
               );
-            const position = (tierGames.length / allProducts.length) * 100;
+            const position = (tierGames.length / baseTierProducts.length) * 100;
             const tierValue = calculateTierValue(tier.id);
 
             return (
@@ -159,10 +171,10 @@ export function BundleProgress({
                       <span>
                         Unlocks{" "}
                         {
-                          allProducts.filter((x) => x.bundleTierId == tier.id)
+                          baseTierProducts.filter((x) => x.bundleTierId == tier.id)
                             .length
                         }{" "}
-                        games worth ${tierValue.toFixed(2)}
+                        {bundle.type === BundleType.EBook ? "books" : "games"} worth ${tierValue.toFixed(2)}
                       </span>
                     </TooltipContent>
                   </Tooltip>

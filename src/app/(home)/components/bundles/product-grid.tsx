@@ -25,6 +25,8 @@ interface ProductGridProps {
   unlockedProducts: Product[];
   setTotalAmount: (amount: number) => void;
   bookFormats?: BundleBookFormatsResponse | null;
+  allBundleProducts?: Product[]; // All products from all tiers for the modal
+  allUnlockedProducts?: Product[]; // All unlocked products including charity/upsell for modal
 }
 
 export function ProductGrid({
@@ -36,6 +38,8 @@ export function ProductGrid({
   tiers,
   setTotalAmount,
   bookFormats,
+  allBundleProducts,
+  allUnlockedProducts,
 }: ProductGridProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const isBookBundle = bundle.type === BundleType.EBook;
@@ -183,12 +187,13 @@ export function ProductGrid({
           <ProductDetailModal
             bundle={bundle}
             product={selectedProduct}
-            allProducts={orderedProducts}
-            unlockedProducts={unlockedProducts}
+            allProducts={allBundleProducts || orderedProducts} // Use all bundle products if provided
+            unlockedProducts={allUnlockedProducts || unlockedProducts} // Use full unlocked list for modal
             isOpen={selectedProduct !== null}
             onClose={() => setSelectedProduct(null)}
             onNavigateToProduct={setSelectedProduct}
             bookFormats={bookFormats}
+            allTiers={bundle.tiers} // Pass all tiers for sorting
           />
         )}
       </div>

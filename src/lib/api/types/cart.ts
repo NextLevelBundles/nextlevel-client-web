@@ -1,12 +1,18 @@
 export interface CartItem {
   id: string;
+  type: "Listing";
+  createdAt?: string;
+  completedAt?: string | null;
   customerId: string;
-  type: "Listing" | "Bundle";
   listingId?: string;
   bundleId?: string;
-  bundleTierId?: string;
+  baseBundleTierId?: string;
+  charityBundleTierId?: string;
+  upsellBundleTierId?: string;
   quantity: number;
   price: number;
+  charityAmount?: number;
+  upsellAmount?: number;
   snapshotTitle?: string;
   snapshotImageUrl?: string;
   snapshotPlatform?: string;
@@ -18,35 +24,33 @@ export interface CartItem {
     coverImageUrl: string;
     steamGameInfo?: {
       steamAppId?: number;
-      packageId: string;
-      steamKeyId: string;
+      packageId?: string;
+      steamKeyId?: string;
     };
     bookInfo?: {
       bookId: string;
-      author?: string;
-      formats?: string[];
+      metadata?: {
+        isbn?: string;
+        isbN13?: string;
+        author?: string;
+        additionalAuthors?: string[];
+        publisher?: string;
+        pageCount?: number;
+        language?: string;
+        publicationDate?: string;
+        edition?: string;
+        genre?: string;
+        tags?: string[];
+        description?: string;
+        availableFormats?: string[];
+      };
     };
   }[];
-  // Gift functionality fields
   isGift?: boolean;
   giftRecipientEmail?: string;
   giftRecipientName?: string;
   giftMessage?: string;
   canOnlyBeGifted?: boolean;
-
-  // Donation tier fields
-  isDonationTierSelected?: boolean;
-  donationTierAmount?: number;
-
-  // Transaction timestamps
-  createdAt?: string;
-  completedAt?: string | null;
-
-  // Incoming gift fields (when current user received this as a gift)
-  giftedByCustomerName?: string;
-  giftedAt?: string;
-
-  // Gift acceptance tracking
   giftAccepted?: boolean | null;
   giftAcceptedAt?: string | null;
 }
@@ -64,8 +68,8 @@ export interface AddToCartRequest {
   bundleId: string;
   tierId: string;
   price: number;
-  isDonationTier?: boolean;
-  donationAmount?: number;
+  charityAmount?: number;
+  upsellAmount?: number;
   giftRecipientEmail?: string;
 }
 

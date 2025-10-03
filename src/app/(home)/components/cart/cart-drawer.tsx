@@ -349,18 +349,25 @@ export function CartDrawer() {
                             </span>
                           </div>
 
-                          {/* Donation tier indicator */}
-                          {item.isDonationTierSelected &&
-                            item.donationTierAmount && (
-                              <div className="flex items-center gap-1 mb-2 text-xs text-rose-600 dark:text-rose-400">
-                                <Heart className="h-3 w-3 fill-rose-500" />
-                                <span className="font-medium">
-                                  Charity Tier: $
-                                  {item.donationTierAmount.toFixed(2)} extra to
-                                  charity
-                                </span>
-                              </div>
-                            )}
+                          {/* Charity tier indicator */}
+                          {item.charityAmount && item.charityAmount > 0 && (
+                            <div className="flex items-center gap-1 mb-2 text-xs text-rose-600 dark:text-rose-400">
+                              <Heart className="h-3 w-3 fill-rose-500" />
+                              <span className="font-medium">
+                                Charity: ${item.charityAmount.toFixed(2)} to charity
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Upsell tier indicator */}
+                          {item.upsellAmount && item.upsellAmount > 0 && (
+                            <div className="flex items-center gap-1 mb-2 text-xs text-purple-600 dark:text-purple-400">
+                              <Gamepad2 className="h-3 w-3" />
+                              <span className="font-medium">
+                                Developer Support: ${item.upsellAmount.toFixed(2)} to developers
+                              </span>
+                            </div>
+                          )}
 
                           <div className="flex items-center justify-between mt-3">
                             <div className="flex items-center gap-2">
