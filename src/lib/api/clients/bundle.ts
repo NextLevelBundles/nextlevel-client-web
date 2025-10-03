@@ -1,5 +1,5 @@
 import { ClientApi } from "../client-api";
-import { BundleBookFormatsResponse } from "../types/bundle";
+import { BundleBookFormatsResponse, CustomerBundleDto } from "../types/bundle";
 
 export class BundleApi {
   constructor(private api: ClientApi) {}
@@ -22,5 +22,13 @@ export class BundleApi {
       }
       throw error;
     }
+  }
+
+  /**
+   * Get customer's purchased bundles for filtering
+   * @returns List of bundles the customer has purchased
+   */
+  async getCustomerBundles(): Promise<CustomerBundleDto[]> {
+    return this.api.get<CustomerBundleDto[]>(`/customer/bundles`);
   }
 }

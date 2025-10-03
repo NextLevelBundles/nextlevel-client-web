@@ -9,3 +9,10 @@ export interface BundleBookFormatsResponse {
   bundleId: string;
   products: ProductBookFormat[];
 }
+
+// Customer Bundles types
+export interface CustomerBundleDto {
+  id: string;
+  title: string;
+  purchasedAt?: string;
+}

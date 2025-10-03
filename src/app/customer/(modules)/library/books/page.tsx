@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -25,6 +26,7 @@ import {
   SearchIcon,
   XIcon,
   SparklesIcon,
+  Calendar,
 } from "lucide-react";
 import {
   Tooltip,
@@ -39,13 +41,39 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/shared/components/ui/popover";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/app/(shared)/components/ui/pagination";
+import {
   useBookAssignments,
   useGenerateDownloadUrl,
+  useCustomerBundles,
 } from "@/hooks/queries/useBooks";
 import { BookAssignmentDto } from "@/lib/api/types/book";
 import { FilterDropdown } from "@/customer/components/filter-dropdown";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
 import confetti from "canvas-confetti";
+import { cn } from "@/shared/utils/tailwind";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarPicker } from "@/shared/components/ui/calendar";
 
 dayjs.extend(relativeTime);
 
@@ -64,12 +92,11 @@ const ownershipOptions = [
   { value: "ReceivedByMe", label: "Received as gift" },
 ];
 
-// Status filter options
-const statusOptions = [
-  { value: "All", label: "All Statuses" },
-  { value: "Active", label: "Active" },
-  { value: "Refunded", label: "Refunded" },
-  { value: "Expired", label: "Expired" },
+// Download status filter options
+const downloadStatusOptions = [
+  { value: "all", label: "All" },
+  { value: "true", label: "Downloaded" },
+  { value: "false", label: "Not Downloaded" },
 ];
 
 function formatBytes(bytes: number): string {
@@ -105,84 +132,106 @@ const downloadMessages = [
 
 export default function BooksLibraryPage() {
   const { user } = useAuth();
-  const currentCustomerId = user?.id;
-  const currentUserEmail = user?.email;
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("All");
-  const [giftFilter, setGiftFilter] = useState<
-    "All" | "Owned" | "ReceivedByMe"
-  >("All");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // URL query parameters
+  const [searchInput, setSearchInput] = useState(searchParams.get("search") || "");
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
+  const [giftFilter, setGiftFilter] = useState<"All" | "Owned" | "ReceivedByMe">(
+    (searchParams.get("giftFilter") as any) || "All"
+  );
+  const [bundleId, setBundleId] = useState(searchParams.get("bundleId") || "");
+  const [hasDownloadedBefore, setHasDownloadedBefore] = useState(
+    searchParams.get("hasDownloadedBefore") || "all"
+  );
+  const [fromDate, setFromDate] = useState<Date | undefined>(
+    searchParams.get("fromDate") ? new Date(searchParams.get("fromDate")!) : undefined
+  );
+  const [toDate, setToDate] = useState<Date | undefined>(
+    searchParams.get("toDate") ? new Date(searchParams.get("toDate")!) : undefined
+  );
+  const [page, setPage] = useState(parseInt(searchParams.get("page") || "1"));
+  const [pageSize] = useState(20);
+
   const [downloadingFiles, setDownloadingFiles] = useState<Set<string>>(
     new Set()
   );
 
-  // Debounce search query
+  // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
+      setSearchQuery(searchInput);
+      if (searchInput !== searchQuery) {
+        setPage(1);
+      }
     }, 350);
 
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchInput]);
+
+  // Update URL when filters change
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.set("search", searchQuery);
+    if (giftFilter !== "All") params.set("giftFilter", giftFilter);
+    if (bundleId) params.set("bundleId", bundleId);
+    if (hasDownloadedBefore !== "all") params.set("hasDownloadedBefore", hasDownloadedBefore);
+    if (fromDate) params.set("fromDate", fromDate.toISOString());
+    if (toDate) params.set("toDate", toDate.toISOString());
+    if (page > 1) params.set("page", page.toString());
+
+    const newSearch = params.toString();
+    const newUrl = newSearch ? `?${newSearch}` : window.location.pathname;
+
+    // Update URL without triggering navigation
+    window.history.replaceState({}, "", newUrl);
+  }, [searchQuery, giftFilter, bundleId, hasDownloadedBefore, fromDate, toDate, page]);
+
+  // Fetch customer bundles for filter dropdown
+  const { data: customerBundles = [] } = useCustomerBundles();
+
+  // Build query params for API
+  const queryParams = useMemo(() => {
+    return {
+      search: searchQuery || undefined,
+      giftFilter: giftFilter !== "All" ? giftFilter : undefined,
+      bundleId: bundleId || undefined,
+      hasDownloadedBefore: hasDownloadedBefore !== "all"
+        ? hasDownloadedBefore === "true"
+        : undefined,
+      fromDate: fromDate?.toISOString(),
+      toDate: toDate?.toISOString(),
+      page,
+      pageSize,
+    };
+  }, [searchQuery, giftFilter, bundleId, hasDownloadedBefore, fromDate, toDate, page, pageSize]);
 
   // Fetch book assignments
   const {
-    data: bookAssignments = [],
+    data: bookData,
     isLoading,
     isError,
     error,
-  } = useBookAssignments({ giftFilter });
+  } = useBookAssignments(queryParams);
+
+  const bookAssignments = bookData?.items || [];
+  const totalBooks = bookData?.total || 0;
+  const totalPages = Math.ceil(totalBooks / pageSize);
+
   const generateDownloadUrl = useGenerateDownloadUrl();
-
-  // Filter books based on search and status
-  const filteredBooks = React.useMemo(() => {
-    return bookAssignments.filter((book) => {
-      // Search filter
-      if (debouncedSearchQuery) {
-        const searchLower = debouncedSearchQuery.toLowerCase();
-        const titleMatch = (book.bookTitle || book.productTitle || "")
-          .toLowerCase()
-          .includes(searchLower);
-        if (!titleMatch) return false;
-      }
-
-      // Status filter
-      if (statusFilter !== "All" && book.status !== statusFilter) {
-        return false;
-      }
-
-      return true;
-    });
-  }, [bookAssignments, debouncedSearchQuery, statusFilter]);
 
   // Calculate ownership counts
   const ownershipOptionsWithCounts = React.useMemo(() => {
     return ownershipOptions.map((option) => ({
       ...option,
-      count: bookAssignments.filter((book) => {
-        if (option.value === "All") return true;
-        if (option.value === "Owned") return !book.isGift;
-        if (option.value === "ReceivedByMe") return book.isGift;
-        return false;
-      }).length,
+      count: 0, // We can't calculate counts without fetching all data
     }));
-  }, [bookAssignments]);
-
-  // Calculate status counts
-  const statusOptionsWithCounts = React.useMemo(() => {
-    return statusOptions.map((option) => ({
-      ...option,
-      count: bookAssignments.filter((book) => {
-        if (option.value === "All") return true;
-        return book.status === option.value;
-      }).length,
-    }));
-  }, [bookAssignments]);
+  }, []);
 
   // Calculate user's progress
   const currentLevel = PROGRESS_LEVELS.reduce(
-    (acc, level) => (bookAssignments.length >= level.required ? level : acc),
+    (acc, level) => (totalBooks >= level.required ? level : acc),
     PROGRESS_LEVELS[0]
   );
 
@@ -239,6 +288,56 @@ export default function BooksLibraryPage() {
     );
   };
 
+  // Generate page numbers for pagination
+  const pageNumbers = useMemo(() => {
+    const pages = [];
+    const maxVisible = 5;
+
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (page <= 3) {
+        for (let i = 1; i <= Math.min(maxVisible - 1, totalPages); i++) {
+          pages.push(i);
+        }
+        pages.push(-1); // Ellipsis
+        pages.push(totalPages);
+      } else if (page >= totalPages - 2) {
+        pages.push(1);
+        pages.push(-1); // Ellipsis
+        for (let i = Math.max(totalPages - maxVisible + 2, 1); i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        pages.push(-1); // Ellipsis
+        pages.push(page - 1);
+        pages.push(page);
+        pages.push(page + 1);
+        pages.push(-2); // Ellipsis
+        pages.push(totalPages);
+      }
+    }
+
+    return pages;
+  }, [page, totalPages]);
+
+  const clearAllFilters = () => {
+    setSearchInput("");
+    setSearchQuery("");
+    setGiftFilter("All");
+    setBundleId("");
+    setHasDownloadedBefore("all");
+    setFromDate(undefined);
+    setToDate(undefined);
+    setPage(1);
+  };
+
+  const hasActiveFilters = searchQuery || giftFilter !== "All" || bundleId ||
+    hasDownloadedBefore !== "all" || fromDate || toDate;
+
   return (
     <div className="grid gap-6">
       <div className="flex items-center justify-between">
@@ -250,60 +349,173 @@ export default function BooksLibraryPage() {
           <h2 className="text-sm text-muted-foreground font-medium">Filters</h2>
         </CardHeader>
         <CardContent className="space-y-4 p-4">
-          {/* Search Filter */}
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="sm:col-span-3 lg:col-span-1">
+          {/* Search and Basic Filters */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {/* Search Filter */}
+            <div>
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
                 Search
               </label>
               <div className="relative">
                 <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="Search by book title..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search books..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
                   className="pl-9 bg-background"
                 />
               </div>
             </div>
 
-            {/* Status Filter */}
-            <FilterDropdown
-              label="Status"
-              options={statusOptionsWithCounts}
-              value={statusFilter}
-              onChange={setStatusFilter}
-              placeholder="All Statuses"
-              searchPlaceholder="Search status..."
-              className="sm:col-span-1"
-            />
+            {/* Bundle Filter */}
+            <div>
+              <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                Bundle
+              </label>
+              <Select
+                value={bundleId || "all"}
+                onValueChange={(value) => {
+                  setBundleId(value === "all" ? "" : value);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="All Bundles" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Bundles</SelectItem>
+                  {customerBundles.map((bundle) => (
+                    <SelectItem key={bundle.id} value={bundle.id}>
+                      {bundle.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Download Status Filter */}
+            <div>
+              <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                Download Status
+              </label>
+              <Select
+                value={hasDownloadedBefore}
+                onValueChange={(value) => {
+                  setHasDownloadedBefore(value);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {downloadStatusOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
             {/* Ownership Filter */}
-            <FilterDropdown
-              label="Ownership"
-              options={ownershipOptionsWithCounts}
-              value={giftFilter}
-              onChange={(value) =>
-                setGiftFilter(value as "All" | "Owned" | "ReceivedByMe")
-              }
-              placeholder="All Books"
-              searchPlaceholder="Search ownership..."
-              showCounts={false}
-              className="sm:col-span-1"
-            />
+            <div>
+              <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                Ownership
+              </label>
+              <Select
+                value={giftFilter}
+                onValueChange={(value: any) => {
+                  setGiftFilter(value);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ownershipOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Date Filters */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
+            <div>
+              <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                Purchase Date From
+              </label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !fromDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {fromDate ? format(fromDate, "PPP") : "Pick a date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <CalendarPicker
+                    mode="single"
+                    selected={fromDate}
+                    onSelect={(date) => {
+                      setFromDate(date);
+                      setPage(1);
+                    }}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                Purchase Date To
+              </label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !toDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {toDate ? format(toDate, "PPP") : "Pick a date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <CalendarPicker
+                    mode="single"
+                    selected={toDate}
+                    onSelect={(date) => {
+                      setToDate(date);
+                      setPage(1);
+                    }}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
 
           {/* Clear Filters Button */}
-          {(searchQuery || statusFilter !== "All" || giftFilter !== "All") && (
+          {hasActiveFilters && (
             <div className="flex justify-end">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => {
-                  setSearchQuery("");
-                  setStatusFilter("All");
-                  setGiftFilter("All");
-                }}
+                onClick={clearAllFilters}
                 className="gap-2"
               >
                 <XIcon className="h-4 w-4" />
@@ -318,9 +530,9 @@ export default function BooksLibraryPage() {
         <CardHeader>
           <CardTitle>
             Available Books
-            {filteredBooks.length > 0 && (
+            {totalBooks > 0 && (
               <span className="text-sm text-muted-foreground">
-                &nbsp; ({filteredBooks.length} found)
+                &nbsp; ({totalBooks} total, showing {bookAssignments.length})
               </span>
             )}
           </CardTitle>
@@ -357,9 +569,7 @@ export default function BooksLibraryPage() {
                 Try Again
               </Button>
             </motion.div>
-          ) : filteredBooks.length === 0 &&
-            !debouncedSearchQuery &&
-            statusFilter === "All" ? (
+          ) : bookAssignments.length === 0 && !hasActiveFilters ? (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -394,7 +604,7 @@ export default function BooksLibraryPage() {
                 </Link>
               )}
             </motion.div>
-          ) : filteredBooks.length === 0 ? (
+          ) : bookAssignments.length === 0 ? (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -410,12 +620,7 @@ export default function BooksLibraryPage() {
               </p>
               <Button
                 variant="outline"
-                onClick={() => {
-                  setSearchQuery("");
-                  setDebouncedSearchQuery("");
-                  setStatusFilter("All");
-                  setGiftFilter("All");
-                }}
+                onClick={clearAllFilters}
                 className="gap-2"
               >
                 <XIcon className="h-4 w-4" />
@@ -424,7 +629,8 @@ export default function BooksLibraryPage() {
             </motion.div>
           ) : (
             <div className="space-y-4">
-              {filteredBooks.map((book) => {
+              {bookAssignments.map((book) => {
+                const bookTitle = book.book?.title || book.bookTitle || book.productTitle;
                 const activeFiles =
                   book.availableFiles?.filter(
                     (file) => file.status === "Active"
@@ -446,7 +652,7 @@ export default function BooksLibraryPage() {
                               book.productCoverImage?.url ||
                               "https://static.digiphile.co/product-placeholder-image.jpg"
                             }
-                            alt={book.bookTitle || book.productTitle || "Book"}
+                            alt={bookTitle || "Book"}
                             className="w-full h-full object-cover rounded-lg shadow-md"
                           />
                         </div>
@@ -455,7 +661,7 @@ export default function BooksLibraryPage() {
                       <div className="space-y-2 flex-1">
                         <div className="flex items-center gap-2">
                           <h3 className="font-semibold">
-                            {book.bookTitle || book.productTitle}
+                            {bookTitle}
                           </h3>
                           {isNewlyAssigned(book) && (
                             <Badge
@@ -475,6 +681,9 @@ export default function BooksLibraryPage() {
                         </div>
                         <div className="space-y-1">
                           <p className="text-sm text-muted-foreground">
+                            {book.book?.author && (
+                              <>by {book.book.author} • </>
+                            )}
                             Added on{" "}
                             {book.assignedAt
                               ? new Date(book.assignedAt).toLocaleDateString()
@@ -586,6 +795,56 @@ export default function BooksLibraryPage() {
                   </motion.div>
                 );
               })}
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="mt-6">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (page > 1) setPage(page - 1);
+                          }}
+                          className={page === 1 ? "pointer-events-none opacity-50" : ""}
+                        />
+                      </PaginationItem>
+
+                      {pageNumbers.map((pageNum, index) => (
+                        <PaginationItem key={index}>
+                          {pageNum === -1 || pageNum === -2 ? (
+                            <PaginationEllipsis />
+                          ) : (
+                            <PaginationLink
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setPage(pageNum);
+                              }}
+                              isActive={page === pageNum}
+                            >
+                              {pageNum}
+                            </PaginationLink>
+                          )}
+                        </PaginationItem>
+                      ))}
+
+                      <PaginationItem>
+                        <PaginationNext
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (page < totalPages) setPage(page + 1);
+                          }}
+                          className={page === totalPages ? "pointer-events-none opacity-50" : ""}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
             </div>
           )}
         </CardContent>

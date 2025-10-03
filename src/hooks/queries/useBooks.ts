@@ -1,11 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { bookApi } from "@/lib/api";
-import { BookAssignmentDto, BookAssignmentQueryParams, BookDownloadUrlResponse } from "@/lib/api/types/book";
+import { bookApi, bundleApi } from "@/lib/api";
+import {
+  BookAssignmentDto,
+  BookAssignmentQueryParams,
+  BookDownloadUrlResponse,
+  PaginatedBookAssignmentsResponse
+} from "@/lib/api/types/book";
+import { CustomerBundleDto } from "@/lib/api/types/bundle";
 import { toast } from "sonner";
 import { useFileDownload } from "@/hooks/useFileDownload";
 
 export function useBookAssignments(params?: BookAssignmentQueryParams) {
-  return useQuery<BookAssignmentDto[]>({
+  return useQuery<PaginatedBookAssignmentsResponse>({
     queryKey: ["bookAssignments", params],
     queryFn: () => bookApi.getBookAssignments(params),
     staleTime: 30000, // 30 seconds
@@ -17,6 +23,14 @@ export function useBookAssignment(assignmentId: string) {
     queryKey: ["bookAssignment", assignmentId],
     queryFn: () => bookApi.getBookAssignment(assignmentId),
     enabled: !!assignmentId,
+  });
+}
+
+export function useCustomerBundles() {
+  return useQuery<CustomerBundleDto[]>({
+    queryKey: ["customerBundles"],
+    queryFn: () => bundleApi.getCustomerBundles(),
+    staleTime: 60000, // 1 minute
   });
 }
 
