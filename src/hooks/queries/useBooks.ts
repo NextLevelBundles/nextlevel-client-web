@@ -4,7 +4,9 @@ import {
   BookAssignmentDto,
   BookAssignmentQueryParams,
   BookDownloadUrlResponse,
-  PaginatedBookAssignmentsResponse
+  PaginatedBookAssignmentsResponse,
+  BulkDownloadParams,
+  BulkDownloadResponse
 } from "@/lib/api/types/book";
 import { CustomerBundleDto } from "@/lib/api/types/bundle";
 import { toast } from "sonner";
@@ -34,10 +36,42 @@ export function useCustomerBundles() {
   });
 }
 
+export function useBulkDownload() {
+  const { downloadFile } = useFileDownload();
+
+  return useMutation<
+    BulkDownloadResponse,
+    Error,
+    BulkDownloadParams & { onProgress?: (progress: number) => void }
+  >({
+    mutationFn: (params) => bookApi.bulkDownload(params),
+    onSuccess: async (data, variables) => {
+      try {
+        // Use the download URL to download the zip file
+        await downloadFile(data.downloadUrl, `books-${Date.now()}.zip`);
+
+        toast.success("Bulk download completed!", {
+          description: 'Your books have been saved as a ZIP file'
+        });
+      } catch (error) {
+        console.error('Bulk download error:', error);
+
+        // Fallback to opening in new tab if blob download fails
+        toast.warning("Direct download failed, opening in new tab...");
+        window.open(data.downloadUrl, '_blank');
+      }
+    },
+    onError: (error) => {
+      toast.error("Failed to generate bulk download. Please try again.");
+      console.error('Bulk download error:', error);
+    },
+  });
+}
+
 export function useGenerateDownloadUrl() {
   const queryClient = useQueryClient();
   const { downloadFile } = useFileDownload();
-  
+
   return useMutation<
     BookDownloadUrlResponse,
     Error,
@@ -50,24 +84,24 @@ export function useGenerateDownloadUrl() {
       const progressToast = toast.loading(`Downloading ${variables.fileName}...`, {
         description: 'Starting download...'
       });
-      
+
       try {
         // Use our custom download function with progress tracking
         await downloadFile(data.downloadUrl, variables.fileName);
-        
+
         // Dismiss progress toast and show success
         toast.dismiss(progressToast);
         toast.success(`Successfully downloaded ${variables.fileName}`, {
           description: 'File saved to your Downloads folder'
         });
-        
+
         // Invalidate queries to refresh download count
         queryClient.invalidateQueries({ queryKey: ["bookAssignments"] });
         queryClient.invalidateQueries({ queryKey: ["bookAssignment", variables.assignmentId] });
       } catch (error) {
         toast.dismiss(progressToast);
         console.error('Download error:', error);
-        
+
         // Fallback to opening in new tab if blob download fails
         toast.warning("Direct download failed, opening in new tab...");
         window.open(data.downloadUrl, '_blank');

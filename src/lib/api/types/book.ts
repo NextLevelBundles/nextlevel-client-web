@@ -77,6 +77,15 @@ export interface BookDownloadUrlResponse {
   expiresAt: string;
 }
 
+export interface BulkDownloadResponse {
+  downloadUrl: string;
+  expiresIn: number;
+}
+
+export interface BulkDownloadParams extends BookAssignmentQueryParams {
+  preferredFileType: string;
+}
+
 export interface BookAssignmentQueryParams {
   fromDate?: string; // Purchase date after
   toDate?: string; // Purchase date before

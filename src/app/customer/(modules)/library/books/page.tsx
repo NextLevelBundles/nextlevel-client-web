@@ -14,8 +14,7 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Badge } from "@/shared/components/ui/badge";
-import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   BookOpen,
   Download,
@@ -26,14 +25,7 @@ import {
   SearchIcon,
   XIcon,
   SparklesIcon,
-  Calendar,
 } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/shared/components/ui/tooltip";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,11 +39,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/shared/components/ui/popover";
 import {
   Pagination,
   PaginationContent,
@@ -67,13 +54,9 @@ import {
   useCustomerBundles,
 } from "@/hooks/queries/useBooks";
 import { BookAssignmentDto } from "@/lib/api/types/book";
-import { FilterDropdown } from "@/customer/components/filter-dropdown";
-import { useAuth } from "@/app/(shared)/providers/auth-provider";
+import { BulkDownloadModal } from "./bulk-download-modal";
 import confetti from "canvas-confetti";
-import { cn } from "@/shared/utils/tailwind";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
-import { Calendar as CalendarPicker } from "@/shared/components/ui/calendar";
 
 dayjs.extend(relativeTime);
 
@@ -123,16 +106,7 @@ function getFormatIcon(format: string) {
   }
 }
 
-const downloadMessages = [
-  "📚 Starting your reading adventure!",
-  "📖 Knowledge coming your way!",
-  "🚀 Downloading your next great read!",
-  "✨ Your book is ready!",
-];
-
 export default function BooksLibraryPage() {
-  const { user } = useAuth();
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   // URL query parameters
@@ -157,6 +131,7 @@ export default function BooksLibraryPage() {
   const [downloadingFiles, setDownloadingFiles] = useState<Set<string>>(
     new Set()
   );
+  const [showBulkDownloadModal, setShowBulkDownloadModal] = useState(false);
 
   // Debounce search input
   useEffect(() => {
@@ -221,21 +196,11 @@ export default function BooksLibraryPage() {
 
   const generateDownloadUrl = useGenerateDownloadUrl();
 
-  // Calculate ownership counts
-  const ownershipOptionsWithCounts = React.useMemo(() => {
-    return ownershipOptions.map((option) => ({
-      ...option,
-      count: 0, // We can't calculate counts without fetching all data
-    }));
-  }, []);
-
   // Calculate user's progress
   const currentLevel = PROGRESS_LEVELS.reduce(
     (acc, level) => (totalBooks >= level.required ? level : acc),
     PROGRESS_LEVELS[0]
   );
-
-  const nextLevel = PROGRESS_LEVELS[PROGRESS_LEVELS.indexOf(currentLevel) + 1];
 
   // Helper function to check if a book is newly assigned (within 30 days)
   const isNewlyAssigned = (book: BookAssignmentDto): boolean => {
@@ -450,62 +415,73 @@ export default function BooksLibraryPage() {
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
                 Purchase Date From
               </label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !fromDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {fromDate ? format(fromDate, "PPP") : "Pick a date"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <CalendarPicker
-                    mode="single"
-                    selected={fromDate}
-                    onSelect={(date) => {
-                      setFromDate(date);
+              <div className="relative">
+                <input
+                  type="date"
+                  value={fromDate ? format(fromDate, "yyyy-MM-dd") : ""}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      const newDate = new Date(e.target.value + "T00:00:00");
+                      setFromDate(newDate);
+                      setPage(1);
+                    } else {
+                      setFromDate(undefined);
+                      setPage(1);
+                    }
+                  }}
+                  max={format(new Date(), "yyyy-MM-dd")}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pr-10"
+                />
+                {fromDate && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFromDate(undefined);
                       setPage(1);
                     }}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded"
+                  >
+                    <XIcon className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
             </div>
 
             <div>
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
                 Purchase Date To
               </label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !toDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {toDate ? format(toDate, "PPP") : "Pick a date"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <CalendarPicker
-                    mode="single"
-                    selected={toDate}
-                    onSelect={(date) => {
-                      setToDate(date);
+              <div className="relative">
+                <input
+                  type="date"
+                  value={toDate ? format(toDate, "yyyy-MM-dd") : ""}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      const newDate = new Date(e.target.value + "T00:00:00");
+                      setToDate(newDate);
+                      setPage(1);
+                    } else {
+                      setToDate(undefined);
+                      setPage(1);
+                    }
+                  }}
+                  min={fromDate ? format(fromDate, "yyyy-MM-dd") : undefined}
+                  max={format(new Date(), "yyyy-MM-dd")}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pr-10"
+                />
+                {toDate && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setToDate(undefined);
                       setPage(1);
                     }}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded"
+                  >
+                    <XIcon className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -528,14 +504,26 @@ export default function BooksLibraryPage() {
 
       <Card className="bg-linear-to-br from-card to-card/95 dark:from-[#1a1d2e] dark:to-[#1a1d2e]/95 shadow-md">
         <CardHeader>
-          <CardTitle>
-            Available Books
-            {totalBooks > 0 && (
-              <span className="text-sm text-muted-foreground">
-                &nbsp; ({totalBooks} total, showing {bookAssignments.length})
-              </span>
+          <div className="flex items-center justify-between">
+            <CardTitle>
+              Available Books
+              {totalBooks > 0 && (
+                <span className="text-sm text-muted-foreground">
+                  &nbsp; ({totalBooks} total, showing {bookAssignments.length})
+                </span>
+              )}
+            </CardTitle>
+            {hasActiveFilters && totalBooks > 0 && (
+              <Button
+                onClick={() => setShowBulkDownloadModal(true)}
+                variant="outline"
+                className="gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Bulk Download
+              </Button>
             )}
-          </CardTitle>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -576,47 +564,46 @@ export default function BooksLibraryPage() {
               className="flex flex-col items-center justify-center rounded-lg border bg-card/30 p-8 text-center"
             >
               <div className="mb-4 rounded-full bg-primary/10 p-3">
-                {giftFilter === "ReceivedByMe" ? (
-                  <GiftIcon className="h-8 w-8 text-primary" />
-                ) : (
-                  <BookOpen className="h-8 w-8 text-primary" />
-                )}
+                <BookOpen className="h-8 w-8 text-primary" />
               </div>
               <h3 className="mb-2 text-xl font-semibold">
-                {giftFilter === "Owned"
-                  ? "No personal books yet"
-                  : giftFilter === "ReceivedByMe"
-                    ? "No books received as gifts yet"
-                    : "No books in your library yet"}
+                No books in your library yet
               </h3>
               <p className="mb-6 max-w-md text-muted-foreground">
-                {giftFilter === "Owned"
-                  ? "Purchase a bundle with books to get started with your personal library!"
-                  : giftFilter === "ReceivedByMe"
-                    ? "When someone gifts you books, they'll appear here."
-                    : "Purchase a bundle with books to build your digital library!"}
+                Purchase a bundle with books to build your digital library!
               </p>
-              {giftFilter !== "ReceivedByMe" && (
-                <Link href="/bundles">
-                  <Button className="bg-linear-to-r from-primary to-primary/90">
-                    Browse Bundles
-                  </Button>
-                </Link>
-              )}
+              <Link href="/bundles">
+                <Button className="bg-linear-to-r from-primary to-primary/90">
+                  Browse Bundles
+                </Button>
+              </Link>
             </motion.div>
-          ) : bookAssignments.length === 0 ? (
+          ) : bookAssignments.length === 0 && hasActiveFilters ? (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className="flex flex-col items-center justify-center rounded-lg border bg-card/30 p-8 text-center"
             >
               <div className="mb-4 rounded-full bg-secondary/10 p-3">
-                <SearchIcon className="h-8 w-8 text-secondary" />
+                {giftFilter === "ReceivedByMe" ? (
+                  <GiftIcon className="h-8 w-8 text-secondary" />
+                ) : (
+                  <SearchIcon className="h-8 w-8 text-secondary" />
+                )}
               </div>
-              <h3 className="mb-2 text-xl font-semibold">No results found</h3>
+              <h3 className="mb-2 text-xl font-semibold">
+                {giftFilter === "ReceivedByMe"
+                  ? "No books received as gifts"
+                  : giftFilter === "Owned"
+                    ? "No personal books found"
+                    : "No results found"}
+              </h3>
               <p className="mb-6 max-w-md text-muted-foreground">
-                We couldn&apos;t find any books matching your search criteria.
-                Try adjusting your filters or search term.
+                {giftFilter === "ReceivedByMe"
+                  ? "You haven't received any books as gifts matching these filters."
+                  : giftFilter === "Owned"
+                    ? "No books in your personal library match these filters."
+                    : "We couldn't find any books matching your search criteria."}
               </p>
               <Button
                 variant="outline"
@@ -706,7 +693,7 @@ export default function BooksLibraryPage() {
                             )}
                           </p>
                           <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                            {activeFiles.map((file, index) => (
+                            {activeFiles.map((file) => (
                               <span
                                 key={file.id}
                                 className="flex items-center gap-1"
@@ -849,6 +836,23 @@ export default function BooksLibraryPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Bulk Download Modal */}
+      <BulkDownloadModal
+        isOpen={showBulkDownloadModal}
+        onClose={() => setShowBulkDownloadModal(false)}
+        filterParams={{
+          search: searchQuery || undefined,
+          giftFilter: giftFilter !== "All" ? giftFilter : undefined,
+          bundleId: bundleId || undefined,
+          hasDownloadedBefore: hasDownloadedBefore !== "all"
+            ? hasDownloadedBefore === "true"
+            : undefined,
+          fromDate: fromDate?.toISOString(),
+          toDate: toDate?.toISOString(),
+        }}
+        totalBooks={totalBooks}
+      />
     </div>
   );
 }
