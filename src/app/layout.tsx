@@ -10,7 +10,7 @@ import { AmplifyAuthListener } from "./(shared)/providers/amplify-auth-listener"
 import { QueryClientProviderWrapper } from "./(shared)/providers/query-client";
 import AmplifyClientLoader from "./(shared)/components/amplify/load-amplify";
 import { TrackdeskScript } from "./(shared)/components/trackdesk/trackdesk-script";
-import { AffS1Capture } from "./(shared)/components/trackdesk/affS1-capture";
+import { LinkIdCapture } from "./(shared)/components/trackdesk/linkId-capture";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -42,7 +42,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <AmplifyClientLoader />
         <TrackdeskScript />
-        <AffS1Capture />
+        <LinkIdCapture />
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <Toaster
             position="bottom-right"
