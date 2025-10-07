@@ -5,7 +5,7 @@ const TRACKDESK_STORAGE_KEY = 'trackdesk_data';
 
 interface TrackdeskData {
   clickId?: string;
-  affS1?: string;
+  linkId?: string;
 }
 
 /**
@@ -62,29 +62,29 @@ export function hasTrackdeskCid(): boolean {
 }
 
 /**
- * Get the affS1 query parameter from localStorage
- * The affS1 is stored when users arrive via affiliate links with the affS1 parameter
+ * Get the linkId query parameter from localStorage
+ * The linkId is stored when users arrive via affiliate links with the linkId parameter
  */
-export function getAffS1(): string | null {
+export function getLinkId(): string | null {
   const data = getTrackdeskData();
-  return data.affS1 || null;
+  return data.linkId || null;
 }
 
 /**
- * Extract and store affS1 from URL query parameters
- * Call this on page load to capture the affS1 parameter
+ * Extract and store linkId from URL query parameters
+ * Call this on page load to capture the linkId parameter
  */
-export function captureAffS1FromUrl(): void {
+export function captureLinkIdFromUrl(): void {
   if (typeof window === "undefined") return;
 
   try {
     const urlParams = new URLSearchParams(window.location.search);
-    const affS1 = urlParams.get('affS1');
+    const linkId = urlParams.get('linkId');
 
-    if (affS1) {
-      updateTrackdeskData({ affS1 });
+    if (linkId) {
+      updateTrackdeskData({ linkId });
     }
   } catch (error) {
-    console.error("Error capturing affS1:", error);
+    console.error("Error capturing linkId:", error);
   }
 }
