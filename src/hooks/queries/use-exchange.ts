@@ -2,19 +2,20 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ExchangeApi } from '@/lib/api/clients/exchange';
 import { apiClient } from '@/lib/api/client-api';
 import { toast } from 'sonner';
+import { useAuth } from '@/shared/providers/auth-provider';
 
 const exchangeApi = new ExchangeApi(apiClient);
 
 export function useExchangeData() {
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
+
   return useQuery({
     queryKey: ['exchange-data'],
     queryFn: async () => {
-      const [credits, exchangeGames] = await Promise.all([
-        exchangeApi.getCustomerCredits(),
-        exchangeApi.getExchangeGames('Active')
-      ]);
+      // Only fetch exchange games, not credits (handled by useUserCredits hook)
+      const exchangeGames = await exchangeApi.getExchangeGames('Active');
       return {
-        credits: credits.netCredits ?? 0,
         exchangeGames,
       };
     },
@@ -29,7 +30,9 @@ export function useExchangeForCredits() {
   mutationFn: (assignmentId: string) => exchangeApi.exchangeSteamKeyForCredits(assignmentId),
     onSuccess: (data) => {
       toast.success(`Game exchanged for ${data.credits} credits!`);
+      // Invalidate both exchange data and user credits
       queryClient.invalidateQueries({ queryKey: ['exchange-data'] });
+      queryClient.invalidateQueries({ queryKey: ['user-credits'] });
     },
     onError: (error: unknown) => {
       const errorMessage = error instanceof Error && 'response' in error &&
@@ -54,7 +57,9 @@ export function useExchangeCreditsForKey() {
     mutationFn: (keyId: number) => exchangeApi.exchangeCreditsForSteamKey(keyId),
     onSuccess: (data) => {
       toast.success(`Game acquired for ${data.credits} credits!`);
+      // Invalidate both exchange data and user credits
       queryClient.invalidateQueries({ queryKey: ['exchange-data'] });
+      queryClient.invalidateQueries({ queryKey: ['user-credits'] });
     },
     onError: (error: unknown) => {
       const errorMessage = error instanceof Error && 'response' in error &&

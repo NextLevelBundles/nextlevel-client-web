@@ -17,10 +17,13 @@ import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import Link from "next/link";
 import { useUserCredits } from "@/hooks/queries/use-user-credits";
+import { useAuth } from "@/shared/providers/auth-provider";
 
 export default function ExchangePage() {
+  const { user } = useAuth();
   const { data: exchangeData, isLoading, error } = useExchangeData();
   const { data: creditsData } = useUserCredits();
+  const isAuthenticated = !!user;
 
   if (error) {
     return (
@@ -70,14 +73,16 @@ export default function ExchangePage() {
                     {creditsData ?? 0}
                   </span>
                 </div>
-                <Button
-                  asChild
-                  size="sm"
-                  variant="outline"
-                  className="bg-white dark:bg-transparent text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-white/10 border-gray-300 dark:border-white/20"
-                >
-                  <Link href="/customer/exchange-history">History</Link>
-                </Button>
+                {isAuthenticated && (
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="outline"
+                    className="bg-white dark:bg-transparent text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-white/10 border-gray-300 dark:border-white/20"
+                  >
+                    <Link href="/customer/exchange-history">History</Link>
+                  </Button>
+                )}
               </div>
             </div>
 

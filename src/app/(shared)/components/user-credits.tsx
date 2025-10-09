@@ -2,6 +2,7 @@
 
 import { Coins, Loader2 } from "lucide-react";
 import { useUserCredits } from "@/hooks/queries/use-user-credits";
+import { useAuth } from "@/shared/providers/auth-provider";
 import {
   Tooltip,
   TooltipContent,
@@ -22,7 +23,9 @@ export function UserCredits({
   showTooltip = true,
   className
 }: UserCreditsProps) {
+  const { user } = useAuth();
   const { data: credits, isLoading } = useUserCredits();
+  const isAuthenticated = !!user;
 
   const content = (
     <Link
@@ -38,7 +41,7 @@ export function UserCredits({
       <Coins className="h-4 w-4 text-primary" />
       <div className="flex items-center gap-1">
         <span className="text-sm font-medium">Credits:</span>
-        {isLoading ? (
+        {isLoading && isAuthenticated ? (
           <Loader2 className="h-3 w-3 animate-spin" />
         ) : (
           <span className="text-sm font-bold text-primary">{credits ?? 0}</span>
