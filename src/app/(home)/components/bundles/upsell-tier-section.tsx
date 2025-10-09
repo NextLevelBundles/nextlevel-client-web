@@ -56,7 +56,7 @@ export function UpsellTierSection({
               )} />
             </div>
             <div>
-              <h3 className="text-lg font-semibold">Extra Items</h3>
+              <h3 className="text-lg font-semibold">{tier.name || "Extra Items"}</h3>
               <p className="text-sm text-muted-foreground">
                 100% to developers • {tierProducts.length} {isBookBundle ? "books" : "games"}
               </p>

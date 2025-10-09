@@ -15,8 +15,9 @@ import { useBundleBookFormats } from "@/hooks/queries/useBundleBookFormats";
 
 export function BundleDetail({ bundle }: { bundle: Bundle }) {
   const [baseAmount, setBaseAmount] = useState(bundle.minPrice);
-  const [isCharitySelected, setIsCharitySelected] = useState(false);
-  const [isUpsellSelected, setIsUpsellSelected] = useState(false);
+  const [selectedCharityTierIds, setSelectedCharityTierIds] = useState<string[]>([]);
+  const [manuallySelectedCharityTierIds, setManuallySelectedCharityTierIds] = useState<string[]>([]);
+  const [selectedUpsellTierIds, setSelectedUpsellTierIds] = useState<string[]>([]);
 
   const tiers = useMemo(() => bundle.tiers || [], [bundle]);
   const allProducts = bundle.products;
@@ -26,31 +27,69 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
   const isBookBundle = bundle.type === BundleType.EBook;
   const { data: bookFormats } = useBundleBookFormats(bundle.id, isBookBundle);
 
-  // Separate tiers by type
-  const baseTiers = tiers.filter((tier) => tier.type === TierType.Base);
-  const charityTier = tiers.find((tier) => tier.type === TierType.Charity);
-  const upsellTier = tiers.find((tier) => tier.type === TierType.Upsell);
+  // Separate tiers by type and sort by price (memoized to prevent infinite loops)
+  const baseTiers = useMemo(() => tiers.filter((tier) => tier.type === TierType.Base), [tiers]);
+  const charityTiers = useMemo(() =>
+    tiers.filter((tier) => tier.type === TierType.Charity).sort((a, b) => a.price - b.price),
+    [tiers]
+  );
+  const upsellTiers = useMemo(() =>
+    tiers.filter((tier) => tier.type === TierType.Upsell).sort((a, b) => a.price - b.price),
+    [tiers]
+  );
 
   // Get the highest base tier price
   const highestBaseTierPrice = baseTiers.length > 0
     ? baseTiers[baseTiers.length - 1].price
     : 0;
 
-  // Automatically handle charity tier based on custom amount
+  // Automatically handle charity tiers based on custom amount and manual selections
   useEffect(() => {
-    if (charityTier && baseAmount >= highestBaseTierPrice + charityTier.price) {
-      // If custom amount is >= highest base tier + charity tier price, unlock charity tier
-      setIsCharitySelected(true);
-    } else if (charityTier && baseAmount < highestBaseTierPrice + charityTier.price) {
-      // If custom amount drops below threshold, remove charity tier
-      setIsCharitySelected(false);
+    const extraAmount = Math.max(0, baseAmount - highestBaseTierPrice);
+    const autoSelectedCharityTierIds: string[] = [];
+    let accumulatedCharityAmount = 0;
+
+    // First, account for manually selected charity tiers
+    const manuallySelectedTiers = charityTiers.filter(tier =>
+      manuallySelectedCharityTierIds.includes(tier.id)
+    );
+
+    for (const tier of manuallySelectedTiers) {
+      accumulatedCharityAmount += tier.price;
     }
-  }, [baseAmount, highestBaseTierPrice, charityTier]);
+
+    // Then auto-select remaining charity tiers based on available amount
+    for (const tier of charityTiers) {
+      // Skip if already manually selected
+      if (manuallySelectedCharityTierIds.includes(tier.id)) {
+        continue;
+      }
+
+      if (accumulatedCharityAmount + tier.price <= extraAmount) {
+        autoSelectedCharityTierIds.push(tier.id);
+        accumulatedCharityAmount += tier.price;
+      } else {
+        break;
+      }
+    }
+
+    // Combine manual and auto selections
+    setSelectedCharityTierIds([...manuallySelectedCharityTierIds, ...autoSelectedCharityTierIds]);
+  }, [baseAmount, highestBaseTierPrice, charityTiers, manuallySelectedCharityTierIds]);
 
   // Calculate total amount including addons
-  const totalAmount = baseAmount +
-    (isCharitySelected && charityTier ? charityTier.price : 0) +
-    (isUpsellSelected && upsellTier ? upsellTier.price : 0);
+  const selectedCharityTiers = charityTiers.filter(tier => selectedCharityTierIds.includes(tier.id));
+  const selectedUpsellTiers = upsellTiers.filter(tier => selectedUpsellTierIds.includes(tier.id));
+
+  // Separate manually selected charity tiers from auto-selected ones
+  const manualCharityTiers = charityTiers.filter(tier => manuallySelectedCharityTierIds.includes(tier.id));
+  const manualCharityAmount = manualCharityTiers.reduce((sum, tier) => sum + tier.price, 0);
+
+  const totalCharityAmount = selectedCharityTiers.reduce((sum, tier) => sum + tier.price, 0);
+  const totalUpsellAmount = selectedUpsellTiers.reduce((sum, tier) => sum + tier.price, 0);
+
+  // Total amount includes base + manually selected charity + upsell
+  const totalAmount = baseAmount + manualCharityAmount + totalUpsellAmount;
 
   const unlockedTiers = tiers.filter((tier) => tier.price <= baseAmount) ?? [];
 
@@ -71,12 +110,12 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
     );
 
   // Add addon tier products if selected
-  const charityProducts = isCharitySelected && charityTier
-    ? allProducts.filter((product) => product.bundleTierId === charityTier.id)
-    : [];
-  const upsellProducts = isUpsellSelected && upsellTier
-    ? allProducts.filter((product) => product.bundleTierId === upsellTier.id)
-    : [];
+  const charityProducts = selectedCharityTiers.flatMap(tier =>
+    allProducts.filter((product) => product.bundleTierId === tier.id)
+  );
+  const upsellProducts = selectedUpsellTiers.flatMap(tier =>
+    allProducts.filter((product) => product.bundleTierId === tier.id)
+  );
 
   const unlockedProducts = [
     ...baseUnlockedProducts,
@@ -91,17 +130,24 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
 
   // Calculate charity amount for display
   let charityAmountForDisplay = 0;
-  if (isCharitySelected && charityTier) {
-    // Full charity tier amount goes to charity
-    charityAmountForDisplay = charityTier.price;
-  } else if (baseAmount > highestBaseTierPrice) {
-    // Custom amount above highest base tier - extra goes to charity
-    const extraAmount = baseAmount - highestBaseTierPrice;
-    charityAmountForDisplay = (highestBaseTierPrice * 0.05) + extraAmount;
-  } else {
-    // Standard 5% charity for base amount only
-    charityAmountForDisplay = baseAmount * 0.05;
-  }
+
+  // Standard 5% charity for base amount up to highest base tier
+  const effectiveBaseAmount = Math.min(baseAmount, highestBaseTierPrice);
+  charityAmountForDisplay = effectiveBaseAmount * 0.05;
+
+  // Add manually selected charity tier amounts (these are on top of base amount)
+  charityAmountForDisplay += manualCharityAmount;
+
+  // Add auto-selected charity tier amounts from extra amount
+  const autoSelectedCharityAmount = selectedCharityTiers
+    .filter(tier => !manuallySelectedCharityTierIds.includes(tier.id))
+    .reduce((sum, tier) => sum + tier.price, 0);
+  charityAmountForDisplay += autoSelectedCharityAmount;
+
+  // Add any remaining extra amount above highest base tier and auto-selected charity tiers
+  const extraAmount = Math.max(0, baseAmount - highestBaseTierPrice);
+  const remainingExtraAmount = Math.max(0, extraAmount - autoSelectedCharityAmount);
+  charityAmountForDisplay += remainingExtraAmount;
 
   return (
     <TooltipProvider>
@@ -136,32 +182,46 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
                 />
               )}
 
-              {/* Charity Tier Section */}
-              {charityTier && (
+              {/* Charity Tiers Section */}
+              {charityTiers.map((tier) => (
                 <CharityTierSection
-                  tier={charityTier}
+                  key={tier.id}
+                  tier={tier}
                   products={allProducts}
-                  isUnlocked={isCharitySelected}
+                  isUnlocked={selectedCharityTierIds.includes(tier.id)}
                   totalAmount={totalAmount}
-                  onUnlock={() => setIsCharitySelected(true)}
-                  onCancel={() => setIsCharitySelected(false)}
+                  onUnlock={() => {
+                    // Add to manually selected tiers WITHOUT changing base amount
+                    if (!manuallySelectedCharityTierIds.includes(tier.id)) {
+                      setManuallySelectedCharityTierIds(prev => [...prev, tier.id]);
+                    }
+                  }}
+                  onCancel={() => {
+                    // Remove from manually selected tiers
+                    setManuallySelectedCharityTierIds(prev => prev.filter(id => id !== tier.id));
+                  }}
                   bundleType={bundle.type}
                 />
-              )}
+              ))}
 
-              {/* Upsell/Developer Tier Section */}
-              {upsellTier && (
+              {/* Upsell/Developer Tiers Section */}
+              {upsellTiers.map((tier) => (
                 <UpsellTierSection
-                  tier={upsellTier}
+                  key={tier.id}
+                  tier={tier}
                   products={allProducts}
-                  isUnlocked={isUpsellSelected}
+                  isUnlocked={selectedUpsellTierIds.includes(tier.id)}
                   totalAmount={totalAmount}
-                  onUnlock={() => setIsUpsellSelected(true)}
-                  onCancel={() => setIsUpsellSelected(false)}
+                  onUnlock={() => {
+                    setSelectedUpsellTierIds(prev => [...prev, tier.id]);
+                  }}
+                  onCancel={() => {
+                    setSelectedUpsellTierIds(prev => prev.filter(id => id !== tier.id));
+                  }}
                   bundleType={bundle.type}
                   highestBaseTierPrice={baseTiers[baseTiers.length - 1]?.price || 0}
                 />
-              )}
+              ))}
 
               <CharityHighlight
                 charities={bundle.charities.map((c) => c.charity)}
@@ -184,10 +244,20 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
                   totalAmount={totalAmount}
                   unlockedProductsValue={unlockedProductsValue}
                   setBaseAmount={setBaseAmount}
-                  isCharitySelected={isCharitySelected}
-                  isUpsellSelected={isUpsellSelected}
-                  setIsCharitySelected={setIsCharitySelected}
-                  setIsUpsellSelected={setIsUpsellSelected}
+                  selectedCharityTierIds={selectedCharityTierIds}
+                  selectedUpsellTierIds={selectedUpsellTierIds}
+                  setSelectedCharityTierIds={setSelectedCharityTierIds}
+                  setSelectedUpsellTierIds={setSelectedUpsellTierIds}
+                  onToggleCharityTier={(tierId: string) => {
+                    if (manuallySelectedCharityTierIds.includes(tierId)) {
+                      // Remove from manual selections
+                      setManuallySelectedCharityTierIds(prev => prev.filter(id => id !== tierId));
+                    } else {
+                      // Add to manual selections WITHOUT changing base amount
+                      setManuallySelectedCharityTierIds(prev => [...prev, tierId]);
+                    }
+                  }}
+                  manuallySelectedCharityTierIds={manuallySelectedCharityTierIds}
                   bookFormats={bookFormats}
                 />
               </div>

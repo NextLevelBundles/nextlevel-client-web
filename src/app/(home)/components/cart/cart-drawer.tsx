@@ -376,7 +376,7 @@ export function CartDrawer() {
 
                             <div className="text-right">
                               <div className="font-semibold text-sm">
-                                ${item.price?.toFixed(2)}
+                                ${item.totalAmount?.toFixed(2)}
                               </div>
                               <span className="text-xs text-muted-foreground">
                                 {item.snapshotProducts.length} games

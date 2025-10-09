@@ -45,10 +45,12 @@ interface PurchaseSummaryProps {
   totalAmount: number;
   unlockedProductsValue: number;
   setBaseAmount: (amount: number) => void;
-  isCharitySelected: boolean;
-  isUpsellSelected: boolean;
-  setIsCharitySelected: (selected: boolean) => void;
-  setIsUpsellSelected: (selected: boolean) => void;
+  selectedCharityTierIds: string[];
+  selectedUpsellTierIds: string[];
+  setSelectedCharityTierIds: (ids: string[]) => void;
+  setSelectedUpsellTierIds: (ids: string[]) => void;
+  onToggleCharityTier?: (tierId: string) => void;
+  manuallySelectedCharityTierIds?: string[];
   bookFormats?: BundleBookFormatsResponse | null;
 }
 
@@ -60,10 +62,12 @@ export function PurchaseSummary({
   currentTier,
   unlockedProductsValue,
   setBaseAmount,
-  isCharitySelected,
-  isUpsellSelected,
-  setIsCharitySelected,
-  setIsUpsellSelected,
+  selectedCharityTierIds,
+  selectedUpsellTierIds,
+  setSelectedCharityTierIds,
+  setSelectedUpsellTierIds,
+  onToggleCharityTier,
+  manuallySelectedCharityTierIds = [],
   bookFormats,
 }: PurchaseSummaryProps) {
   const [customInputValue, setCustomInputValue] = useState("");
@@ -81,8 +85,8 @@ export function PurchaseSummary({
 
   // Separate tiers by type
   const baseTiers = tiers.filter((tier) => tier.type === TierType.Base);
-  const charityTier = tiers.find((tier) => tier.type === TierType.Charity);
-  const upsellTier = tiers.find((tier) => tier.type === TierType.Upsell);
+  const charityTiers = tiers.filter((tier) => tier.type === TierType.Charity).sort((a, b) => a.price - b.price);
+  const upsellTiers = tiers.filter((tier) => tier.type === TierType.Upsell).sort((a, b) => a.price - b.price);
 
   const minimumPrice = baseTiers[0]?.price || tiers[0].price;
 
@@ -99,15 +103,21 @@ export function PurchaseSummary({
   const highestBaseTierPrice =
     baseTiers.length > 0 ? baseTiers[baseTiers.length - 1].price : 0;
 
+  // Calculate selected tier amounts
+  const selectedCharityTiers = charityTiers.filter(tier => selectedCharityTierIds.includes(tier.id));
+  const selectedUpsellTiers = upsellTiers.filter(tier => selectedUpsellTierIds.includes(tier.id));
+  const totalSelectedCharityAmount = selectedCharityTiers.reduce((sum, tier) => sum + tier.price, 0);
+  const totalSelectedUpsellAmount = selectedUpsellTiers.reduce((sum, tier) => sum + tier.price, 0);
+
   // Calculate charity amount based on addon model and custom amounts
   let totalCharityAmount = 0;
   let publisherAmount = 0;
   let platformAmount = 0;
   let developerSupportAmount = 0;
 
-  // If upsell addon is selected, full amount goes to developers
-  if (isUpsellSelected && upsellTier) {
-    developerSupportAmount = upsellTier.price;
+  // If upsell addons are selected, full amounts go to developers
+  if (selectedUpsellTierIds.length > 0) {
+    developerSupportAmount = totalSelectedUpsellAmount;
   }
 
   // Calculate amounts based on the scenario
@@ -127,19 +137,18 @@ export function PurchaseSummary({
   platformAmount = basePlatformAmount;
   totalCharityAmount = baseCharityAmount;
 
-  // Add developer support to publishers if selected
-  if (developerSupportAmount > 0) {
-    publisherAmount += developerSupportAmount;
+  // Developer support amount is kept separate for display
+  // (no longer added to publisherAmount)
+
+  // Handle charity tiers if selected
+  if (selectedCharityTierIds.length > 0) {
+    totalCharityAmount += totalSelectedCharityAmount;
   }
 
-  // Handle charity tier if selected
-  if (isCharitySelected && charityTier) {
-    totalCharityAmount += charityTier.price;
-  }
-
-  // Handle any extra amount above highest base tier (goes to charity)
-  if (baseAmount > highestBaseTierPrice) {
-    const extraForCharity = baseAmount - highestBaseTierPrice;
+  // Handle any extra amount above highest base tier and selected charity tiers (goes to charity)
+  const totalCharityAndBase = highestBaseTierPrice + totalSelectedCharityAmount;
+  if (baseAmount > totalCharityAndBase) {
+    const extraForCharity = baseAmount - totalCharityAndBase;
     totalCharityAmount += extraForCharity;
   }
 
@@ -250,6 +259,14 @@ export function PurchaseSummary({
                   width: `${Math.max(0, (publisherAmount / totalAmount) * 100)}%`,
                 }}
               />
+              {developerSupportAmount > 0 && (
+                <div
+                  className="bg-purple-400 dark:bg-purple-600 transition-all"
+                  style={{
+                    width: `${Math.max(0, (developerSupportAmount / totalAmount) * 100)}%`,
+                  }}
+                />
+              )}
               <div
                 className="bg-blue-400 dark:bg-blue-600 transition-all"
                 style={{
@@ -270,14 +287,24 @@ export function PurchaseSummary({
                 <div className="flex items-center gap-1">
                   <div className="w-3 h-3 rounded bg-yellow-400 dark:bg-yellow-600" />
                   <span className="text-sm font-medium">
-                    Developers (75%){" "}
-                    {developerSupportAmount > 0 ? " + Extra" : ""}
+                    Publishers (75%)
                   </span>
                 </div>
                 <span className="text-sm font-bold">
                   ${publisherAmount.toFixed(2)}
                 </span>
               </div>
+              {developerSupportAmount > 0 && (
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 rounded bg-purple-400 dark:bg-purple-600" />
+                    <span className="text-sm font-medium">Extras</span>
+                  </div>
+                  <span className="text-sm font-bold">
+                    ${developerSupportAmount.toFixed(2)}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-1">
                   <div className="w-3 h-3 rounded bg-blue-400 dark:bg-blue-600" />
@@ -292,7 +319,7 @@ export function PurchaseSummary({
                   <div className="flex items-center gap-1">
                     <div className="w-3 h-3 rounded bg-rose-400 dark:bg-rose-600" />
                     <span className="text-sm font-medium">
-                      Charity{!isCharitySelected ? " (5%)" : ""}
+                      Charity{selectedCharityTierIds.length === 0 ? " (5%)" : ""}
                     </span>
                   </div>
                   <span className="text-sm font-bold">
@@ -302,131 +329,160 @@ export function PurchaseSummary({
               )}
             </div>
 
-            {charityTier && (
-              <div
-                className={cn(
-                  "mt-4 p-3 rounded-lg border relative cursor-pointer transition-all",
-                  isCharitySelected
-                    ? "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-950/40"
-                    : "bg-gray-50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800/40"
-                )}
-                onClick={() => setIsCharitySelected(!isCharitySelected)}
-                role="button"
-                tabIndex={0}
-                aria-pressed={isCharitySelected}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1 flex-1">
-                    <p
+            {charityTiers.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2">
+                  Charity Tiers (click to add/remove)
+                </p>
+                {charityTiers.map((tier) => {
+                  const isSelected = selectedCharityTierIds.includes(tier.id);
+                  const isManuallySelected = manuallySelectedCharityTierIds.includes(tier.id);
+                  return (
+                    <div
+                      key={tier.id}
                       className={cn(
-                        "text-xs font-semibold",
-                        isCharitySelected
-                          ? "text-rose-700 dark:text-rose-300"
-                          : "text-gray-600 dark:text-gray-400"
+                        "p-3 rounded-lg border relative cursor-pointer transition-all",
+                        isSelected
+                          ? "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-950/40"
+                          : "bg-gray-50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800/40"
                       )}
+                      onClick={() => onToggleCharityTier?.(tier.id)}
+                      role="button"
+                      tabIndex={0}
+                      aria-pressed={isSelected}
                     >
-                      <Heart
-                        className={cn(
-                          "inline h-3 w-3 mr-1",
-                          isCharitySelected
-                            ? "fill-rose-500 text-rose-500"
-                            : "text-gray-400"
-                        )}
-                      />
-                      Charity Tier{" "}
-                      {isCharitySelected ? "Included" : "Not Included"}
-                    </p>
-                    <p
-                      className={cn(
-                        "text-xs",
-                        isCharitySelected
-                          ? "text-rose-600 dark:text-rose-400"
-                          : "text-gray-500 dark:text-gray-500"
-                      )}
-                    >
-                      {isCharitySelected
-                        ? `100% of this tier ($${charityTier.price}) goes to charity`
-                        : `Click to add $${charityTier.price} for charity`}
-                    </p>
-                  </div>
-                  <div
-                    className={cn(
-                      "ml-2 p-1 rounded-full",
-                      isCharitySelected
-                        ? "bg-rose-200 dark:bg-rose-800"
-                        : "bg-gray-200 dark:bg-gray-700"
-                    )}
-                  >
-                    {isCharitySelected ? (
-                      <X className="h-3 w-3 text-rose-600 dark:text-rose-400" />
-                    ) : (
-                      <Heart className="h-3 w-3 text-gray-500 dark:text-gray-400" />
-                    )}
-                  </div>
-                </div>
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1 flex-1">
+                            <p
+                              className={cn(
+                                "text-xs font-semibold",
+                                isSelected
+                                  ? "text-rose-700 dark:text-rose-300"
+                                  : "text-gray-600 dark:text-gray-400"
+                              )}
+                            >
+                              <Heart
+                                className={cn(
+                                  "inline h-3 w-3 mr-1",
+                                  isSelected
+                                    ? "fill-rose-500 text-rose-500"
+                                    : "text-gray-400"
+                                )}
+                              />
+                              {tier.name || "Charity Tier"}{" "}
+                              {isSelected ? (isManuallySelected ? "(Manual)" : "(Auto)") : "Not Included"}
+                            </p>
+                            <p
+                              className={cn(
+                                "text-xs",
+                                isSelected
+                                  ? "text-rose-600 dark:text-rose-400"
+                                  : "text-gray-500 dark:text-gray-500"
+                              )}
+                            >
+                              {isSelected
+                                ? `100% of this tier ($${tier.price}) goes to charity`
+                                : `Requires $${tier.price} extra for charity`}
+                            </p>
+                          </div>
+                          <div
+                            className={cn(
+                              "ml-2 p-1 rounded-full",
+                              isSelected
+                                ? "bg-rose-200 dark:bg-rose-800"
+                                : "bg-gray-200 dark:bg-gray-700"
+                            )}
+                          >
+                            {isSelected ? (
+                              <Heart className="h-3 w-3 fill-rose-600 text-rose-600 dark:fill-rose-400 dark:text-rose-400" />
+                            ) : (
+                              <Heart className="h-3 w-3 text-gray-500 dark:text-gray-400" />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
               </div>
             )}
 
-            {upsellTier && (
-              <div
-                className={cn(
-                  "mt-4 p-3 rounded-lg border relative cursor-pointer transition-all",
-                  isUpsellSelected
-                    ? "bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-950/40"
-                    : "bg-gray-50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800/40"
-                )}
-                onClick={() => setIsUpsellSelected(!isUpsellSelected)}
-                role="button"
-                tabIndex={0}
-                aria-pressed={isUpsellSelected}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1 flex-1">
-                    <p
+            {upsellTiers.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2">
+                  Developer Support Tiers
+                </p>
+                {upsellTiers.map((tier) => {
+                  const isSelected = selectedUpsellTierIds.includes(tier.id);
+                  return (
+                    <div
+                      key={tier.id}
                       className={cn(
-                        "text-xs font-semibold",
-                        isUpsellSelected
-                          ? "text-purple-700 dark:text-purple-300"
-                          : "text-gray-600 dark:text-gray-400"
+                        "p-3 rounded-lg border relative cursor-pointer transition-all",
+                        isSelected
+                          ? "bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-950/40"
+                          : "bg-gray-50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800/40"
                       )}
+                      onClick={() => {
+                        if (isSelected) {
+                          setSelectedUpsellTierIds(selectedUpsellTierIds.filter(id => id !== tier.id));
+                        } else {
+                          setSelectedUpsellTierIds([...selectedUpsellTierIds, tier.id]);
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      aria-pressed={isSelected}
                     >
-                      <Gamepad2
-                        className={cn(
-                          "inline h-3 w-3 mr-1",
-                          isUpsellSelected ? "text-purple-500" : "text-gray-400"
-                        )}
-                      />
-                      Extra Items{" "}
-                      {isUpsellSelected ? "Included" : "Not Included"}
-                    </p>
-                    <p
-                      className={cn(
-                        "text-xs",
-                        isUpsellSelected
-                          ? "text-purple-600 dark:text-purple-400"
-                          : "text-gray-500 dark:text-gray-500"
-                      )}
-                    >
-                      {isUpsellSelected
-                        ? `100% of developer tier ($${upsellTier.price}) goes to developers`
-                        : `Click to add $${upsellTier.price} for developers`}
-                    </p>
-                  </div>
-                  <div
-                    className={cn(
-                      "ml-2 p-1 rounded-full",
-                      isUpsellSelected
-                        ? "bg-purple-200 dark:bg-purple-800"
-                        : "bg-gray-200 dark:bg-gray-700"
-                    )}
-                  >
-                    {isUpsellSelected ? (
-                      <X className="h-3 w-3 text-purple-600 dark:text-purple-400" />
-                    ) : (
-                      <Gamepad2 className="h-3 w-3 text-gray-500 dark:text-gray-400" />
-                    )}
-                  </div>
-                </div>
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1 flex-1">
+                          <p
+                            className={cn(
+                              "text-xs font-semibold",
+                              isSelected
+                                ? "text-purple-700 dark:text-purple-300"
+                                : "text-gray-600 dark:text-gray-400"
+                            )}
+                          >
+                            <Gamepad2
+                              className={cn(
+                                "inline h-3 w-3 mr-1",
+                                isSelected ? "text-purple-500" : "text-gray-400"
+                              )}
+                            />
+                            {tier.name || "Extra Items"}{" "}
+                            {isSelected ? "Included" : "Not Included"}
+                          </p>
+                          <p
+                            className={cn(
+                              "text-xs",
+                              isSelected
+                                ? "text-purple-600 dark:text-purple-400"
+                                : "text-gray-500 dark:text-gray-500"
+                            )}
+                          >
+                            {isSelected
+                              ? `100% of developer tier ($${tier.price}) goes to developers`
+                              : `Click to add $${tier.price} for developers`}
+                          </p>
+                        </div>
+                        <div
+                          className={cn(
+                            "ml-2 p-1 rounded-full",
+                            isSelected
+                              ? "bg-purple-200 dark:bg-purple-800"
+                              : "bg-gray-200 dark:bg-gray-700"
+                          )}
+                        >
+                          {isSelected ? (
+                            <X className="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                          ) : (
+                            <Gamepad2 className="h-3 w-3 text-gray-500 dark:text-gray-400" />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -456,12 +512,8 @@ export function PurchaseSummary({
               bundleId={bundle.id}
               selectedTierId={currentTier.id}
               totalAmount={totalAmount}
-              charityAmount={
-                isCharitySelected && charityTier ? charityTier.price : undefined
-              }
-              upsellAmount={
-                isUpsellSelected && upsellTier ? upsellTier.price : undefined
-              }
+              selectedCharityTierIds={selectedCharityTierIds}
+              selectedUpsellTierIds={selectedUpsellTierIds}
             />
           )}
         </div>

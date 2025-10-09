@@ -41,6 +41,7 @@ export enum TierType {
 
 export interface Tier {
   id: string;
+  name: string;
   price: number;
   type: TierType;
 }

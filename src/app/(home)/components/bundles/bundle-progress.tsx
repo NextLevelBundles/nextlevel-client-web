@@ -144,7 +144,7 @@ export function BundleProgress({
 
             return (
               <Fragment key={tier.id}>
-                <TooltipProvider key={tier.id}>
+                <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div

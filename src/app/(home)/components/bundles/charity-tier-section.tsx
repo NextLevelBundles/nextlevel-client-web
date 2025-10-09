@@ -55,7 +55,7 @@ export function CharityTierSection({
               )} />
             </div>
             <div>
-              <h3 className="text-lg font-semibold">Charity Tier</h3>
+              <h3 className="text-lg font-semibold">{tier.name || "Charity Tier"}</h3>
               <p className="text-sm text-muted-foreground">
                 100% goes to charity • {tierProducts.length} {isBookBundle ? "books" : "games"}
               </p>

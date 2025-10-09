@@ -60,7 +60,7 @@ export function BundleProductsPopup({ purchase }: BundleProductsPopupProps) {
               </span>
             </div>
             <div className="text-right">
-              <p className="font-semibold">${purchase.price.toFixed(2)}</p>
+              <p className="font-semibold">${purchase.totalAmount.toFixed(2)}</p>
               {purchase.snapshotTierTitle && (
                 <p className="text-xs text-muted-foreground">
                   {purchase.snapshotTierTitle}
