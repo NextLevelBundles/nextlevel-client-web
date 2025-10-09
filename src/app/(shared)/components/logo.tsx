@@ -26,8 +26,8 @@ export default function Logo({
     <Image
       src={
         resolvedTheme === "dark"
-          ? "/logo/digiphile-wordmark-horizontal-light.png"
-          : "/logo/digiphile-wordmark-horizontal-dark.png"
+          ? "/logo/digiphile-wordmark-horizontal-dark.png"
+          : "/logo/digiphile-wordmark-horizontal-light.png"
       }
       alt="Digiphile Logo"
       className={className}

@@ -39,8 +39,8 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
           <Image
             src={
               theme === "dark"
-                ? "/logo/digiphile-wordmark-horizontal-light.png"
-                : "/logo/digiphile-wordmark-horizontal-dark.png"
+                ? "/logo/digiphile-wordmark-horizontal-dark.png"
+                : "/logo/digiphile-wordmark-horizontal-light.png"
             }
             alt="Digiphile"
             width={180}
@@ -162,8 +162,8 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
               <Image
                 src={
                   theme === "dark"
-                    ? "/logo/digiphile-wordmark-horizontal-light.png"
-                    : "/logo/digiphile-wordmark-horizontal-dark.png"
+                    ? "/logo/digiphile-wordmark-horizontal-dark.png"
+                    : "/logo/digiphile-wordmark-horizontal-light.png"
                 }
                 alt="Digiphile"
                 width={180}
