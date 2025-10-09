@@ -76,7 +76,7 @@ export function PurchaseSummary({
   const { data: locationData, isLoading: isLoadingLocation } =
     useCustomerLocation(isAuthenticated);
 
-  // Fetch customer data to check Steam connection status
+  // Fetch customer data to check Steam connection status (only if authenticated)
   const { data: customer } = useCustomer();
 
   // Separate tiers by type
