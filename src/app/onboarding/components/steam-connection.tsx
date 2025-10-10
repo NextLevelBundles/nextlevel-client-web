@@ -67,11 +67,13 @@ export default function SteamConnection({
           const profile = await response.json();
           setSteamProfile(profile);
           
-          // If we have a country code from the profile and not already set, update it
-          if (profile.loccountrycode && !steamUserInfo?.steamCountry) {
+          // If we have profile data and not already set, update it
+          if ((profile.loccountrycode && !steamUserInfo?.steamCountry) || 
+              (profile.personaname && !steamUserInfo?.steamUsername)) {
             onSteamInfoReceived({
               steamId: steamId,
-              steamCountry: profile.loccountrycode,
+              steamUsername: profile.personaname || steamUserInfo?.steamUsername,
+              steamCountry: profile.loccountrycode || steamUserInfo?.steamCountry,
             });
           }
         }
@@ -92,11 +94,12 @@ export default function SteamConnection({
     const handler = (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
 
-      const { type, steamId, steamCountry } = event.data || {};
+      const { type, steamId, steamUsername, steamCountry } = event.data || {};
 
       if (type === "STEAM_CONNECT_SUCCESS") {
         onSteamInfoReceived({
           steamId: steamId,
+          steamUsername: steamUsername,
           steamCountry: steamCountry,
         });
       }

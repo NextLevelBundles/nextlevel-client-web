@@ -18,8 +18,9 @@ export async function GET(req: NextRequest) {
   try {
     const steamId = await authenticateSteam(req.url);
     
-    // Fetch Steam profile to get country
+    // Fetch Steam profile to get country and username
     let steamCountry = null;
+    let steamUsername = null;
     try {
       const STEAM_API_KEY = process.env.STEAM_API_KEY;
       if (STEAM_API_KEY) {
@@ -30,16 +31,19 @@ export async function GET(req: NextRequest) {
         if (player?.loccountrycode) {
           steamCountry = player.loccountrycode;
         }
+        if (player?.personaname) {
+          steamUsername = player.personaname;
+        }
       }
     } catch (profileError) {
-      console.error("Failed to fetch Steam profile for country:", profileError);
-      // Continue without country - not critical
+      console.error("Failed to fetch Steam profile for country and username:", profileError);
+      // Continue without country/username - not critical
     }
 
     return new NextResponse(
       `<script>
-      console.log("Steam authentication successful, Steam ID:", '${steamId}', "Country:", '${steamCountry || 'unknown'}');
-      window.opener?.postMessage({ type: 'STEAM_CONNECT_SUCCESS', steamId: '${steamId}', steamCountry: ${steamCountry ? `'${steamCountry}'` : 'null'} }, '*');
+      console.log("Steam authentication successful, Steam ID:", '${steamId}', "Username:", '${steamUsername || 'unknown'}', "Country:", '${steamCountry || 'unknown'}');
+      window.opener?.postMessage({ type: 'STEAM_CONNECT_SUCCESS', steamId: '${steamId}', steamUsername: ${steamUsername ? `'${steamUsername.replace(/'/g, "\\'")}'` : 'null'}, steamCountry: ${steamCountry ? `'${steamCountry}'` : 'null'} }, '*');
       window.close();
     </script>`,
       {

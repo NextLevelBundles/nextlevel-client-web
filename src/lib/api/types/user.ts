@@ -24,6 +24,7 @@ export interface Customer {
   createdAt: string;
   updatedAt: string;
   steamId?: string;
+  steamUsername?: string;
   steamConnectedAt?: string;
   steamCountry?: string;
   countryCode: string;

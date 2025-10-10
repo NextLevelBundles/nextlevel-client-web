@@ -30,6 +30,7 @@ export default function SteamAccountSettings() {
       if (hasConnection) {
         setSteamUserInfo({
           steamId: customer.steamId!,
+          steamUsername: customer.steamUsername || undefined,
           steamCountry: customer.steamCountry || undefined,
         });
       }
@@ -120,6 +121,9 @@ export default function SteamAccountSettings() {
                     <span className="font-medium">Steam Account Connected</span>
                   </div>
                   <div className="space-y-1 text-sm text-muted-foreground">
+                    {customer.steamUsername && (
+                      <p>Username: {customer.steamUsername}</p>
+                    )}
                     <p>Steam ID: {customer.steamId}</p>
                     {customer.steamCountry && (
                       <p>Region: {customer.steamCountry}</p>
