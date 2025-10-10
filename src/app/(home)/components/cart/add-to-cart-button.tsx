@@ -11,20 +11,22 @@ import { useRouter } from "next/navigation";
 
 interface AddToCartButtonProps {
   bundleId: string;
-  selectedTierId?: string;
+  baseTierId?: string;
+  charityTierId?: string;
+  tipAmount?: number;
   totalAmount: number;
-  charityAmount?: number;
-  upsellAmount?: number;
+  selectedUpsellTierIds?: string[];
   className?: string;
   children?: React.ReactNode;
 }
 
 export function AddToCartButton({
   bundleId,
-  selectedTierId,
+  baseTierId,
+  charityTierId,
+  tipAmount = 0,
   totalAmount,
-  charityAmount,
-  upsellAmount,
+  selectedUpsellTierIds = [],
   className,
   children,
 }: AddToCartButtonProps) {
@@ -39,10 +41,10 @@ export function AddToCartButton({
     try {
       const cartItem: AddToCartRequest = {
         bundleId,
-        tierId: selectedTierId!,
-        price: totalAmount,
-        ...(charityAmount && { charityAmount }),
-        ...(upsellAmount && { upsellAmount }),
+        baseTierId: baseTierId!,
+        ...(charityTierId && { charityTierId }),
+        ...(tipAmount > 0 && { tipAmount }),
+        ...(selectedUpsellTierIds.length > 0 && { upsellTierIds: selectedUpsellTierIds }),
       };
 
       await addToCart(cartItem);
@@ -69,7 +71,7 @@ export function AddToCartButton({
     isLoading ||
     isAdding ||
     totalAmount <= 0 ||
-    !selectedTierId ||
+    !baseTierId ||
     isLoadingSession;
 
   return (

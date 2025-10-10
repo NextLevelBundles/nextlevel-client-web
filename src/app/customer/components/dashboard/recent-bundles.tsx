@@ -135,7 +135,7 @@ export function RecentBundles() {
                         : "Processing"}
                     </span>
                     <span>•</span>
-                    <span>${purchase.price.toFixed(2)}</span>
+                    <span>${purchase.totalAmount.toFixed(2)}</span>
                     <span>•</span>
                     <span>{purchase.snapshotProducts.length} items</span>
                   </div>

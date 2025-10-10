@@ -3,16 +3,16 @@ export interface CartItem {
   type: "Listing";
   createdAt?: string;
   completedAt?: string | null;
+  cartId?: string;
   customerId: string;
   listingId?: string;
   bundleId?: string;
-  baseBundleTierId?: string;
-  charityBundleTierId?: string;
-  upsellBundleTierId?: string;
   quantity: number;
-  price: number;
-  charityAmount?: number;
-  upsellAmount?: number;
+  baseAmount: number;
+  charityAmount: number;
+  tipAmount: number;
+  upsellAmount: number;
+  totalAmount: number;
   snapshotTitle?: string;
   snapshotImageUrl?: string;
   snapshotPlatform?: string;
@@ -46,6 +46,7 @@ export interface CartItem {
       };
     };
   }[];
+  addedAt?: string;
   isGift?: boolean;
   giftRecipientEmail?: string;
   giftRecipientName?: string;
@@ -66,11 +67,14 @@ export interface Cart {
 
 export interface AddToCartRequest {
   bundleId: string;
-  tierId: string;
-  price: number;
-  charityAmount?: number;
-  upsellAmount?: number;
+  baseTierId: string;
+  charityTierId?: string;
+  tipAmount?: number;
+  upsellTierIds?: string[];
+  isGift?: boolean;
   giftRecipientEmail?: string;
+  giftRecipientName?: string;
+  giftMessage?: string;
 }
 
 export interface UpdateGiftRequest {

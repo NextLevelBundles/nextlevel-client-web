@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { TooltipProvider } from "@/shared/components/ui/tooltip";
 import { BundleHero } from "./bundle-hero";
 import { BundleProgress } from "./bundle-progress";
@@ -14,50 +14,42 @@ import { Bundle, BundleType, TierType } from "@/app/(shared)/types/bundle";
 import { useBundleBookFormats } from "@/hooks/queries/useBundleBookFormats";
 
 export function BundleDetail({ bundle }: { bundle: Bundle }) {
+  // Initialize with the minimum price (first base tier)
   const [baseAmount, setBaseAmount] = useState(bundle.minPrice);
-  const [isCharitySelected, setIsCharitySelected] = useState(false);
-  const [isUpsellSelected, setIsUpsellSelected] = useState(false);
+  const [selectedCharityTierIds, setSelectedCharityTierIds] = useState<string[]>([]);
+  const [selectedUpsellTierIds, setSelectedUpsellTierIds] = useState<string[]>([]);
+  const [tipAmount, setTipAmount] = useState(0);
 
   const tiers = useMemo(() => bundle.tiers || [], [bundle]);
   const allProducts = bundle.products;
 
   // Fetch book formats for book bundles
-  // Check both 'type' and 'bundleType' properties for compatibility
   const isBookBundle = bundle.type === BundleType.EBook;
   const { data: bookFormats } = useBundleBookFormats(bundle.id, isBookBundle);
 
-  // Separate tiers by type
-  const baseTiers = tiers.filter((tier) => tier.type === TierType.Base);
-  const charityTier = tiers.find((tier) => tier.type === TierType.Charity);
-  const upsellTier = tiers.find((tier) => tier.type === TierType.Upsell);
+  // Separate tiers by type and sort by price (memoized to prevent infinite loops)
+  const baseTiers = useMemo(() => tiers.filter((tier) => tier.type === TierType.Base), [tiers]);
+  const charityTiers = useMemo(() =>
+    tiers.filter((tier) => tier.type === TierType.Charity).sort((a, b) => a.price - b.price),
+    [tiers]
+  );
+  const upsellTiers = useMemo(() =>
+    tiers.filter((tier) => tier.type === TierType.Upsell).sort((a, b) => a.price - b.price),
+    [tiers]
+  );
 
-  // Get the highest base tier price
-  const highestBaseTierPrice = baseTiers.length > 0
-    ? baseTiers[baseTiers.length - 1].price
-    : 0;
+  // Calculate selected tier amounts
+  const selectedCharityTiers = charityTiers.filter(tier => selectedCharityTierIds.includes(tier.id));
+  const selectedUpsellTiers = upsellTiers.filter(tier => selectedUpsellTierIds.includes(tier.id));
+  const totalCharityAmount = selectedCharityTiers.reduce((sum, tier) => sum + tier.price, 0);
+  const totalUpsellAmount = selectedUpsellTiers.reduce((sum, tier) => sum + tier.price, 0);
 
-  // Automatically handle charity tier based on custom amount
-  useEffect(() => {
-    if (charityTier && baseAmount >= highestBaseTierPrice + charityTier.price) {
-      // If custom amount is >= highest base tier + charity tier price, unlock charity tier
-      setIsCharitySelected(true);
-    } else if (charityTier && baseAmount < highestBaseTierPrice + charityTier.price) {
-      // If custom amount drops below threshold, remove charity tier
-      setIsCharitySelected(false);
-    }
-  }, [baseAmount, highestBaseTierPrice, charityTier]);
-
-  // Calculate total amount including addons
-  const totalAmount = baseAmount +
-    (isCharitySelected && charityTier ? charityTier.price : 0) +
-    (isUpsellSelected && upsellTier ? upsellTier.price : 0);
-
-  const unlockedTiers = tiers.filter((tier) => tier.price <= baseAmount) ?? [];
+  // NEW SIMPLIFIED CALCULATION: Everything is additive
+  const totalAmount = baseAmount + totalCharityAmount + tipAmount + totalUpsellAmount;
 
   // Use only base tiers for determining the current tier
   const unlockedBaseTiers = baseTiers.filter((tier) => tier.price <= baseAmount);
-  const currentTier =
-    unlockedBaseTiers.length > 0 ? unlockedBaseTiers[unlockedBaseTiers.length - 1] : null;
+  const currentTier = unlockedBaseTiers.length > 0 ? unlockedBaseTiers[unlockedBaseTiers.length - 1] : null;
 
   const currentTierIndex = baseTiers.findIndex(
     (tier) => tier.id === currentTier?.id
@@ -71,12 +63,12 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
     );
 
   // Add addon tier products if selected
-  const charityProducts = isCharitySelected && charityTier
-    ? allProducts.filter((product) => product.bundleTierId === charityTier.id)
-    : [];
-  const upsellProducts = isUpsellSelected && upsellTier
-    ? allProducts.filter((product) => product.bundleTierId === upsellTier.id)
-    : [];
+  const charityProducts = selectedCharityTiers.flatMap(tier =>
+    allProducts.filter((product) => product.bundleTierId === tier.id)
+  );
+  const upsellProducts = selectedUpsellTiers.flatMap(tier =>
+    allProducts.filter((product) => product.bundleTierId === tier.id)
+  );
 
   const unlockedProducts = [
     ...baseUnlockedProducts,
@@ -89,26 +81,24 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
     0
   );
 
-  // Calculate charity amount for display
-  let charityAmountForDisplay = 0;
-  if (isCharitySelected && charityTier) {
-    // Full charity tier amount goes to charity
-    charityAmountForDisplay = charityTier.price;
-  } else if (baseAmount > highestBaseTierPrice) {
-    // Custom amount above highest base tier - extra goes to charity
-    const extraAmount = baseAmount - highestBaseTierPrice;
-    charityAmountForDisplay = (highestBaseTierPrice * 0.05) + extraAmount;
-  } else {
-    // Standard 5% charity for base amount only
-    charityAmountForDisplay = baseAmount * 0.05;
+  // Calculate charity amount for display (base 5% + charity tiers + tip if applicable)
+  let charityAmountForDisplay = baseAmount * 0.05; // Base 5% to charity
+  charityAmountForDisplay += totalCharityAmount; // Add charity tier amounts
+
+  // Add tip to charity if that's the distribution type
+  if (bundle.excessDistributionType !== 'Publishers' && tipAmount > 0) {
+    charityAmountForDisplay += tipAmount;
+  } else if (tipAmount > 0) {
+    // If tip goes to publishers, still add the 5% portion to charity
+    charityAmountForDisplay += tipAmount * 0.05;
   }
 
   return (
     <TooltipProvider>
-      <div className="relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <BundleHero bundle={bundle} />
 
-        <div className="container max-w-[1600px] px-4 py-12">
+        <div className="mt-8">
           <div className="grid gap-8 lg:grid-cols-[1fr_350px]">
             <div id="bundle-progressbar" className="mb-8 space-y-8">
               {currentTier && (
@@ -132,41 +122,69 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
                   setTotalAmount={setBaseAmount}
                   bookFormats={bookFormats}
                   allBundleProducts={allProducts} // Pass all products from all tiers
-                  allUnlockedProducts={unlockedProducts} // Pass full unlocked list for modal
+                  allUnlockedProducts={unlockedProducts} // Pass all unlocked products including charity/upsell
                 />
               )}
 
-              {/* Charity Tier Section */}
-              {charityTier && (
-                <CharityTierSection
-                  tier={charityTier}
-                  products={allProducts}
-                  isUnlocked={isCharitySelected}
-                  totalAmount={totalAmount}
-                  onUnlock={() => setIsCharitySelected(true)}
-                  onCancel={() => setIsCharitySelected(false)}
-                  bundleType={bundle.type}
-                />
+              {/* Charity Tier Sections */}
+              {charityTiers.map((tier) => {
+                const isUnlocked = selectedCharityTierIds.includes(tier.id);
+                return (
+                  <CharityTierSection
+                    key={tier.id}
+                    tier={tier}
+                    products={allProducts.filter((p) => p.bundleTierId === tier.id)}
+                    isUnlocked={isUnlocked}
+                    totalAmount={totalAmount}
+                    onUnlock={() => {
+                      if (!selectedCharityTierIds.includes(tier.id)) {
+                        setSelectedCharityTierIds([...selectedCharityTierIds, tier.id]);
+                      }
+                    }}
+                    onCancel={() => {
+                      setSelectedCharityTierIds(selectedCharityTierIds.filter(id => id !== tier.id));
+                    }}
+                    bundleType={bundle.type}
+                  />
+                );
+              })}
+
+              {/* Upsell Tier Sections */}
+              {upsellTiers.map((tier) => {
+                const isUnlocked = selectedUpsellTierIds.includes(tier.id);
+                return (
+                  <UpsellTierSection
+                    key={tier.id}
+                    tier={tier}
+                    products={allProducts.filter((p) => p.bundleTierId === tier.id)}
+                    isUnlocked={isUnlocked}
+                    totalAmount={totalAmount}
+                    onUnlock={() => {
+                      if (!selectedUpsellTierIds.includes(tier.id)) {
+                        setSelectedUpsellTierIds([...selectedUpsellTierIds, tier.id]);
+                      }
+                    }}
+                    onCancel={() => {
+                      setSelectedUpsellTierIds(selectedUpsellTierIds.filter(id => id !== tier.id));
+                    }}
+                    bundleType={bundle.type}
+                    highestBaseTierPrice={baseTiers[baseTiers.length - 1]?.price || 0}
+                  />
+                );
+              })}
+
+              {/* Curator Comments - Full version in left column */}
+              {bundle.curatorComment && (
+                <CuratorComments content={bundle.curatorComment} />
               )}
 
-              {/* Upsell/Developer Tier Section */}
-              {upsellTier && (
-                <UpsellTierSection
-                  tier={upsellTier}
-                  products={allProducts}
-                  isUnlocked={isUpsellSelected}
-                  totalAmount={totalAmount}
-                  onUnlock={() => setIsUpsellSelected(true)}
-                  onCancel={() => setIsUpsellSelected(false)}
-                  bundleType={bundle.type}
-                  highestBaseTierPrice={baseTiers[baseTiers.length - 1]?.price || 0}
+              {/* Charity Highlight */}
+              {bundle.charities && bundle.charities.length > 0 && (
+                <CharityHighlight
+                  charities={bundle.charities.map(bc => bc.charity)}
+                  charityAmount={charityAmountForDisplay}
                 />
               )}
-
-              <CharityHighlight
-                charities={bundle.charities.map((c) => c.charity)}
-                charityAmount={charityAmountForDisplay}
-              />
             </div>
 
             {currentTier && (
@@ -184,26 +202,17 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
                   totalAmount={totalAmount}
                   unlockedProductsValue={unlockedProductsValue}
                   setBaseAmount={setBaseAmount}
-                  isCharitySelected={isCharitySelected}
-                  isUpsellSelected={isUpsellSelected}
-                  setIsCharitySelected={setIsCharitySelected}
-                  setIsUpsellSelected={setIsUpsellSelected}
+                  selectedCharityTierIds={selectedCharityTierIds}
+                  selectedUpsellTierIds={selectedUpsellTierIds}
+                  setSelectedCharityTierIds={setSelectedCharityTierIds}
+                  setSelectedUpsellTierIds={setSelectedUpsellTierIds}
+                  tipAmount={tipAmount}
+                  setTipAmount={setTipAmount}
                   bookFormats={bookFormats}
                 />
               </div>
             )}
           </div>
-
-          {/* <div className="lg:hidden">
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-lg border-t border-border z-50">
-              <AddToCartButton
-                bundleId={bundle.id}
-                selectedTierId={currentTier?.id}
-                totalAmount={totalAmount}
-                charityPercentage={0}
-              />
-            </div>
-          </div> */}
         </div>
       </div>
     </TooltipProvider>

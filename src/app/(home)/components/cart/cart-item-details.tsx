@@ -76,7 +76,7 @@ export function CartItemDetails({ item }: CartItemDetailsProps) {
               </Badge>
             )}
             <span className="text-sm text-muted-foreground ml-auto">
-              ${item.price?.toFixed(2)}
+              ${item.totalAmount?.toFixed(2)}
             </span>
           </div>
           

@@ -434,9 +434,9 @@ export function PurchaseHistory() {
                           ? "item"
                           : "items"}
                       </TableCell>
-                      <TableCell>${purchase.price.toFixed(2)}</TableCell>
+                      <TableCell>${purchase.totalAmount.toFixed(2)}</TableCell>
                       <TableCell>
-                        ${(purchase.charityAmount || purchase.price * 0.05).toFixed(2)}
+                        ${(purchase.charityAmount || purchase.baseAmount * 0.05).toFixed(2)}
                       </TableCell>
                       <TableCell className="text-center">
                         <BundleProductsPopup purchase={purchase} />
