@@ -38,6 +38,7 @@ interface FormData {
   handle: string;
   countryCode: string;
   steamId: string | null;
+  steamUsername: string | null;
   steamCountry: string | null;
   billingAddress: {
     addressLine1: string;
@@ -58,6 +59,7 @@ interface FormData {
 
 export interface SteamUserInfo {
   steamId: string;
+  steamUsername?: string;
   steamCountry?: string;
 }
 
@@ -128,6 +130,7 @@ export function OnboardingForm() {
     handle: "",
     countryCode: "",
     steamId: null,
+    steamUsername: null,
     steamCountry: null,
     billingAddress: {
       addressLine1: "",
@@ -153,6 +156,7 @@ export function OnboardingForm() {
     setFormData((prev) => ({
       ...prev,
       steamId: data.steamId,
+      steamUsername: data.steamUsername || null,
       steamCountry: data.steamCountry || null,
     }));
   };
