@@ -44,7 +44,7 @@ export default function SteamAccountSettings() {
 
     try {
       // Update the customer's Steam details via API
-      await userApi.updateSteamDetails(data.steamId, data.steamCountry || null);
+      await userApi.updateSteamDetails(data.steamId, data.steamCountry || null, data.steamUsername || null);
       
       // Invalidate and refetch customer data and location data
       await queryClient.invalidateQueries({ queryKey: customerQueryKey });
@@ -71,7 +71,7 @@ export default function SteamAccountSettings() {
     
     try {
       // Clear Steam details via API
-      await userApi.updateSteamDetails(null, null);
+      await userApi.updateSteamDetails(null, null, null);
       
       // Invalidate and refetch customer data and location data
       await queryClient.invalidateQueries({ queryKey: customerQueryKey });
