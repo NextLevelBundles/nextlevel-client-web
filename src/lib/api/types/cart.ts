@@ -10,6 +10,7 @@ export interface CartItem {
   quantity: number;
   baseAmount: number;
   charityAmount: number;
+  tipAmount: number;
   upsellAmount: number;
   totalAmount: number;
   snapshotTitle?: string;
@@ -66,9 +67,9 @@ export interface Cart {
 
 export interface AddToCartRequest {
   bundleId: string;
-  tierId: string;
-  price: number;
-  charityTierIds?: string[];
+  baseTierId: string;
+  charityTierId?: string;
+  tipAmount?: number;
   upsellTierIds?: string[];
   isGift?: boolean;
   giftRecipientEmail?: string;

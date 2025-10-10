@@ -31,12 +31,18 @@ export interface Bundle extends BundleListItem {
   charities: BundleCharity[];
   publishers: BundlePublisher[];
   curatorComment?: string;
+  excessDistributionType?: ExcessDistributionType;
 }
 
 export enum TierType {
   Base = "Base",
   Charity = "Charity",
   Upsell = "Upsell",
+}
+
+export enum ExcessDistributionType {
+  Publishers = "Publishers",
+  Charity = "Charity",
 }
 
 export interface Tier {

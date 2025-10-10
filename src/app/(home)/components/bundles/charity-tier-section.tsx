@@ -81,8 +81,8 @@ export function CharityTierSection({
           Support incredible charities while getting amazing {isBookBundle ? "books" : "games"}
         </p>
 
-        {/* Products Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mb-4">
+        {/* Products Grid - matching base tier grid sizing */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 mb-4">
           {tierProducts.slice(0, 4).map((product, idx) => (
             <div
               key={product.id}

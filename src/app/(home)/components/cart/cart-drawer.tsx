@@ -359,6 +359,16 @@ export function CartDrawer() {
                             </div>
                           )}
 
+                          {/* Tip indicator */}
+                          {item.tipAmount && item.tipAmount > 0 && (
+                            <div className="flex items-center gap-1 mb-2 text-xs text-orange-600 dark:text-orange-400">
+                              <Heart className="h-3 w-3" />
+                              <span className="font-medium">
+                                Tip: ${item.tipAmount.toFixed(2)}
+                              </span>
+                            </div>
+                          )}
+
                           {/* Upsell tier indicator */}
                           {item.upsellAmount && item.upsellAmount > 0 && (
                             <div className="flex items-center gap-1 mb-2 text-xs text-purple-600 dark:text-purple-400">
