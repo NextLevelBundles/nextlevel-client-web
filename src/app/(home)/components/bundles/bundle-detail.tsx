@@ -85,13 +85,11 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
   let charityAmountForDisplay = baseAmount * 0.05; // Base 5% to charity
   charityAmountForDisplay += totalCharityAmount; // Add charity tier amounts
 
-  // Add tip to charity if that's the distribution type
+  // Add tip to charity only if that's the distribution type
   if (bundle.excessDistributionType !== 'Publishers' && tipAmount > 0) {
     charityAmountForDisplay += tipAmount;
-  } else if (tipAmount > 0) {
-    // If tip goes to publishers, still add the 5% portion to charity
-    charityAmountForDisplay += tipAmount * 0.05;
   }
+  // If tip goes to publishers, 100% goes to publishers (nothing to charity)
 
   return (
     <TooltipProvider>

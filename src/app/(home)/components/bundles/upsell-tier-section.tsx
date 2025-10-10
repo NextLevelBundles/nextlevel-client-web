@@ -32,33 +32,42 @@ export function UpsellTierSection({
   if (tierProducts.length === 0) return null;
 
   return (
-    <Card className={cn(
-      "overflow-hidden transition-all duration-300",
-      isUnlocked
-        ? "bg-gradient-to-br from-purple-50/50 to-indigo-50/50 dark:from-purple-950/20 dark:to-indigo-950/20 border-purple-200 dark:border-purple-800"
-        : "bg-card border-border"
-    )}>
+    <Card
+      className={cn(
+        "overflow-hidden transition-all duration-300",
+        isUnlocked
+          ? "bg-gradient-to-br from-purple-50/50 to-indigo-50/50 dark:from-purple-950/20 dark:to-indigo-950/20 border-purple-200 dark:border-purple-800"
+          : "bg-card border-border"
+      )}
+    >
       {/* Header */}
       <div className="p-6 pb-4">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className={cn(
-              "p-2.5 rounded-full",
-              isUnlocked
-                ? "bg-purple-100 dark:bg-purple-900/30"
-                : "bg-muted"
-            )}>
-              <Gamepad2 className={cn(
-                "h-5 w-5",
-                isUnlocked
-                  ? "text-purple-600 dark:text-purple-400"
-                  : "text-muted-foreground"
-              )} />
+            <div
+              className={cn(
+                "p-2.5 rounded-full",
+                isUnlocked ? "bg-purple-100 dark:bg-purple-900/30" : "bg-muted"
+              )}
+            >
+              <Gamepad2
+                className={cn(
+                  "h-5 w-5",
+                  isUnlocked
+                    ? "text-purple-600 dark:text-purple-400"
+                    : "text-muted-foreground"
+                )}
+              />
             </div>
             <div>
-              <h3 className="text-lg font-semibold">{tier.name || "Extra Items"}</h3>
+              <h3 className="text-lg font-semibold">
+                {tier.name || "Extra Items"}
+              </h3>
               <p className="text-sm text-muted-foreground">
-                100% to developers • {tierProducts.length} {isBookBundle ? "books" : "games"}
+                100% of this tier goes for this publisher •{" "}
+                {tierProducts.length} {isBookBundle
+                  ? tierProducts.length === 1 ? "book" : "books"
+                  : tierProducts.length === 1 ? "game" : "games"}
               </p>
             </div>
           </div>
@@ -77,10 +86,6 @@ export function UpsellTierSection({
             )}
           </div>
         </div>
-
-        <p className="text-sm text-muted-foreground mb-4">
-          Support the creators directly with premium {isBookBundle ? "books" : "games"}
-        </p>
 
         {/* Products Grid - matching base tier grid sizing */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 mb-4">
@@ -145,7 +150,7 @@ export function UpsellTierSection({
           <div className="flex justify-center">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-100 dark:bg-purple-900/20">
               <span className="text-xs font-medium text-purple-700 dark:text-purple-300">
-                💜 Supporting developers
+                💜 Supporting publishers
               </span>
             </div>
           </div>

@@ -85,22 +85,38 @@ export function PurchaseSummary({
 
   // Separate tiers by type
   const baseTiers = tiers.filter((tier) => tier.type === TierType.Base);
-  const charityTiers = tiers.filter((tier) => tier.type === TierType.Charity).sort((a, b) => a.price - b.price);
-  const upsellTiers = tiers.filter((tier) => tier.type === TierType.Upsell).sort((a, b) => a.price - b.price);
+  const charityTiers = tiers
+    .filter((tier) => tier.type === TierType.Charity)
+    .sort((a, b) => a.price - b.price);
+  const upsellTiers = tiers
+    .filter((tier) => tier.type === TierType.Upsell)
+    .sort((a, b) => a.price - b.price);
 
   // Check if this is a Steam bundle and user hasn't connected Steam
   const isSteamBundle = bundle.type === BundleType.SteamGame;
   const isSteamConnected = customer && customer.steamId;
-  const needsSteamConnection = isSteamBundle && isAuthenticated && !isSteamConnected;
+  const needsSteamConnection =
+    isSteamBundle && isAuthenticated && !isSteamConnected;
 
   // Calculate selected tier amounts
-  const selectedCharityTiers = charityTiers.filter(tier => selectedCharityTierIds.includes(tier.id));
-  const selectedUpsellTiers = upsellTiers.filter(tier => selectedUpsellTierIds.includes(tier.id));
-  const totalCharityAmount = selectedCharityTiers.reduce((sum, tier) => sum + tier.price, 0);
-  const totalUpsellAmount = selectedUpsellTiers.reduce((sum, tier) => sum + tier.price, 0);
+  const selectedCharityTiers = charityTiers.filter((tier) =>
+    selectedCharityTierIds.includes(tier.id)
+  );
+  const selectedUpsellTiers = upsellTiers.filter((tier) =>
+    selectedUpsellTierIds.includes(tier.id)
+  );
+  const totalCharityAmount = selectedCharityTiers.reduce(
+    (sum, tier) => sum + tier.price,
+    0
+  );
+  const totalUpsellAmount = selectedUpsellTiers.reduce(
+    (sum, tier) => sum + tier.price,
+    0
+  );
 
   // NEW SIMPLIFIED CALCULATION: Everything is additive
-  const totalAmount = baseAmount + totalCharityAmount + tipAmount + totalUpsellAmount;
+  const totalAmount =
+    baseAmount + totalCharityAmount + tipAmount + totalUpsellAmount;
 
   // Revenue distribution calculation (for display only)
   let publisherAmount = 0;
@@ -120,11 +136,9 @@ export function PurchaseSummary({
   // Tip distribution
   if (tipAmount > 0) {
     if (bundle.excessDistributionType === ExcessDistributionType.Publishers) {
-      // Tip goes to publishers (75/20/5)
-      publisherAmount += tipAmount * 0.75;
-      platformAmount += tipAmount * 0.2;
-      charityAmountForDisplay += tipAmount * 0.05;
-      tipAmountForDisplay = tipAmount * 0.75; // For separate display
+      // 100% of tip goes to publishers
+      publisherAmount += tipAmount;
+      tipAmountForDisplay = tipAmount;
     } else {
       // Tip goes to charity
       charityAmountForDisplay += tipAmount;
@@ -132,7 +146,7 @@ export function PurchaseSummary({
     }
   }
 
-  // Upsell tiers - 100% to developers
+  // Upsell tiers - 100% to publishers
   developerSupportAmount = totalUpsellAmount;
 
   // Get unique formats from all books
@@ -217,9 +231,14 @@ export function PurchaseSummary({
                     )}
                     onClick={() => {
                       if (isSelected) {
-                        setSelectedCharityTierIds(selectedCharityTierIds.filter(id => id !== tier.id));
+                        setSelectedCharityTierIds(
+                          selectedCharityTierIds.filter((id) => id !== tier.id)
+                        );
                       } else {
-                        setSelectedCharityTierIds([...selectedCharityTierIds, tier.id]);
+                        setSelectedCharityTierIds([
+                          ...selectedCharityTierIds,
+                          tier.id,
+                        ]);
                       }
                     }}
                     role="button"
@@ -284,13 +303,26 @@ export function PurchaseSummary({
 
         {/* Step 3: Optional Tip */}
         <div className="mb-6">
-          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-            3. Add a Tip (Optional)
+          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            3. {bundle.excessDistributionType === ExcessDistributionType.Publishers
+              ? "Add a Tip for Publishers (Optional)"
+              : "Add a Tip for Charity (Optional)"}
           </h4>
-          <p className="text-xs text-muted-foreground mb-2">
-            {bundle.excessDistributionType === ExcessDistributionType.Publishers
-              ? "Support the publishers with an extra tip"
-              : "Support charity with an extra donation"}
+          <p className="text-xs text-muted-foreground mb-3">
+            100% of your tip goes directly to{" "}
+            <span
+              className={`font-semibold ${
+                bundle.excessDistributionType ===
+                ExcessDistributionType.Publishers
+                  ? "text-blue-600 dark:text-blue-400"
+                  : "text-rose-600 dark:text-rose-400"
+              }`}
+            >
+              {bundle.excessDistributionType ===
+              ExcessDistributionType.Publishers
+                ? "Publishers"
+                : "Charity"}
+            </span>
           </p>
           <div className="relative">
             <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -304,14 +336,6 @@ export function PurchaseSummary({
               className="pl-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-left font-mono bg-white dark:bg-card border-gray-200 dark:border-border focus:border-primary/50 transition-colors"
             />
           </div>
-          {tipAmount > 0 && (
-            <p className="text-xs text-muted-foreground mt-1">
-              <Info className="inline h-3 w-3 mr-1" />
-              {bundle.excessDistributionType === ExcessDistributionType.Publishers
-                ? `$${tipAmount} tip: ${(tipAmount * 0.75).toFixed(2)} to publishers, ${(tipAmount * 0.2).toFixed(2)} to platform, ${(tipAmount * 0.05).toFixed(2)} to charity`
-                : `$${tipAmount} goes directly to charity`}
-            </p>
-          )}
         </div>
 
         {/* Step 4: Extra Items (Upsell Tiers) */}
@@ -334,9 +358,14 @@ export function PurchaseSummary({
                     )}
                     onClick={() => {
                       if (isSelected) {
-                        setSelectedUpsellTierIds(selectedUpsellTierIds.filter(id => id !== tier.id));
+                        setSelectedUpsellTierIds(
+                          selectedUpsellTierIds.filter((id) => id !== tier.id)
+                        );
                       } else {
-                        setSelectedUpsellTierIds([...selectedUpsellTierIds, tier.id]);
+                        setSelectedUpsellTierIds([
+                          ...selectedUpsellTierIds,
+                          tier.id,
+                        ]);
                       }
                     }}
                     role="button"
@@ -369,7 +398,7 @@ export function PurchaseSummary({
                               : "text-gray-500 dark:text-gray-500"
                           )}
                         >
-                          Add ${tier.price} - 100% goes to developers
+                          Add ${tier.price} - 100% goes to publishers
                         </p>
                       </div>
                       <div
@@ -409,26 +438,38 @@ export function PurchaseSummary({
               <div
                 className="bg-yellow-400 dark:bg-yellow-600 transition-all"
                 style={{
-                  width: totalAmount > 0 ? `${Math.max(0, (publisherAmount / totalAmount) * 100)}%` : '0%',
+                  width:
+                    totalAmount > 0
+                      ? `${Math.max(0, (publisherAmount / totalAmount) * 100)}%`
+                      : "0%",
                 }}
               />
               <div
                 className="bg-blue-400 dark:bg-blue-600 transition-all"
                 style={{
-                  width: totalAmount > 0 ? `${Math.max(0, (platformAmount / totalAmount) * 100)}%` : '0%',
+                  width:
+                    totalAmount > 0
+                      ? `${Math.max(0, (platformAmount / totalAmount) * 100)}%`
+                      : "0%",
                 }}
               />
               <div
                 className="bg-rose-400 dark:bg-rose-600 transition-all"
                 style={{
-                  width: totalAmount > 0 ? `${Math.max(0, (charityAmountForDisplay / totalAmount) * 100)}%` : '0%',
+                  width:
+                    totalAmount > 0
+                      ? `${Math.max(0, (charityAmountForDisplay / totalAmount) * 100)}%`
+                      : "0%",
                 }}
               />
               {developerSupportAmount > 0 && (
                 <div
                   className="bg-purple-400 dark:bg-purple-600 transition-all"
                   style={{
-                    width: totalAmount > 0 ? `${Math.max(0, (developerSupportAmount / totalAmount) * 100)}%` : '0%',
+                    width:
+                      totalAmount > 0
+                        ? `${Math.max(0, (developerSupportAmount / totalAmount) * 100)}%`
+                        : "0%",
                   }}
                 />
               )}

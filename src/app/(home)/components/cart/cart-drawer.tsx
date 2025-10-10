@@ -12,11 +12,12 @@ import {
   Heart,
   BookOpen,
   Gamepad2,
+  Info,
 } from "lucide-react";
 import { CartButton } from "./cart-button";
-import { CartItemDetails } from "./cart-item-details";
 import { GiftForm } from "./gift-form";
 import { TurnstileCaptcha } from "./turnstile-captcha";
+import { CartItemModal } from "./cart-item-modal";
 import { useCart } from "@/app/(shared)/contexts/cart/cart-provider";
 import { isBookBundle } from "@/app/(shared)/utils/cart";
 import { getTrackdeskCid, getLinkId } from "@/app/(shared)/lib/trackdesk";
@@ -54,6 +55,7 @@ export function CartDrawer() {
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
   const [showCaptcha, setShowCaptcha] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [modalItem, setModalItem] = useState<any | null>(null);
   const {
     cart,
     removeFromCart,
@@ -335,7 +337,7 @@ export function CartDrawer() {
                           </div>
                           
                           {/* Bundle type badge */}
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="flex items-center gap-2 mb-2">
                             <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
                               isBookBundle(item)
                                 ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400"
@@ -349,47 +351,23 @@ export function CartDrawer() {
                             </span>
                           </div>
 
-                          {/* Charity tier indicator */}
-                          {item.charityAmount && item.charityAmount > 0 && (
-                            <div className="flex items-center gap-1 mb-2 text-xs text-rose-600 dark:text-rose-400">
-                              <Heart className="h-3 w-3 fill-rose-500" />
-                              <span className="font-medium">
-                                Charity: ${item.charityAmount.toFixed(2)} to charity
-                              </span>
-                            </div>
-                          )}
-
-                          {/* Tip indicator */}
-                          {item.tipAmount && item.tipAmount > 0 && (
-                            <div className="flex items-center gap-1 mb-2 text-xs text-orange-600 dark:text-orange-400">
-                              <Heart className="h-3 w-3" />
-                              <span className="font-medium">
-                                Tip: ${item.tipAmount.toFixed(2)}
-                              </span>
-                            </div>
-                          )}
-
-                          {/* Upsell tier indicator */}
-                          {item.upsellAmount && item.upsellAmount > 0 && (
-                            <div className="flex items-center gap-1 mb-2 text-xs text-purple-600 dark:text-purple-400">
-                              <Gamepad2 className="h-3 w-3" />
-                              <span className="font-medium">
-                                Developer Support: ${item.upsellAmount.toFixed(2)} to developers
-                              </span>
-                            </div>
-                          )}
-
                           <div className="flex items-center justify-between mt-3">
-                            <div className="flex items-center gap-2">
-                              <CartItemDetails item={item} />
-                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-xs hover:bg-primary/10 hover:text-primary hover:border-primary/50 transition-colors"
+                              onClick={() => setModalItem(item)}
+                            >
+                              <Info className="h-3 w-3 mr-1" />
+                              View Summary
+                            </Button>
 
                             <div className="text-right">
                               <div className="font-semibold text-sm">
                                 ${item.totalAmount?.toFixed(2)}
                               </div>
                               <span className="text-xs text-muted-foreground">
-                                {item.snapshotProducts.length} games
+                                {item.snapshotProducts.length} {isBookBundle(item) ? "books" : "games"}
                               </span>
                             </div>
                           </div>
@@ -493,6 +471,13 @@ export function CartDrawer() {
         isOpen={showCaptcha}
         onVerified={handleCaptchaVerified}
         onClose={handleCaptchaClose}
+      />
+
+      {/* Cart Item Modal with Details and Revenue tabs */}
+      <CartItemModal
+        item={modalItem}
+        isOpen={!!modalItem}
+        onClose={() => setModalItem(null)}
       />
     </Sheet>
   );

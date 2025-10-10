@@ -31,33 +31,42 @@ export function CharityTierSection({
   if (tierProducts.length === 0) return null;
 
   return (
-    <Card className={cn(
-      "overflow-hidden transition-all duration-300",
-      isUnlocked
-        ? "bg-gradient-to-br from-rose-50/50 to-pink-50/50 dark:from-rose-950/20 dark:to-pink-950/20 border-rose-200 dark:border-rose-800"
-        : "bg-card border-border"
-    )}>
+    <Card
+      className={cn(
+        "overflow-hidden transition-all duration-300",
+        isUnlocked
+          ? "bg-gradient-to-br from-rose-50/50 to-pink-50/50 dark:from-rose-950/20 dark:to-pink-950/20 border-rose-200 dark:border-rose-800"
+          : "bg-card border-border"
+      )}
+    >
       {/* Header */}
       <div className="p-6 pb-4">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className={cn(
-              "p-2.5 rounded-full",
-              isUnlocked
-                ? "bg-rose-100 dark:bg-rose-900/30"
-                : "bg-muted"
-            )}>
-              <Heart className={cn(
-                "h-5 w-5",
-                isUnlocked
-                  ? "text-rose-600 dark:text-rose-400 fill-rose-600 dark:fill-rose-400"
-                  : "text-muted-foreground"
-              )} />
+            <div
+              className={cn(
+                "p-2.5 rounded-full",
+                isUnlocked ? "bg-rose-100 dark:bg-rose-900/30" : "bg-muted"
+              )}
+            >
+              <Heart
+                className={cn(
+                  "h-5 w-5",
+                  isUnlocked
+                    ? "text-rose-600 dark:text-rose-400 fill-rose-600 dark:fill-rose-400"
+                    : "text-muted-foreground"
+                )}
+              />
             </div>
             <div>
-              <h3 className="text-lg font-semibold">{tier.name || "Charity Tier"}</h3>
+              <h3 className="text-lg font-semibold">
+                {tier.name || "Charity Tier"}
+              </h3>
               <p className="text-sm text-muted-foreground">
-                100% goes to charity • {tierProducts.length} {isBookBundle ? "books" : "games"}
+                100% of this tier goes to charity • {tierProducts.length}{" "}
+                {isBookBundle
+                  ? tierProducts.length === 1 ? "book" : "books"
+                  : tierProducts.length === 1 ? "game" : "games"}
               </p>
             </div>
           </div>
@@ -76,10 +85,6 @@ export function CharityTierSection({
             )}
           </div>
         </div>
-
-        <p className="text-sm text-muted-foreground mb-4">
-          Support incredible charities while getting amazing {isBookBundle ? "books" : "games"}
-        </p>
 
         {/* Products Grid - matching base tier grid sizing */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 mb-4">
