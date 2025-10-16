@@ -11,7 +11,7 @@ interface BundleHeroProps {
 }
 
 export function BundleHero({ bundle }: BundleHeroProps) {
-  const timeLeft = useCountdownTimer(bundle?.endsAt);
+  const { timeLeft, hasEnded } = useCountdownTimer(bundle?.endsAt);
 
   return (
     <div className="container max-w-[1560px] relative h-[50vh] min-h-[500px] w-full overflow-hidden rounded-3xl">
@@ -63,7 +63,7 @@ export function BundleHero({ bundle }: BundleHeroProps) {
               <div className="px-6 py-4">
                 <div className="flex items-center gap-2 text-white/80 text-sm uppercase tracking-wide mb-1">
                   <Timer className="h-4 w-4" />
-                  <span>Ends in</span>
+                  <span>{hasEnded ? "Bundle Ended" : "Ends in"}</span>
                 </div>
                 <div className="text-2xl font-mono font-bold text-white">
                   {timeLeft}

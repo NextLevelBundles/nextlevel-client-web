@@ -5,6 +5,12 @@ export enum BundleType {
   EBook = "EBook",
 }
 
+export enum BundleStatus {
+  Active = "Active",
+  Draft = "Draft",
+  Paused = "Paused",
+}
+
 // Partial bundle data for list views
 export interface BundleListItem {
   id: string;

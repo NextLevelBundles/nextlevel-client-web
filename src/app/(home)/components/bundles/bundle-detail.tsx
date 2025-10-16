@@ -10,10 +10,26 @@ import { PurchaseSummary } from "./purchase-summary";
 import { CuratorComments } from "./curator-comments";
 import { CharityTierSection } from "./charity-tier-section";
 import { UpsellTierSection } from "./upsell-tier-section";
-import { Bundle, BundleType, TierType } from "@/app/(shared)/types/bundle";
+import { Bundle, BundleType, TierType, BundleStatus } from "@/app/(shared)/types/bundle";
 import { useBundleBookFormats } from "@/hooks/queries/useBundleBookFormats";
+import { BundleNotFound } from "./bundle-not-found";
 
 export function BundleDetail({ bundle }: { bundle: Bundle }) {
+  // Check if bundle should be visible
+  const now = new Date();
+  const startDate = new Date(bundle.startsAt);
+  const endDate = new Date(bundle.endsAt);
+
+  // Show not found if bundle is not Active or hasn't started yet
+  const isBundleVisible = bundle.status === BundleStatus.Active && now >= startDate;
+
+  if (!isBundleVisible) {
+    return <BundleNotFound />;
+  }
+
+  // Check if bundle has expired
+  const isBundleExpired = now > endDate;
+
   // Initialize with the minimum price (first base tier)
   const [baseAmount, setBaseAmount] = useState(bundle.minPrice);
   const [selectedCharityTierIds, setSelectedCharityTierIds] = useState<
@@ -256,6 +272,7 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
                   tipAmount={tipAmount}
                   setTipAmount={setTipAmount}
                   bookFormats={bookFormats}
+                  isBundleExpired={isBundleExpired}
                 />
               </div>
             )}

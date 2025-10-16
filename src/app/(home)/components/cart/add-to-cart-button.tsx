@@ -18,6 +18,7 @@ interface AddToCartButtonProps {
   selectedUpsellTierIds?: string[];
   className?: string;
   children?: React.ReactNode;
+  isBundleExpired?: boolean;
 }
 
 export function AddToCartButton({
@@ -29,6 +30,7 @@ export function AddToCartButton({
   selectedUpsellTierIds = [],
   className,
   children,
+  isBundleExpired = false,
 }: AddToCartButtonProps) {
   const { addToCart, isLoading } = useCart();
   const { user, isLoading: isLoadingAuth } = useAuth();
@@ -72,7 +74,8 @@ export function AddToCartButton({
     isAdding ||
     totalAmount <= 0 ||
     !baseTierId ||
-    isLoadingSession;
+    isLoadingSession ||
+    isBundleExpired;
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -114,7 +117,9 @@ export function AddToCartButton({
         )}
       </Button>
       <p className="text-xs text-center text-muted-foreground mt-2">
-        {isAuthenticated
+        {isBundleExpired
+          ? "This bundle has ended and is no longer available for purchase."
+          : isAuthenticated
           ? "Your bundle will be added to the cart. You can complete checkout later."
           : "Please log in to add items to your cart."}
       </p>

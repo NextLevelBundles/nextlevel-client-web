@@ -15,7 +15,7 @@ interface BundleCardProps {
 }
 
 export function BundleCard({ bundle, index }: BundleCardProps) {
-  const timeLeft = useCountdownTimer(bundle.endsAt);
+  const { timeLeft } = useCountdownTimer(bundle.endsAt);
 
   const cardRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);

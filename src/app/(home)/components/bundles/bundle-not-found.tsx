@@ -34,14 +34,14 @@ const reasons: ReasonCard[] = [
   {
     icon: Clock,
     iconColor: "text-amber-500",
-    title: "Bundle expired",
-    description: "The sale period has ended or the bundle isn't available yet",
+    title: "Bundle hasn't started yet",
+    description: "This bundle may not have been published or isn't available yet",
   },
   {
-    icon: MapPin,
-    iconColor: "text-blue-500",
-    title: "Regional restriction",
-    description: "This bundle may not be available in your selected region",
+    icon: AlertCircle,
+    iconColor: "text-red-500",
+    title: "Bundle revoked",
+    description: "This bundle has been revoked and is no longer available for purchase",
   },
 ];
 
@@ -172,19 +172,8 @@ export function BundleNotFound() {
 
             {/* Help Links */}
             <div className="flex items-center gap-6 text-sm">
-              <Link 
-                href="/customer/settings#country" 
-                className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 group"
-              >
-                <MapPin className="h-3 w-3" />
-                <span>Update Region</span>
-                <ChevronRight className="h-3 w-3 opacity-0 -ml-1 group-hover:opacity-100 group-hover:ml-0 transition-all" />
-              </Link>
-              
-              <div className="h-4 w-px bg-border" />
-              
-              <Link 
-                href="/customer/support" 
+              <Link
+                href="/customer/support"
                 className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 group"
               >
                 <AlertCircle className="h-3 w-3" />
