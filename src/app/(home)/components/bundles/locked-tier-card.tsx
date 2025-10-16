@@ -36,7 +36,7 @@ export function LockedTierCard({
       className="group relative overflow-hidden rounded-xl bg-white dark:bg-card border border-gray-200 dark:border-border shadow-xs hover:shadow-lg transition-all duration-300 hover:border-primary/50 hover:scale-[1.01] hover:bg-white/95 cursor-pointer"
     >
       {/* Background image - matches aspect ratio of regular product cards */}
-      <div className="relative aspect-[2/3] overflow-hidden bg-gray-100 dark:bg-gray-900">
+      <div className="relative aspect-[2/3] h-full overflow-hidden bg-gray-100 dark:bg-gray-900">
         {firstProduct && (
           <Image
             fill

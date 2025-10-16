@@ -16,8 +16,12 @@ import { useBundleBookFormats } from "@/hooks/queries/useBundleBookFormats";
 export function BundleDetail({ bundle }: { bundle: Bundle }) {
   // Initialize with the minimum price (first base tier)
   const [baseAmount, setBaseAmount] = useState(bundle.minPrice);
-  const [selectedCharityTierIds, setSelectedCharityTierIds] = useState<string[]>([]);
-  const [selectedUpsellTierIds, setSelectedUpsellTierIds] = useState<string[]>([]);
+  const [selectedCharityTierIds, setSelectedCharityTierIds] = useState<
+    string[]
+  >([]);
+  const [selectedUpsellTierIds, setSelectedUpsellTierIds] = useState<string[]>(
+    []
+  );
   const [tipAmount, setTipAmount] = useState(0);
 
   const tiers = useMemo(() => bundle.tiers || [], [bundle]);
@@ -28,28 +32,53 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
   const { data: bookFormats } = useBundleBookFormats(bundle.id, isBookBundle);
 
   // Separate tiers by type and sort by price (memoized to prevent infinite loops)
-  const baseTiers = useMemo(() => tiers.filter((tier) => tier.type === TierType.Base), [tiers]);
-  const charityTiers = useMemo(() =>
-    tiers.filter((tier) => tier.type === TierType.Charity).sort((a, b) => a.price - b.price),
+  const baseTiers = useMemo(
+    () => tiers.filter((tier) => tier.type === TierType.Base),
     [tiers]
   );
-  const upsellTiers = useMemo(() =>
-    tiers.filter((tier) => tier.type === TierType.Upsell).sort((a, b) => a.price - b.price),
+  const charityTiers = useMemo(
+    () =>
+      tiers
+        .filter((tier) => tier.type === TierType.Charity)
+        .sort((a, b) => a.price - b.price),
+    [tiers]
+  );
+  const upsellTiers = useMemo(
+    () =>
+      tiers
+        .filter((tier) => tier.type === TierType.Upsell)
+        .sort((a, b) => a.price - b.price),
     [tiers]
   );
 
   // Calculate selected tier amounts
-  const selectedCharityTiers = charityTiers.filter(tier => selectedCharityTierIds.includes(tier.id));
-  const selectedUpsellTiers = upsellTiers.filter(tier => selectedUpsellTierIds.includes(tier.id));
-  const totalCharityAmount = selectedCharityTiers.reduce((sum, tier) => sum + tier.price, 0);
-  const totalUpsellAmount = selectedUpsellTiers.reduce((sum, tier) => sum + tier.price, 0);
+  const selectedCharityTiers = charityTiers.filter((tier) =>
+    selectedCharityTierIds.includes(tier.id)
+  );
+  const selectedUpsellTiers = upsellTiers.filter((tier) =>
+    selectedUpsellTierIds.includes(tier.id)
+  );
+  const totalCharityAmount = selectedCharityTiers.reduce(
+    (sum, tier) => sum + tier.price,
+    0
+  );
+  const totalUpsellAmount = selectedUpsellTiers.reduce(
+    (sum, tier) => sum + tier.price,
+    0
+  );
 
   // NEW SIMPLIFIED CALCULATION: Everything is additive
-  const totalAmount = baseAmount + totalCharityAmount + tipAmount + totalUpsellAmount;
+  const totalAmount =
+    baseAmount + totalCharityAmount + tipAmount + totalUpsellAmount;
 
   // Use only base tiers for determining the current tier
-  const unlockedBaseTiers = baseTiers.filter((tier) => tier.price <= baseAmount);
-  const currentTier = unlockedBaseTiers.length > 0 ? unlockedBaseTiers[unlockedBaseTiers.length - 1] : null;
+  const unlockedBaseTiers = baseTiers.filter(
+    (tier) => tier.price <= baseAmount
+  );
+  const currentTier =
+    unlockedBaseTiers.length > 0
+      ? unlockedBaseTiers[unlockedBaseTiers.length - 1]
+      : null;
 
   const currentTierIndex = baseTiers.findIndex(
     (tier) => tier.id === currentTier?.id
@@ -63,17 +92,17 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
     );
 
   // Add addon tier products if selected
-  const charityProducts = selectedCharityTiers.flatMap(tier =>
+  const charityProducts = selectedCharityTiers.flatMap((tier) =>
     allProducts.filter((product) => product.bundleTierId === tier.id)
   );
-  const upsellProducts = selectedUpsellTiers.flatMap(tier =>
+  const upsellProducts = selectedUpsellTiers.flatMap((tier) =>
     allProducts.filter((product) => product.bundleTierId === tier.id)
   );
 
   const unlockedProducts = [
     ...baseUnlockedProducts,
     ...charityProducts,
-    ...upsellProducts
+    ...upsellProducts,
   ];
 
   const unlockedProductsValue = unlockedProducts.reduce(
@@ -86,7 +115,7 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
   charityAmountForDisplay += totalCharityAmount; // Add charity tier amounts
 
   // Add tip to charity only if that's the distribution type
-  if (bundle.excessDistributionType !== 'Publishers' && tipAmount > 0) {
+  if (bundle.excessDistributionType !== "Publishers" && tipAmount > 0) {
     charityAmountForDisplay += tipAmount;
   }
   // If tip goes to publishers, 100% goes to publishers (nothing to charity)
@@ -113,7 +142,11 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
               {currentTier && (
                 <ProductGrid
                   bundle={bundle}
-                  products={allProducts.filter((p) => !p.bundleTierId || baseTiers.some(t => t.id === p.bundleTierId))}
+                  products={allProducts.filter(
+                    (p) =>
+                      !p.bundleTierId ||
+                      baseTiers.some((t) => t.id === p.bundleTierId)
+                  )}
                   unlockedProducts={baseUnlockedProducts} // Base products only for grid display
                   selectedTier={currentTier}
                   tiers={baseTiers}
@@ -131,16 +164,23 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
                   <CharityTierSection
                     key={tier.id}
                     tier={tier}
-                    products={allProducts.filter((p) => p.bundleTierId === tier.id)}
+                    products={allProducts.filter(
+                      (p) => p.bundleTierId === tier.id
+                    )}
                     isUnlocked={isUnlocked}
                     totalAmount={totalAmount}
                     onUnlock={() => {
                       if (!selectedCharityTierIds.includes(tier.id)) {
-                        setSelectedCharityTierIds([...selectedCharityTierIds, tier.id]);
+                        setSelectedCharityTierIds([
+                          ...selectedCharityTierIds,
+                          tier.id,
+                        ]);
                       }
                     }}
                     onCancel={() => {
-                      setSelectedCharityTierIds(selectedCharityTierIds.filter(id => id !== tier.id));
+                      setSelectedCharityTierIds(
+                        selectedCharityTierIds.filter((id) => id !== tier.id)
+                      );
                     }}
                     bundleType={bundle.type}
                   />
@@ -154,32 +194,41 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
                   <UpsellTierSection
                     key={tier.id}
                     tier={tier}
-                    products={allProducts.filter((p) => p.bundleTierId === tier.id)}
+                    products={allProducts.filter(
+                      (p) => p.bundleTierId === tier.id
+                    )}
                     isUnlocked={isUnlocked}
                     totalAmount={totalAmount}
                     onUnlock={() => {
                       if (!selectedUpsellTierIds.includes(tier.id)) {
-                        setSelectedUpsellTierIds([...selectedUpsellTierIds, tier.id]);
+                        setSelectedUpsellTierIds([
+                          ...selectedUpsellTierIds,
+                          tier.id,
+                        ]);
                       }
                     }}
                     onCancel={() => {
-                      setSelectedUpsellTierIds(selectedUpsellTierIds.filter(id => id !== tier.id));
+                      setSelectedUpsellTierIds(
+                        selectedUpsellTierIds.filter((id) => id !== tier.id)
+                      );
                     }}
                     bundleType={bundle.type}
-                    highestBaseTierPrice={baseTiers[baseTiers.length - 1]?.price || 0}
+                    highestBaseTierPrice={
+                      baseTiers[baseTiers.length - 1]?.price || 0
+                    }
                   />
                 );
               })}
 
               {/* Curator Comments - Full version in left column */}
-              {bundle.curatorComment && (
+              {/* {bundle.curatorComment && (
                 <CuratorComments content={bundle.curatorComment} />
-              )}
+              )} */}
 
               {/* Charity Highlight */}
               {bundle.charities && bundle.charities.length > 0 && (
                 <CharityHighlight
-                  charities={bundle.charities.map(bc => bc.charity)}
+                  charities={bundle.charities.map((bc) => bc.charity)}
                   charityAmount={charityAmountForDisplay}
                 />
               )}
