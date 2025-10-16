@@ -32,6 +32,7 @@ import { BundleBookFormatsResponse } from "@/lib/api/types/bundle";
 import { AddToCartButton } from "../cart/add-to-cart-button";
 import { useCustomerLocation } from "@/hooks/queries/useCustomerLocation";
 import { useCustomer } from "@/hooks/queries/useCustomer";
+import { useCountries } from "@/hooks/queries/useCountries";
 import {
   Tooltip,
   TooltipContent,
@@ -86,6 +87,9 @@ export function PurchaseSummary({
 
   // Fetch customer data to check Steam connection status (only if authenticated)
   const { data: customer } = useCustomer();
+
+  // Fetch countries list
+  const { data: countries } = useCountries();
 
   // Separate tiers by type
   const baseTiers = tiers.filter((tier) => tier.type === TierType.Base);
@@ -544,6 +548,31 @@ export function PurchaseSummary({
                     </span>
                   ))}
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Steam Key Country Allocation */}
+        {isSteamBundle && isAuthenticated && customer && countries && (
+          <div className="mb-6 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="flex items-start gap-2">
+              <MapPin className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-xs font-medium text-blue-700 dark:text-blue-300 mb-1">
+                  Steam Keys Country
+                </p>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">
+                    {countries.find((c) => c.id === customer.countryCode)?.flag}
+                  </span>
+                  <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                    {countries.find((c) => c.id === customer.countryCode)?.name || customer.countryCode}
+                  </span>
+                </div>
+                <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                  Your Steam keys will be allocated for this country
+                </p>
               </div>
             </div>
           </div>
