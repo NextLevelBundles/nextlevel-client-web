@@ -12,9 +12,14 @@ import { CharityTierSection } from "./charity-tier-section";
 import { UpsellTierSection } from "./upsell-tier-section";
 import { Bundle, BundleType, TierType, BundleStatus } from "@/app/(shared)/types/bundle";
 import { useBundleBookFormats } from "@/hooks/queries/useBundleBookFormats";
+import { useBundleTierAvailability } from "@/hooks/queries/useBundleTierAvailability";
 import { BundleNotFound } from "./bundle-not-found";
+import { useAuth } from "@/app/(shared)/providers/auth-provider";
 
 export function BundleDetail({ bundle }: { bundle: Bundle }) {
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
+
   // Check if bundle should be visible
   const now = new Date();
   const startDate = new Date(bundle.startsAt);
@@ -47,6 +52,13 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
   const isBookBundle = bundle.type === BundleType.EBook;
   const { data: bookFormats } = useBundleBookFormats(bundle.id, isBookBundle);
 
+  // Fetch tier availability (only for authenticated users and Steam bundles)
+  const isSteamBundle = bundle.type === BundleType.SteamGame;
+  const { data: tierAvailability } = useBundleTierAvailability(
+    bundle.id,
+    isAuthenticated && isSteamBundle
+  );
+
   // Separate tiers by type and sort by price (memoized to prevent infinite loops)
   const baseTiers = useMemo(
     () => tiers.filter((tier) => tier.type === TierType.Base),
@@ -66,6 +78,35 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
         .sort((a, b) => a.price - b.price),
     [tiers]
   );
+
+  // Check if all base tiers are available for authenticated Steam bundles
+  const hasAvailableBaseTiers = useMemo(() => {
+    if (!isAuthenticated || !isSteamBundle || !tierAvailability) {
+      return true; // Not applicable or data not loaded yet
+    }
+
+    // Check if ALL base tiers exist in the availability dictionary AND have keys > 0
+    return baseTiers.every(tier => {
+      const keysAvailable = tierAvailability[tier.id];
+      return keysAvailable !== undefined && keysAvailable > 0;
+    });
+  }, [isAuthenticated, isSteamBundle, tierAvailability, baseTiers]);
+
+  // Determine the reason for bundle unavailability (country vs sold out)
+  const bundleUnavailabilityReason = useMemo(() => {
+    if (!isAuthenticated || !isSteamBundle || !tierAvailability || hasAvailableBaseTiers) {
+      return null;
+    }
+
+    // Check if any base tier is missing from the response (not available in country)
+    const hasMissingTier = baseTiers.some(tier => !(tier.id in tierAvailability));
+
+    if (hasMissingTier) {
+      return "country"; // Not available in country
+    } else {
+      return "soldout"; // All tiers present but at least one has 0 keys
+    }
+  }, [isAuthenticated, isSteamBundle, tierAvailability, hasAvailableBaseTiers, baseTiers]);
 
   // Calculate selected tier amounts
   const selectedCharityTiers = charityTiers.filter((tier) =>
@@ -176,6 +217,8 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
               {/* Charity Tier Sections */}
               {charityTiers.map((tier) => {
                 const isUnlocked = selectedCharityTierIds.includes(tier.id);
+                const isAvailable = tierAvailability ? tier.id in tierAvailability && tierAvailability[tier.id] > 0 : true;
+                const keysCount = tierAvailability?.[tier.id];
                 return (
                   <CharityTierSection
                     key={tier.id}
@@ -199,6 +242,9 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
                       );
                     }}
                     bundleType={bundle.type}
+                    isAvailable={isAvailable}
+                    keysCount={keysCount}
+                    hasAvailableBaseTiers={hasAvailableBaseTiers}
                   />
                 );
               })}
@@ -206,6 +252,8 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
               {/* Upsell Tier Sections */}
               {upsellTiers.map((tier) => {
                 const isUnlocked = selectedUpsellTierIds.includes(tier.id);
+                const isAvailable = tierAvailability ? tier.id in tierAvailability && tierAvailability[tier.id] > 0 : true;
+                const keysCount = tierAvailability?.[tier.id];
                 return (
                   <UpsellTierSection
                     key={tier.id}
@@ -232,6 +280,9 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
                     highestBaseTierPrice={
                       baseTiers[baseTiers.length - 1]?.price || 0
                     }
+                    isAvailable={isAvailable}
+                    keysCount={keysCount}
+                    hasAvailableBaseTiers={hasAvailableBaseTiers}
                   />
                 );
               })}
@@ -273,6 +324,9 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
                   setTipAmount={setTipAmount}
                   bookFormats={bookFormats}
                   isBundleExpired={isBundleExpired}
+                  tierAvailability={tierAvailability}
+                  hasAvailableBaseTiers={hasAvailableBaseTiers}
+                  bundleUnavailabilityReason={bundleUnavailabilityReason}
                 />
               </div>
             )}

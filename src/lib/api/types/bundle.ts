@@ -16,3 +16,8 @@ export interface CustomerBundleDto {
   title: string;
   purchasedAt?: string;
 }
+
+// Tier Availability types
+// Dictionary where key is tierId and value is number of keys available
+// If a tierId is missing, it means the tier is not available in the user's country
+export type BundleTierAvailabilityResponse = Record<string, number>;

@@ -19,6 +19,8 @@ interface AddToCartButtonProps {
   className?: string;
   children?: React.ReactNode;
   isBundleExpired?: boolean;
+  hasAvailableBaseTiers?: boolean;
+  bundleUnavailabilityReason?: "country" | "soldout" | null;
 }
 
 export function AddToCartButton({
@@ -31,6 +33,8 @@ export function AddToCartButton({
   className,
   children,
   isBundleExpired = false,
+  hasAvailableBaseTiers = true,
+  bundleUnavailabilityReason = null,
 }: AddToCartButtonProps) {
   const { addToCart, isLoading } = useCart();
   const { user, isLoading: isLoadingAuth } = useAuth();
@@ -75,7 +79,8 @@ export function AddToCartButton({
     totalAmount <= 0 ||
     !baseTierId ||
     isLoadingSession ||
-    isBundleExpired;
+    isBundleExpired ||
+    !hasAvailableBaseTiers;
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -119,6 +124,10 @@ export function AddToCartButton({
       <p className="text-xs text-center text-muted-foreground mt-2">
         {isBundleExpired
           ? "This bundle has ended and is no longer available for purchase."
+          : !hasAvailableBaseTiers && bundleUnavailabilityReason === "country"
+          ? "This bundle is not available in your country."
+          : !hasAvailableBaseTiers && bundleUnavailabilityReason === "soldout"
+          ? "This bundle is sold out."
           : isAuthenticated
           ? "Your bundle will be added to the cart. You can complete checkout later."
           : "Please log in to add items to your cart."}

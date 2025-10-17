@@ -1,5 +1,5 @@
 import { ClientApi } from "../client-api";
-import { BundleBookFormatsResponse, CustomerBundleDto } from "../types/bundle";
+import { BundleBookFormatsResponse, BundleTierAvailabilityResponse, CustomerBundleDto } from "../types/bundle";
 
 export class BundleApi {
   constructor(private api: ClientApi) {}
@@ -22,6 +22,17 @@ export class BundleApi {
       }
       throw error;
     }
+  }
+
+  /**
+   * Get tier availability for a bundle in customer's country
+   * @param bundleId The bundle ID
+   * @returns List of available tiers with key counts
+   */
+  async getBundleTierAvailability(bundleId: string): Promise<BundleTierAvailabilityResponse> {
+    return this.api.get<BundleTierAvailabilityResponse>(
+      `/customer/bundles/${bundleId}/tier-availability`
+    );
   }
 
   /**

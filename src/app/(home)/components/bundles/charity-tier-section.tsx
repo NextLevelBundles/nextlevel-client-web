@@ -15,6 +15,9 @@ interface CharityTierSectionProps {
   onUnlock: () => void;
   onCancel: () => void;
   bundleType: BundleType;
+  isAvailable?: boolean;
+  keysCount?: number;
+  hasAvailableBaseTiers?: boolean;
 }
 
 export function CharityTierSection({
@@ -24,6 +27,9 @@ export function CharityTierSection({
   onUnlock,
   onCancel,
   bundleType,
+  isAvailable = true,
+  keysCount,
+  hasAvailableBaseTiers = true,
 }: CharityTierSectionProps) {
   const tierProducts = products.filter((p) => p.bundleTierId === tier.id);
   const isBookBundle = bundleType === BundleType.EBook;
@@ -33,14 +39,20 @@ export function CharityTierSection({
   return (
     <Card
       className={cn(
-        "overflow-hidden transition-all duration-300",
+        "overflow-hidden transition-all duration-300 relative",
         isUnlocked
           ? "bg-gradient-to-br from-rose-50/50 to-pink-50/50 dark:from-rose-950/20 dark:to-pink-950/20 border-rose-200 dark:border-rose-800"
-          : "bg-card border-border"
+          : "bg-card border-border",
+        !isAvailable && hasAvailableBaseTiers && "opacity-60"
       )}
     >
+      {/* Unavailability Overlay */}
+      {!isAvailable && hasAvailableBaseTiers && (
+        <div className="absolute inset-0 bg-gradient-to-b from-gray-900/10 to-gray-900/5 dark:from-gray-900/30 dark:to-gray-900/10 z-10 pointer-events-none" />
+      )}
+
       {/* Header */}
-      <div className="p-6 pb-4">
+      <div className="p-6 pb-4 relative z-0">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
             <div
@@ -133,16 +145,29 @@ export function CharityTierSection({
           ))}
         </div>
 
+        {/* Availability Warning - Only show if base tiers are available */}
+        {!isAvailable && hasAvailableBaseTiers && (
+          <div className="mb-4 flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
+            <Lock className="h-4 w-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              {keysCount === undefined
+                ? "Not available in your country"
+                : "Sold out"}
+            </p>
+          </div>
+        )}
+
         {/* Action Button */}
         {!isUnlocked ? (
           <div className="flex justify-center">
             <Button
               onClick={onUnlock}
-              className="w-48 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white"
+              disabled={!isAvailable}
+              className="w-48 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
               size="default"
             >
               <Heart className="mr-2 h-4 w-4 fill-current" />
-              Add Charity Tier
+              {isAvailable ? "Add Charity Tier" : "Unavailable"}
             </Button>
           </div>
         ) : (

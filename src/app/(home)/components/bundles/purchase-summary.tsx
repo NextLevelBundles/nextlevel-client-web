@@ -28,7 +28,7 @@ import {
   TierType,
   ExcessDistributionType,
 } from "@/app/(shared)/types/bundle";
-import { BundleBookFormatsResponse } from "@/lib/api/types/bundle";
+import { BundleBookFormatsResponse, BundleTierAvailabilityResponse } from "@/lib/api/types/bundle";
 import { AddToCartButton } from "../cart/add-to-cart-button";
 import { useCustomerLocation } from "@/hooks/queries/useCustomerLocation";
 import { useCustomer } from "@/hooks/queries/useCustomer";
@@ -58,6 +58,9 @@ interface PurchaseSummaryProps {
   setTipAmount: (amount: number) => void;
   bookFormats?: BundleBookFormatsResponse | null;
   isBundleExpired: boolean;
+  tierAvailability?: BundleTierAvailabilityResponse;
+  hasAvailableBaseTiers: boolean;
+  bundleUnavailabilityReason: "country" | "soldout" | null;
 }
 
 export function PurchaseSummary({
@@ -75,6 +78,9 @@ export function PurchaseSummary({
   setTipAmount,
   bookFormats,
   isBundleExpired,
+  tierAvailability,
+  hasAvailableBaseTiers,
+  bundleUnavailabilityReason,
 }: PurchaseSummaryProps) {
   const [tipInputValue, setTipInputValue] = useState("");
   const { user } = useAuth();
@@ -202,21 +208,42 @@ export function PurchaseSummary({
             </span>
           </div>
           <div className="grid grid-cols-3 gap-2">
-            {baseTiers.map((tier) => (
-              <Button
-                key={tier.id}
-                variant={currentTier?.id === tier.id ? "default" : "outline"}
-                onClick={() => setBaseAmount(tier.price)}
-                className={cn(
-                  "w-full font-mono transition-all duration-300 relative",
-                  currentTier?.id === tier.id &&
-                    "bg-primary text-white font-semibold shadow-md shadow-primary/20 dark:shadow-primary/30 hover:shadow-lg hover:shadow-primary/30 dark:hover:shadow-primary/40 border-primary hover:scale-[1.02]"
-                )}
-              >
-                ${tier.price}
-              </Button>
-            ))}
+            {baseTiers.map((tier) => {
+              return (
+                <Button
+                  key={tier.id}
+                  variant={currentTier?.id === tier.id ? "default" : "outline"}
+                  onClick={() => setBaseAmount(tier.price)}
+                  className={cn(
+                    "w-full font-mono transition-all duration-300 relative",
+                    currentTier?.id === tier.id &&
+                      "bg-primary text-white font-semibold shadow-md shadow-primary/20 dark:shadow-primary/30 hover:shadow-lg hover:shadow-primary/30 dark:hover:shadow-primary/40 border-primary hover:scale-[1.02]"
+                  )}
+                >
+                  ${tier.price}
+                </Button>
+              );
+            })}
           </div>
+
+          {/* Base Tier Unavailability Warning */}
+          {isAuthenticated && !hasAvailableBaseTiers && bundleUnavailabilityReason && (
+            <div className="mt-3 p-3 bg-red-50 dark:bg-red-950/30 rounded-lg border border-red-200 dark:border-red-800">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-red-700 dark:text-red-300 mb-1">
+                    Bundle Not Available
+                  </p>
+                  <p className="text-xs text-red-600 dark:text-red-400">
+                    {bundleUnavailabilityReason === "country"
+                      ? "The bundle is not available in your country"
+                      : "The bundle is sold out"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Step 2: Charity Tier Selection */}
@@ -228,16 +255,21 @@ export function PurchaseSummary({
             <div className="space-y-2">
               {charityTiers.map((tier) => {
                 const isSelected = selectedCharityTierIds.includes(tier.id);
+                const isAvailable = tierAvailability ? tier.id in tierAvailability && tierAvailability[tier.id] > 0 : true;
                 return (
                   <div
                     key={tier.id}
                     className={cn(
-                      "p-3 rounded-lg border relative cursor-pointer transition-all",
+                      "p-3 rounded-lg border relative transition-all",
                       isSelected
                         ? "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800"
-                        : "bg-gray-50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800/40"
+                        : "bg-gray-50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-700",
+                      isAvailable
+                        ? "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/40"
+                        : "opacity-50 cursor-not-allowed"
                     )}
                     onClick={() => {
+                      if (!isAvailable) return;
                       if (isSelected) {
                         setSelectedCharityTierIds(
                           selectedCharityTierIds.filter((id) => id !== tier.id)
@@ -250,8 +282,9 @@ export function PurchaseSummary({
                       }
                     }}
                     role="button"
-                    tabIndex={0}
+                    tabIndex={isAvailable ? 0 : -1}
                     aria-pressed={isSelected}
+                    aria-disabled={!isAvailable}
                   >
                     <div className="flex items-start justify-between">
                       <div className="space-y-1 flex-1">
@@ -355,16 +388,21 @@ export function PurchaseSummary({
             <div className="space-y-2">
               {upsellTiers.map((tier) => {
                 const isSelected = selectedUpsellTierIds.includes(tier.id);
+                const isAvailable = tierAvailability ? tier.id in tierAvailability && tierAvailability[tier.id] > 0 : true;
                 return (
                   <div
                     key={tier.id}
                     className={cn(
-                      "p-3 rounded-lg border relative cursor-pointer transition-all",
+                      "p-3 rounded-lg border relative transition-all",
                       isSelected
                         ? "bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800"
-                        : "bg-gray-50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800/40"
+                        : "bg-gray-50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-700",
+                      isAvailable
+                        ? "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/40"
+                        : "opacity-50 cursor-not-allowed"
                     )}
                     onClick={() => {
+                      if (!isAvailable) return;
                       if (isSelected) {
                         setSelectedUpsellTierIds(
                           selectedUpsellTierIds.filter((id) => id !== tier.id)
@@ -377,8 +415,9 @@ export function PurchaseSummary({
                       }
                     }}
                     role="button"
-                    tabIndex={0}
+                    tabIndex={isAvailable ? 0 : -1}
                     aria-pressed={isSelected}
+                    aria-disabled={!isAvailable}
                   >
                     <div className="flex items-start justify-between">
                       <div className="space-y-1 flex-1">
@@ -625,6 +664,8 @@ export function PurchaseSummary({
               totalAmount={totalAmount}
               selectedUpsellTierIds={selectedUpsellTierIds}
               isBundleExpired={isBundleExpired}
+              hasAvailableBaseTiers={hasAvailableBaseTiers}
+              bundleUnavailabilityReason={bundleUnavailabilityReason}
             />
           )}
         </div>
