@@ -11,6 +11,8 @@ import { QueryClientProviderWrapper } from "./(shared)/providers/query-client";
 import AmplifyClientLoader from "./(shared)/components/amplify/load-amplify";
 import { TrackdeskScript } from "./(shared)/components/trackdesk/trackdesk-script";
 import { LinkIdCapture } from "./(shared)/components/trackdesk/linkId-capture";
+import { ClientLayoutGuard } from "./(shared)/components/ClientLayoutGuard";
+import { CustomerProvider } from "./(shared)/providers/customer-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -67,7 +69,10 @@ export default function RootLayout({
           <AuthProvider>
             <AmplifyAuthListener />
             <QueryClientProviderWrapper>
-              {children}
+              <CustomerProvider>
+                <ClientLayoutGuard />
+                {children}
+              </CustomerProvider>
             </QueryClientProviderWrapper>
           </AuthProvider>
         </ThemeProvider>
