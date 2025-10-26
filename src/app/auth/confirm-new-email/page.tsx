@@ -9,6 +9,7 @@ import { Label } from "@/app/(shared)/components/ui/label";
 import { Alert, AlertDescription } from "@/app/(shared)/components/ui/alert";
 import { toast } from "sonner";
 import { Loader2, Mail, CheckCircle2 } from "lucide-react";
+import { userApi } from "@/lib/api/index";
 
 export default function ConfirmNewEmailPage() {
   const router = useRouter();
@@ -49,6 +50,7 @@ export default function ConfirmNewEmailPage() {
         userAttributeKey: "email",
         confirmationCode: code.trim()
       });
+      await userApi.verifyCustomerEmail();
       toast.success("Email verified successfully! You can now use your new email address.");
       // Redirect to customer dashboard or settings
       router.push("/customer/settings");

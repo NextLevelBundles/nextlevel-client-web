@@ -46,4 +46,8 @@ export class UserApi {
   async updateCountry(countryCode: string): Promise<Customer> {
     return await this.client.put<Customer, { countryCode: string }>("/customer/country", { countryCode });
   }
+
+  async verifyCustomerEmail(): Promise<void> {
+    await this.client.post<void, void>("/customer/email/verify", undefined);
+  }
 }

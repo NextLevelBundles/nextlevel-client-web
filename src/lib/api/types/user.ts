@@ -39,4 +39,5 @@ export interface Customer {
   billingAddress?: BillingAddress;
   contact: Contact;
   status: Status;
+  emailVerified: boolean;
 }
