@@ -18,20 +18,11 @@ import {
   type ConfirmResetPasswordInput,
 } from "aws-amplify/auth";
 import Cookies from "js-cookie";
-import { UserApi } from "@/lib/api/clients/user-confirm-email";
-import { apiClient } from "@/lib/api/client-api";
 
 const ID_TOKEN_COOKIE = "id_token";
 
 export class AuthService {
-  /**
-   * Confirm new email with verification code (placeholder implementation)
-   */
-  static async confirmNewEmail(email: string, code: string) {
-    // Use UserApi to call backend for real verification
-  const userApi = new UserApi();
-    return await userApi.confirmNewEmail(email, code);
-  }
+
   static async signIn(email: string, password: string) {
     try {
       const { isSignedIn, nextStep } = await signIn({

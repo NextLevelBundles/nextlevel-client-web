@@ -33,14 +33,7 @@ export default function SignInPage() {
       const result = await AuthService.signIn(email, password);
 
       if (result.success && result.isSignedIn) {
-        // Check if email is verified
-        const userResult = await AuthService.getCurrentUser();
-        const emailVerified = userResult?.attributes?.email_verified === "true" || userResult?.attributes?.email_verified === true;
-        if (!emailVerified) {
-          router.push("/auth/confirm-new-email");
-          router.refresh();
-          return;
-        }
+
         // Check if user has completed profile
         const hasProfile = await AuthService.hasCompletedProfile();
         // If there's a specific callback URL and user has profile, use it
