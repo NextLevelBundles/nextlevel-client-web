@@ -21,7 +21,6 @@ import { CartItemModal } from "./cart-item-modal";
 import { useCart } from "@/app/(shared)/contexts/cart/cart-provider";
 import { isBookBundle } from "@/app/(shared)/utils/cart";
 import { getTrackdeskCid, getLinkId } from "@/app/(shared)/lib/trackdesk";
-import { useCheckCustomerStatus } from "@/hooks/useCheckCustomerStatus";
 import {
   Sheet,
   SheetContent,
@@ -57,7 +56,6 @@ export function CartDrawer() {
   const [showCaptcha, setShowCaptcha] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [modalItem, setModalItem] = useState<any | null>(null);
-  const { verifyCustomerStatus } = useCheckCustomerStatus();
   const {
     cart,
     removeFromCart,
@@ -124,14 +122,6 @@ export function CartDrawer() {
 
     setIsCheckoutLoading(true);
     try {
-      // Check customer status with fresh API call before checkout
-      const isCustomerActive = await verifyCustomerStatus();
-      if (!isCustomerActive) {
-        // Customer is disabled/deleted, user will be signed out
-        setIsCheckoutLoading(false);
-        return;
-      }
-
       // Capture Trackdesk cid and linkId for conversion tracking
       const trackdeskCid = getTrackdeskCid();
       const linkId = getLinkId();

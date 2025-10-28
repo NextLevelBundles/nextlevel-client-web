@@ -15,13 +15,6 @@ export interface Contact {
   alternatePhone?: string;
 }
 
-// Status is returned as string from API, not number
-export enum Status {
-  Deleted = "Deleted",
-  Active = "Active",
-  Disabled = "Disabled"
-}
-
 export interface Customer {
   id: string;
   identityId: string;
@@ -38,5 +31,4 @@ export interface Customer {
   countryLastChangedAt?: string | null;
   billingAddress?: BillingAddress;
   contact: Contact;
-  status: Status;
 }

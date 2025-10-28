@@ -8,7 +8,6 @@ import { Check, Loader2, ShoppingCart, LogIn } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
 import { useRouter } from "next/navigation";
-import { useCheckCustomerStatus } from "@/hooks/useCheckCustomerStatus";
 
 interface AddToCartButtonProps {
   bundleId: string;
@@ -42,18 +41,10 @@ export function AddToCartButton({
   const router = useRouter();
   const [isAdding, setIsAdding] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
-  const { verifyCustomerStatus } = useCheckCustomerStatus();
 
   const handleAddToCart = async () => {
     setIsAdding(true);
     try {
-      // Check customer status with fresh API call before adding to cart
-      const isCustomerActive = await verifyCustomerStatus();
-      if (!isCustomerActive) {
-        // Customer is disabled/deleted, user will be signed out
-        return;
-      }
-
       const cartItem: AddToCartRequest = {
         bundleId,
         baseTierId: baseTierId!,
