@@ -1,65 +1,48 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Navigation } from "@/home/components/navigation";
 import { BundleDetail } from "@/home/components/bundles/bundle-detail";
+import { BundleNotFound } from "@/home/components/bundles/bundle-not-found";
+import { BundleError } from "@/home/components/bundles/bundle-error";
 import { Footer } from "@/home/components/sections/footer";
-import { Bundle } from "@/app/(shared)/types/bundle";
+import { serverApiClient } from "@/lib/server-api";
 import React from "react";
 
-export const dynamic = 'force-dynamic';
-
-function NotFoundError() {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
-      <h2 className="text-2xl font-bold mb-2">Bundle Not Found</h2>
-      <p className="text-muted-foreground">
-        The bundle you are looking for does not exist.
-      </p>
-    </div>
-  );
-}
-
-function GenericError() {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
-      <h2 className="text-2xl font-bold mb-2">Something went wrong</h2>
-      <p className="text-muted-foreground">
-        Unable to load bundle details. Please try again later.
-      </p>
-    </div>
-  );
-}
+export const dynamic = "force-dynamic";
 
 export default async function BundleDetailPage({ params }: { params: any }) {
   const { id } = await params;
 
-  let bundleTyped: Bundle | null = null;
-  let errorType: "notfound" | "generic" | null = null;
+  let bundle = null;
+  let error = null;
+  let isNotFound = false;
 
   try {
-    const response = await fetch(
-      `${process.env.API_URL}/customer/bundles/${id}`
-    );
-
-    if (response.status === 404) {
-      errorType = "notfound";
-    } else if (!response.ok) {
-      errorType = "generic";
-    } else {
-      const bundle = await response.json();
-      bundleTyped = bundle as Bundle;
+    bundle = await serverApiClient.getBundleById(id);
+    console.log("Fetched bundle:", bundle);
+    if (!bundle) {
+      isNotFound = true;
     }
-  } catch (e) {
-    console.error("Error fetching bundle details:", e);
-    errorType = "generic";
+  } catch (err: any) {
+    console.error("Error fetching bundle details:", err);
+    // Check if it's a 404 error
+    if (err?.message?.includes("404") || err?.status === 404) {
+      isNotFound = true;
+    } else {
+      error = err;
+    }
   }
 
   return (
     <>
       <Navigation />
       <div className="pt-16">
-        {errorType === "notfound" && <NotFoundError />}
-        {errorType === "generic" && <GenericError />}
-        {!errorType && bundleTyped && <BundleDetail bundle={bundleTyped} />}
+        {error ? (
+          <BundleError error={error} />
+        ) : isNotFound ? (
+          <BundleNotFound />
+        ) : (
+          <BundleDetail bundle={bundle!} />
+        )}
       </div>
       <Footer />
     </>

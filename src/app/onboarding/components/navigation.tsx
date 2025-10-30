@@ -5,6 +5,7 @@ import { cn } from "@/shared/utils/tailwind";
 import { ThemeToggle } from "@/shared/components/theme-toggle";
 import SignOutButton from "@/app/(home)/components/SignOutButton";
 import Logo from "@/app/(shared)/components/logo";
+import Link from "next/link";
 
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -29,9 +30,9 @@ export function Navigation() {
       <div className="container px-4">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-3">
+            <Link href="/" className="p-3">
               <Logo width={140} height={0} />
-            </div>
+            </Link>
           </div>
 
           <div className="flex items-center gap-2">

@@ -12,13 +12,15 @@ import {
   Heart,
   BookOpen,
   Gamepad2,
+  Info,
 } from "lucide-react";
 import { CartButton } from "./cart-button";
-import { CartItemDetails } from "./cart-item-details";
 import { GiftForm } from "./gift-form";
 import { TurnstileCaptcha } from "./turnstile-captcha";
+import { CartItemModal } from "./cart-item-modal";
 import { useCart } from "@/app/(shared)/contexts/cart/cart-provider";
 import { isBookBundle } from "@/app/(shared)/utils/cart";
+import { getTrackdeskCid, getLinkId } from "@/app/(shared)/lib/trackdesk";
 import {
   Sheet,
   SheetContent,
@@ -53,6 +55,7 @@ export function CartDrawer() {
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
   const [showCaptcha, setShowCaptcha] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [modalItem, setModalItem] = useState<any | null>(null);
   const {
     cart,
     removeFromCart,
@@ -119,7 +122,18 @@ export function CartDrawer() {
 
     setIsCheckoutLoading(true);
     try {
-      const response = await reserveCart(captchaToken);
+      // Capture Trackdesk cid and linkId for conversion tracking
+      const trackdeskCid = getTrackdeskCid();
+      const linkId = getLinkId();
+
+      // Validate: if linkId exists, trackdeskCid must also exist
+      if (linkId && !trackdeskCid) {
+        toast.error("Affiliate tracking error. Please try again or contact support.");
+        setIsCheckoutLoading(false);
+        return;
+      }
+
+      const response = await reserveCart(captchaToken, trackdeskCid, linkId);
       // Redirect to Stripe checkout
       window.location.href = response.url;
     } catch (error) {
@@ -137,7 +151,19 @@ export function CartDrawer() {
     // Now proceed with the actual checkout
     setIsCheckoutLoading(true);
     try {
-      const response = await reserveCart(token);
+      // Capture Trackdesk cid and linkId for conversion tracking
+      const trackdeskCid = getTrackdeskCid();
+      const linkId = getLinkId();
+
+      // Validate: if linkId exists, trackdeskCid must also exist
+      if (linkId && !trackdeskCid) {
+        toast.error("Affiliate tracking error. Please try again or contact support.");
+        setCaptchaToken(null);
+        setIsCheckoutLoading(false);
+        return;
+      }
+
+      const response = await reserveCart(token, trackdeskCid, linkId);
       // Redirect to Stripe checkout
       window.location.href = response.url;
     } catch (error) {
@@ -276,13 +302,13 @@ export function CartDrawer() {
                       )}
 
                       <div className="flex gap-4">
-                        <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-muted">
+                        <div className="relative w-16 h-24 rounded-lg overflow-hidden bg-muted">
                           <Image
-                            width={200}
-                            height={200}
+                            fill
+                            sizes="64px"
                             src={item.snapshotImageUrl ?? ""}
                             alt={item.snapshotTitle ?? "Cart item image"}
-                            className="w-full h-full object-cover"
+                            className="object-cover"
                           />
                           {/* Bundle type indicator */}
                           <div className={`absolute bottom-1 left-1 p-1 rounded-full ${
@@ -311,7 +337,7 @@ export function CartDrawer() {
                           </div>
                           
                           {/* Bundle type badge */}
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="flex items-center gap-2 mb-2">
                             <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
                               isBookBundle(item)
                                 ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400"
@@ -325,30 +351,23 @@ export function CartDrawer() {
                             </span>
                           </div>
 
-                          {/* Donation tier indicator */}
-                          {item.isDonationTierSelected &&
-                            item.donationTierAmount && (
-                              <div className="flex items-center gap-1 mb-2 text-xs text-rose-600 dark:text-rose-400">
-                                <Heart className="h-3 w-3 fill-rose-500" />
-                                <span className="font-medium">
-                                  Charity Tier: $
-                                  {item.donationTierAmount.toFixed(2)} extra to
-                                  charity
-                                </span>
-                              </div>
-                            )}
-
                           <div className="flex items-center justify-between mt-3">
-                            <div className="flex items-center gap-2">
-                              <CartItemDetails item={item} />
-                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-xs hover:bg-primary/10 hover:text-primary hover:border-primary/50 transition-colors"
+                              onClick={() => setModalItem(item)}
+                            >
+                              <Info className="h-3 w-3 mr-1" />
+                              View Summary
+                            </Button>
 
                             <div className="text-right">
                               <div className="font-semibold text-sm">
-                                ${item.price?.toFixed(2)}
+                                ${item.totalAmount?.toFixed(2)}
                               </div>
                               <span className="text-xs text-muted-foreground">
-                                {item.snapshotProducts.length} games
+                                {item.snapshotProducts.length} {isBookBundle(item) ? "books" : "games"}
                               </span>
                             </div>
                           </div>
@@ -452,6 +471,13 @@ export function CartDrawer() {
         isOpen={showCaptcha}
         onVerified={handleCaptchaVerified}
         onClose={handleCaptchaClose}
+      />
+
+      {/* Cart Item Modal with Details and Revenue tabs */}
+      <CartItemModal
+        item={modalItem}
+        isOpen={!!modalItem}
+        onClose={() => setModalItem(null)}
       />
     </Sheet>
   );

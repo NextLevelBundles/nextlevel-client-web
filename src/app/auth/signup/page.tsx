@@ -80,16 +80,16 @@ export default function SignUpPage() {
 
       if (result.success) {
         setSuccess(true);
-        
+
         // Check nextStep to determine what to do
-        if (result.nextStep?.signUpStep === 'CONFIRM_SIGN_UP') {
+        if (result.nextStep?.signUpStep === "CONFIRM_SIGN_UP") {
           // User needs to confirm their account
           setTimeout(() => {
             router.push(
               `/auth/confirm-signup?email=${encodeURIComponent(email)}`
             );
           }, 2000);
-        } else if (result.nextStep?.signUpStep === 'COMPLETE_AUTO_SIGN_IN') {
+        } else if (result.nextStep?.signUpStep === "COMPLETE_AUTO_SIGN_IN") {
           // AutoSignIn is ready, complete it
           const autoSignInResult = await AuthService.handleAutoSignIn();
           if (autoSignInResult.success && autoSignInResult.isSignedIn) {
@@ -102,7 +102,7 @@ export default function SignUpPage() {
               `/auth/confirm-signup?email=${encodeURIComponent(email)}`
             );
           }
-        } else if (result.nextStep?.signUpStep === 'DONE') {
+        } else if (result.nextStep?.signUpStep === "DONE") {
           // Sign up is complete, user should be signed in
           router.push("/onboarding");
           router.refresh();
@@ -145,7 +145,7 @@ export default function SignUpPage() {
   }
 
   return (
-    <AuthLayout title="Create your account" subtitle="Join Digiphile today">
+    <AuthLayout title="Create your account" subtitle="">
       <form onSubmit={handleSubmit} className="space-y-5">
         {error && (
           <Alert variant="destructive">

@@ -10,6 +10,7 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { Gamepad2 } from "lucide-react";
 import { useCustomer } from "@/hooks/queries/useCustomer";
+import { useRouter } from "next/navigation";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
@@ -17,6 +18,7 @@ dayjs.extend(relativeTime);
 
 export function SteamStatus() {
   const { data: customer, isLoading } = useCustomer();
+  const router = useRouter();
 
   if (isLoading) {
     return (
@@ -39,13 +41,13 @@ export function SteamStatus() {
         <CardHeader>
           <CardTitle>Steam Account</CardTitle>
         </CardHeader>
-        <CardContent className="flex items-center justify-between">
+        <CardContent className="flex items-center justify-between gap-6">
           <div className="text-sm text-muted-foreground">
-            Connect your Steam account to activate keys directly
+            Connect your Steam account to be able to purchase Steam Bundles
           </div>
-          <Button 
+          <Button
             className="relative overflow-hidden"
-            onClick={() => window.location.href = '/api/steam/init'}
+            onClick={() => router.push("/customer/settings/steam")}
           >
             <Gamepad2 className="mr-2 h-4 w-4" />
             Connect Steam
@@ -61,7 +63,7 @@ export function SteamStatus() {
     );
   }
 
-  const connectedDate = customer.steamConnectedAt 
+  const connectedDate = customer.steamConnectedAt
     ? dayjs(customer.steamConnectedAt).fromNow()
     : null;
 
@@ -82,18 +84,21 @@ export function SteamStatus() {
             </div>
           </motion.div>
           <div>
-            <div className="font-medium">
-              Steam ID: {customer.steamId}
-            </div>
+            <div className="font-medium">Steam ID: {customer.steamId}</div>
             <div className="text-sm text-muted-foreground">
               Connected {connectedDate}
             </div>
           </div>
         </div>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="relative overflow-hidden group"
-          onClick={() => window.open(`https://steamcommunity.com/profiles/${customer.steamId}`, '_blank')}
+          onClick={() =>
+            window.open(
+              `https://steamcommunity.com/profiles/${customer.steamId}`,
+              "_blank"
+            )
+          }
         >
           <span className="relative z-10">View Profile</span>
           <motion.div

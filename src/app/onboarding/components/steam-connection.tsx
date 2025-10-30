@@ -67,11 +67,13 @@ export default function SteamConnection({
           const profile = await response.json();
           setSteamProfile(profile);
           
-          // If we have a country code from the profile and not already set, update it
-          if (profile.loccountrycode && !steamUserInfo?.steamCountry) {
+          // If we have profile data and not already set, update it
+          if ((profile.loccountrycode && !steamUserInfo?.steamCountry) || 
+              (profile.personaname && !steamUserInfo?.steamUsername)) {
             onSteamInfoReceived({
               steamId: steamId,
-              steamCountry: profile.loccountrycode,
+              steamUsername: profile.personaname || steamUserInfo?.steamUsername,
+              steamCountry: profile.loccountrycode || steamUserInfo?.steamCountry,
             });
           }
         }
@@ -92,11 +94,12 @@ export default function SteamConnection({
     const handler = (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
 
-      const { type, steamId, steamCountry } = event.data || {};
+      const { type, steamId, steamUsername, steamCountry } = event.data || {};
 
       if (type === "STEAM_CONNECT_SUCCESS") {
         onSteamInfoReceived({
           steamId: steamId,
+          steamUsername: steamUsername,
           steamCountry: steamCountry,
         });
       }
@@ -259,22 +262,22 @@ export default function SteamConnection({
                 Connect Your Steam Account
               </h3>
               <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                Link your Steam account to receive game keys directly to your library
-                and ensure you get region-appropriate keys based on your Steam country.
+                To purchase Steam game bundles, you need to connect your Steam account. 
+                This is required to ensure proper key allocation and compatibility.
               </p>
 
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                  <span>Instant game key delivery to your Steam library</span>
+                  <span>Allocate region-appropriate Steam keys for your account</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                  <span>Region-specific keys matched to your Steam country</span>
+                  <span>Ensure key compatibility with your Steam region</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-                  <span>Track your gaming achievements and stats (Coming soon)</span>
+                  <span>Provide better customer support for your purchases</span>
                 </div>
               </div>
             </div>

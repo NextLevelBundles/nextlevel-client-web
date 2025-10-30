@@ -11,20 +11,30 @@ import { useRouter } from "next/navigation";
 
 interface AddToCartButtonProps {
   bundleId: string;
-  selectedTierId?: string;
+  baseTierId?: string;
+  charityTierId?: string;
+  tipAmount?: number;
   totalAmount: number;
-  isDonationTier?: boolean;
+  selectedUpsellTierIds?: string[];
   className?: string;
   children?: React.ReactNode;
+  isBundleExpired?: boolean;
+  hasAvailableBaseTiers?: boolean;
+  bundleUnavailabilityReason?: "country" | "soldout" | null;
 }
 
 export function AddToCartButton({
   bundleId,
-  selectedTierId,
+  baseTierId,
+  charityTierId,
+  tipAmount = 0,
   totalAmount,
-  isDonationTier = false,
+  selectedUpsellTierIds = [],
   className,
   children,
+  isBundleExpired = false,
+  hasAvailableBaseTiers = true,
+  bundleUnavailabilityReason = null,
 }: AddToCartButtonProps) {
   const { addToCart, isLoading } = useCart();
   const { user, isLoading: isLoadingAuth } = useAuth();
@@ -37,12 +47,10 @@ export function AddToCartButton({
     try {
       const cartItem: AddToCartRequest = {
         bundleId,
-        tierId: selectedTierId!,
-        price: totalAmount,
-        ...(isDonationTier && {
-          isDonationTier: true,
-          donationAmount: totalAmount,
-        }),
+        baseTierId: baseTierId!,
+        ...(charityTierId && { charityTierId }),
+        ...(tipAmount > 0 && { tipAmount }),
+        ...(selectedUpsellTierIds.length > 0 && { upsellTierIds: selectedUpsellTierIds }),
       };
 
       await addToCart(cartItem);
@@ -69,8 +77,10 @@ export function AddToCartButton({
     isLoading ||
     isAdding ||
     totalAmount <= 0 ||
-    !selectedTierId ||
-    isLoadingSession;
+    !baseTierId ||
+    isLoadingSession ||
+    isBundleExpired ||
+    !hasAvailableBaseTiers;
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -112,7 +122,13 @@ export function AddToCartButton({
         )}
       </Button>
       <p className="text-xs text-center text-muted-foreground mt-2">
-        {isAuthenticated
+        {isBundleExpired
+          ? "This bundle has ended and is no longer available for purchase."
+          : !hasAvailableBaseTiers && bundleUnavailabilityReason === "country"
+          ? "This bundle is not available in your country."
+          : !hasAvailableBaseTiers && bundleUnavailabilityReason === "soldout"
+          ? "This bundle is sold out."
+          : isAuthenticated
           ? "Your bundle will be added to the cart. You can complete checkout later."
           : "Please log in to add items to your cart."}
       </p>

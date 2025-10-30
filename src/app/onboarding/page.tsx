@@ -21,7 +21,7 @@ export default async function Onboarding() {
     <main className="min-h-screen bg-background relative">
       <Navigation />
 
-      <div className="absolute inset-0 bg-mesh opacity-20 dark:opacity-10" />
+      <div className="absolute inset-0 bg-mesh opacity-20 dark:opacity-10 pointer-events-none" />
       <div className="pt-24 pb-12 h-full">
         <OnboardingForm />
       </div>

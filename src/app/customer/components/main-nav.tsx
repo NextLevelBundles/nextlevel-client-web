@@ -18,6 +18,7 @@ const navigation = [
   { name: "Dashboard", href: "/customer/dashboard", icon: GamepadIcon },
   { name: "Purchase History", href: "/customer/purchases", icon: ReceiptIcon },
   { name: "Steam Games", href: "/customer/keys", icon: Gamepad2 },
+  { name: "Exchange History", href: "/customer/exchange-history", icon: KeyIcon },
   { name: "Book Library", href: "/customer/library/books", icon: BookOpen },
   { name: "Charity", href: "/customer/charity", icon: HeartIcon },
   { name: "Badges", href: "/customer/badges", icon: AwardIcon },

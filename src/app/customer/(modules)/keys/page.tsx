@@ -13,7 +13,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Badge } from "@/shared/components/ui/badge";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   KeyIcon,
   ExternalLinkIcon,
@@ -22,6 +22,14 @@ import {
   SearchIcon,
   XIcon,
   SparklesIcon,
+  ArchiveIcon,
+  AlertTriangle,
+  Loader2,
+  ShieldAlert,
+  CheckCircle2,
+  RefreshCw,
+  X,
+  Check,
 } from "lucide-react";
 import {
   Tooltip,
@@ -29,13 +37,25 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/shared/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/shared/components/ui/dialog";
+import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import confetti from "canvas-confetti";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useSteamKeys,
   useRevealKey,
   useViewKey,
   useGiftKey,
   useSteamKeyStatusCounts,
+  useSyncSteamLibrary,
+  useSteamLibraryStatus,
 } from "@/hooks/queries/useSteamKeys";
 import {
   SteamKeyAssignment,
@@ -44,6 +64,8 @@ import {
 } from "@/lib/api/types/steam-key";
 import { GiftFilterType } from "@/lib/api/types/purchase";
 import { GiftKeyModal } from "@/customer/components/steam-keys/gift-key-modal";
+import { ExchangeApi } from "@/lib/api/clients/exchange";
+import { apiClient } from "@/lib/api/client-api";
 import { FilterDropdown } from "@/customer/components/filter-dropdown";
 import { SteamKeyGiftIndicator } from "@/customer/components/steam-keys/steam-key-gift-indicator";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
@@ -72,10 +94,38 @@ const copyMessages = [
   "🗝️ Another one in your collection!",
 ];
 
+// Function to convert technical status names to user-friendly ones
+const getStatusDisplayName = (status: string): string => {
+  const statusMap: Record<string, string> = {
+    "AddedToExchange": "Exchanged",
+    "ReceivedFromExchange": "Received",
+    "Assigned": "Available",
+    "Revealed": "Redeemed",
+    "Expired": "Expired",
+    "Refunded": "Refunded",
+  };
+
+  return statusMap[status] || status;
+};
+
+function ExchangeCreditsDisplay({ credits }: { credits?: number | null }) {
+  if (!credits || credits === 0) {
+    return null;
+  }
+
+  return (
+    <div className="flex flex-col items-end">
+      <span className="text-xs text-muted-foreground">Trade-in Exchange</span>
+      <span className="text-sm font-semibold text-primary">{credits} Credits</span>
+    </div>
+  );
+}
+
 export default function KeysPage() {
   const { user } = useAuth();
   const currentCustomerId = user?.id;
   const currentUserEmail = user?.email;
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
@@ -83,13 +133,32 @@ export default function KeysPage() {
   const [selectedGiftKey, setSelectedGiftKey] =
     useState<SteamKeyAssignment | null>(null);
   const [isGiftModalOpen, setIsGiftModalOpen] = useState(false);
-  const [flippingStates, setFlippingStates] = useState<{
-    [key: string]: {
-      isFlipping: boolean;
-      showKey: boolean;
-      revealedKeyValue?: string;
-    };
-  }>({});
+  const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
+  const [syncErrorMessage, setSyncErrorMessage] = useState<string | null>(null);
+  const [showSteamPrivacyHelp, setShowSteamPrivacyHelp] = useState(false);
+  const [redeemConfirmDialog, setRedeemConfirmDialog] = useState<{
+    isOpen: boolean;
+    keyId: string | null;
+    productTitle: string;
+    isLoading: boolean;
+    alreadyOwned?: boolean;
+  }>({
+    isOpen: false,
+    keyId: null,
+    productTitle: "",
+    isLoading: false,
+    alreadyOwned: false,
+  });
+
+  const [steamSyncWarningDialog, setSteamSyncWarningDialog] = useState<{
+    isOpen: boolean;
+    keyId: string | null;
+    productTitle: string;
+  }>({
+    isOpen: false,
+    keyId: null,
+    productTitle: "",
+  });
 
   // Debounce search query
   useEffect(() => {
@@ -126,9 +195,22 @@ export default function KeysPage() {
   // Gift key mutation
   const giftKeyMutation = useGiftKey();
 
+  // Sync Steam library mutation
+  const syncSteamLibraryMutation = useSyncSteamLibrary();
+
   // Fetch status counts
   const { data: statusCounts, isLoading: isLoadingStatusCounts } =
     useSteamKeyStatusCounts();
+
+  // Fetch Steam library status
+  const { data: steamLibraryStatus } = useSteamLibraryStatus();
+
+  // Initialize lastSyncTime based on Steam library status
+  useEffect(() => {
+    if (steamLibraryStatus?.lastSyncedAt && !lastSyncTime) {
+      setLastSyncTime(steamLibraryStatus.lastSyncedAt);
+    }
+  }, [steamLibraryStatus, lastSyncTime]);
 
   // Transform status counts to filter options
   const statusOptions = React.useMemo(() => {
@@ -178,6 +260,29 @@ export default function KeysPage() {
     const thirtyDaysAgo = dayjs().subtract(30, "day");
 
     return assignedDate.isAfter(thirtyDaysAgo);
+  };
+
+  // Helper function to check if Steam library sync is needed
+  const isSteamSyncNeeded = (): boolean => {
+    console.log("Checking sync status:", steamLibraryStatus);
+    
+    // If no sync status data available, assume sync is needed
+    if (!steamLibraryStatus) return true;
+
+    // If never synced, sync is needed
+    if (!steamLibraryStatus.lastSyncedAt || steamLibraryStatus.steamLibrarySyncStatus === "NeverSynced") return true;
+
+    // If last sync was unsuccessful, sync is needed
+    if (steamLibraryStatus.steamLibrarySyncStatus !== "SyncSucceeded") return true;
+
+    // Check if last sync was more than 1 week ago
+    const lastSyncDate = dayjs(steamLibraryStatus.lastSyncedAt);
+    const oneWeekAgo = dayjs().subtract(1, "week");
+
+    const isOlderThanWeek = lastSyncDate.isBefore(oneWeekAgo);
+    console.log("Sync date check:", { lastSyncDate: lastSyncDate.format(), oneWeekAgo: oneWeekAgo.format(), isOlderThanWeek });
+
+    return isOlderThanWeek;
   };
 
   // Helper function to get the key value
@@ -235,70 +340,258 @@ export default function KeysPage() {
     }
   };
 
-  const handleRevealKey = async (keyId: string) => {
-    setFlippingStates((prev) => ({
-      ...prev,
-      [keyId]: { isFlipping: true, showKey: false },
-    }));
+  const handleRevealKey = (keyId: string, productTitle: string) => {
+    // Find the key to check if already owned
+    const key = steamKeys.find(k => k.id === keyId);
+    const alreadyOwned = key?.alreadyOwnedOnSteam || false;
+
+    console.log("Key found:", key);
+    console.log("Already owned:", alreadyOwned);
+
+    // Check if Steam library sync is needed
+    if (isSteamSyncNeeded()) {
+      setSteamSyncWarningDialog({
+        isOpen: true,
+        keyId,
+        productTitle,
+      });
+      return;
+    }
+
+    // Always proceed to confirmation dialog (don't skip it)
+    setRedeemConfirmDialog({
+      isOpen: true,
+      keyId,
+      productTitle,
+      isLoading: false,
+      alreadyOwned,
+    });
+  };
+
+  const handleConfirmRedeem = async () => {
+    if (!redeemConfirmDialog.keyId) return;
+
+    setRedeemConfirmDialog((prev) => ({ ...prev, isLoading: true }));
 
     try {
-      // Wait for half of the flip animation before showing the key
-      await new Promise((resolve) => setTimeout(resolve, 400));
-
       // Call the API to reveal the key
-      const revealedKey = await revealKeyMutation.mutateAsync(keyId);
+      const revealedKey = await revealKeyMutation.mutateAsync(
+        redeemConfirmDialog.keyId
+      );
 
-      setFlippingStates((prev) => ({
-        ...prev,
-        [keyId]: {
-          isFlipping: true,
-          showKey: true,
-          revealedKeyValue: revealedKey.steamKeyValue,
-        },
-      }));
+      if (revealedKey.steamKeyValue) {
+        // Close the dialog
+        setRedeemConfirmDialog({
+          isOpen: false,
+          keyId: null,
+          productTitle: "",
+          isLoading: false,
+          alreadyOwned: false,
+        });
 
-      // Trigger confetti
-      triggerConfetti();
+        // Open Steam registration page with the key
+        window.open(
+          `https://store.steampowered.com/account/registerkey?key=${revealedKey.steamKeyValue}`,
+          "_blank"
+        );
 
-      // Wait for 2 seconds before flipping back
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+        // Trigger confetti
+        triggerConfetti();
 
-      setFlippingStates((prev) => ({
-        ...prev,
-        [keyId]: {
-          isFlipping: false,
-          showKey: false,
-          revealedKeyValue: undefined,
-        },
-      }));
-    } catch {
-      // Reset flipping state on error
-      setFlippingStates((prev) => ({
-        ...prev,
-        [keyId]: {
-          isFlipping: false,
-          showKey: false,
-          revealedKeyValue: undefined,
-        },
-      }));
+        toast.success("Steam key redeemed! Redirecting to Steam...", {
+          icon: (
+            <motion.div
+              initial={{ rotate: -20 }}
+              animate={{ rotate: 20 }}
+              transition={{ duration: 0.3, repeat: 3, repeatType: "reverse" }}
+            >
+              <CheckCircle2 className="h-5 w-5 text-green-500" />
+            </motion.div>
+          ),
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      console.error("Error revealing key:", error);
+      setRedeemConfirmDialog((prev) => ({ ...prev, isLoading: false }));
+      toast.error("Failed to redeem the key. Please try again.");
     }
   };
 
-  const handleActivateOnSteam = (key: string) => {
-    // Steam activation URL
-    window.open(`steam://open/activateproduct?key=${key}`);
+  // Dialog state for exchange confirmation
+  const [exchangeDialog, setExchangeDialog] = useState<{
+    isOpen: boolean;
+    keyId: string | null;
+    isLoading: boolean;
+  }>({ isOpen: false, keyId: null, isLoading: false });
+
+  const handleSendToVault = (assignmentId: string) => {
+    setExchangeDialog({ isOpen: true, keyId: assignmentId, isLoading: false });
+  }
+
+  const handleExchangeConfirm = async () => {
+    if (!exchangeDialog.keyId) return;
+    setExchangeDialog((prev) => ({ ...prev, isLoading: true }));
+    try {
+      const exchangeApi = new ExchangeApi(apiClient);
+      const result = await exchangeApi.exchangeSteamKeyForCredits(
+        exchangeDialog.keyId
+      );
+      if (result.success === true || typeof result.credits === "number") {
+        toast.success(`Steam key exchanged for ${result.credits} credits!`);
+        // Invalidate queries to refresh the keys data
+        queryClient.invalidateQueries({ queryKey: ["steam-keys"] });
+        queryClient.invalidateQueries({ queryKey: ["steam-keys", "status-counts"] });
+      } else {
+        toast.error("Exchange failed. Please try again.");
+      }
+    } catch {
+      toast.error("Exchange failed. Please try again.");
+    } finally {
+      setExchangeDialog({ isOpen: false, keyId: null, isLoading: false });
+    }
   };
+
 
   const handleGiftKey = (key: SteamKeyAssignment) => {
     setSelectedGiftKey(key);
     setIsGiftModalOpen(true);
   };
 
-  const handleGiftSubmit = async (
-    assignmentId: string,
-    giftData: GiftKeyRequest
-  ) => {
-    await giftKeyMutation.mutateAsync({ assignmentId, giftData });
+  const handleGiftSubmit = async (giftData: GiftKeyRequest) => {
+    await giftKeyMutation.mutateAsync(giftData);
+  };
+
+  const handleSyncWarningRefresh = () => {
+    // Close the warning dialog
+    setSteamSyncWarningDialog({
+      isOpen: false,
+      keyId: null,
+      productTitle: "",
+    });
+
+    // Trigger Steam library refresh
+    handleRefreshSteamLibrary();
+  };
+
+  const handleSyncWarningProceed = () => {
+    const keyId = steamSyncWarningDialog.keyId;
+    const productTitle = steamSyncWarningDialog.productTitle;
+
+    // Close the warning dialog
+    setSteamSyncWarningDialog({
+      isOpen: false,
+      keyId: null,
+      productTitle: "",
+    });
+
+    // Proceed with normal redeem flow
+    if (keyId && productTitle) {
+      // Find the key to check if already owned
+      const key = steamKeys.find(k => k.id === keyId);
+      const alreadyOwned = key?.alreadyOwnedOnSteam || false;
+
+      setRedeemConfirmDialog({
+        isOpen: true,
+        keyId,
+        productTitle,
+        isLoading: false,
+        alreadyOwned,
+      });
+    }
+  };
+
+  const handleRefreshSteamLibrary = () => {
+    console.log("Button clicked, mutation state:", {
+      isPending: syncSteamLibraryMutation?.isPending,
+      isIdle: syncSteamLibraryMutation?.isIdle
+    });
+
+    // Clear any previous error message
+    setSyncErrorMessage(null);
+
+    syncSteamLibraryMutation?.mutate(undefined, {
+      onSuccess: (result) => {
+        console.log("Mutation success:", result);
+        if (result.steamLibrarySyncStatus === "SyncSucceeded" && result.lastSyncedAt) {
+          setLastSyncTime(result.lastSyncedAt);
+          setSyncErrorMessage(null);
+        } else if (result.steamLibrarySyncStatus === "SyncFailed") {
+          setSyncErrorMessage("profile-private");
+        } else if (result.steamLibrarySyncStatus === "SyncError") {
+          setSyncErrorMessage("Technical error occurred while syncing. Please try again later.");
+        }
+      },
+      onError: (error) => {
+        console.error("Mutation error:", error);
+        setSyncErrorMessage("Failed to connect to Steam. Please try again later.");
+      }
+    });
+  };
+
+  // Format sync time for display
+  const formatSyncTime = (dateString: string) => {
+    return dayjs(dateString).format("M/D h:mma") + " CT";
+  };
+
+  // Get button text based on state
+  const getButtonText = () => {
+    console.log("Button state check:", {
+      isPending: syncSteamLibraryMutation?.isPending,
+      isError: syncSteamLibraryMutation?.isError,
+      isSuccess: syncSteamLibraryMutation?.isSuccess,
+      lastSyncTime,
+      syncErrorMessage,
+      steamLibraryStatus: steamLibraryStatus?.steamLibrarySyncStatus
+    });
+
+    if (syncSteamLibraryMutation?.isPending) {
+      return (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Refreshing...
+        </>
+      );
+    }
+
+    // Show error state if there's a sync error message
+    if (syncErrorMessage) {
+      const syncTime = lastSyncTime || steamLibraryStatus?.lastSyncedAt;
+      return (
+        <>
+          <X className="h-4 w-4" />
+          Steam Library Sync Failed {syncTime && formatSyncTime(syncTime)}
+        </>
+      );
+    }
+
+    if (syncSteamLibraryMutation?.isError) {
+      return (
+        <>
+          <X className="h-4 w-4" />
+          Refresh failed - Try Again
+        </>
+      );
+    }
+
+    // Show success state if mutation was successful OR if we have successful sync status from API
+    if ((lastSyncTime && syncSteamLibraryMutation?.isSuccess && !syncErrorMessage) ||
+        (steamLibraryStatus?.steamLibrarySyncStatus === "SyncSucceeded" && steamLibraryStatus?.lastSyncedAt)) {
+      const syncTime = lastSyncTime || steamLibraryStatus?.lastSyncedAt;
+      return (
+        <>
+          <Check className="h-4 w-4" />
+          Steam Library Refreshed {syncTime && formatSyncTime(syncTime)}
+        </>
+      );
+    }
+
+    return (
+      <>
+        <RefreshCw className="h-4 w-4" />
+        Refresh Steam Library
+      </>
+    );
   };
 
   return (
@@ -387,14 +680,70 @@ export default function KeysPage() {
 
       <Card className="bg-linear-to-br from-card to-card/95 dark:from-[#1a1d2e] dark:to-[#1a1d2e]/95 shadow-md">
         <CardHeader>
-          <CardTitle>
-            Available Keys
+          <div className="flex items-center justify-between">
+            <CardTitle>
+              Available Keys
+              {steamKeys.length > 0 && (
+                <span className="text-sm text-muted-foreground">
+                  &nbsp; ({steamKeys.length} found)
+                </span>
+              )}
+            </CardTitle>
             {steamKeys.length > 0 && (
-              <span className="text-sm text-muted-foreground">
-                &nbsp; ({steamKeys.length} found)
-              </span>
+              <button
+                onClick={handleRefreshSteamLibrary}
+                disabled={syncSteamLibraryMutation?.isPending}
+                className={`flex items-center gap-2 px-3 py-2 text-sm border rounded-md transition-colors ${
+                  syncSteamLibraryMutation?.isPending
+                    ? "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed"
+                    : syncErrorMessage
+                    ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
+                    : syncSteamLibraryMutation?.isError
+                    ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
+                    : (lastSyncTime && syncSteamLibraryMutation?.isSuccess && !syncErrorMessage) ||
+                      (steamLibraryStatus?.steamLibrarySyncStatus === "SyncSucceeded" && steamLibraryStatus?.lastSyncedAt)
+                    ? "border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
+                    : "border-gray-300 hover:bg-gray-100"
+                }`}
+              >
+                {getButtonText()}
+              </button>
             )}
-          </CardTitle>
+          </div>
+          {/* Sync Error Message */}
+          {syncErrorMessage && (
+            <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 flex-shrink-0" />
+                <p className="text-sm text-red-700 dark:text-red-300">
+                  {syncErrorMessage === "profile-private" ? (
+                    <>
+                      Your Steam profile is not public. Unable to sync your Steam library.{" "}
+                      <button
+                        onClick={() => setShowSteamPrivacyHelp(true)}
+                        className="text-red-800 dark:text-red-200 underline hover:no-underline font-medium"
+                      >
+                        Learn more
+                      </button>
+                    </>
+                  ) : (
+                    syncErrorMessage
+                  )}
+                </p>
+              </div>
+            </div>
+          )}
+          {/* Never Synced Message */}
+          {steamKeys.length > 0 && steamLibraryStatus?.steamLibrarySyncStatus === "NeverSynced" && !syncErrorMessage && (
+            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  Sync your Steam library to unlock exchange options for games you already own
+                </p>
+              </div>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -511,87 +860,61 @@ export default function KeysPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   whileHover={{ scale: 1.01 }}
-                  className={`relative flex flex-col gap-4 rounded-lg border bg-card/30 p-4 sm:flex-row sm:items-center sm:justify-between transition-all duration-200 hover:bg-card/50 hover:shadow-lg dark:hover:bg-[#1d2233]/60 dark:hover:shadow-blue-500/5 ${
-                    flippingStates[key.id]?.isFlipping
-                      ? "animate-flip-reveal"
-                      : ""
-                  }`}
+                  className="relative flex flex-col gap-4 rounded-lg border bg-card/30 p-4 sm:flex-row sm:items-center sm:justify-between transition-all duration-200 hover:bg-card/50 hover:shadow-lg dark:hover:bg-[#1d2233]/60 dark:hover:shadow-blue-500/5"
                 >
-                  <AnimatePresence>
-                    {flippingStates[key.id]?.isFlipping && (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className={`absolute inset-0 flex items-center justify-center rounded-lg ${
-                          flippingStates[key.id]?.showKey
-                            ? "bg-primary/20"
-                            : "bg-primary/10"
-                        } backdrop-blur-xs flip-content`}
-                      >
-                        {flippingStates[key.id]?.showKey ? (
-                          <div className="flex flex-col items-center gap-4">
-                            <div className="text-2xl font-bold text-primary">
-                              {flippingStates[key.id]?.revealedKeyValue ||
-                                "XXXX-YYYY-ZZZZ"}
-                            </div>
-                            <div className="text-sm text-primary/80">
-                              Your new game key!
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2 text-lg font-semibold text-primary">
-                            <KeyIcon className="h-6 w-6 animate-bounce" />
-                            <motion.span
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              transition={{ delay: 0.2 }}
-                            >
-                              Revealing your key...
-                            </motion.span>
-                          </div>
-                        )}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold">{key.productTitle}</h3>
-                      {isNewlyAssigned(key) && (
-                        <Badge
-                          variant="outline"
-                          className="animate-subtle-pulse bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800"
-                        >
-                          <SparklesIcon className="h-3 w-3 mr-1" />
-                          New
-                        </Badge>
-                      )}
-                      {key.isGift && (
-                        <SteamKeyGiftIndicator
-                          steamKey={key}
-                          currentCustomerId={currentCustomerId}
-                          currentUserEmail={currentUserEmail || undefined}
-                          onGiftAccepted={() => {
-                            window.location.reload();
-                          }}
+                  <div className="flex gap-4 flex-1">
+                    {/* Product Cover Image - 2:3 aspect ratio */}
+                    <div className="flex-shrink-0">
+                      <div className="h-20 aspect-[2/3]">
+                        <img
+                          src={
+                            key.productCoverImage?.url ||
+                            "https://static.digiphile.co/product-placeholder-image.jpg"
+                          }
+                          alt={key.productTitle || "Product"}
+                          className="w-full h-full object-cover rounded-lg shadow-md"
                         />
-                      )}
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">
-                        Assigned on{" "}
-                        {key.assignedAt
-                          ? new Date(key.assignedAt).toLocaleDateString()
-                          : "Unknown"}
-                        {key.status === "Assigned" && key.expiresAt && (
-                          <>
-                            {" "}
-                            • Expires on{" "}
-                            {new Date(key.expiresAt).toLocaleDateString()}
-                          </>
+
+                    <div className="space-y-2 flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold">{key.productTitle}</h3>
+                        {isNewlyAssigned(key) && (
+                          <Badge
+                            variant="outline"
+                            className="animate-subtle-pulse bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800"
+                          >
+                            <SparklesIcon className="h-3 w-3 mr-1" />
+                            New
+                          </Badge>
                         )}
-                      </p>
+                        {key.isGift && (
+                          <SteamKeyGiftIndicator
+                            steamKey={key}
+                            currentCustomerId={currentCustomerId}
+                            currentUserEmail={currentUserEmail || undefined}
+                            onGiftAccepted={() => {
+                              window.location.reload();
+                            }}
+                          />
+                        )}
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">
+                          Assigned on{" "}
+                          {key.assignedAt
+                            ? new Date(key.assignedAt).toLocaleDateString()
+                            : "Unknown"}
+                          {key.status === "Assigned" && key.expiresAt && (
+                            <>
+                              {" "}
+                              • Expires on{" "}
+                              {new Date(key.expiresAt).toLocaleDateString()}
+                            </>
+                          )}
+                        </p>
+                      </div>
                     </div>
                   </div>
 
@@ -617,85 +940,146 @@ export default function KeysPage() {
                             </TooltipTrigger>
                             <TooltipContent>Copy key</TooltipContent>
                           </Tooltip>
-
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <motion.div whileTap={{ scale: 0.95 }}>
-                                <Button
-                                  size="icon"
-                                  className="h-8 w-8 transition-all duration-200 bg-linear-to-r from-primary to-primary/90"
-                                  onClick={() =>
-                                    handleActivateOnSteam(getKeyValue(key)!)
-                                  }
-                                >
-                                  <ExternalLinkIcon className="h-4 w-4" />
-                                </Button>
-                              </motion.div>
-                            </TooltipTrigger>
-                            <TooltipContent>Activate on Steam</TooltipContent>
-                          </Tooltip>
-
-                          {!key.isGift && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <motion.div whileTap={{ scale: 0.95 }}>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 transition-all duration-200"
-                                    onClick={() => handleGiftKey(key)}
-                                  >
-                                    <GiftIcon className="h-4 w-4" />
-                                  </Button>
-                                </motion.div>
-                              </TooltipTrigger>
-                              <TooltipContent>Gift this game</TooltipContent>
-                            </Tooltip>
-                          )}
                         </TooltipProvider>
                       </>
                     ) : key.status === "Assigned" ? (
                       <>
-                        {/* Only show Reveal Key button if:
+                        {/* Only show buttons if:
                             1. Key is not a gift, OR
                             2. Key is a received gift that has been accepted */}
                         {(!key.isGift ||
                           (key.isGift &&
                             key.customerId !== currentCustomerId &&
                             key.giftAccepted === true)) && (
-                          <motion.div
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            <Button
-                              className="cursor-pointer gap-2 bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60"
-                              onClick={() => handleRevealKey(key.id)}
+                          <>
+                            {/* Redeem on Steam button - disabled only if AlreadyOwnedOnSteam is true AND exchangeCredits > 0 */}
+                            <motion.div
+                              whileHover={{ scale: (key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0) ? 1 : 1.05 }}
+                              whileTap={{ scale: (key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0) ? 1 : 0.95 }}
                             >
-                              <KeyIcon className="h-4 w-4" />
-                              Reveal Key
-                            </Button>
-                          </motion.div>
+                              <Button
+                                className={`cursor-pointer gap-2 ${
+                                  (key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0)
+                                    ? 'opacity-50 cursor-not-allowed'
+                                    : 'bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60'
+                                }`}
+                                disabled={!!(key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0)}
+                                onClick={() =>
+                                  !(key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0) && handleRevealKey(key.id, key.productTitle)
+                                }
+                              >
+                                <ExternalLinkIcon className="h-4 w-4" />
+                                Redeem on Steam
+                              </Button>
+                            </motion.div>
+                          </>
                         )}
                         {!key.isGift && (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <motion.div whileTap={{ scale: 0.95 }}>
+                          <>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <motion.div whileTap={{ scale: 0.95 }}>
+                                    <Button
+                                      variant="outline"
+                                      className="gap-2"
+                                      onClick={() => handleGiftKey(key)}
+                                    >
+                                      <GiftIcon className="h-4 w-4" />
+                                      Gift
+                                    </Button>
+                                  </motion.div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  Gift this game to someone
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+
+                            <div className="flex items-center gap-2">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <motion.div whileTap={{ scale: key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0 ? 0.95 : 1 }}>
+                                      <Button
+                                        variant="outline"
+                                        className={`gap-2 ${
+                                          !(key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0)
+                                            ? 'opacity-50 cursor-not-allowed' 
+                                            : ''
+                                        }`}
+                                        disabled={!(key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0)}
+                                        onClick={() =>
+                                          key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0 && handleSendToVault(key.id)
+                                        }
+                                      >
+                                        <ArchiveIcon className="h-4 w-4" />
+                                        Add to Exchange
+                                      </Button>
+                                    </motion.div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    {key.alreadyOwnedOnSteam && key.exchangeCredits && key.exchangeCredits > 0
+                                      ? "Exchange this key for credits"
+                                      : !key.alreadyOwnedOnSteam
+                                      ? "This game is not in your Steam library yet"
+                                      : "No exchange credits available for this game"
+                                    }
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              {key.alreadyOwnedOnSteam && key.exchangeCredits != null && key.exchangeCredits > 0 && <ExchangeCreditsDisplay credits={key.exchangeCredits} />}
+                            </div>
+                            {/* Exchange Confirmation Dialog */}
+                            <Dialog
+                              open={exchangeDialog.isOpen}
+                              onOpenChange={(open) =>
+                                setExchangeDialog((prev) => ({
+                                  ...prev,
+                                  isOpen: open,
+                                }))
+                              }
+                            >
+                              <DialogContent className="sm:max-w-md bg-card">
+                                <DialogHeader>
+                                  <DialogTitle>Exchange Steam Key?</DialogTitle>
+                                  <DialogDescription>
+                                    Are you sure you want to exchange this Steam
+                                    key for credits? This action cannot be
+                                    undone.
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <DialogFooter>
                                   <Button
                                     variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8 transition-all duration-200"
-                                    onClick={() => handleGiftKey(key)}
+                                    onClick={() =>
+                                      setExchangeDialog({
+                                        isOpen: false,
+                                        keyId: null,
+                                        isLoading: false,
+                                      })
+                                    }
+                                    disabled={exchangeDialog.isLoading}
                                   >
-                                    <GiftIcon className="h-4 w-4" />
+                                    Cancel
                                   </Button>
-                                </motion.div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                Gift this game without revealing
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
+                                  <Button
+                                    onClick={handleExchangeConfirm}
+                                    disabled={exchangeDialog.isLoading}
+                                  >
+                                    {exchangeDialog.isLoading ? (
+                                      <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Processing...
+                                      </>
+                                    ) : (
+                                      "Continue"
+                                    )}
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+                          </>
                         )}
                       </>
                     ) : key.isGift && key.giftAccepted === null ? (
@@ -704,12 +1088,21 @@ export default function KeysPage() {
                         Awaiting acceptance
                       </Badge>
                     ) : (
-                      <Badge
-                        variant="outline"
-                        className="text-muted-foreground"
+                      <div
+                        className={`inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium pointer-events-none ${
+                          (key.status as string) === "AddedToExchange"
+                            ? "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400"
+                            : (key.status as string) === "ReceivedFromExchange"
+                            ? "bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400"
+                            : key.status === "Expired"
+                            ? "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400"
+                            : key.status === "Refunded"
+                            ? "bg-orange-50 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400"
+                            : "bg-gray-50 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400"
+                        }`}
                       >
-                        {key.status}
-                      </Badge>
+                        {getStatusDisplayName(key.status)}
+                      </div>
                     )}
                   </div>
                 </motion.div>
@@ -730,6 +1123,241 @@ export default function KeysPage() {
           onGift={handleGiftSubmit}
         />
       )}
+
+      {/* Redeem Confirmation Dialog */}
+      <Dialog
+        open={redeemConfirmDialog.isOpen}
+        onOpenChange={(open) => {
+          if (!redeemConfirmDialog.isLoading) {
+            setRedeemConfirmDialog((prev) => ({ ...prev, isOpen: open }));
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader className="space-y-4">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-md border bg-background shadow-sm">
+              <ShieldAlert className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <DialogTitle className="text-center text-xl font-semibold">
+              Important: Refund Policy Notice
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <Alert className="border-orange-200 bg-orange-50 dark:border-orange-900/50 dark:bg-orange-950/20">
+              <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+              <AlertDescription className="text-sm">
+                <strong>Please note:</strong> Once you redeem
+                this Steam key, the entire bundle containing this game
+                becomes <strong>non-refundable</strong>.
+              </AlertDescription>
+            </Alert>
+
+            {redeemConfirmDialog.alreadyOwned && (
+              <Alert className="border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/20">
+                <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                <AlertDescription className="text-sm">
+                  <strong>Already owned:</strong> You already own this game on Steam.
+                  Redeeming this key will result in a duplicate copy that you won&apos;t be able to use.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <p>You&apos;re about to redeem the Steam key for:</p>
+              <div className="rounded-lg border bg-muted/30 p-3">
+                <p className="font-medium text-foreground">
+                  {redeemConfirmDialog.productTitle}
+                </p>
+              </div>
+              <p className="text-xs">
+                By proceeding, you acknowledge that:
+              </p>
+              <ul className="space-y-1 text-xs list-disc list-inside">
+                <li>The Steam key will be permanently redeemed</li>
+                <li>The bundle containing this key cannot be refunded</li>
+                <li>This action cannot be undone</li>
+              </ul>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="ghost"
+              onClick={() =>
+                setRedeemConfirmDialog({
+                  isOpen: false,
+                  keyId: null,
+                  productTitle: "",
+                  isLoading: false,
+                  alreadyOwned: false,
+                })
+              }
+              disabled={redeemConfirmDialog.isLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-linear-to-r from-primary to-primary/90"
+              onClick={handleConfirmRedeem}
+              disabled={redeemConfirmDialog.isLoading}
+            >
+              {redeemConfirmDialog.isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Redeeming key...
+                </>
+              ) : (
+                <>
+                  <KeyIcon className="h-4 w-4 mr-2" />
+                  I Understand, Redeem Key
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Steam Sync Warning Dialog */}
+      <Dialog
+        open={steamSyncWarningDialog.isOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSteamSyncWarningDialog({
+              isOpen: false,
+              keyId: null,
+              productTitle: "",
+            });
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader className="space-y-4">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-md border bg-background shadow-sm">
+              <AlertTriangle className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <DialogTitle className="text-center text-xl font-semibold">
+              Steam Library Not Refreshed
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <Alert className="border-yellow-200 bg-yellow-50 dark:border-yellow-900/50 dark:bg-yellow-950/20">
+              <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+              <AlertDescription className="text-sm">
+                <strong>Please note:</strong> {!steamLibraryStatus?.lastSyncedAt
+                  ? "You have never synced your Steam library with our system"
+                  : "Your Steam library hasn't been refreshed recently (within the last week)"
+                }. We recommend refreshing it first to enable exchange options for already owned games.
+              </AlertDescription>
+            </Alert>
+
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <p>You&apos;re about to redeem a Steam key for:</p>
+              <div className="rounded-lg border bg-muted/30 p-3">
+                <p className="font-medium text-foreground">
+                  {steamSyncWarningDialog.productTitle}
+                </p>
+              </div>
+              <p className="text-xs">
+                {!steamLibraryStatus?.lastSyncedAt
+                  ? "Syncing your Steam library for the first time helps us:"
+                  : "Refreshing your Steam library helps us:"
+                }
+              </p>
+              <ul className="space-y-1 text-xs list-disc list-inside ml-2">
+                <li>Check if you already own this game</li>
+                <li>Provide better recommendations</li>
+                <li>Optimize your key assignments</li>
+                {!steamLibraryStatus?.lastSyncedAt && (
+                  <li>Enable exchange options for duplicate games</li>
+                )}
+              </ul>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={handleSyncWarningRefresh}
+              className="gap-2"
+              disabled={syncSteamLibraryMutation?.isPending}
+            >
+              {syncSteamLibraryMutation?.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Refreshing...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4" />
+                  Refresh Library
+                </>
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={handleSyncWarningProceed}
+            >
+              Proceed Anyway
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Steam Privacy Help Dialog */}
+      <Dialog
+        open={showSteamPrivacyHelp}
+        onOpenChange={setShowSteamPrivacyHelp}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader className="space-y-4">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-md border bg-background shadow-sm">
+              <ShieldAlert className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <DialogTitle className="text-center text-xl font-semibold">
+              How to Make Your Steam Profile Public
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-3 text-sm">
+              <p className="text-muted-foreground">
+                To sync your Steam library and enable exchange options, your Steam profile needs to be public. Follow these steps:
+              </p>
+
+              <ol className="space-y-2 list-decimal list-inside text-muted-foreground">
+                <li>Log in to Steam</li>
+                <li>Click on your username in the top menu</li>
+                <li>Select "Profile" from the dropdown</li>
+                <li>Click "Edit Profile"</li>
+                <li>Go to "Privacy Settings"</li>
+                <li>Set "My Profile" to <strong className="text-foreground">Public</strong></li>
+                <li>Set "Game Details" to <strong className="text-foreground">Public</strong></li>
+                <li>Save your changes</li>
+              </ol>           
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="ghost"
+              onClick={() => setShowSteamPrivacyHelp(false)}
+            >
+              Close
+            </Button>
+            <Button
+              className="bg-linear-to-r from-primary to-primary/90"
+              onClick={() => {
+                window.open("https://help.steampowered.com/en/faqs/view/588C-C67D-0251-C276", "_blank");
+              }}
+            >
+              <ExternalLinkIcon className="h-4 w-4 mr-2" />
+              Steam Privacy Guide
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

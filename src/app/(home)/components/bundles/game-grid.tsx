@@ -71,7 +71,7 @@ export function GameGrid({
                 quality={80}
                 width={500}
                 height={500}
-                src={product.headerImage}
+                src={product.coverImage?.url || "/placeholder.jpg"}
                 alt={product.title}
                 className="h-auto w-full transition-all duration-300 group-hover:scale-105 group-hover:brightness-[1.02] saturate-[1.02] group-hover:saturate-[1.05]"
               />

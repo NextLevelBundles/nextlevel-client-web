@@ -65,21 +65,26 @@ export function CartItemDetails({ item }: CartItemDetailsProps) {
                 <><Gamepad2 className="h-3 w-3 mr-1" /> Game Bundle</>
               )}
             </Badge>
-            {item.isDonationTierSelected && (
+            {item.charityAmount && item.charityAmount > 0 && (
               <Badge variant="destructive" className="bg-rose-500">
                 Charity Tier
               </Badge>
             )}
+            {item.upsellAmount && item.upsellAmount > 0 && (
+              <Badge variant="secondary" className="bg-purple-500 text-white">
+                Developer Support
+              </Badge>
+            )}
             <span className="text-sm text-muted-foreground ml-auto">
-              ${(item.isDonationTierSelected && item.donationTierAmount ? item.donationTierAmount : item.price)?.toFixed(2)}
+              ${item.totalAmount?.toFixed(2)}
             </span>
           </div>
           
-          {item.isDonationTierSelected && item.donationTierAmount && item.snapshotTierPrice && (
+          {item.charityAmount && item.charityAmount > 0 && item.snapshotTierPrice && (
             <div className="p-3 bg-rose-50 dark:bg-rose-950/30 rounded-lg border border-rose-200 dark:border-rose-800">
               <p className="text-sm text-rose-700 dark:text-rose-300">
                 <Heart className="inline h-4 w-4 mr-1" />
-                Charity Tier: ${(item.donationTierAmount - item.snapshotTierPrice).toFixed(2)} extra goes directly to charity!
+                Charity Tier: ${item.charityAmount.toFixed(2)} goes directly to charity!
               </p>
             </div>
           )}
@@ -106,14 +111,14 @@ export function CartItemDetails({ item }: CartItemDetailsProps) {
                       <h5 className="font-medium text-sm">{product.title}</h5>
                       {product.bookInfo ? (
                         <div className="space-y-1 mt-1">
-                          {product.bookInfo.author && (
+                          {product.bookInfo.metadata?.author && (
                             <div className="text-xs text-muted-foreground">
-                              by {product.bookInfo.author}
+                              by {product.bookInfo.metadata.author}
                             </div>
                           )}
-                          {product.bookInfo.formats && product.bookInfo.formats.length > 0 && (
+                          {product.bookInfo.metadata?.availableFormats && product.bookInfo.metadata.availableFormats.length > 0 && (
                             <div className="flex gap-1">
-                              {product.bookInfo.formats.map((format) => (
+                              {product.bookInfo.metadata.availableFormats.map((format) => (
                                 <span key={format} className="inline-flex items-center gap-0.5 text-xs bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded">
                                   <FileText className="h-3 w-3" />
                                   {format}

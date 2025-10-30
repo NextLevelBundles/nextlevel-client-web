@@ -1,6 +1,7 @@
 import { ClientApi } from "../client-api";
 import { Customer, BillingAddress } from "../types/user";
 import { Country } from "../types/common";
+import { CustomerLocation } from "../types/location";
 
 export class UserApi {
   private client: ClientApi;
@@ -28,5 +29,21 @@ export class UserApi {
     return await this.client.get<boolean>(
       `/customer/check-handle?handle=${encodeURIComponent(handle)}`
     );
+  }
+
+  async getCustomerLocation(): Promise<CustomerLocation> {
+    return await this.client.get<CustomerLocation>("/customer/location");
+  }
+
+  async updateSteamDetails(steamId: string | null, steamCountry: string | null, steamUsername?: string | null): Promise<Customer> {
+    return await this.client.put<Customer, { steamId: string | null; steamCountry: string | null; steamUsername?: string | null }>("/customer/steam-details", {
+      steamId,
+      steamCountry,
+      steamUsername
+    });
+  }
+
+  async updateCountry(countryCode: string): Promise<Customer> {
+    return await this.client.put<Customer, { countryCode: string }>("/customer/country", { countryCode });
   }
 }

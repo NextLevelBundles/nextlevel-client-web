@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { Button } from "@/shared/components/ui/button";
-import { Progress } from "@/shared/components/ui/progress";
 import {
   Avatar,
   AvatarFallback,
@@ -18,26 +17,18 @@ import {
 } from "@/shared/components/ui/dropdown-menu";
 import {
   SettingsIcon,
-  TrophyIcon,
   MessageCircleIcon,
   SearchIcon,
 } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/shared/components/ui/tooltip";
 import SignOutButton from "@/app/(home)/components/SignOutButton";
 import { Input } from "@/app/(shared)/components/ui/input";
 import { ThemeToggle } from "@/app/(shared)/components/theme-toggle";
+import { UserCredits } from "@/app/(shared)/components/user-credits";
 
 interface TopNavProps {
   user?: { email?: string; name?: string } | null;
 }
 export function TopNav({ user }: TopNavProps) {
-  const xpProgress = 50; // Replace with actual XP progress
-
   return (
     <div className="sticky top-0 z-50 w-full border-b bg-white dark:bg-[#1a1d2e]/80 backdrop-blur-xs shadow-xs transition-all">
       <div className="flex h-14 md:h-16 items-center gap-4 px-4">
@@ -68,25 +59,10 @@ export function TopNav({ user }: TopNavProps) {
 
         {/* Right Section */}
         <div className="ml-auto flex items-center gap-2 md:gap-4">
-          {/* Badge Status */}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link href="/badges">
-                  <div className="hidden sm:flex items-center gap-2 rounded-md bg-gray-50 hover:bg-gray-100 dark:bg-[#202430] dark:hover:bg-[#273043] px-3 py-1.5 transition-colors cursor-pointer">
-                    <TrophyIcon className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-medium">Level 5</span>
-                    <div className="w-16">
-                      <Progress value={xpProgress} className="h-1" />
-                    </div>
-                  </div>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Game Enthusiast • 500/1000 XP</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          {/* User Credits */}
+          <div className="hidden sm:block">
+            <UserCredits variant="default" />
+          </div>
 
           <div className="h-6 w-px bg-border hidden sm:block" />
 
@@ -95,7 +71,7 @@ export function TopNav({ user }: TopNavProps) {
 
           {/* User Menu */}
 
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
@@ -140,7 +116,7 @@ export function TopNav({ user }: TopNavProps) {
                     </DropdownMenuItem> */}
               <DropdownMenuItem className="rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary">
                 <SettingsIcon className="mr-2 h-4 w-4" />
-                <Link href="settings" className="flex-1">
+                <Link href="/customer/settings" className="flex-1">
                   Settings
                 </Link>
               </DropdownMenuItem>
@@ -148,7 +124,7 @@ export function TopNav({ user }: TopNavProps) {
                 asChild
                 className="rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary"
               >
-                <Link href="support" className="flex items-center">
+                <Link href="/customer/support" className="flex items-center">
                   <MessageCircleIcon className="mr-2 h-4 w-4" />
                   <span className="flex-1">Support</span>
                 </Link>

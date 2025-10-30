@@ -3,21 +3,19 @@
 import { useRef, useState, useEffect } from "react";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
-import { Timer, Users, ArrowRight, BookOpen, Gamepad2 } from "lucide-react";
-import Image from "next/image";
+import { Timer, ArrowRight, BookOpen, Gamepad2 } from "lucide-react";
 import Link from "next/link";
 import { BundleListItem, BundleType } from "@/app/(shared)/types/bundle";
 import { useCountdownTimer } from "@/app/(shared)/hooks/useCountdownTimer";
+import { BundleImageDeck } from "./bundle-image-deck";
 
 interface BundleCardProps {
   bundle: BundleListItem;
   index: number;
 }
 
-const neonClasses = ["neon-card-blue", "neon-card-purple", "neon-card-orange"];
-
 export function BundleCard({ bundle, index }: BundleCardProps) {
-  const timeLeft = useCountdownTimer(bundle.endsAt);
+  const { timeLeft } = useCountdownTimer(bundle.endsAt);
 
   const cardRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -47,51 +45,34 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
         tabIndex={0}
         role="article"
         aria-label={`${bundle.title} bundle`}
-        className={`group relative h-full overflow-hidden rounded-2xl bg-white/80 dark:bg-card/70 backdrop-blur-xs transition-all duration-300 hover:translate-y-[-4px] hover:shadow-[0_8px_30px_rgba(57,130,245,0.2)] dark:hover:shadow-[0_8px_30px_rgba(57,130,245,0.3)] border border-white/20 dark:border-border hover:border-primary/50 cursor-pointer ring-1 ring-black/5 dark:ring-white/20 before:absolute before:inset-[1px] before:rounded-2xl before:border before:border-black/[0.03] dark:before:border-white/[0.03] before:pointer-events-none ${neonClasses[neonClasses.length % index]} ${
+        className={`group relative h-full overflow-visible rounded-3xl bg-white/80 dark:bg-card/70 backdrop-blur-xs transition-all duration-300 hover:translate-y-[-4px] hover:shadow-[0_8px_30px_rgba(57,130,245,0.2)] dark:hover:shadow-[0_8px_30px_rgba(57,130,245,0.3)] border border-white/20 dark:border-border hover:border-primary/50 cursor-pointer ring-1 ring-black/5 dark:ring-white/20 before:absolute before:inset-[1px] before:rounded-3xl before:border before:border-black/[0.03] dark:before:border-white/[0.03] before:pointer-events-none ${
           isVisible ? "animate-fade-up opacity-100" : "opacity-0"
         }`}
         style={{ animationDelay: isVisible ? `${index * 150}ms` : "0ms" }}
       >
         <Card className="border-0 bg-transparent h-full">
           <div className="relative">
-            <div className="relative aspect-4/3 overflow-hidden">
-              <Image
-                fill={true}
-                sizes="550px"
-                quality={80}
-                src={bundle.imageMedia.url}
-                alt={bundle.title}
-                className="h-full w-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-110 dark:group-hover:brightness-125 will-change-transform saturate-[1.02] group-hover:saturate-[1.1]"
+            <div className="relative aspect-4/3 rounded-2xl overflow-visible">
+              <BundleImageDeck
+                images={bundle.imageMedia}
+                title={bundle.title}
+                containerClassName="rounded-2xl"
+                className="transition-all duration-300"
               />
-              <div className="absolute inset-0 dark:from-background/95 dark:via-background/50 dark:to-transparent transition-opacity group-hover:opacity-75" />
             </div>
-            {/* Bundle Type Badge - More prominent */}
-            <div className="absolute left-3 top-3 z-10">
-              <div
-                className={`text-xs font-bold rounded-lg px-3 py-1.5 backdrop-blur-md transition-all group-hover:scale-105 flex items-center gap-1.5 shadow-lg ${
-                  bundle.bundleType === BundleType.Ebook
-                    ? "bg-gradient-to-r from-amber-500/90 to-orange-500/90 text-white ring-2 ring-amber-400/50"
-                    : "bg-gradient-to-r from-blue-500/90 to-indigo-500/90 text-white ring-2 ring-blue-400/50"
-                }`}
-              >
-                {bundle.bundleType === BundleType.Ebook ? (
-                  <><BookOpen className="h-4 w-4" /> Book Bundle</>
-                ) : (
-                  <><Gamepad2 className="h-4 w-4" /> Game Bundle</>
-                )}
-              </div>
-            </div>
-            
-            {/* Status badges moved to right */}
-            <div className="absolute right-3 top-3 flex gap-2">
-              {(bundle.isFeatured || bundle.isEarlyAccess || bundle.isLimitedKeys) && (
+
+            {/* Status badges on image */}
+            <div className="absolute right-3 top-3 flex gap-2 z-10">
+              {(bundle.isFeatured ||
+                bundle.isEarlyAccess ||
+                bundle.isLimitedKeys) && (
                 <div
-                  className={`text-xs font-semibold rounded-full px-2 py-0.5 backdrop-blur-xs transition-transform group-hover:scale-105 ${
+                  className={`text-xs font-semibold rounded-full px-3 py-1 backdrop-blur-md transition-transform group-hover:scale-105 ${
                     bundle.isFeatured
-                      ? "bg-green-500/20 text-green-500 ring-1 ring-green-500/50 group-hover:bg-green-500/30"
+                      ? "bg-green-500/80 text-white shadow-lg shadow-green-500/20"
                       : bundle.isEarlyAccess
-                        ? "bg-purple-500/20 text-purple-500 ring-1 ring-purple-500/50 group-hover:bg-purple-500/30"
-                        : "bg-red-500/20 text-red-500 ring-1 ring-red-500/50 group-hover:bg-red-500/30"
+                        ? "bg-purple-500/80 text-white shadow-lg shadow-purple-500/20"
+                        : "bg-red-500/80 text-white shadow-lg shadow-red-500/20"
                   }`}
                 >
                   {bundle.isFeatured && "Featured"}
@@ -102,32 +83,39 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
             </div>
           </div>
 
-          {/* Color-coded border accent */}
-          <div className={`absolute inset-x-0 top-0 h-1 ${
-            bundle.bundleType === BundleType.Ebook
-              ? "bg-gradient-to-r from-amber-400 to-orange-400"
-              : "bg-gradient-to-r from-blue-400 to-indigo-400"
-          }`} />
-          
-          <div className="flex flex-1 flex-col p-7">
-            <h3 className="font-rajdhani mb-2 text-xl font-bold text-[#1c1c1e] dark:text-foreground transition-colors group-hover:text-primary">
+          <div className="flex flex-1 flex-col p-6">
+            {/* Bundle Type Badge */}
+            <div className="mb-3">
+              <div
+                className={`inline-flex items-center gap-2 text-xs font-bold rounded-full px-3 py-1.5 transition-all group-hover:scale-105 ${
+                  (bundle as any).type === "EBook" ||
+                  bundle.type === BundleType.EBook
+                    ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-500/20"
+                    : "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md shadow-blue-500/20"
+                }`}
+              >
+                {(bundle as any).type === "EBook" ||
+                bundle.type === BundleType.EBook ? (
+                  <>
+                    <BookOpen className="h-3.5 w-3.5" />
+                    <span>Book Bundle</span>
+                  </>
+                ) : (
+                  <>
+                    <Gamepad2 className="h-3.5 w-3.5" />
+                    <span>Game Bundle</span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <h3 className="font-rajdhani mb-3 text-xl font-bold text-[#1c1c1e] dark:text-foreground transition-colors group-hover:text-primary">
               {bundle.title}
             </h3>
 
-            <div className="mb-4 grid grid-cols-2 gap-6">
-              <div className="flex items-center gap-2 text-sm text-[#64748b] dark:text-muted-foreground group-hover:text-[#4b5563] dark:group-hover:text-muted-foreground/80 transition-colors">
-                <Timer className="h-4 w-4" />
-                <span>{timeLeft}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-[#64748b] dark:text-muted-foreground group-hover:text-[#4b5563] dark:group-hover:text-muted-foreground/80 transition-colors">
-                {bundle.bundleType === BundleType.Ebook ? (
-                  <><BookOpen className="h-4 w-4" />
-                  <span>Book Bundle</span></>
-                ) : (
-                  <><Gamepad2 className="h-4 w-4" />
-                  <span>Game Bundle</span></>
-                )}
-              </div>
+            <div className="mb-4 flex items-center gap-2 text-sm text-[#64748b] dark:text-muted-foreground group-hover:text-[#4b5563] dark:group-hover:text-muted-foreground/80 transition-colors">
+              <Timer className="h-4 w-4" />
+              <span>{timeLeft}</span>
             </div>
 
             <div className="mt-auto flex items-end justify-between">
@@ -155,7 +143,6 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
               </Button>
             </div>
           </div>
-          <div className="absolute inset-x-0 bottom-0 h-1 bg-linear-to-r from-primary/50 via-secondary/50 to-primary/50 opacity-0 transition-all duration-300 group-hover:opacity-100" />
         </Card>
       </div>
     </Link>

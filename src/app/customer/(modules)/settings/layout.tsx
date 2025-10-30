@@ -9,6 +9,7 @@ import {
   BellIcon,
   ShieldIcon,
   CreditCardIcon,
+  Gamepad2,
 } from "lucide-react";
 
 export default function SettingsLayout({
@@ -22,6 +23,7 @@ export default function SettingsLayout({
     if (pathname.includes("/notifications")) return "notifications";
     if (pathname.includes("/security")) return "security";
     if (pathname.includes("/billing")) return "billing";
+    if (pathname.includes("/steam")) return "steam";
     return "general";
   };
 
@@ -45,7 +47,7 @@ export default function SettingsLayout({
                 </div>
               </TabsTrigger>
             </Link>
-            <Link href="/customer/settings/billing" className="flex">
+            {/* <Link href="/customer/settings/billing" className="flex">
               <TabsTrigger
                 value="billing"
                 className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
@@ -75,6 +77,17 @@ export default function SettingsLayout({
                 <div className="flex items-center gap-2">
                   <ShieldIcon className="h-4 w-4" />
                   Security & Support
+                </div>
+              </TabsTrigger>
+            </Link> */}
+            <Link href="/customer/settings/steam" className="flex">
+              <TabsTrigger
+                value="steam"
+                className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+              >
+                <div className="flex items-center gap-2">
+                  <Gamepad2 className="h-4 w-4" />
+                  Steam Account
                 </div>
               </TabsTrigger>
             </Link>

@@ -3,31 +3,28 @@
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { TowerControl as GameController } from "lucide-react";
-import Image from "next/image";
 import { TimerCountdown } from "./timer-countdown";
-import { Bundle } from "@/app/(shared)/types/bundle";
 import Link from "next/link";
+import { HeroImage } from "./hero-image";
+import { serverApiClient } from "@/lib/server-api";
 
 export async function HeroSection() {
-  const response = await fetch(
-    `${process.env.API_URL}/customer/bundles/featured`
-  );
-
-  const text = await response.text();
-
-  if (!text) return null;
-
-  let bundle: Bundle | null = null;
+  let bundle = null;
+  
   try {
-    bundle = JSON.parse(text);
+    bundle = await serverApiClient.getFeaturedBundle();
   } catch (error) {
-    console.error("Failed to parse JSON:", error);
+    console.error("Error fetching featured bundle:", error);
+    // Return null to gracefully handle the error
+    return null;
+  }
+
+  if (!bundle) {
+    console.log("No featured bundle available");
     return null;
   }
 
   console.log("Hero Section Response:", bundle);
-
-  if (!bundle) return null;
 
   return (
     <section className="relative overflow-hidden py-20 lg:py-32 bg-linear-to-b from-background via-background/95 to-background">
@@ -91,14 +88,7 @@ export async function HeroSection() {
             <div className="absolute inset-0 rounded-2xl bg-[linear-gradient(135deg,rgba(57,130,245,0.2),rgba(249,113,20,0.2))] animate-pulse-slow" />
             <Card className="group relative overflow-hidden rounded-xl border border-white/20 dark:border-border bg-white/80 dark:bg-card/50 p-2 backdrop-blur-xs lg:mt-0 animate-float shadow-xl dark:shadow-2xl hover:shadow-2xl hover:shadow-primary/20 dark:hover:shadow-primary/30 transition-all duration-300 before:absolute before:inset-[1px] before:rounded-xl before:border before:border-black/[0.03] dark:before:border-white/[0.03] before:pointer-events-none sm:bg-white/70 md:bg-white/75 lg:bg-white/80">
               <div className="relative aspect-16/9 overflow-hidden rounded-lg">
-                <Image
-                  fill={true}
-                  sizes="100vw"
-                  quality={80}
-                  src={bundle.imageMedia?.url || ""}
-                  alt={bundle.title}
-                  className="h-full w-full object-cover transition-all duration-700 group-hover:scale-105 group-hover:brightness-110 group-hover:saturate-[1.1]"
-                />
+                <HeroImage images={bundle.imageMedia} title={bundle.title} />
               </div>
               <div className="hidden dark:block absolute inset-0 rounded-lg bg-linear-to-t from-background/80 via-background/20 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 h-px bg-linear-to-r from-transparent via-primary/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />

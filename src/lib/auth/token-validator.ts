@@ -20,7 +20,9 @@ let jwksClient: ReturnType<typeof createRemoteJWKSet> | null = null;
  */
 function getJWKSClient() {
   if (!jwksClient) {
-    const issuer = process.env.AUTH_COGNITO_ISSUER || process.env.NEXT_PUBLIC_AUTH_COGNITO_ISSUER;
+    const issuer =
+      process.env.AUTH_COGNITO_ISSUER ||
+      process.env.NEXT_PUBLIC_AUTH_COGNITO_ISSUER;
     if (!issuer) {
       throw new Error("Cognito issuer not configured");
     }
@@ -37,11 +39,16 @@ function getJWKSClient() {
 export async function verifyToken(token: string): Promise<DecodedToken | null> {
   try {
     const jwks = getJWKSClient();
-    const issuer = process.env.AUTH_COGNITO_ISSUER || process.env.NEXT_PUBLIC_AUTH_COGNITO_ISSUER;
-    const audience = process.env.AUTH_COGNITO_ID || process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID;
+    const issuer =
+      process.env.AUTH_COGNITO_ISSUER ||
+      process.env.NEXT_PUBLIC_AUTH_COGNITO_ISSUER;
+    const audience =
+      process.env.AUTH_COGNITO_ID || process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID;
 
     if (!issuer || !audience) {
-      console.error("Missing required environment variables for token validation");
+      console.error(
+        "Missing required environment variables for token validation"
+      );
       return null;
     }
 
@@ -82,7 +89,10 @@ export function isTokenExpired(token: DecodedToken): boolean {
 /**
  * Check if a token will expire soon (within specified seconds)
  */
-export function isTokenExpiringSoon(token: DecodedToken, bufferSeconds: number = 120): boolean {
+export function isTokenExpiringSoon(
+  token: DecodedToken,
+  bufferSeconds: number = 120
+): boolean {
   if (!token.exp) return true;
   const now = Math.floor(Date.now() / 1000);
   return token.exp - now < bufferSeconds;

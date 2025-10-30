@@ -50,7 +50,7 @@ export async function CurrentBundles() {
                     className="flex h-full flex-col"
                   >
                     <div className="relative">
-                      <div className="relatvie aspect-4/3 overflow-hidden">
+                      <div className="relative aspect-4/3 overflow-hidden rounded-t-2xl">
                         <Image
                           sizes="500px"
                           quality={80}

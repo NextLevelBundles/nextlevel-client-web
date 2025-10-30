@@ -48,7 +48,7 @@ interface GiftKeyModalProps {
   steamKey: SteamKeyAssignment;
   isOpen: boolean;
   onClose: () => void;
-  onGift: (assignmentId: string, giftData: GiftKeyRequest) => Promise<void>;
+  onGift: (giftData: GiftKeyRequest) => Promise<void>;
 }
 
 export function GiftKeyModal({
@@ -77,10 +77,11 @@ export function GiftKeyModal({
 
     setIsSubmitting(true);
     try {
-      await onGift(steamKey.id, {
-        recipientEmail: values.recipientEmail,
-        recipientName: values.recipientName,
-        message: values.message,
+      await onGift({
+        steamKeyAssignmentId: steamKey.id,
+        giftRecipientEmail: values.recipientEmail,
+        giftRecipientName: values.recipientName,
+        giftMessage: values.message,
       });
       form.reset();
       setShowConfirmation(false);
@@ -226,9 +227,9 @@ export function GiftKeyModal({
             <Alert>
               <Gift className="h-4 w-4" />
               <AlertDescription>
-                <strong>Please confirm:</strong> Once you send this gift, the
-                Steam key will be transferred to the recipient and you will no
-                longer have access to it.
+                <strong>Please confirm:</strong> Once you send this gift, the recipient
+                has 7 days to accept it. If the gift is not accepted within this time,
+                the Steam key will be returned to you automatically.
               </AlertDescription>
             </Alert>
 

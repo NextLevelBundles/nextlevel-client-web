@@ -31,9 +31,6 @@ export function CharityHighlight({
             Supporting Charities
           </h2>
         </div>
-        <div className="text-lg font-semibold text-primary">
-          ${charityAmount.toFixed(2)}
-        </div>
       </div>
 
       <div className="flex flex-wrap gap-6">

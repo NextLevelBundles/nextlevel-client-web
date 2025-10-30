@@ -1,12 +1,18 @@
 export interface CartItem {
   id: string;
+  type: "Listing";
+  createdAt?: string;
+  completedAt?: string | null;
+  cartId?: string;
   customerId: string;
-  type: "Listing" | "Bundle";
   listingId?: string;
   bundleId?: string;
-  bundleTierId?: string;
   quantity: number;
-  price: number;
+  baseAmount: number;
+  charityAmount: number;
+  tipAmount: number;
+  upsellAmount: number;
+  totalAmount: number;
   snapshotTitle?: string;
   snapshotImageUrl?: string;
   snapshotPlatform?: string;
@@ -18,35 +24,34 @@ export interface CartItem {
     coverImageUrl: string;
     steamGameInfo?: {
       steamAppId?: number;
-      packageId: string;
-      steamKeyId: string;
+      packageId?: string;
+      steamKeyId?: string;
     };
     bookInfo?: {
       bookId: string;
-      author?: string;
-      formats?: string[];
+      metadata?: {
+        isbn?: string;
+        isbN13?: string;
+        author?: string;
+        additionalAuthors?: string[];
+        publisher?: string;
+        pageCount?: number;
+        language?: string;
+        publicationDate?: string;
+        edition?: string;
+        genre?: string;
+        tags?: string[];
+        description?: string;
+        availableFormats?: string[];
+      };
     };
   }[];
-  // Gift functionality fields
+  addedAt?: string;
   isGift?: boolean;
   giftRecipientEmail?: string;
   giftRecipientName?: string;
   giftMessage?: string;
   canOnlyBeGifted?: boolean;
-
-  // Donation tier fields
-  isDonationTierSelected?: boolean;
-  donationTierAmount?: number;
-
-  // Transaction timestamps
-  createdAt?: string;
-  completedAt?: string | null;
-
-  // Incoming gift fields (when current user received this as a gift)
-  giftedByCustomerName?: string;
-  giftedAt?: string;
-
-  // Gift acceptance tracking
   giftAccepted?: boolean | null;
   giftAcceptedAt?: string | null;
 }
@@ -62,11 +67,14 @@ export interface Cart {
 
 export interface AddToCartRequest {
   bundleId: string;
-  tierId: string;
-  price: number;
-  isDonationTier?: boolean;
-  donationAmount?: number;
+  baseTierId: string;
+  charityTierId?: string;
+  tipAmount?: number;
+  upsellTierIds?: string[];
+  isGift?: boolean;
   giftRecipientEmail?: string;
+  giftRecipientName?: string;
+  giftMessage?: string;
 }
 
 export interface UpdateGiftRequest {

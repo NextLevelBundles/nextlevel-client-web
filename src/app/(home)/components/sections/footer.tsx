@@ -3,6 +3,7 @@
 import Logo from "@/app/(shared)/components/logo";
 import { Button } from "@/shared/components/ui/button";
 import { Twitter, Github, Disc as Discord, ArrowUp } from "lucide-react";
+import Link from "next/link";
 
 const footerLinks = {
   Company: [
@@ -64,9 +65,9 @@ export function Footer() {
 
         <div className="flex flex-col items-center justify-between gap-6 border-t border-[#e5e5e5]/50 dark:border-border/50 pt-8 sm:flex-row">
           <div className="flex items-center gap-2">
-            <div className="p-3">
+            <Link href="/" className="p-3">
               <Logo width={120} height={0} />
-            </div>
+            </Link>
           </div>
 
           <div className="flex items-center gap-4 text-sm text-[#4b5563] dark:text-muted-foreground">

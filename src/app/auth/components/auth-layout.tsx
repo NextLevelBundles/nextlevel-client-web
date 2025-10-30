@@ -3,12 +3,12 @@
 import { ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { 
-  ArrowLeft, 
-  Gamepad2, 
-  BookOpen, 
-  Film, 
-  Music, 
+import {
+  ArrowLeft,
+  Gamepad2,
+  BookOpen,
+  Film,
+  Music,
   Headphones,
   Monitor,
   Disc,
@@ -16,7 +16,7 @@ import {
   Palette,
   Trophy,
   Tv,
-  Smartphone
+  Smartphone,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { useTheme } from "next-themes";
@@ -37,7 +37,11 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
         {/* Logo in top-left corner */}
         <Link href="/" className="absolute top-8 left-8 z-20 cursor-pointer">
           <Image
-            src="/logo/digiphile-logo-rectangle-white.svg"
+            src={
+              theme === "dark"
+                ? "/logo/digiphile-wordmark-horizontal-dark.png"
+                : "/logo/digiphile-wordmark-horizontal-light.png"
+            }
             alt="Digiphile"
             width={180}
             height={60}
@@ -147,7 +151,6 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
             </div>
           </div>
         </div>
-
       </div>
 
       {/* Right Panel - Form */}
@@ -159,8 +162,8 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
               <Image
                 src={
                   theme === "dark"
-                    ? "/logo/digiphile-logo-rectangle-white.svg"
-                    : "/logo/digiphile-logo-rectangle-regular.svg"
+                    ? "/logo/digiphile-wordmark-horizontal-dark.png"
+                    : "/logo/digiphile-wordmark-horizontal-light.png"
                 }
                 alt="Digiphile"
                 width={180}

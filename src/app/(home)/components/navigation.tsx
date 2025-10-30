@@ -11,6 +11,7 @@ import SignInButton from "./SignInButton";
 import SignUpButton from "./SignUpButton";
 import { CartDrawer } from "./cart/cart-drawer";
 import Logo from "@/app/(shared)/components/logo";
+import { UserCredits } from "@/app/(shared)/components/user-credits";
 
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -36,9 +37,9 @@ export function Navigation() {
       <div className="container px-4">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-3">
+            <Link href="/" className="p-3">
               <Logo width={140} height={0} />
-            </div>
+            </Link>
           </div>
 
           <div className="hidden md:flex md:items-center md:gap-8">
@@ -54,6 +55,12 @@ export function Navigation() {
             >
               Bundles
             </Link>
+            <Link
+              href="/exchange"
+              className="text-sm font-medium hover:text-primary transition-colors"
+            >
+              Exchange
+            </Link>
             <a href="#" className="text-sm font-medium hover:text-primary">
               Blog
             </a>
@@ -63,6 +70,7 @@ export function Navigation() {
           </div>
 
           <div className="hidden md:flex md:items-center md:gap-2">
+            <UserCredits variant="compact" />
             <ThemeToggle />
             <CartDrawer />
             <UserProfile />
@@ -106,6 +114,12 @@ export function Navigation() {
                   className="text-sm font-medium text-foreground/90 hover:text-primary transition-colors"
                 >
                   Bundles
+                </Link>
+                <Link
+                  href="/exchange"
+                  className="text-sm font-medium text-foreground/90 hover:text-primary transition-colors"
+                >
+                  Exchange
                 </Link>
                 <a
                   href="#"

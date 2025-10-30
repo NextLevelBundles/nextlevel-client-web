@@ -7,17 +7,26 @@ dayjs.extend(duration);
 
 export function useCountdownTimer(endTime?: string) {
   const [timeLeft, setTimeLeft] = useState<string>("");
+  const [hasEnded, setHasEnded] = useState<boolean>(false);
 
   useEffect(() => {
     function updateCountdown() {
       if (!endTime) {
         setTimeLeft("00:00:00");
+        setHasEnded(false);
         return;
       }
 
       const future = dayjs(endTime);
       const now = dayjs();
       const diffMs = future.diff(now);
+
+      // Check if bundle has ended
+      if (diffMs <= 0) {
+        setTimeLeft("Ended");
+        setHasEnded(true);
+        return;
+      }
 
       const dur = dayjs.duration(diffMs);
       const days = dur.days();
@@ -31,6 +40,7 @@ export function useCountdownTimer(endTime?: string) {
           : `${hours}:${minutes}:${seconds}s`;
 
       setTimeLeft(formatted);
+      setHasEnded(false);
     }
 
     updateCountdown();
@@ -38,5 +48,5 @@ export function useCountdownTimer(endTime?: string) {
     return () => clearInterval(timer);
   }, [endTime]);
 
-  return timeLeft;
+  return { timeLeft, hasEnded };
 }

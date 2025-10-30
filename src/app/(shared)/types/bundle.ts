@@ -2,21 +2,27 @@ import MediaData from "./media";
 
 export enum BundleType {
   SteamGame = "SteamGame",
-  Ebook = "Ebook",
+  EBook = "EBook",
+}
+
+export enum BundleStatus {
+  Active = "Active",
+  Draft = "Draft",
+  Paused = "Paused",
 }
 
 // Partial bundle data for list views
 export interface BundleListItem {
   id: string;
   title: string;
-  imageMedia: MediaData;
+  imageMedia: MediaData[];
   description: string;
   minPrice: number;
   suggestedPrice: number;
   isEarlyAccess: boolean;
   isLimitedKeys: boolean;
   isFeatured: boolean;
-  bundleType: BundleType;
+  type: BundleType;
   startsAt: string; // ISO date string
   endsAt: string;
   status: string;
@@ -30,17 +36,31 @@ export interface Bundle extends BundleListItem {
   products: Product[];
   charities: BundleCharity[];
   publishers: BundlePublisher[];
+  curatorComment?: string;
+  excessDistributionType?: ExcessDistributionType;
+}
+
+export enum TierType {
+  Base = "Base",
+  Charity = "Charity",
+  Upsell = "Upsell",
+}
+
+export enum ExcessDistributionType {
+  Publishers = "Publishers",
+  Charity = "Charity",
 }
 
 export interface Tier {
   id: string;
+  name: string;
   price: number;
-  isDonationTier?: boolean;
+  type: TierType;
 }
 
 export enum ProductType {
   SteamGame = "SteamGame",
-  Ebook = "Ebook",
+  EBook = "EBook",
   Audio = "Audio",
 }
 
@@ -48,7 +68,6 @@ export interface Product {
   id: string;
   title: string;
   description: string;
-  headerImage: string;
   price: number;
   curatorComment: string;
   type: ProductType;
@@ -56,6 +75,7 @@ export interface Product {
   bundleId: string;
   listingId: string;
   bundleTierId?: string | null;
+  coverImage?: MediaData;
   steamGameMetadata: SteamGameMetadata | null;
   ebookMetadata: EBookMetadata | null;
   audioMetadata: Record<string, never> | null; // empty object
@@ -74,7 +94,6 @@ export interface EBookMetadata {
   genre?: string;
   tags?: string[];
   description?: string;
-  coverImage?: MediaData;
   availableFormats?: string[];
 }
 
