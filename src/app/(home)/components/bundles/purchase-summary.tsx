@@ -32,7 +32,6 @@ import { BundleBookFormatsResponse, BundleTierAvailabilityResponse } from "@/lib
 import { AddToCartButton } from "../cart/add-to-cart-button";
 import { useCustomerLocation } from "@/hooks/queries/useCustomerLocation";
 import { useCustomer } from "@/hooks/queries/useCustomer";
-import { useCountries } from "@/hooks/queries/useCountries";
 import {
   Tooltip,
   TooltipContent,
@@ -96,8 +95,8 @@ export function PurchaseSummary({
   // Fetch customer data to check Steam connection status (only if authenticated)
   const { data: customer } = useCustomer();
 
-  // Fetch countries list
-  const { data: countries } = useCountries();
+  // Check if this is a Steam bundle (need to determine early)
+  const isSteamBundle = bundle.type === BundleType.SteamGame;
 
   // Separate tiers by type
   const baseTiers = tiers.filter((tier) => tier.type === TierType.Base);
@@ -108,8 +107,7 @@ export function PurchaseSummary({
     .filter((tier) => tier.type === TierType.Upsell)
     .sort((a, b) => a.price - b.price);
 
-  // Check if this is a Steam bundle and user hasn't connected Steam
-  const isSteamBundle = bundle.type === BundleType.SteamGame;
+  // Check if user has connected Steam
   const isSteamConnected = customer && customer.steamId;
   const needsSteamConnection =
     isSteamBundle && isAuthenticated && !isSteamConnected;
@@ -595,7 +593,7 @@ export function PurchaseSummary({
         )}
 
         {/* Steam Key Country Allocation */}
-        {isSteamBundle && isAuthenticated && customer && countries && (
+        {isSteamBundle && isAuthenticated && customer?.country && (
           <div className="mb-6 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
             <div className="flex items-start gap-2">
               <MapPin className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5" />
@@ -605,10 +603,10 @@ export function PurchaseSummary({
                 </p>
                 <div className="flex items-center gap-2">
                   <span className="text-lg">
-                    {countries.find((c) => c.id === customer.countryCode)?.flag}
+                    {customer.country.flag}
                   </span>
                   <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                    {countries.find((c) => c.id === customer.countryCode)?.name || customer.countryCode}
+                    {customer.country.name}
                   </span>
                 </div>
                 <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
