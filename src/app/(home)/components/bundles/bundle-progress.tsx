@@ -13,7 +13,7 @@ import { Fragment } from "react";
 
 interface BundleProgressProps {
   bundle: Bundle;
-  selectedTier: Tier;
+  selectedTier: Tier | null;
   totalAmount: number;
   unlockedProducts: Product[];
   className?: string;

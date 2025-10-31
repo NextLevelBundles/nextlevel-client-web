@@ -20,7 +20,7 @@ interface ProductGridProps {
   id?: string;
   bundle: Bundle;
   products: Product[];
-  selectedTier: Tier;
+  selectedTier: Tier | null;
   tiers: Tier[];
   unlockedProducts: Product[];
   setTotalAmount: (amount: number) => void;
@@ -45,11 +45,11 @@ export function ProductGrid({
   const isBookBundle = bundle.type === BundleType.EBook;
 
   // Get locked tiers
-  const selectedTierIndex = tiers.findIndex(
-    (tier) => tier.id === selectedTier.id
-  );
+  const selectedTierIndex = selectedTier
+    ? tiers.findIndex((tier) => tier.id === selectedTier.id)
+    : -1;
 
-  const lockedTiers = tiers.slice(selectedTierIndex + 1);
+  const lockedTiers = selectedTierIndex >= 0 ? tiers.slice(selectedTierIndex + 1) : tiers;
 
   // Calculate cumulative items for each locked tier
   const lockedTiersWithCumulativeItems = lockedTiers.map((tier, index) => {

@@ -45,7 +45,7 @@ import { useRouter } from "next/navigation";
 interface PurchaseSummaryProps {
   bundle: Bundle;
   tiers: Tier[];
-  currentTier: Tier;
+  currentTier: Tier | null;
   baseAmount: number;
   totalAmount: number;
   unlockedProductsValue: number;
@@ -658,7 +658,7 @@ export function PurchaseSummary({
           ) : (
             <AddToCartButton
               bundleId={bundle.id}
-              baseTierId={currentTier.id}
+              baseTierId={currentTier?.id}
               charityTierId={selectedCharityTierIds[0]} // API expects single charity tier
               tipAmount={tipAmount}
               totalAmount={totalAmount}

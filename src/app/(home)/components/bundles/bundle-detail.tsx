@@ -10,7 +10,12 @@ import { PurchaseSummary } from "./purchase-summary";
 import { CuratorComments } from "./curator-comments";
 import { CharityTierSection } from "./charity-tier-section";
 import { UpsellTierSection } from "./upsell-tier-section";
-import { Bundle, BundleType, TierType, BundleStatus } from "@/app/(shared)/types/bundle";
+import {
+  Bundle,
+  BundleType,
+  TierType,
+  BundleStatus,
+} from "@/app/(shared)/types/bundle";
 import { useBundleBookFormats } from "@/hooks/queries/useBundleBookFormats";
 import { useBundleTierAvailability } from "@/hooks/queries/useBundleTierAvailability";
 import { BundleNotFound } from "./bundle-not-found";
@@ -26,7 +31,8 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
   const endDate = new Date(bundle.endsAt);
 
   // Show not found if bundle is not Active or hasn't started yet
-  const isBundleVisible = bundle.status === BundleStatus.Active && now >= startDate;
+  const isBundleVisible =
+    bundle.status === BundleStatus.Active && now >= startDate;
 
   if (!isBundleVisible) {
     return <BundleNotFound />;
@@ -35,8 +41,17 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
   // Check if bundle has expired
   const isBundleExpired = now > endDate;
 
-  // Initialize with the minimum price (first base tier)
-  const [baseAmount, setBaseAmount] = useState(bundle.minPrice);
+  // Find base tier matching suggestedPrice
+  const initialBaseAmount = useMemo(() => {
+    const matchingTier = bundle.tiers?.find(
+      (tier) =>
+        tier.type === TierType.Base && tier.price === bundle.suggestedPrice
+    );
+    return matchingTier?.price ?? 0;
+  }, [bundle.tiers, bundle.suggestedPrice]);
+
+  // Initialize with the suggested price tier or 0 (no preselection)
+  const [baseAmount, setBaseAmount] = useState(initialBaseAmount);
   const [selectedCharityTierIds, setSelectedCharityTierIds] = useState<
     string[]
   >([]);
@@ -86,7 +101,7 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
     }
 
     // Check if ALL base tiers exist in the availability dictionary AND have keys > 0
-    return baseTiers.every(tier => {
+    return baseTiers.every((tier) => {
       const keysAvailable = tierAvailability[tier.id];
       return keysAvailable !== undefined && keysAvailable > 0;
     });
@@ -94,19 +109,32 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
 
   // Determine the reason for bundle unavailability (country vs sold out)
   const bundleUnavailabilityReason = useMemo(() => {
-    if (!isAuthenticated || !isSteamBundle || !tierAvailability || hasAvailableBaseTiers) {
+    if (
+      !isAuthenticated ||
+      !isSteamBundle ||
+      !tierAvailability ||
+      hasAvailableBaseTiers
+    ) {
       return null;
     }
 
     // Check if any base tier is missing from the response (not available in country)
-    const hasMissingTier = baseTiers.some(tier => !(tier.id in tierAvailability));
+    const hasMissingTier = baseTiers.some(
+      (tier) => !(tier.id in tierAvailability)
+    );
 
     if (hasMissingTier) {
       return "country"; // Not available in country
     } else {
       return "soldout"; // All tiers present but at least one has 0 keys
     }
-  }, [isAuthenticated, isSteamBundle, tierAvailability, hasAvailableBaseTiers, baseTiers]);
+  }, [
+    isAuthenticated,
+    isSteamBundle,
+    tierAvailability,
+    hasAvailableBaseTiers,
+    baseTiers,
+  ]);
 
   // Calculate selected tier amounts
   const selectedCharityTiers = charityTiers.filter((tier) =>
@@ -185,39 +213,37 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
         <div className="mt-8">
           <div className="grid gap-8 lg:grid-cols-[1fr_350px]">
             <div id="bundle-progressbar" className="mb-8 space-y-8">
-              {currentTier && (
-                <BundleProgress
-                  bundle={bundle}
-                  selectedTier={currentTier}
-                  totalAmount={baseAmount}
-                  unlockedProducts={baseUnlockedProducts}
-                  setTotalAmount={setBaseAmount}
-                  className="dark:ring-1 dark:ring-primary/30 dark:shadow-[0_0_30px_rgba(57,130,245,0.2)]"
-                />
-              )}
+              <BundleProgress
+                bundle={bundle}
+                selectedTier={currentTier}
+                totalAmount={baseAmount}
+                unlockedProducts={baseUnlockedProducts}
+                setTotalAmount={setBaseAmount}
+                className="dark:ring-1 dark:ring-primary/30 dark:shadow-[0_0_30px_rgba(57,130,245,0.2)]"
+              />
 
-              {currentTier && (
-                <ProductGrid
-                  bundle={bundle}
-                  products={allProducts.filter(
-                    (p) =>
-                      !p.bundleTierId ||
-                      baseTiers.some((t) => t.id === p.bundleTierId)
-                  )}
-                  unlockedProducts={baseUnlockedProducts} // Base products only for grid display
-                  selectedTier={currentTier}
-                  tiers={baseTiers}
-                  setTotalAmount={setBaseAmount}
-                  bookFormats={bookFormats}
-                  allBundleProducts={allProducts} // Pass all products from all tiers
-                  allUnlockedProducts={unlockedProducts} // Pass all unlocked products including charity/upsell
-                />
-              )}
+              <ProductGrid
+                bundle={bundle}
+                products={allProducts.filter(
+                  (p) =>
+                    !p.bundleTierId ||
+                    baseTiers.some((t) => t.id === p.bundleTierId)
+                )}
+                unlockedProducts={baseUnlockedProducts} // Base products only for grid display
+                selectedTier={currentTier}
+                tiers={baseTiers}
+                setTotalAmount={setBaseAmount}
+                bookFormats={bookFormats}
+                allBundleProducts={allProducts} // Pass all products from all tiers
+                allUnlockedProducts={unlockedProducts} // Pass all unlocked products including charity/upsell
+              />
 
               {/* Charity Tier Sections */}
               {charityTiers.map((tier) => {
                 const isUnlocked = selectedCharityTierIds.includes(tier.id);
-                const isAvailable = tierAvailability ? tier.id in tierAvailability && tierAvailability[tier.id] > 0 : true;
+                const isAvailable = tierAvailability
+                  ? tier.id in tierAvailability && tierAvailability[tier.id] > 0
+                  : true;
                 const keysCount = tierAvailability?.[tier.id];
                 return (
                   <CharityTierSection
@@ -252,7 +278,9 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
               {/* Upsell Tier Sections */}
               {upsellTiers.map((tier) => {
                 const isUnlocked = selectedUpsellTierIds.includes(tier.id);
-                const isAvailable = tierAvailability ? tier.id in tierAvailability && tierAvailability[tier.id] > 0 : true;
+                const isAvailable = tierAvailability
+                  ? tier.id in tierAvailability && tierAvailability[tier.id] > 0
+                  : true;
                 const keysCount = tierAvailability?.[tier.id];
                 return (
                   <UpsellTierSection
@@ -301,35 +329,33 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
               )}
             </div>
 
-            {currentTier && (
-              <div className="space-y-4">
-                {/* Curator Comments - Compact version in right column */}
-                {bundle.curatorComment && (
-                  <CuratorComments content={bundle.curatorComment} compact />
-                )}
+            <div className="space-y-4">
+              {/* Curator Comments - Compact version in right column */}
+              {bundle.curatorComment && (
+                <CuratorComments content={bundle.curatorComment} compact />
+              )}
 
-                <PurchaseSummary
-                  bundle={bundle}
-                  tiers={tiers}
-                  currentTier={currentTier}
-                  baseAmount={baseAmount}
-                  totalAmount={totalAmount}
-                  unlockedProductsValue={unlockedProductsValue}
-                  setBaseAmount={setBaseAmount}
-                  selectedCharityTierIds={selectedCharityTierIds}
-                  selectedUpsellTierIds={selectedUpsellTierIds}
-                  setSelectedCharityTierIds={setSelectedCharityTierIds}
-                  setSelectedUpsellTierIds={setSelectedUpsellTierIds}
-                  tipAmount={tipAmount}
-                  setTipAmount={setTipAmount}
-                  bookFormats={bookFormats}
-                  isBundleExpired={isBundleExpired}
-                  tierAvailability={tierAvailability}
-                  hasAvailableBaseTiers={hasAvailableBaseTiers}
-                  bundleUnavailabilityReason={bundleUnavailabilityReason}
-                />
-              </div>
-            )}
+              <PurchaseSummary
+                bundle={bundle}
+                tiers={tiers}
+                currentTier={currentTier}
+                baseAmount={baseAmount}
+                totalAmount={totalAmount}
+                unlockedProductsValue={unlockedProductsValue}
+                setBaseAmount={setBaseAmount}
+                selectedCharityTierIds={selectedCharityTierIds}
+                selectedUpsellTierIds={selectedUpsellTierIds}
+                setSelectedCharityTierIds={setSelectedCharityTierIds}
+                setSelectedUpsellTierIds={setSelectedUpsellTierIds}
+                tipAmount={tipAmount}
+                setTipAmount={setTipAmount}
+                bookFormats={bookFormats}
+                isBundleExpired={isBundleExpired}
+                tierAvailability={tierAvailability}
+                hasAvailableBaseTiers={hasAvailableBaseTiers}
+                bundleUnavailabilityReason={bundleUnavailabilityReason}
+              />
+            </div>
           </div>
         </div>
       </div>
