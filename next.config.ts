@@ -14,13 +14,16 @@ const nextConfig: NextConfig = {
         hostname: "shared.akamai.steamstatic.com",
       },
       {
-        hostname: "media.nextlevelbundle.com",
+        hostname: "**.nextlevelbundle.com",
       },
       {
         hostname: "avatars.steamstatic.com",
       },
       {
         hostname: "store.akamai.steamstatic.com",
+      },
+      {
+        hostname: "**.digiphile.co",
       },
     ],
   },
