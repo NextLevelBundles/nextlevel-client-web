@@ -15,11 +15,28 @@ import {
   BundleType,
   TierType,
   BundleStatus,
+  Tier,
 } from "@/app/(shared)/types/bundle";
 import { useBundleBookFormats } from "@/hooks/queries/useBundleBookFormats";
 import { useBundleTierAvailability } from "@/hooks/queries/useBundleTierAvailability";
 import { BundleNotFound } from "./bundle-not-found";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
+
+// Configuration: Base tier display order
+// 'asc' = low to high (cheapest first), 'desc' = high to low (most expensive first)
+const BASE_TIER_DISPLAY_ORDER: 'asc' | 'desc' = 'desc';
+
+// Helper function to sort base tiers by price
+const sortBaseTiers = (tiers: Tier[], order: 'asc' | 'desc') => {
+  return order === 'asc'
+    ? [...tiers].sort((a, b) => a.price - b.price)
+    : [...tiers].sort((a, b) => b.price - a.price);
+};
+
+// Helper function to get tiers in canonical order (always low to high for logic)
+const getCanonicalTiers = (tiers: Tier[]) => {
+  return [...tiers].sort((a, b) => a.price - b.price);
+};
 
 export function BundleDetail({ bundle }: { bundle: Bundle }) {
   const { user } = useAuth();
@@ -75,9 +92,16 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
   );
 
   // Separate tiers by type and sort by price (memoized to prevent infinite loops)
-  const baseTiers = useMemo(
-    () => tiers.filter((tier) => tier.type === TierType.Base),
+  // baseTiersCanonical: Always sorted low to high for business logic
+  const baseTiersCanonical = useMemo(
+    () => getCanonicalTiers(tiers.filter((tier) => tier.type === TierType.Base)),
     [tiers]
+  );
+
+  // baseTiers: Sorted according to display order configuration for UI rendering
+  const baseTiers = useMemo(
+    () => sortBaseTiers(baseTiersCanonical, BASE_TIER_DISPLAY_ORDER),
+    [baseTiersCanonical]
   );
   const charityTiers = useMemo(
     () =>
@@ -101,11 +125,11 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
     }
 
     // Check if ALL base tiers exist in the availability dictionary AND have keys > 0
-    return baseTiers.every((tier) => {
+    return baseTiersCanonical.every((tier) => {
       const keysAvailable = tierAvailability[tier.id];
       return keysAvailable !== undefined && keysAvailable > 0;
     });
-  }, [isAuthenticated, isSteamBundle, tierAvailability, baseTiers]);
+  }, [isAuthenticated, isSteamBundle, tierAvailability, baseTiersCanonical]);
 
   // Determine the reason for bundle unavailability (country vs sold out)
   const bundleUnavailabilityReason = useMemo(() => {
@@ -119,7 +143,7 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
     }
 
     // Check if any base tier is missing from the response (not available in country)
-    const hasMissingTier = baseTiers.some(
+    const hasMissingTier = baseTiersCanonical.some(
       (tier) => !(tier.id in tierAvailability)
     );
 
@@ -133,7 +157,7 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
     isSteamBundle,
     tierAvailability,
     hasAvailableBaseTiers,
-    baseTiers,
+    baseTiersCanonical,
   ]);
 
   // Calculate selected tier amounts
@@ -156,8 +180,8 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
   const totalAmount =
     baseAmount + totalCharityAmount + tipAmount + totalUpsellAmount;
 
-  // Use only base tiers for determining the current tier
-  const unlockedBaseTiers = baseTiers.filter(
+  // Use only base tiers for determining the current tier (use canonical for logic)
+  const unlockedBaseTiers = baseTiersCanonical.filter(
     (tier) => tier.price <= baseAmount
   );
   const currentTier =
@@ -165,13 +189,13 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
       ? unlockedBaseTiers[unlockedBaseTiers.length - 1]
       : null;
 
-  const currentTierIndex = baseTiers.findIndex(
+  const currentTierIndexCanonical = baseTiersCanonical.findIndex(
     (tier) => tier.id === currentTier?.id
   );
 
-  // Get base tier unlocked products
-  const baseUnlockedProducts = baseTiers
-    .slice(0, currentTierIndex + 1)
+  // Get base tier unlocked products (use canonical order for logic)
+  const baseUnlockedProducts = baseTiersCanonical
+    .slice(0, currentTierIndexCanonical + 1)
     .flatMap((tier) =>
       allProducts.filter((product) => product.bundleTierId == tier.id)
     );
@@ -219,6 +243,7 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
                 totalAmount={baseAmount}
                 unlockedProducts={baseUnlockedProducts}
                 setTotalAmount={setBaseAmount}
+                baseTiersCanonical={baseTiersCanonical}
                 className="dark:ring-1 dark:ring-primary/30 dark:shadow-[0_0_30px_rgba(57,130,245,0.2)]"
               />
 
@@ -227,11 +252,13 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
                 products={allProducts.filter(
                   (p) =>
                     !p.bundleTierId ||
-                    baseTiers.some((t) => t.id === p.bundleTierId)
+                    baseTiersCanonical.some((t) => t.id === p.bundleTierId)
                 )}
                 unlockedProducts={baseUnlockedProducts} // Base products only for grid display
                 selectedTier={currentTier}
                 tiers={baseTiers}
+                baseTiersCanonical={baseTiersCanonical}
+                displayOrder={BASE_TIER_DISPLAY_ORDER}
                 setTotalAmount={setBaseAmount}
                 bookFormats={bookFormats}
                 allBundleProducts={allProducts} // Pass all products from all tiers
@@ -306,7 +333,7 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
                     }}
                     bundleType={bundle.type}
                     highestBaseTierPrice={
-                      baseTiers[baseTiers.length - 1]?.price || 0
+                      baseTiersCanonical[baseTiersCanonical.length - 1]?.price || 0
                     }
                     isAvailable={isAvailable}
                     keysCount={keysCount}

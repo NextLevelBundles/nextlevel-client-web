@@ -41,6 +41,7 @@ interface ProductDetailModalProps {
   onNavigateToProduct: (product: Product) => void;
   bookFormats?: BundleBookFormatsResponse | null;
   allTiers?: Tier[];
+  baseTierDisplayOrder?: 'asc' | 'desc';
 }
 
 export function ProductDetailModal({
@@ -53,6 +54,7 @@ export function ProductDetailModal({
   onNavigateToProduct,
   bookFormats,
   allTiers,
+  baseTierDisplayOrder = 'asc',
 }: ProductDetailModalProps) {
   const [, setIsPlaying] = useState(false);
   const [, setSelectedImageIndex] = useState(0);
@@ -64,12 +66,16 @@ export function ProductDetailModal({
   const sortedProducts = useMemo(() => {
     if (!allTiers || allTiers.length === 0) return allProducts;
 
-    // Create a tier order map: Base tiers first (sorted by price), then Charity, then Upsell
+    // Create a tier order map: Base tiers first (sorted by display order), then Charity, then Upsell
     const baseTiers = allTiers
       .filter(t => t.type === TierType.Base)
-      .sort((a, b) => a.price - b.price);
-    const charityTiers = allTiers.filter(t => t.type === TierType.Charity);
-    const upsellTiers = allTiers.filter(t => t.type === TierType.Upsell);
+      .sort((a, b) => baseTierDisplayOrder === 'asc' ? a.price - b.price : b.price - a.price);
+    const charityTiers = allTiers
+      .filter(t => t.type === TierType.Charity)
+      .sort((a, b) => a.price - b.price); // Always low to high for charity
+    const upsellTiers = allTiers
+      .filter(t => t.type === TierType.Upsell)
+      .sort((a, b) => a.price - b.price); // Always low to high for upsell
 
     const orderedTiers = [...baseTiers, ...charityTiers, ...upsellTiers];
 
@@ -92,7 +98,7 @@ export function ProductDetailModal({
     });
 
     return sorted;
-  }, [allProducts, allTiers]);
+  }, [allProducts, allTiers, baseTierDisplayOrder]);
 
   useEffect(() => {
     // Reset state when product changes

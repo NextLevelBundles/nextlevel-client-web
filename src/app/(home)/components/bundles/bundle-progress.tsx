@@ -18,6 +18,7 @@ interface BundleProgressProps {
   unlockedProducts: Product[];
   className?: string;
   setTotalAmount: (amount: number) => void;
+  baseTiersCanonical: Tier[]; // Base tiers in canonical order (low to high) for logic
 }
 
 export function BundleProgress({
@@ -26,10 +27,10 @@ export function BundleProgress({
   totalAmount,
   className,
   setTotalAmount,
+  baseTiersCanonical,
 }: BundleProgressProps) {
-  const allTiers = bundle.tiers || [];
-  // Only use base tiers for the progress bar
-  const tiers = allTiers.filter((tier) => tier.type === TierType.Base);
+  // Use canonical tiers (low to high) for all business logic
+  const tiers = baseTiersCanonical;
   const allProducts = bundle.products;
   // Only count base tier products for progress
   const baseTierProducts = allProducts.filter((p) =>
