@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { TooltipProvider } from "@/shared/components/ui/tooltip";
 import { BundleHero } from "./bundle-hero";
 import { BundleProgress } from "./bundle-progress";
@@ -21,6 +21,8 @@ import { useBundleBookFormats } from "@/hooks/queries/useBundleBookFormats";
 import { useBundleTierAvailability } from "@/hooks/queries/useBundleTierAvailability";
 import { BundleNotFound } from "./bundle-not-found";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
+import { Card } from "@/shared/components/ui/card";
+import { AlertCircle, Clock, Eye } from "lucide-react";
 
 // Configuration: Base tier display order
 // 'asc' = low to high (cheapest first), 'desc' = high to low (most expensive first)
@@ -38,25 +40,49 @@ const getCanonicalTiers = (tiers: Tier[]) => {
   return [...tiers].sort((a, b) => a.price - b.price);
 };
 
-export function BundleDetail({ bundle }: { bundle: Bundle }) {
+export function BundleDetail({
+  bundle,
+  isPreviewMode = false,
+}: {
+  bundle: Bundle;
+  isPreviewMode?: boolean;
+}) {
   const { user } = useAuth();
   const isAuthenticated = !!user;
 
-  // Check if bundle should be visible
-  const now = new Date();
-  const startDate = new Date(bundle.startsAt);
-  const endDate = new Date(bundle.endsAt);
+  // Check bundle timing and status (memoized to prevent recalculation)
+  const startDate = useMemo(() => new Date(bundle.startsAt), [bundle.startsAt]);
+  const endDate = useMemo(() => new Date(bundle.endsAt), [bundle.endsAt]);
 
-  // Show not found if bundle is not Active or hasn't started yet
-  const isBundleVisible =
-    bundle.status === BundleStatus.Active && now >= startDate;
+  const isBundleActive = bundle.status === BundleStatus.Active;
 
-  if (!isBundleVisible) {
+  // Determine if bundle should be visible:
+  // - In preview mode: Always show (regardless of status or timing)
+  // - Not in preview mode: Only show if Active status (regardless of timing)
+  const shouldShowBundle = isPreviewMode || isBundleActive;
+
+  if (!shouldShowBundle) {
     return <BundleNotFound />;
   }
 
-  // Check if bundle has expired
-  const isBundleExpired = now > endDate;
+  // Determine bundle state for UI (calculate once on mount)
+  const bundleState: 'preview' | 'not-started' | 'expired' | 'active' = useMemo(() => {
+    const now = new Date();
+    const isBundleNotYetStarted = now < startDate;
+    const isBundleExpired = now > endDate;
+
+    // Even in preview mode, show timing-based states
+    return isBundleNotYetStarted
+      ? 'not-started'
+      : isBundleExpired
+      ? 'expired'
+      : isPreviewMode
+      ? 'preview'
+      : 'active';
+  }, [isPreviewMode, startDate, endDate]);
+
+  // Check if bundle has expired (needed for PurchaseSummary)
+  const isBundleExpired = bundleState === 'expired';
 
   // Find base tier matching suggestedPrice
   const initialBaseAmount = useMemo(() => {
@@ -229,10 +255,94 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
   }
   // If tip goes to publishers, 100% goes to publishers (nothing to charity)
 
+  // Countdown timer for not-yet-started bundles
+  const [countdown, setCountdown] = useState<{
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (bundleState !== 'not-started') return;
+
+    const updateCountdown = () => {
+      const now = new Date().getTime();
+      const start = startDate.getTime();
+      const distance = start - now;
+
+      if (distance < 0) {
+        setCountdown(null);
+        return;
+      }
+
+      setCountdown({
+        days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((distance % (1000 * 60)) / 1000),
+      });
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+
+    return () => clearInterval(interval);
+  }, [bundleState, startDate]);
+
+  // Render status banner based on bundle state
+  const renderStatusBanner = () => {
+    if (bundleState === 'active' || bundleState === 'preview') return null;
+
+    const bannerConfig = {
+      'not-started': {
+        icon: Clock,
+        bgColor: 'bg-blue-50 dark:bg-blue-950/30',
+        borderColor: 'border-blue-200 dark:border-blue-800',
+        textColor: 'text-blue-700 dark:text-blue-300',
+        title: 'Bundle Not Yet Started',
+        description: countdown
+          ? `Starts in ${countdown.days}d ${countdown.hours}h ${countdown.minutes}m ${countdown.seconds}s`
+          : 'This bundle has not started yet.',
+      },
+      expired: {
+        icon: AlertCircle,
+        bgColor: 'bg-orange-50 dark:bg-orange-950/30',
+        borderColor: 'border-orange-200 dark:border-orange-800',
+        textColor: 'text-orange-700 dark:text-orange-300',
+        title: 'Bundle Ended',
+        description: 'This bundle has ended and is no longer available for purchase.',
+      },
+    };
+
+    const config = bannerConfig[bundleState];
+    const Icon = config.icon;
+
+    return (
+      <Card
+        className={`p-4 ${config.bgColor} border ${config.borderColor} my-6`}
+      >
+        <div className="flex items-start gap-3">
+          <Icon className={`h-5 w-5 ${config.textColor} mt-0.5 flex-shrink-0`} />
+          <div className="flex-1">
+            <p className={`text-sm font-semibold ${config.textColor} mb-1`}>
+              {config.title}
+            </p>
+            <p className={`text-xs ${config.textColor}`}>
+              {config.description}
+            </p>
+          </div>
+        </div>
+      </Card>
+    );
+  };
+
   return (
     <TooltipProvider>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <BundleHero bundle={bundle} />
+
+        {renderStatusBanner()}
 
         <div className="mt-8">
           <div className="grid gap-8 lg:grid-cols-[1fr_350px]">
@@ -381,6 +491,7 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
                 tierAvailability={tierAvailability}
                 hasAvailableBaseTiers={hasAvailableBaseTiers}
                 bundleUnavailabilityReason={bundleUnavailabilityReason}
+                bundleState={bundleState}
               />
             </div>
           </div>

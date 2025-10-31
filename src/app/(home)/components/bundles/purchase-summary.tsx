@@ -61,6 +61,7 @@ interface PurchaseSummaryProps {
   tierAvailability?: BundleTierAvailabilityResponse;
   hasAvailableBaseTiers: boolean;
   bundleUnavailabilityReason: "country" | "soldout" | null;
+  bundleState: 'preview' | 'not-started' | 'expired' | 'active';
 }
 
 export function PurchaseSummary({
@@ -81,6 +82,7 @@ export function PurchaseSummary({
   tierAvailability,
   hasAvailableBaseTiers,
   bundleUnavailabilityReason,
+  bundleState,
 }: PurchaseSummaryProps) {
   const [tipInputValue, setTipInputValue] = useState("");
   const { user } = useAuth();
@@ -663,9 +665,10 @@ export function PurchaseSummary({
               tipAmount={tipAmount}
               totalAmount={totalAmount}
               selectedUpsellTierIds={selectedUpsellTierIds}
-              isBundleExpired={isBundleExpired}
+              isBundleExpired={bundleState === 'expired' || isBundleExpired}
               hasAvailableBaseTiers={hasAvailableBaseTiers}
               bundleUnavailabilityReason={bundleUnavailabilityReason}
+              disabled={bundleState !== 'active'}
             />
           )}
         </div>

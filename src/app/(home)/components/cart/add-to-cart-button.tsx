@@ -21,6 +21,7 @@ interface AddToCartButtonProps {
   isBundleExpired?: boolean;
   hasAvailableBaseTiers?: boolean;
   bundleUnavailabilityReason?: "country" | "soldout" | null;
+  disabled?: boolean;
 }
 
 export function AddToCartButton({
@@ -35,6 +36,7 @@ export function AddToCartButton({
   isBundleExpired = false,
   hasAvailableBaseTiers = true,
   bundleUnavailabilityReason = null,
+  disabled = false,
 }: AddToCartButtonProps) {
   const { addToCart, isLoading } = useCart();
   const { user, isLoading: isLoadingAuth } = useAuth();
@@ -74,6 +76,7 @@ export function AddToCartButton({
   const isLoadingSession = isLoadingAuth;
 
   const isDisabled =
+    disabled ||
     isLoading ||
     isAdding ||
     totalAmount <= 0 ||

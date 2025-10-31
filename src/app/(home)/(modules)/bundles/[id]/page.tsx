@@ -9,8 +9,16 @@ import React from "react";
 
 export const dynamic = "force-dynamic";
 
-export default async function BundleDetailPage({ params }: { params: any }) {
+export default async function BundleDetailPage({
+  params,
+  searchParams,
+}: {
+  params: any;
+  searchParams: any;
+}) {
   const { id } = await params;
+  const resolvedSearchParams = await searchParams;
+  const isPreviewMode = resolvedSearchParams?.preview === "true";
 
   let bundle = null;
   let error = null;
@@ -41,7 +49,7 @@ export default async function BundleDetailPage({ params }: { params: any }) {
         ) : isNotFound ? (
           <BundleNotFound />
         ) : (
-          <BundleDetail bundle={bundle!} />
+          <BundleDetail bundle={bundle!} isPreviewMode={isPreviewMode} />
         )}
       </div>
       <Footer />
