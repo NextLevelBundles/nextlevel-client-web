@@ -1,3 +1,5 @@
+import { Country } from "./common";
+
 export interface BillingAddress {
   addressLine1: string;
   addressLine2: string;
@@ -28,6 +30,7 @@ export interface Customer {
   steamConnectedAt?: string;
   steamCountry?: string;
   countryCode: string;
+  country?: Country;
   countryLastChangedAt?: string | null;
   billingAddress?: BillingAddress;
   contact: Contact;
