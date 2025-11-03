@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { AuthService } from "@/lib/auth/auth-service";
 import { useRouter } from "next/navigation";
+import { Hub } from "aws-amplify/utils";
 
 interface User {
   id?: string;
@@ -15,7 +16,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<boolean>;
-  signOut: () => Promise<void>;
+  signOut: (redirectUrl?: string) => Promise<void>;
   refreshAuth: () => Promise<void>;
 }
 
@@ -26,7 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  const loadUser = async () => {
+  const loadUser = async (isRetry = false) => {
     try {
       const result = await AuthService.getCurrentUser();
       if (result.success && result.user) {
@@ -36,19 +37,60 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           name: result.attributes?.name,
           emailVerified: result.attributes?.email_verified === "true",
         });
+        setIsLoading(false);
       } else {
         setUser(null);
+        // If this is the first attempt and no user found, retry after a short delay
+        // This handles the case where Amplify hasn't finished hydrating from localStorage
+        if (!isRetry) {
+          setTimeout(() => loadUser(true), 100);
+        } else {
+          setIsLoading(false);
+        }
       }
     } catch (error) {
       console.error("Error loading user:", error);
       setUser(null);
-    } finally {
-      setIsLoading(false);
+      // Retry once on error in case Amplify wasn't ready
+      if (!isRetry) {
+        setTimeout(() => loadUser(true), 100);
+      } else {
+        setIsLoading(false);
+      }
     }
   };
 
   useEffect(() => {
+    // Initial load
     loadUser();
+
+    // Listen for auth events from Amplify Hub
+    const hubListener = Hub.listen("auth", async ({ payload }) => {
+      console.log("AuthProvider: Auth event received:", payload.event);
+
+      switch (payload.event) {
+        case "signedIn":
+        case "tokenRefresh":
+          // Reload user when signed in or tokens refreshed
+          console.log("AuthProvider: Reloading user due to auth event");
+          setIsLoading(true);
+          await loadUser();
+          break;
+
+        case "signedOut":
+        case "tokenRefresh_failure":
+          // Clear user when signed out or token refresh fails
+          console.log("AuthProvider: Clearing user due to auth event");
+          setUser(null);
+          setIsLoading(false);
+          break;
+      }
+    });
+
+    // Cleanup listener on unmount
+    return () => {
+      hubListener();
+    };
   }, []);
 
   const signIn = async (email: string, password: string): Promise<boolean> => {
@@ -65,11 +107,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signOut = async () => {
+  const signOut = async (redirectUrl?: string) => {
     try {
       await AuthService.signOut();
       setUser(null);
-      router.push("/");
+
+      // Use full page reload to ensure auth state is cleared everywhere
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+      } else {
+        window.location.href = "/";
+      }
     } catch (error) {
       console.error("Sign out error:", error);
     }

@@ -69,7 +69,9 @@ export function AddToCartButton({
   };
 
   const handleSignIn = () => {
-    router.push("/auth/signin");
+    const signInUrl = new URL("/auth/signin", window.location.origin);
+    signInUrl.searchParams.set("callbackUrl", window.location.pathname);
+    router.push(signInUrl.toString());
   };
 
   const isAuthenticated = !!user;

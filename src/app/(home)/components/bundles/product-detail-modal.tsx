@@ -7,7 +7,13 @@ import { Badge } from "@/shared/components/ui/badge";
 import { ScrollArea, ScrollBar } from "@/shared/components/ui/scroll-area";
 import { cn } from "@/shared/utils/tailwind";
 import Image from "next/image";
-import { Bundle, Product, ProductType, TierType, Tier } from "@/app/(shared)/types/bundle";
+import {
+  Bundle,
+  Product,
+  ProductType,
+  TierType,
+  Tier,
+} from "@/app/(shared)/types/bundle";
 import {
   ExternalLink,
   ChevronLeft,
@@ -41,7 +47,7 @@ interface ProductDetailModalProps {
   onNavigateToProduct: (product: Product) => void;
   bookFormats?: BundleBookFormatsResponse | null;
   allTiers?: Tier[];
-  baseTierDisplayOrder?: 'asc' | 'desc';
+  baseTierDisplayOrder?: "asc" | "desc";
 }
 
 export function ProductDetailModal({
@@ -54,7 +60,7 @@ export function ProductDetailModal({
   onNavigateToProduct,
   bookFormats,
   allTiers,
-  baseTierDisplayOrder = 'asc',
+  baseTierDisplayOrder = "asc",
 }: ProductDetailModalProps) {
   const [, setIsPlaying] = useState(false);
   const [, setSelectedImageIndex] = useState(0);
@@ -68,21 +74,23 @@ export function ProductDetailModal({
 
     // Create a tier order map: Base tiers first (sorted by display order), then Charity, then Upsell
     const baseTiers = allTiers
-      .filter(t => t.type === TierType.Base)
-      .sort((a, b) => baseTierDisplayOrder === 'asc' ? a.price - b.price : b.price - a.price);
+      .filter((t) => t.type === TierType.Base)
+      .sort((a, b) =>
+        baseTierDisplayOrder === "asc" ? a.price - b.price : b.price - a.price
+      );
     const charityTiers = allTiers
-      .filter(t => t.type === TierType.Charity)
+      .filter((t) => t.type === TierType.Charity)
       .sort((a, b) => a.price - b.price); // Always low to high for charity
     const upsellTiers = allTiers
-      .filter(t => t.type === TierType.Upsell)
+      .filter((t) => t.type === TierType.Upsell)
       .sort((a, b) => a.price - b.price); // Always low to high for upsell
 
     const orderedTiers = [...baseTiers, ...charityTiers, ...upsellTiers];
 
     // Sort products based on tier order
     const sorted = [...allProducts].sort((a, b) => {
-      const tierIndexA = orderedTiers.findIndex(t => t.id === a.bundleTierId);
-      const tierIndexB = orderedTiers.findIndex(t => t.id === b.bundleTierId);
+      const tierIndexA = orderedTiers.findIndex((t) => t.id === a.bundleTierId);
+      const tierIndexB = orderedTiers.findIndex((t) => t.id === b.bundleTierId);
 
       // If both have tiers, sort by tier order
       if (tierIndexA !== -1 && tierIndexB !== -1) {
@@ -147,7 +155,9 @@ export function ProductDetailModal({
   // Helper function to get formats for the current product
   const getProductFormats = (): string[] => {
     if (!bookFormats || !product) return [];
-    const productFormat = bookFormats.products.find(p => p.productId === product.id);
+    const productFormat = bookFormats.products.find(
+      (p) => p.productId === product.id
+    );
     return productFormat?.availableFormats || [];
   };
 
@@ -282,14 +292,16 @@ export function ProductDetailModal({
                 </Badge>
                 {currentTierInfo && (
                   <>
-                    <div className={cn(
-                      "inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full",
-                      currentTierInfo.isCharity
-                        ? "bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300"
-                        : currentTierInfo.isUpsell
-                        ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
-                        : "bg-muted/50 text-muted-foreground"
-                    )}>
+                    <div
+                      className={cn(
+                        "inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full",
+                        currentTierInfo.isCharity
+                          ? "bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300"
+                          : currentTierInfo.isUpsell
+                            ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
+                            : "bg-muted/50 text-muted-foreground"
+                      )}
+                    >
                       {currentTierInfo.isCharity ? (
                         <Heart className="h-3 w-3 fill-current" />
                       ) : currentTierInfo.isUpsell ? (
@@ -300,8 +312,8 @@ export function ProductDetailModal({
                       {currentTierInfo.isCharity
                         ? "Charity Tier"
                         : currentTierInfo.isUpsell
-                        ? "Extra Items Tier"
-                        : `Base Tier`}
+                          ? "Extra Items Tier"
+                          : `Base Tier`}
                     </div>
                     <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 px-2.5 py-1 rounded-full">
                       Unlocks at ${currentTierInfo.price}
@@ -387,7 +399,7 @@ export function ProductDetailModal({
                 <div className="bg-muted/30 rounded-lg p-3 lg:p-4 border border-border/50">
                   <h3 className="font-medium text-sm mb-1.5 flex items-center gap-1.5">
                     <FileText className="h-3.5 w-3.5 text-primary" />
-                    Curator's Note
+                    Curator's Corner
                   </h3>
                   <Markdown
                     content={product.curatorComment}
@@ -709,7 +721,13 @@ function GameDetails({ product }: { product: Product }) {
 }
 
 // Book-specific details component
-function BookDetails({ product, formats }: { product: Product; formats?: string[] }) {
+function BookDetails({
+  product,
+  formats,
+}: {
+  product: Product;
+  formats?: string[];
+}) {
   const metadata = product.ebookMetadata;
 
   return (
@@ -797,10 +815,11 @@ function BookDetails({ product, formats }: { product: Product; formats?: string[
       {/* Formats */}
       {(() => {
         // Use actual formats from API if available, otherwise fall back to metadata
-        const displayFormats = formats && formats.length > 0 
-          ? formats 
-          : metadata?.availableFormats || [];
-        
+        const displayFormats =
+          formats && formats.length > 0
+            ? formats
+            : metadata?.availableFormats || [];
+
         if (displayFormats.length > 0) {
           return (
             <div>

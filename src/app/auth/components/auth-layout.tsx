@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { useTheme } from "next-themes";
+import Logo from "@/app/(shared)/components/logo";
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -36,18 +37,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-secondary dark:from-primary/20 dark:via-primary/10 dark:to-secondary/20">
         {/* Logo in top-left corner */}
         <Link href="/" className="absolute top-8 left-8 z-20 cursor-pointer">
-          <Image
-            src={
-              theme === "dark"
-                ? "/logo/digiphile-wordmark-horizontal-dark.png"
-                : "/logo/digiphile-wordmark-horizontal-light.png"
-            }
-            alt="Digiphile"
-            width={180}
-            height={60}
-            className="w-auto h-12 hover:opacity-90 transition-opacity"
-            priority
-          />
+          <Logo />
         </Link>
 
         {/* Animated shapes */}

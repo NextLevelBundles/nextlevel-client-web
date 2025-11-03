@@ -28,7 +28,10 @@ import {
   TierType,
   ExcessDistributionType,
 } from "@/app/(shared)/types/bundle";
-import { BundleBookFormatsResponse, BundleTierAvailabilityResponse } from "@/lib/api/types/bundle";
+import {
+  BundleBookFormatsResponse,
+  BundleTierAvailabilityResponse,
+} from "@/lib/api/types/bundle";
 import { AddToCartButton } from "../cart/add-to-cart-button";
 import { useCustomerLocation } from "@/hooks/queries/useCustomerLocation";
 import { useCustomer } from "@/hooks/queries/useCustomer";
@@ -60,7 +63,7 @@ interface PurchaseSummaryProps {
   tierAvailability?: BundleTierAvailabilityResponse;
   hasAvailableBaseTiers: boolean;
   bundleUnavailabilityReason: "country" | "soldout" | null;
-  bundleState: 'preview' | 'not-started' | 'expired' | 'active';
+  bundleState: "preview" | "not-started" | "expired" | "active";
 }
 
 export function PurchaseSummary({
@@ -225,25 +228,6 @@ export function PurchaseSummary({
               );
             })}
           </div>
-
-          {/* Base Tier Unavailability Warning */}
-          {isAuthenticated && !hasAvailableBaseTiers && bundleUnavailabilityReason && (
-            <div className="mt-3 p-3 bg-red-50 dark:bg-red-950/30 rounded-lg border border-red-200 dark:border-red-800">
-              <div className="flex items-start gap-2">
-                <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-red-700 dark:text-red-300 mb-1">
-                    Bundle Not Available
-                  </p>
-                  <p className="text-xs text-red-600 dark:text-red-400">
-                    {bundleUnavailabilityReason === "country"
-                      ? "The bundle is not available in your country"
-                      : "The bundle is sold out"}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Step 2: Charity Tier Selection */}
@@ -255,7 +239,9 @@ export function PurchaseSummary({
             <div className="space-y-2">
               {charityTiers.map((tier) => {
                 const isSelected = selectedCharityTierIds.includes(tier.id);
-                const isAvailable = tierAvailability ? tier.id in tierAvailability && tierAvailability[tier.id] > 0 : true;
+                const isAvailable = tierAvailability
+                  ? tier.id in tierAvailability && tierAvailability[tier.id] > 0
+                  : true;
                 return (
                   <div
                     key={tier.id}
@@ -345,7 +331,8 @@ export function PurchaseSummary({
         {/* Step 3: Optional Tip */}
         <div className="mb-6">
           <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-            3. {bundle.excessDistributionType === ExcessDistributionType.Publishers
+            3.{" "}
+            {bundle.excessDistributionType === ExcessDistributionType.Publishers
               ? "Add a Tip for Publishers (Optional)"
               : "Add a Tip for Charity (Optional)"}
           </h4>
@@ -388,7 +375,9 @@ export function PurchaseSummary({
             <div className="space-y-2">
               {upsellTiers.map((tier) => {
                 const isSelected = selectedUpsellTierIds.includes(tier.id);
-                const isAvailable = tierAvailability ? tier.id in tierAvailability && tierAvailability[tier.id] > 0 : true;
+                const isAvailable = tierAvailability
+                  ? tier.id in tierAvailability && tierAvailability[tier.id] > 0
+                  : true;
                 return (
                   <div
                     key={tier.id}
@@ -592,30 +581,47 @@ export function PurchaseSummary({
           </div>
         )}
 
-        {/* Steam Key Country Allocation */}
-        {isSteamBundle && isAuthenticated && customer?.country && (
-          <div className="mb-6 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
-            <div className="flex items-start gap-2">
-              <MapPin className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5" />
-              <div className="flex-1">
-                <p className="text-xs font-medium text-blue-700 dark:text-blue-300 mb-1">
-                  Steam Keys Country
-                </p>
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">
-                    {customer.country.flag}
-                  </span>
-                  <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                    {customer.country.name}
-                  </span>
+        {/* Steam Key Country Allocation or Bundle Not Available */}
+        {isSteamBundle &&
+          isAuthenticated &&
+          customer?.country &&
+          (bundleUnavailabilityReason ? (
+            <div className="mb-6 p-3 bg-red-50 dark:bg-red-950/30 rounded-lg border border-red-200 dark:border-red-800">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-xs font-medium text-red-700 dark:text-red-300 mb-1">
+                    Bundle Not Available
+                  </p>
+                  <p className="text-xs text-red-600 dark:text-red-400">
+                    {bundleUnavailabilityReason === "country"
+                      ? "The bundle is not available in your country"
+                      : "The bundle is sold out"}
+                  </p>
                 </div>
-                <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                  Your Steam keys will be allocated for this country
-                </p>
               </div>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="mb-6 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+              <div className="flex items-start gap-2">
+                <MapPin className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-xs font-medium text-blue-700 dark:text-blue-300 mb-1">
+                    Steam Keys Country
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{customer.country.flag}</span>
+                    <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                      {customer.country.name}
+                    </span>
+                  </div>
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                    Your Steam keys will be allocated for this country
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
 
         {/* Total */}
         <div className="py-4 border-t border-gray-100 dark:border-border">
@@ -634,7 +640,8 @@ export function PurchaseSummary({
                     Bundle Ended
                   </p>
                   <p className="text-xs text-red-600 dark:text-red-400">
-                    This bundle ended on {dayjs(bundle.endsAt).format("MMMM D, YYYY [at] h:mm A")}
+                    This bundle ended on{" "}
+                    {dayjs(bundle.endsAt).format("MMMM D, YYYY [at] h:mm A")}
                   </p>
                 </div>
               </div>
@@ -663,10 +670,10 @@ export function PurchaseSummary({
               tipAmount={tipAmount}
               totalAmount={totalAmount}
               selectedUpsellTierIds={selectedUpsellTierIds}
-              isBundleExpired={bundleState === 'expired' || isBundleExpired}
+              isBundleExpired={bundleState === "expired" || isBundleExpired}
               hasAvailableBaseTiers={hasAvailableBaseTiers}
               bundleUnavailabilityReason={bundleUnavailabilityReason}
-              disabled={bundleState !== 'active'}
+              disabled={bundleState !== "active"}
             />
           )}
         </div>

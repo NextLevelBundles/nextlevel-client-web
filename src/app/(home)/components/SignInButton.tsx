@@ -7,7 +7,9 @@ export default function SignInButton() {
   const router = useRouter();
 
   const onSignIn = () => {
-    router.push("/auth/signin");
+    const signInUrl = new URL("/auth/signin", window.location.origin);
+    signInUrl.searchParams.set("callbackUrl", window.location.pathname);
+    router.push(signInUrl.toString());
   };
 
   return (
