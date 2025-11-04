@@ -35,17 +35,18 @@ export default function SignInPage() {
       if (result.success && result.isSignedIn) {
         // Check if user has completed profile
         const hasProfile = await AuthService.hasCompletedProfile();
-        
-        // If there's a specific callback URL and user has profile, use it
-        // Otherwise redirect based on profile status
-        if (searchParams.get("callbackUrl") && hasProfile) {
-          router.push(callbackUrl);
+
+        // Redirect to callback URL if provided, otherwise use default based on profile status
+        if (searchParams.get("callbackUrl")) {
+          // Use window.location for full page reload to ensure auth state is updated
+          window.location.href = callbackUrl;
         } else if (hasProfile) {
           router.push("/customer");
+          router.refresh();
         } else {
           router.push("/onboarding");
+          router.refresh();
         }
-        router.refresh();
       } else if (result.nextStep?.signInStep === "CONFIRM_SIGN_UP") {
         // User needs to confirm their account
         router.push(`/auth/confirm-signup?email=${encodeURIComponent(email)}`);

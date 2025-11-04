@@ -23,7 +23,7 @@ interface ProductGridProps {
   selectedTier: Tier | null;
   tiers: Tier[]; // Display order tiers (for rendering)
   baseTiersCanonical: Tier[]; // Canonical order tiers (low to high, for logic)
-  displayOrder: 'asc' | 'desc'; // Display order configuration
+  displayOrder: "asc" | "desc"; // Display order configuration
   unlockedProducts: Product[];
   setTotalAmount: (amount: number) => void;
   bookFormats?: BundleBookFormatsResponse | null;
@@ -54,19 +54,22 @@ export function ProductGrid({
     : -1;
 
   // Get locked tiers in display order for rendering
-  const lockedTiersCanonical = selectedTierIndex >= 0
-    ? baseTiersCanonical.slice(selectedTierIndex + 1)
-    : baseTiersCanonical;
+  const lockedTiersCanonical =
+    selectedTierIndex >= 0
+      ? baseTiersCanonical.slice(selectedTierIndex + 1)
+      : baseTiersCanonical;
 
   // Map to display order
-  const lockedTiers = tiers.filter(tier =>
-    lockedTiersCanonical.some(ct => ct.id === tier.id)
+  const lockedTiers = tiers.filter((tier) =>
+    lockedTiersCanonical.some((ct) => ct.id === tier.id)
   );
 
   // Calculate cumulative items for each locked tier using canonical order for logic
   const lockedTiersWithCumulativeItems = lockedTiers.map((tier) => {
     // Find this tier's index in canonical order
-    const canonicalIndex = lockedTiersCanonical.findIndex(t => t.id === tier.id);
+    const canonicalIndex = lockedTiersCanonical.findIndex(
+      (t) => t.id === tier.id
+    );
     // Get all tiers up to and including this one in canonical order
     const tiersUpToThis = lockedTiersCanonical.slice(0, canonicalIndex + 1);
     const itemsInCurrentAndPreviousLockedTiers = tiersUpToThis.reduce(
@@ -80,12 +83,14 @@ export function ProductGrid({
   });
 
   // Get unlocked tiers in display order
-  const unlockedTierIds = new Set(unlockedProducts.map(p => p.bundleTierId));
-  const unlockedTiersInDisplayOrder = tiers.filter(tier => unlockedTierIds.has(tier.id));
+  const unlockedTierIds = new Set(unlockedProducts.map((p) => p.bundleTierId));
+  const unlockedTiersInDisplayOrder = tiers.filter((tier) =>
+    unlockedTierIds.has(tier.id)
+  );
 
   // Order unlocked products by display tier order
-  const unlockedProductsOrdered = unlockedTiersInDisplayOrder.flatMap(tier =>
-    unlockedProducts.filter(p => p.bundleTierId === tier.id)
+  const unlockedProductsOrdered = unlockedTiersInDisplayOrder.flatMap((tier) =>
+    unlockedProducts.filter((p) => p.bundleTierId === tier.id)
   );
 
   // Get locked products in display tier order
@@ -96,9 +101,10 @@ export function ProductGrid({
   // Create properly ordered products array based on display order:
   // - For 'asc' (low to high): unlocked first, then locked (cheaper tiers come first)
   // - For 'desc' (high to low): locked first, then unlocked (expensive tiers come first)
-  const orderedProducts = displayOrder === 'asc'
-    ? [...unlockedProductsOrdered, ...lockedProductsOrdered]
-    : [...lockedProductsOrdered, ...unlockedProductsOrdered];
+  const orderedProducts =
+    displayOrder === "asc"
+      ? [...unlockedProductsOrdered, ...lockedProductsOrdered]
+      : [...lockedProductsOrdered, ...unlockedProductsOrdered];
 
   const getFormatIcon = (format: string) => {
     switch (format.toLowerCase()) {
@@ -132,14 +138,16 @@ export function ProductGrid({
         "cursor-pointer p-6 bg-gray-50/95 dark:bg-card/70 backdrop-blur-xs border border-gray-100 dark:border-border shadow-xs transition-all duration-500"
       )}
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
         {/* Render items in display tier order, interleaving unlocked products and locked tier cards */}
         {tiers.map((tier) => {
           const isUnlocked = unlockedTierIds.has(tier.id);
 
           if (isUnlocked) {
             // Render unlocked products for this tier
-            const tierProducts = unlockedProducts.filter(p => p.bundleTierId === tier.id);
+            const tierProducts = unlockedProducts.filter(
+              (p) => p.bundleTierId === tier.id
+            );
             return tierProducts.map((product) => (
               <div
                 key={product.id}
@@ -153,18 +161,17 @@ export function ProductGrid({
                     quality={80}
                     src={product.coverImage?.url || "/placeholder.jpg"}
                     alt={product.title}
-                    className="object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-[1.02] saturate-[1.02] group-hover:saturate-[1.05]"
+                    className="object-contain transition-all duration-300 group-hover:scale-105 group-hover:brightness-[1.02] saturate-[1.02] group-hover:saturate-[1.05]"
                   />
+                  {/* Floating price badge - only visible on hover */}
+                  <div className="absolute top-2 right-2 text-sm font-semibold bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm line-through text-blue-600 dark:text-primary px-2.5 py-1 rounded-lg shadow-lg border border-blue-100 dark:border-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    ${product.price}
+                  </div>
                 </div>
                 <div className="p-5">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-rajdhani text-lg font-bold line-clamp-1 text-gray-900 dark:text-foreground">
-                      {product.title}
-                    </h3>
-                    <span className="text-sm font-medium bg-blue-50 line-through text-blue-700 dark:bg-primary/20 dark:text-primary px-2 py-0.5 rounded-full">
-                      ${product.price}
-                    </span>
-                  </div>
+                  <h3 className="font-rajdhani text-lg font-bold line-clamp-2 text-gray-900 dark:text-foreground">
+                    {product.title}
+                  </h3>
 
                   {/* Show book metadata for book products */}
                   {product.type === ProductType.EBook && (
@@ -206,10 +213,12 @@ export function ProductGrid({
             ));
           } else {
             // Render locked tier card
-            const tierWithItems = lockedTiersWithCumulativeItems.find(t => t.id === tier.id);
+            const tierWithItems = lockedTiersWithCumulativeItems.find(
+              (t) => t.id === tier.id
+            );
             if (!tierWithItems) return null;
 
-            const index = lockedTiers.findIndex(t => t.id === tier.id);
+            const index = lockedTiers.findIndex((t) => t.id === tier.id);
             return (
               <LockedTierCard
                 key={tier.id}

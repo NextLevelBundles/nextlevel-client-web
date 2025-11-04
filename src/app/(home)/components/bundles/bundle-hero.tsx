@@ -2,7 +2,7 @@
 
 import { Card } from "@/shared/components/ui/card";
 import { Timer, BookOpen, Gamepad2, Package } from "lucide-react";
-import { Bundle, BundleType } from "@/app/(shared)/types/bundle";
+import { Bundle, BundleType, TierType } from "@/app/(shared)/types/bundle";
 import { useCountdownTimer } from "@/app/(shared)/hooks/useCountdownTimer";
 import { BundleStaticDeck } from "./bundle-static-deck";
 
@@ -12,6 +12,15 @@ interface BundleHeroProps {
 
 export function BundleHero({ bundle }: BundleHeroProps) {
   const { timeLeft, hasEnded } = useCountdownTimer(bundle?.endsAt);
+
+  // Count only products from base tiers
+  const baseTierIds = bundle.tiers
+    ?.filter((tier) => tier.type === TierType.Base)
+    .map((tier) => tier.id) || [];
+
+  const baseProductCount = bundle.products?.filter(
+    (product) => product.bundleTierId && baseTierIds.includes(product.bundleTierId)
+  ).length || 0;
 
   return (
     <div className="container max-w-[1560px] relative h-[50vh] min-h-[500px] w-full overflow-hidden rounded-3xl">
@@ -79,7 +88,7 @@ export function BundleHero({ bundle }: BundleHeroProps) {
                   <span>Contains</span>
                 </div>
                 <div className="text-2xl font-mono font-bold text-white">
-                  {bundle.products?.length || 0}{" "}
+                  {baseProductCount}{" "}
                   <span className="text-lg font-normal text-white/90">
                     {bundle.type === BundleType.EBook ? "Books" : "Games"}
                   </span>

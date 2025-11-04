@@ -10,7 +10,15 @@ import {
 import { ScrollArea } from "@/shared/components/ui/scroll-area";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
-import { ChevronLeft, ChevronRight, BookOpen, Calendar, User, Hash, FileText } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  BookOpen,
+  Calendar,
+  User,
+  Hash,
+  FileText,
+} from "lucide-react";
 import Image from "next/image";
 import { Bundle, Product } from "@/app/(shared)/types/bundle";
 
@@ -95,7 +103,7 @@ export function BookDetailDrawer({
                   className="object-cover"
                 />
               </div>
-              
+
               <div className="space-y-4">
                 <div>
                   <h2 className="text-2xl font-bold mb-2">{product.title}</h2>
@@ -120,7 +128,9 @@ export function BookDetailDrawer({
                     <div className="flex items-center gap-2 text-sm">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       <span className="text-muted-foreground">Published:</span>
-                      <span>{new Date(metadata.publicationDate).getFullYear()}</span>
+                      <span>
+                        {new Date(metadata.publicationDate).getFullYear()}
+                      </span>
                     </div>
                   )}
                   {metadata?.pageCount && (
@@ -140,27 +150,32 @@ export function BookDetailDrawer({
                 </div>
 
                 {/* Available Formats */}
-                {metadata?.availableFormats && metadata.availableFormats.length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-semibold mb-2">Available Formats</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {metadata.availableFormats.map((format) => (
-                        <Badge
-                          key={format}
-                          variant="secondary"
-                          className="bg-amber-50 text-amber-700 dark:bg-amber-500/20 dark:text-amber-500"
-                        >
-                          {format}
-                        </Badge>
-                      ))}
+                {metadata?.availableFormats &&
+                  metadata.availableFormats.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-semibold mb-2">
+                        Available Formats
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {metadata.availableFormats.map((format) => (
+                          <Badge
+                            key={format}
+                            variant="secondary"
+                            className="bg-amber-50 text-amber-700 dark:bg-amber-500/20 dark:text-amber-500"
+                          >
+                            {format}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
                 {/* Retail Price */}
                 <div className="pt-4 border-t">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Retail Price</span>
+                    <span className="text-sm text-muted-foreground">
+                      Retail Price
+                    </span>
                     <span className="text-lg font-semibold line-through text-muted-foreground">
                       ${product.price}
                     </span>
@@ -182,7 +197,7 @@ export function BookDetailDrawer({
                 <div className="p-4 bg-amber-50/50 dark:bg-amber-500/10 rounded-lg border border-amber-200 dark:border-amber-500/20">
                   <h4 className="font-semibold mb-2 flex items-center gap-2">
                     <BookOpen className="h-4 w-4" />
-                    Curator's Note
+                    Curator's Corner
                   </h4>
                   <p className="text-sm">{product.curatorComment}</p>
                 </div>

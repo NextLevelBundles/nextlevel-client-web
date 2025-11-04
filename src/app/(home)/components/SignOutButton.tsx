@@ -18,7 +18,13 @@ export default function SignOutButton({ variant = "default" }: SignOutButtonProp
 
   const onSignOut = async () => {
     setIsLoading(true);
-    await signOut();
+    // Capture current URL to redirect back after logout (only for public pages)
+    const currentPath = window.location.pathname;
+    const isProtectedRoute = currentPath.startsWith('/customer') || currentPath.startsWith('/onboarding');
+
+    // Only redirect back to current page if it's a public page
+    const redirectUrl = isProtectedRoute ? '/' : currentPath;
+    await signOut(redirectUrl);
     // setIsLoading will be cleared when component unmounts
   };
 

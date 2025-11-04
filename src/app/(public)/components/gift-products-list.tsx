@@ -96,7 +96,7 @@ export function GiftProductsList({
                             alt={product.title}
                             width={64}
                             height={64}
-                            className="h-16 w-16 rounded object-cover"
+                            className="rounded shadow object-contain aspect-[2/3]"
                           />
                           {product.steamGameInfo && (
                             <div className="absolute -bottom-1 -right-1 rounded-full bg-blue-600 p-1">

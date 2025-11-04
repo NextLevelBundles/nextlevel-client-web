@@ -40,27 +40,33 @@ export interface CartItemGift {
 
 export interface SteamKeyGift {
   id: string;
-  assignmentId: string;
-  productTitle: string;
-  productDescription?: string;
-  productImageUrl?: string;
-  bundleName?: string;
-  giftedByCustomerName: string;
-  giftedByCustomerId: string;
-  recipientEmail: string;
-  recipientName?: string;
-  giftMessage?: string;
-  createdAt: string;
-  expiresAt?: string;
-  acceptedAt?: string;
-  status: "Pending" | "Accepted" | "Expired" | "Declined";
-  recipientHasAccount: boolean;
-  steamGameMetadata?: {
-    developers?: Array<{ name: string }>;
-    publishers?: Array<{ name: string }>;
-    releaseDate?: { date: string };
-    platforms?: string[];
+  steamKeyId: string;
+  title: string;
+  headerImage?: string;
+  steamGameMetadata: {
+    website: string | null;
+    protonDbTier: string | null;
+    pcRequirements: string | null;
+    macRequirements: string | null;
+    linuxRequirements: string | null;
+    developers: string[];
+    publishers: string[];
+    releaseDate: string | null;
+    platforms: string | null;
+    trailerUrl: string | null;
+    screenshotUrlsJson: string | null;
+    steamAppId: number;
   };
+  status: "Pending" | "Assigned" | "Revealed" | "Expired" | "Refunded";
+  assignedAt: string;
+  expiresAt: string;
+  giftedByCustomerName: string;
+  giftMessage: string;
+  giftedAt: string;
+  giftAccepted: boolean;
+  giftAcceptedAt: string | null;
+  recipientEmail?: string;
+  recipientHasAccount?: boolean;
 }
 
 export interface GiftDetailsRequest {

@@ -169,14 +169,19 @@ export class AuthService {
    * Routes to appropriate auth provider (Cognito or Test)
    */
   static async getCurrentUser() {
-    const provider = getAuthProvider();
-    return provider.getCurrentUser();
+    try {
+      const user = await getCurrentUser();
+      const attributes = await fetchUserAttributes();
+      const session = await fetchAuthSession();
+      const customerId = session.tokens?.idToken?.payload?.['custom:customerId'] as string | undefined;
+
+      return { success: true, user, attributes, customerId };
+    } catch (error) {
+      console.error("Get current user error:", error);
+      return { success: false, user: null, attributes: null, customerId: undefined };
+    }
   }
 
-  /**
-   * Check if user has completed profile setup
-   * Routes to appropriate auth provider (Cognito or Test)
-   */
   static async hasCompletedProfile(): Promise<boolean> {
     const provider = getAuthProvider();
     return provider.hasCompletedProfile();
