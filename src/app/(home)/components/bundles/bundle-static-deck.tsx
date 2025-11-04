@@ -15,8 +15,8 @@ export function BundleStaticDeck({
   className,
   containerClassName,
 }: BundleStaticDeckProps) {
-  // Take maximum 5 images
-  const displayImages = images.slice(0, 5);
+  // Display all images
+  const displayImages = images;
 
   if (displayImages.length === 0) {
     return (
