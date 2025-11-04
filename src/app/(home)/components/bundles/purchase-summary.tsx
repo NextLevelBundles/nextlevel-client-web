@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
@@ -12,11 +12,8 @@ import {
   BookOpen,
   Gamepad2,
   MapPin,
-  Info,
   Download,
   AlertCircle,
-  X,
-  Lock,
   Clock,
 } from "lucide-react";
 import dayjs from "dayjs";
@@ -33,14 +30,7 @@ import {
   BundleTierAvailabilityResponse,
 } from "@/lib/api/types/bundle";
 import { AddToCartButton } from "../cart/add-to-cart-button";
-import { useCustomerLocation } from "@/hooks/queries/useCustomerLocation";
 import { useCustomer } from "@/hooks/queries/useCustomer";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/shared/components/ui/tooltip";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
 import { useRouter } from "next/navigation";
 
@@ -92,8 +82,8 @@ export function PurchaseSummary({
   const router = useRouter();
 
   // Only fetch location data if user is authenticated
-  const { data: locationData, isLoading: isLoadingLocation } =
-    useCustomerLocation(isAuthenticated);
+  // const { data: locationData, isLoading: isLoadingLocation } =
+  //   useCustomerLocation(isAuthenticated);
 
   // Fetch customer data to check Steam connection status (only if authenticated)
   const { data: customer } = useCustomer();
@@ -680,7 +670,7 @@ export function PurchaseSummary({
       </Card>
 
       {/* Location Warning */}
-      {isAuthenticated && !isLoadingLocation && locationData?.ipCountry && (
+      {/* {isAuthenticated && !isLoadingLocation && locationData?.ipCountry && (
         <Card className="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
           <div className="flex items-start gap-2">
             <MapPin className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5" />
@@ -694,7 +684,7 @@ export function PurchaseSummary({
             </div>
           </div>
         </Card>
-      )}
+      )} */}
     </div>
   );
 }
