@@ -24,11 +24,16 @@ export default function ResetPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{
+    code?: string;
+    newPassword?: string;
+    confirmPassword?: string;
+  }>({});
 
-  const isFormValid = 
-    email.length > 0 && 
-    code.length === 6 && 
-    newPassword.length >= 8 && 
+  const isFormValid =
+    email.length > 0 &&
+    code.length === 6 &&
+    newPassword.length >= 8 &&
     confirmPassword === newPassword;
 
   useEffect(() => {
@@ -38,37 +43,49 @@ export default function ResetPasswordPage() {
     }
   }, [emailParam, router]);
 
-  const validatePassword = () => {
-    if (newPassword !== confirmPassword) {
-      setError("Passwords do not match");
-      return false;
+  const validateFields = () => {
+    const errors: typeof fieldErrors = {};
+
+    // Validate code
+    if (code.length === 0) {
+      errors.code = "Verification code is required";
+    } else if (code.length !== 6) {
+      errors.code = "Code must be 6 digits";
     }
 
-    if (newPassword.length < 8) {
-      setError("Password must be at least 8 characters long");
-      return false;
+    // Validate new password
+    if (newPassword.length === 0) {
+      errors.newPassword = "Password is required";
+    } else if (newPassword.length < 8) {
+      errors.newPassword = "Password must be at least 8 characters long";
+    } else {
+      const hasLowercase = /[a-z]/.test(newPassword);
+      const hasUppercase = /[A-Z]/.test(newPassword);
+      const hasNumber = /[0-9]/.test(newPassword);
+      const hasSymbol = /[^a-zA-Z0-9]/.test(newPassword);
+
+      if (!hasLowercase || !hasUppercase || !hasNumber || !hasSymbol) {
+        errors.newPassword =
+          "Must contain uppercase, lowercase, number, and symbol";
+      }
     }
 
-    const hasLowercase = /[a-z]/.test(newPassword);
-    const hasUppercase = /[A-Z]/.test(newPassword);
-    const hasNumber = /[0-9]/.test(newPassword);
-    const hasSymbol = /[^a-zA-Z0-9]/.test(newPassword);
-
-    if (!hasLowercase || !hasUppercase || !hasNumber || !hasSymbol) {
-      setError(
-        "Password must contain at least one lowercase letter, one uppercase letter, one number, and one symbol"
-      );
-      return false;
+    // Validate confirm password
+    if (confirmPassword.length === 0) {
+      errors.confirmPassword = "Please confirm your password";
+    } else if (newPassword !== confirmPassword) {
+      errors.confirmPassword = "Passwords do not match";
     }
 
-    return true;
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!validatePassword()) {
+    if (!validateFields()) {
       return;
     }
 
@@ -138,18 +155,28 @@ export default function ResetPasswordPage() {
               id="code"
               type="text"
               value={code}
-              onChange={(e) => setCode(e.target.value)}
+              onChange={(e) => {
+                setCode(e.target.value);
+                if (fieldErrors.code) {
+                  setFieldErrors((prev) => ({ ...prev, code: undefined }));
+                }
+              }}
               placeholder="# # # # # #"
-              required
               autoFocus
               autoComplete="one-time-code"
-              className="w-full pl-10 h-12 font-mono text-center tracking-[0.5em] text-lg"
+              className={`w-full pl-10 h-12 font-mono text-center tracking-[0.5em] text-lg ${
+                fieldErrors.code ? "border-red-500 focus-visible:ring-red-500" : ""
+              }`}
               maxLength={6}
             />
           </div>
-          <p className="text-xs text-muted-foreground text-center">
-            Enter 6-digit code from your email
-          </p>
+          {fieldErrors.code ? (
+            <p className="text-xs text-red-500 text-center">{fieldErrors.code}</p>
+          ) : (
+            <p className="text-xs text-muted-foreground text-center">
+              Enter 6-digit code from your email
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -162,11 +189,17 @@ export default function ResetPasswordPage() {
               id="newPassword"
               type={showNewPassword ? "text" : "password"}
               value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
+              onChange={(e) => {
+                setNewPassword(e.target.value);
+                if (fieldErrors.newPassword) {
+                  setFieldErrors((prev) => ({ ...prev, newPassword: undefined }));
+                }
+              }}
               placeholder="Create a new password"
-              required
               autoComplete="new-password"
-              className="w-full pl-10 pr-10 h-11"
+              className={`w-full pl-10 pr-10 h-11 ${
+                fieldErrors.newPassword ? "border-red-500 focus-visible:ring-red-500" : ""
+              }`}
             />
             <button
               type="button"
@@ -181,9 +214,13 @@ export default function ResetPasswordPage() {
               )}
             </button>
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            Must be 8+ characters with uppercase, lowercase, number, and symbol
-          </p>
+          {fieldErrors.newPassword ? (
+            <p className="text-xs text-red-500 mt-1">{fieldErrors.newPassword}</p>
+          ) : (
+            <p className="text-xs text-muted-foreground mt-1">
+              Must be 8+ characters with uppercase, lowercase, number, and symbol
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -196,11 +233,17 @@ export default function ResetPasswordPage() {
               id="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                if (fieldErrors.confirmPassword) {
+                  setFieldErrors((prev) => ({ ...prev, confirmPassword: undefined }));
+                }
+              }}
               placeholder="Confirm your new password"
-              required
               autoComplete="new-password"
-              className="w-full pl-10 pr-10 h-11"
+              className={`w-full pl-10 pr-10 h-11 ${
+                fieldErrors.confirmPassword ? "border-red-500 focus-visible:ring-red-500" : ""
+              }`}
             />
             <button
               type="button"
@@ -215,12 +258,15 @@ export default function ResetPasswordPage() {
               )}
             </button>
           </div>
+          {fieldErrors.confirmPassword && (
+            <p className="text-xs text-red-500 mt-1">{fieldErrors.confirmPassword}</p>
+          )}
         </div>
 
         <div className="pt-4">
           <Button
             type="submit"
-            disabled={isLoading || !isFormValid}
+            disabled={isLoading}
             className="w-full h-11"
             size="lg"
           >

@@ -18,12 +18,34 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{
+    email?: string;
+  }>({});
 
   const isFormValid = email.length > 0;
+
+  const validateFields = () => {
+    const errors: typeof fieldErrors = {};
+
+    // Validate email
+    if (email.length === 0) {
+      errors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = "Please enter a valid email address";
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (!validateFields()) {
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -95,19 +117,28 @@ export default function ForgotPasswordPage() {
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (fieldErrors.email) {
+                  setFieldErrors((prev) => ({ ...prev, email: undefined }));
+                }
+              }}
               placeholder="Enter your email"
-              required
               autoComplete="email"
-              className="w-full pl-10 h-11"
+              className={`w-full pl-10 h-11 ${
+                fieldErrors.email ? "border-red-500 focus-visible:ring-red-500" : ""
+              }`}
             />
           </div>
+          {fieldErrors.email && (
+            <p className="text-xs text-red-500 mt-1">{fieldErrors.email}</p>
+          )}
         </div>
 
         <div className="pt-4">
           <Button
             type="submit"
-            disabled={isLoading || !isFormValid}
+            disabled={isLoading}
             className="w-full h-11"
             size="lg"
           >

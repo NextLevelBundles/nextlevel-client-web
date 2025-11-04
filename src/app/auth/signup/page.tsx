@@ -32,6 +32,12 @@ export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{
+    name?: string;
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+  }>({});
 
   const isFormValid =
     email.length > 0 &&
@@ -39,37 +45,54 @@ export default function SignUpPage() {
     confirmPassword === password &&
     name.trim().length > 0;
 
-  const validatePassword = () => {
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return false;
+  const validateFields = () => {
+    const errors: typeof fieldErrors = {};
+
+    // Validate name
+    if (name.trim().length === 0) {
+      errors.name = "Full name is required";
     }
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters long");
-      return false;
+    // Validate email
+    if (email.length === 0) {
+      errors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = "Please enter a valid email address";
     }
 
-    const hasLowercase = /[a-z]/.test(password);
-    const hasUppercase = /[A-Z]/.test(password);
-    const hasNumber = /[0-9]/.test(password);
-    const hasSymbol = /[^a-zA-Z0-9]/.test(password);
+    // Validate password
+    if (password.length === 0) {
+      errors.password = "Password is required";
+    } else if (password.length < 8) {
+      errors.password = "Password must be at least 8 characters long";
+    } else {
+      const hasLowercase = /[a-z]/.test(password);
+      const hasUppercase = /[A-Z]/.test(password);
+      const hasNumber = /[0-9]/.test(password);
+      const hasSymbol = /[^a-zA-Z0-9]/.test(password);
 
-    if (!hasLowercase || !hasUppercase || !hasNumber || !hasSymbol) {
-      setError(
-        "Password must contain at least one lowercase letter, one uppercase letter, one number, and one symbol"
-      );
-      return false;
+      if (!hasLowercase || !hasUppercase || !hasNumber || !hasSymbol) {
+        errors.password =
+          "Must contain uppercase, lowercase, number, and symbol";
+      }
     }
 
-    return true;
+    // Validate confirm password
+    if (confirmPassword.length === 0) {
+      errors.confirmPassword = "Please confirm your password";
+    } else if (password !== confirmPassword) {
+      errors.confirmPassword = "Passwords do not match";
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!validatePassword()) {
+    if (!validateFields()) {
       return;
     }
 
@@ -164,13 +187,22 @@ export default function SignUpPage() {
               id="name"
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (fieldErrors.name) {
+                  setFieldErrors((prev) => ({ ...prev, name: undefined }));
+                }
+              }}
               placeholder="Enter your full name"
-              required
               autoComplete="name"
-              className="w-full pl-10 h-11"
+              className={`w-full pl-10 h-11 ${
+                fieldErrors.name ? "border-red-500 focus-visible:ring-red-500" : ""
+              }`}
             />
           </div>
+          {fieldErrors.name && (
+            <p className="text-xs text-red-500 mt-1">{fieldErrors.name}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -183,13 +215,22 @@ export default function SignUpPage() {
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (fieldErrors.email) {
+                  setFieldErrors((prev) => ({ ...prev, email: undefined }));
+                }
+              }}
               placeholder="Enter your email"
-              required
               autoComplete="email"
-              className="w-full pl-10 h-11"
+              className={`w-full pl-10 h-11 ${
+                fieldErrors.email ? "border-red-500 focus-visible:ring-red-500" : ""
+              }`}
             />
           </div>
+          {fieldErrors.email && (
+            <p className="text-xs text-red-500 mt-1">{fieldErrors.email}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -202,11 +243,17 @@ export default function SignUpPage() {
               id="password"
               type={showPassword ? "text" : "password"}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (fieldErrors.password) {
+                  setFieldErrors((prev) => ({ ...prev, password: undefined }));
+                }
+              }}
               placeholder="Create a strong password"
-              required
               autoComplete="new-password"
-              className="w-full pl-10 pr-10 h-11"
+              className={`w-full pl-10 pr-10 h-11 ${
+                fieldErrors.password ? "border-red-500 focus-visible:ring-red-500" : ""
+              }`}
             />
             <button
               type="button"
@@ -221,9 +268,13 @@ export default function SignUpPage() {
               )}
             </button>
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            Must be 8+ characters with uppercase, lowercase, number, and symbol
-          </p>
+          {fieldErrors.password ? (
+            <p className="text-xs text-red-500 mt-1">{fieldErrors.password}</p>
+          ) : (
+            <p className="text-xs text-muted-foreground mt-1">
+              Must be 8+ characters with uppercase, lowercase, number, and symbol
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -239,11 +290,17 @@ export default function SignUpPage() {
               id="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                if (fieldErrors.confirmPassword) {
+                  setFieldErrors((prev) => ({ ...prev, confirmPassword: undefined }));
+                }
+              }}
               placeholder="Confirm your password"
-              required
               autoComplete="new-password"
-              className="w-full pl-10 pr-10 h-11"
+              className={`w-full pl-10 pr-10 h-11 ${
+                fieldErrors.confirmPassword ? "border-red-500 focus-visible:ring-red-500" : ""
+              }`}
             />
             <button
               type="button"
@@ -258,12 +315,15 @@ export default function SignUpPage() {
               )}
             </button>
           </div>
+          {fieldErrors.confirmPassword && (
+            <p className="text-xs text-red-500 mt-1">{fieldErrors.confirmPassword}</p>
+          )}
         </div>
 
         <div className="pt-4">
           <Button
             type="submit"
-            disabled={isLoading || !isFormValid}
+            disabled={isLoading}
             className="w-full h-11"
             size="lg"
           >

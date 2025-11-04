@@ -21,12 +21,40 @@ export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{
+    email?: string;
+    password?: string;
+  }>({});
 
   const isFormValid = email.length > 0 && password.length > 0;
+
+  const validateFields = () => {
+    const errors: typeof fieldErrors = {};
+
+    // Validate email
+    if (email.length === 0) {
+      errors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = "Please enter a valid email address";
+    }
+
+    // Validate password
+    if (password.length === 0) {
+      errors.password = "Password is required";
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (!validateFields()) {
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -84,13 +112,22 @@ export default function SignInPage() {
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (fieldErrors.email) {
+                  setFieldErrors((prev) => ({ ...prev, email: undefined }));
+                }
+              }}
               placeholder="Enter your email"
-              required
               autoComplete="email"
-              className="w-full pl-10 h-11"
+              className={`w-full pl-10 h-11 ${
+                fieldErrors.email ? "border-red-500 focus-visible:ring-red-500" : ""
+              }`}
             />
           </div>
+          {fieldErrors.email && (
+            <p className="text-xs text-red-500 mt-1">{fieldErrors.email}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -111,11 +148,17 @@ export default function SignInPage() {
               id="password"
               type={showPassword ? "text" : "password"}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (fieldErrors.password) {
+                  setFieldErrors((prev) => ({ ...prev, password: undefined }));
+                }
+              }}
               placeholder="Enter your password"
-              required
               autoComplete="current-password"
-              className="w-full pl-10 pr-10 h-11"
+              className={`w-full pl-10 pr-10 h-11 ${
+                fieldErrors.password ? "border-red-500 focus-visible:ring-red-500" : ""
+              }`}
             />
             <button
               type="button"
@@ -130,12 +173,15 @@ export default function SignInPage() {
               )}
             </button>
           </div>
+          {fieldErrors.password && (
+            <p className="text-xs text-red-500 mt-1">{fieldErrors.password}</p>
+          )}
         </div>
 
         <div className="pt-4">
           <Button
             type="submit"
-            disabled={isLoading || !isFormValid}
+            disabled={isLoading}
             className="w-full h-11"
             size="lg"
           >
