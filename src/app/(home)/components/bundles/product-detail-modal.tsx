@@ -209,7 +209,7 @@ export function ProductDetailModal({
               quality={90}
               src={product.coverImage?.url || "/placeholder.jpg"}
               alt={product.title}
-              className="object-cover"
+              className="object-contain"
             />
             {!isUnlocked && (
               <div className="absolute top-4 right-4 bg-destructive/90 backdrop-blur-sm rounded-full p-2">
