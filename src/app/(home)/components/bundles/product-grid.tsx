@@ -163,8 +163,8 @@ export function ProductGrid({
                     alt={product.title}
                     className="object-contain transition-all duration-300 group-hover:scale-105 group-hover:brightness-[1.02] saturate-[1.02] group-hover:saturate-[1.05]"
                   />
-                  {/* Floating price badge */}
-                  <div className="absolute top-2 right-2 text-sm font-semibold bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm line-through text-blue-600 dark:text-primary px-2.5 py-1 rounded-lg shadow-lg border border-blue-100 dark:border-primary/20">
+                  {/* Floating price badge - only visible on hover */}
+                  <div className="absolute top-2 right-2 text-sm font-semibold bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm line-through text-blue-600 dark:text-primary px-2.5 py-1 rounded-lg shadow-lg border border-blue-100 dark:border-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     ${product.price}
                   </div>
                 </div>
