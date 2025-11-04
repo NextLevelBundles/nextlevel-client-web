@@ -38,10 +38,10 @@ export function CharityHighlight({
         </div>
         {totalRaisedForCharity !== undefined && totalRaisedForCharity > 0 && (
           <div className="text-right">
-            <div className="text-xs text-muted-foreground uppercase tracking-wide mb-0.5">
-              Total raised from this bundle
+            <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+              Total Raised
             </div>
-            <div className="text-xl font-bold text-rose-400">
+            <div className="text-2xl font-bold font-mono bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">
               {formatCurrency(totalRaisedForCharity)}
             </div>
           </div>
