@@ -182,10 +182,13 @@ export class AuthService {
     try {
       const user = await getCurrentUser();
       const attributes = await fetchUserAttributes();
-      return { success: true, user, attributes };
+      const session = await fetchAuthSession();
+      const customerId = session.tokens?.idToken?.payload?.['custom:customerId'] as string | undefined;
+
+      return { success: true, user, attributes, customerId };
     } catch (error) {
       console.error("Get current user error:", error);
-      return { success: false, user: null, attributes: null };
+      return { success: false, user: null, attributes: null, customerId: undefined };
     }
   }
 

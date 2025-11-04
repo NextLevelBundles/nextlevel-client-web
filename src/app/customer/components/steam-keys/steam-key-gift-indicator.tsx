@@ -32,7 +32,10 @@ import {
 } from "@/app/(shared)/components/ui/alert-dialog";
 import { toast } from "sonner";
 import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 import { useState } from "react";
+
+dayjs.extend(relativeTime);
 import { giftApi } from "@/lib/api";
 import { SteamKeyAssignment } from "@/lib/api/types/steam-key";
 import Link from "next/link";
@@ -57,32 +60,41 @@ export function SteamKeyGiftIndicator({
 
   if (!steamKey.isGift) return null;
 
-  // Determine if gift is outgoing or incoming based on customerId
-  const isOutgoing = steamKey.customerId === currentCustomerId;
-  const isReceived = !isOutgoing;
-  const Icon = isReceived ? Gift : Send;
+  // Determine if current user is the gifter or receiver
+  // Current user is the gifter if their customerId matches giftedByCustomerId
+  const isGifter = steamKey.giftedByCustomerId === currentCustomerId;
+  console.log(steamKey.giftedByCustomerId, currentCustomerId, isGifter);
+  const isReceiver = !isGifter;
+  const Icon = isReceiver ? Gift : Send;
 
   let label = "Gift";
   let badgeClassName = "";
 
-  if (isReceived) {
+  if (isReceiver) {
+    // Current user received this gift - show "From [gifter name]"
     if (steamKey.giftedByCustomerName) {
       label = `From ${steamKey.giftedByCustomerName}`;
     } else {
       label = "Received Gift";
     }
     if (steamKey.giftAccepted === true) {
-      badgeClassName = "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/30 border-green-200 dark:border-green-800";
+      badgeClassName =
+        "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/30 border-green-200 dark:border-green-800";
     } else {
-      badgeClassName = "bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30 border-amber-200 dark:border-amber-800";
+      badgeClassName =
+        "bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30 border-amber-200 dark:border-amber-800";
     }
-  } else if (isOutgoing) {
-    const recipient = steamKey.giftRecipientName || steamKey.giftRecipientEmail || "someone";
+  } else if (isGifter) {
+    // Current user gifted this key - show "To [recipient name]"
+    const recipient =
+      steamKey.giftRecipientName || steamKey.giftRecipientEmail || "someone";
     label = `To ${recipient}`;
     if (steamKey.giftAccepted === true) {
-      badgeClassName = "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/30 border-green-200 dark:border-green-800";
+      badgeClassName =
+        "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/30 border-green-200 dark:border-green-800";
     } else {
-      badgeClassName = "bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30 border-blue-200 dark:border-blue-800";
+      badgeClassName =
+        "bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30 border-blue-200 dark:border-blue-800";
     }
   }
 
@@ -121,9 +133,11 @@ export function SteamKeyGiftIndicator({
     setIsResending(true);
     try {
       const response = await giftApi.resendSteamKeyGiftEmail(steamKey.id);
-      
+
       toast.success("Email sent!", {
-        description: response.message || "Gift notification has been resent to the recipient",
+        description:
+          response.message ||
+          "Gift notification has been resent to the recipient",
       });
     } catch (err) {
       console.error("Error resending email:", err);
@@ -140,12 +154,14 @@ export function SteamKeyGiftIndicator({
     <>
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogTrigger asChild>
-          <Badge 
+          <Badge
             className={`inline-flex items-center gap-1 cursor-pointer transition-colors w-fit ${badgeClassName}`}
           >
             <Icon className="h-3 w-3" />
             <span className="text-xs">{label}</span>
-            {steamKey.giftAccepted === true && <CheckCircle className="h-3 w-3" />}
+            {steamKey.giftAccepted === true && (
+              <CheckCircle className="h-3 w-3" />
+            )}
             {steamKey.giftAccepted === false && <Clock className="h-3 w-3" />}
           </Badge>
         </DialogTrigger>
@@ -156,8 +172,9 @@ export function SteamKeyGiftIndicator({
               Steam Key Gift Details
             </DialogTitle>
             <DialogDescription>
-              {isReceived ? "Gift received" : "Gift sent"}
-              {steamKey.giftedAt && ` on ${dayjs(steamKey.giftedAt).format("MMMM D, YYYY")}`}
+              {isReceiver ? "Gift received" : "Gift sent"}
+              {steamKey.giftedAt &&
+                ` on ${dayjs(steamKey.giftedAt).format("MMMM D, YYYY")}`}
             </DialogDescription>
           </DialogHeader>
 
@@ -167,52 +184,75 @@ export function SteamKeyGiftIndicator({
               <span className="text-sm font-medium text-muted-foreground">
                 Game:
               </span>
-              <span className="text-sm font-medium">{steamKey.productTitle}</span>
+              <span className="text-sm font-medium">
+                {steamKey.productTitle}
+              </span>
             </div>
 
             {/* Gift sender/recipient info */}
             <div className="space-y-2">
-              {isReceived && steamKey.giftedByCustomerName && (
+              {isReceiver && steamKey.giftedByCustomerName && (
                 <div className="flex items-start gap-2">
                   <span className="text-sm font-medium text-muted-foreground">
                     From:
                   </span>
-                  <span className="text-sm">{steamKey.giftedByCustomerName}</span>
-                </div>
-              )}
-              {isOutgoing && (steamKey.giftRecipientName || steamKey.giftRecipientEmail) && (
-                <div className="flex items-start gap-2">
-                  <span className="text-sm font-medium text-muted-foreground">
-                    To:
-                  </span>
                   <span className="text-sm">
-                    {steamKey.giftRecipientName || steamKey.giftRecipientEmail}
+                    {steamKey.giftedByCustomerName}
                   </span>
                 </div>
               )}
-              
+              {isGifter &&
+                (steamKey.giftRecipientName || steamKey.giftRecipientEmail) && (
+                  <div className="flex items-start gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">
+                      To:
+                    </span>
+                    <span className="text-sm">
+                      {steamKey.giftRecipientName ||
+                        steamKey.giftRecipientEmail}
+                    </span>
+                  </div>
+                )}
+
               {/* Status */}
               <div className="flex items-start gap-2">
                 <span className="text-sm font-medium text-muted-foreground">
                   Status:
                 </span>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-1">
                   {steamKey.giftAccepted === true ? (
-                    <>
+                    <div className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span className="text-sm text-green-600">
+                      <span className="text-sm text-green-600 font-medium">
                         Accepted
                         {steamKey.giftAcceptedAt
                           ? ` on ${dayjs(steamKey.giftAcceptedAt).format("MMM D, YYYY")}`
                           : ""}
                       </span>
-                    </>
+                    </div>
                   ) : (
                     <>
-                      <Clock className="h-4 w-4 text-amber-600" />
-                      <span className="text-sm text-amber-600">
-                        {isReceived ? "Not accepted yet" : "Pending acceptance"}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-amber-600" />
+                        <span className="text-sm text-amber-600 font-medium">
+                          {isReceiver
+                            ? "Not accepted yet"
+                            : "Pending acceptance"}
+                        </span>
+                      </div>
+                      {/* Show expiration info for pending gifts */}
+                      {steamKey.expiresAt && (
+                        <div className="flex items-start gap-2 ml-6">
+                          <AlertCircle className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
+                          <span className="text-xs text-muted-foreground">
+                            {isGifter ? "Expires" : "You must accept by"}{" "}
+                            {dayjs(steamKey.expiresAt).format(
+                              "MMM D, YYYY [at] h:mm A"
+                            )}{" "}
+                            ({dayjs(steamKey.expiresAt).fromNow()})
+                          </span>
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
@@ -223,39 +263,46 @@ export function SteamKeyGiftIndicator({
             {steamKey.giftMessage && (
               <div>
                 <p className="text-sm font-medium text-muted-foreground mb-2">
-                  {isReceived && steamKey.giftedByCustomerName
+                  {isReceiver && steamKey.giftedByCustomerName
                     ? `${steamKey.giftedByCustomerName} said:`
                     : "Message:"}
                 </p>
                 <div className="p-4 bg-muted rounded-lg">
-                  <p className="text-sm whitespace-pre-wrap">{steamKey.giftMessage}</p>
+                  <p className="text-sm whitespace-pre-wrap">
+                    {steamKey.giftMessage}
+                  </p>
                 </div>
               </div>
             )}
 
             {/* Purchase gift notice */}
-            {steamKey.isPurchaseGift && isReceived && !steamKey.giftAccepted && (
-              <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5" />
-                <div className="space-y-1">
-                  <p className="text-sm text-blue-800 dark:text-blue-300">
-                    This key is part of a bundle gift
-                  </p>
-                  <p className="text-xs text-blue-600 dark:text-blue-400">
-                    Please accept the entire bundle gift in your{" "}
-                    <Link href="/customer/purchases" className="underline hover:no-underline">
-                      Purchase History
-                    </Link>{" "}
-                    to receive this key.
-                  </p>
+            {steamKey.isPurchaseGift &&
+              isReceiver &&
+              !steamKey.giftAccepted && (
+                <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="text-sm text-blue-800 dark:text-blue-300">
+                      This key is part of a bundle gift
+                    </p>
+                    <p className="text-xs text-blue-600 dark:text-blue-400">
+                      Please accept the entire bundle gift in your{" "}
+                      <Link
+                        href="/customer/purchases"
+                        className="underline hover:no-underline"
+                      >
+                        Purchase History
+                      </Link>{" "}
+                      to receive this key.
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Action buttons */}
             <div className="flex justify-end gap-2 mt-4">
-              {/* Resend button for pending outgoing gifts */}
-              {isOutgoing && steamKey.id && !steamKey.giftAccepted && (
+              {/* Resend button for pending outgoing gifts (when user is gifter) */}
+              {isGifter && steamKey.id && !steamKey.giftAccepted && (
                 <Button
                   variant="outline"
                   onClick={handleResendEmail}
@@ -275,12 +322,12 @@ export function SteamKeyGiftIndicator({
                   )}
                 </Button>
               )}
-              
+
               {/* Accept button for pending received gifts (only if not part of purchase gift) */}
-              {isReceived && 
-                steamKey.id && 
-                currentUserEmail && 
-                !steamKey.giftAccepted && 
+              {isReceiver &&
+                steamKey.id &&
+                currentUserEmail &&
+                !steamKey.giftAccepted &&
                 !steamKey.isPurchaseGift && (
                   <Button
                     onClick={() => setShowConfirmDialog(true)}
@@ -302,9 +349,9 @@ export function SteamKeyGiftIndicator({
           <AlertDialogHeader>
             <AlertDialogTitle>Accept Gift?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to accept this gift? Once accepted, the game key
-              will be added to your library and cannot be transferred to another
-              account.
+              Are you sure you want to accept this gift? Once accepted, the game
+              key will be added to your library and cannot be transferred to
+              another account.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

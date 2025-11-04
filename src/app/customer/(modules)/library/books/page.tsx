@@ -110,20 +110,28 @@ export default function BooksLibraryPage() {
   const searchParams = useSearchParams();
 
   // URL query parameters
-  const [searchInput, setSearchInput] = useState(searchParams.get("search") || "");
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
-  const [giftFilter, setGiftFilter] = useState<"All" | "Owned" | "ReceivedByMe">(
-    (searchParams.get("giftFilter") as any) || "All"
+  const [searchInput, setSearchInput] = useState(
+    searchParams.get("search") || ""
   );
+  const [searchQuery, setSearchQuery] = useState(
+    searchParams.get("search") || ""
+  );
+  const [giftFilter, setGiftFilter] = useState<
+    "All" | "Owned" | "ReceivedByMe"
+  >((searchParams.get("giftFilter") as any) || "All");
   const [bundleId, setBundleId] = useState(searchParams.get("bundleId") || "");
   const [hasDownloadedBefore, setHasDownloadedBefore] = useState(
     searchParams.get("hasDownloadedBefore") || "all"
   );
   const [fromDate, setFromDate] = useState<Date | undefined>(
-    searchParams.get("fromDate") ? new Date(searchParams.get("fromDate")!) : undefined
+    searchParams.get("fromDate")
+      ? new Date(searchParams.get("fromDate")!)
+      : undefined
   );
   const [toDate, setToDate] = useState<Date | undefined>(
-    searchParams.get("toDate") ? new Date(searchParams.get("toDate")!) : undefined
+    searchParams.get("toDate")
+      ? new Date(searchParams.get("toDate")!)
+      : undefined
   );
   const [page, setPage] = useState(parseInt(searchParams.get("page") || "1"));
   const [pageSize] = useState(20);
@@ -151,7 +159,8 @@ export default function BooksLibraryPage() {
     if (searchQuery) params.set("search", searchQuery);
     if (giftFilter !== "All") params.set("giftFilter", giftFilter);
     if (bundleId) params.set("bundleId", bundleId);
-    if (hasDownloadedBefore !== "all") params.set("hasDownloadedBefore", hasDownloadedBefore);
+    if (hasDownloadedBefore !== "all")
+      params.set("hasDownloadedBefore", hasDownloadedBefore);
     if (fromDate) params.set("fromDate", fromDate.toISOString());
     if (toDate) params.set("toDate", toDate.toISOString());
     if (page > 1) params.set("page", page.toString());
@@ -161,7 +170,15 @@ export default function BooksLibraryPage() {
 
     // Update URL without triggering navigation
     window.history.replaceState({}, "", newUrl);
-  }, [searchQuery, giftFilter, bundleId, hasDownloadedBefore, fromDate, toDate, page]);
+  }, [
+    searchQuery,
+    giftFilter,
+    bundleId,
+    hasDownloadedBefore,
+    fromDate,
+    toDate,
+    page,
+  ]);
 
   // Fetch customer bundles for filter dropdown
   const { data: customerBundles = [] } = useCustomerBundles();
@@ -172,15 +189,25 @@ export default function BooksLibraryPage() {
       search: searchQuery || undefined,
       giftFilter: giftFilter !== "All" ? giftFilter : undefined,
       bundleId: bundleId || undefined,
-      hasDownloadedBefore: hasDownloadedBefore !== "all"
-        ? hasDownloadedBefore === "true"
-        : undefined,
+      hasDownloadedBefore:
+        hasDownloadedBefore !== "all"
+          ? hasDownloadedBefore === "true"
+          : undefined,
       fromDate: fromDate?.toISOString(),
       toDate: toDate?.toISOString(),
       page,
       pageSize,
     };
-  }, [searchQuery, giftFilter, bundleId, hasDownloadedBefore, fromDate, toDate, page, pageSize]);
+  }, [
+    searchQuery,
+    giftFilter,
+    bundleId,
+    hasDownloadedBefore,
+    fromDate,
+    toDate,
+    page,
+    pageSize,
+  ]);
 
   // Fetch book assignments
   const {
@@ -272,7 +299,11 @@ export default function BooksLibraryPage() {
       } else if (page >= totalPages - 2) {
         pages.push(1);
         pages.push(-1); // Ellipsis
-        for (let i = Math.max(totalPages - maxVisible + 2, 1); i <= totalPages; i++) {
+        for (
+          let i = Math.max(totalPages - maxVisible + 2, 1);
+          i <= totalPages;
+          i++
+        ) {
           pages.push(i);
         }
       } else {
@@ -300,8 +331,13 @@ export default function BooksLibraryPage() {
     setPage(1);
   };
 
-  const hasActiveFilters = searchQuery || giftFilter !== "All" || bundleId ||
-    hasDownloadedBefore !== "all" || fromDate || toDate;
+  const hasActiveFilters =
+    searchQuery ||
+    giftFilter !== "All" ||
+    bundleId ||
+    hasDownloadedBefore !== "all" ||
+    fromDate ||
+    toDate;
 
   return (
     <div className="grid gap-6">
@@ -617,7 +653,8 @@ export default function BooksLibraryPage() {
           ) : (
             <div className="space-y-4">
               {bookAssignments.map((book) => {
-                const bookTitle = book.book?.title || book.bookTitle || book.productTitle;
+                const bookTitle =
+                  book.book?.title || book.bookTitle || book.productTitle;
                 const activeFiles =
                   book.availableFiles?.filter(
                     (file) => file.status === "Active"
@@ -640,16 +677,14 @@ export default function BooksLibraryPage() {
                               "https://static.digiphile.co/product-placeholder-image.jpg"
                             }
                             alt={bookTitle || "Book"}
-                            className="w-full h-full object-cover rounded-lg shadow-md"
+                            className="w-full h-full object-contain rounded-lg shadow-md"
                           />
                         </div>
                       </div>
 
                       <div className="space-y-2 flex-1">
                         <div className="flex items-center gap-2">
-                          <h3 className="font-semibold">
-                            {bookTitle}
-                          </h3>
+                          <h3 className="font-semibold">{bookTitle}</h3>
                           {isNewlyAssigned(book) && (
                             <Badge
                               variant="outline"
@@ -668,9 +703,7 @@ export default function BooksLibraryPage() {
                         </div>
                         <div className="space-y-1">
                           <p className="text-sm text-muted-foreground">
-                            {book.book?.author && (
-                              <>by {book.book.author} • </>
-                            )}
+                            {book.book?.author && <>by {book.book.author} • </>}
                             Added on{" "}
                             {book.assignedAt
                               ? new Date(book.assignedAt).toLocaleDateString()
@@ -795,7 +828,9 @@ export default function BooksLibraryPage() {
                             e.preventDefault();
                             if (page > 1) setPage(page - 1);
                           }}
-                          className={page === 1 ? "pointer-events-none opacity-50" : ""}
+                          className={
+                            page === 1 ? "pointer-events-none opacity-50" : ""
+                          }
                         />
                       </PaginationItem>
 
@@ -825,7 +860,11 @@ export default function BooksLibraryPage() {
                             e.preventDefault();
                             if (page < totalPages) setPage(page + 1);
                           }}
-                          className={page === totalPages ? "pointer-events-none opacity-50" : ""}
+                          className={
+                            page === totalPages
+                              ? "pointer-events-none opacity-50"
+                              : ""
+                          }
                         />
                       </PaginationItem>
                     </PaginationContent>
@@ -845,9 +884,10 @@ export default function BooksLibraryPage() {
           search: searchQuery || undefined,
           giftFilter: giftFilter !== "All" ? giftFilter : undefined,
           bundleId: bundleId || undefined,
-          hasDownloadedBefore: hasDownloadedBefore !== "all"
-            ? hasDownloadedBefore === "true"
-            : undefined,
+          hasDownloadedBefore:
+            hasDownloadedBefore !== "all"
+              ? hasDownloadedBefore === "true"
+              : undefined,
           fromDate: fromDate?.toISOString(),
           toDate: toDate?.toISOString(),
         }}

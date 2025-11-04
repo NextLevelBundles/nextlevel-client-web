@@ -1,13 +1,13 @@
 import { getServerSession } from "@/lib/auth/server-auth";
 import CartProvider from "../(shared)/contexts/cart/cart-provider";
-import { Navigation } from "./components/navigation";
 
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  await getServerSession();
+  const session = await getServerSession();
+  console.log("Auth Layout - Server Session:", session);
 
   return (
     <main className="min-h-screen bg-background relative">
