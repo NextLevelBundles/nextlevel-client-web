@@ -138,7 +138,7 @@ export function ProductGrid({
         "cursor-pointer p-6 bg-gray-50/95 dark:bg-card/70 backdrop-blur-xs border border-gray-100 dark:border-border shadow-xs transition-all duration-500"
       )}
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
         {/* Render items in display tier order, interleaving unlocked products and locked tier cards */}
         {tiers.map((tier) => {
           const isUnlocked = unlockedTierIds.has(tier.id);
@@ -163,16 +163,15 @@ export function ProductGrid({
                     alt={product.title}
                     className="object-contain transition-all duration-300 group-hover:scale-105 group-hover:brightness-[1.02] saturate-[1.02] group-hover:saturate-[1.05]"
                   />
+                  {/* Floating price badge */}
+                  <div className="absolute top-2 right-2 text-sm font-semibold bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm line-through text-blue-600 dark:text-primary px-2.5 py-1 rounded-lg shadow-lg border border-blue-100 dark:border-primary/20">
+                    ${product.price}
+                  </div>
                 </div>
                 <div className="p-5">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-rajdhani text-lg font-bold line-clamp-1 text-gray-900 dark:text-foreground">
-                      {product.title}
-                    </h3>
-                    <span className="text-sm font-medium bg-blue-50 line-through text-blue-700 dark:bg-primary/20 dark:text-primary px-2 py-0.5 rounded-full">
-                      ${product.price}
-                    </span>
-                  </div>
+                  <h3 className="font-rajdhani text-lg font-bold line-clamp-2 text-gray-900 dark:text-foreground">
+                    {product.title}
+                  </h3>
 
                   {/* Show book metadata for book products */}
                   {product.type === ProductType.EBook && (
