@@ -1,5 +1,5 @@
-import { fetchAuthSession } from "aws-amplify/auth";
 import { toast } from "sonner";
+import { getAuthProvider } from "@/lib/auth/auth-adapter";
 
 export interface ApiResponse<T = unknown> {
   data: T;
@@ -48,15 +48,16 @@ export class ClientApi {
     };
 
     try {
-      // Get tokens directly from Amplify
-      const session = await fetchAuthSession();
-      const idToken = session.tokens?.idToken?.toString();
-      
+      // Use the auth adapter to get the ID token
+      // This automatically uses the correct provider (Cognito or Test)
+      const provider = getAuthProvider();
+      const idToken = await provider.getIdToken();
+
       if (idToken) {
         headers["Authorization"] = `Bearer ${idToken}`;
       }
     } catch (error) {
-      console.error("Failed to get auth token:", error);
+      console.error("[ClientApi] Failed to get auth token:", error);
     }
 
     return headers;

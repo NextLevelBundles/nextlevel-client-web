@@ -1,72 +1,48 @@
+/**
+ * Auth Service
+ * Unified authentication service that uses the appropriate auth provider
+ * based on environment configuration (Cognito or Test Auth)
+ */
+
 import {
-  signIn,
-  signUp,
-  signOut,
   confirmSignUp,
   resendSignUpCode,
   resetPassword,
   confirmResetPassword,
-  getCurrentUser,
-  fetchAuthSession,
-  fetchUserAttributes,
   autoSignIn,
-  type SignInInput,
-  type SignUpInput,
   type ConfirmSignUpInput,
   type ResendSignUpCodeInput,
   type ResetPasswordInput,
   type ConfirmResetPasswordInput,
 } from "aws-amplify/auth";
 import Cookies from "js-cookie";
+import { getAuthProvider } from "./auth-adapter";
 
 const ID_TOKEN_COOKIE = "id_token";
 
 export class AuthService {
+  /**
+   * Sign in with email and password
+   * Routes to appropriate auth provider (Cognito or Test)
+   */
   static async signIn(email: string, password: string) {
-    try {
-      const { isSignedIn, nextStep } = await signIn({
-        username: email,
-        password,
-      } as SignInInput);
-
-      if (isSignedIn) {
-        await this.syncIdToken();
-      }
-
-      return { success: true, isSignedIn, nextStep };
-    } catch (error) {
-      console.error("Sign in error:", error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Sign in failed",
-      };
-    }
+    const provider = getAuthProvider();
+    return provider.signIn(email, password);
   }
 
+  /**
+   * Sign up a new user
+   * Routes to appropriate auth provider (Cognito or Test)
+   */
   static async signUp(email: string, password: string, name?: string) {
-    try {
-      const { isSignUpComplete, userId, nextStep } = await signUp({
-        username: email,
-        password,
-        options: {
-          userAttributes: {
-            email,
-            name: name || "",
-          },
-          autoSignIn: true,
-        },
-      } as SignUpInput);
-
-      return { success: true, isSignUpComplete, userId, nextStep };
-    } catch (error) {
-      console.error("Sign up error:", error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Sign up failed",
-      };
-    }
+    const provider = getAuthProvider();
+    return provider.signUp(email, password, name);
   }
 
+  /**
+   * Confirm sign up with verification code
+   * Note: Only works with Cognito auth
+   */
   static async confirmSignUp(email: string, code: string) {
     try {
       const { isSignUpComplete, nextStep } = await confirmSignUp({
@@ -84,15 +60,18 @@ export class AuthService {
     }
   }
 
+  /**
+   * Handle auto sign-in after registration
+   * Note: Only works with Cognito auth
+   */
   static async handleAutoSignIn() {
     try {
       const { isSignedIn, nextStep } = await autoSignIn();
-      
-      // If auto sign-in is successful, sync the ID token
+
       if (isSignedIn) {
         await this.syncIdToken();
       }
-      
+
       return { success: true, isSignedIn, nextStep };
     } catch (error) {
       console.error("Auto sign-in error:", error);
@@ -103,6 +82,10 @@ export class AuthService {
     }
   }
 
+  /**
+   * Resend confirmation code
+   * Note: Only works with Cognito auth
+   */
   static async resendConfirmationCode(email: string) {
     try {
       const { destination } = await resendSignUpCode({
@@ -123,20 +106,19 @@ export class AuthService {
     }
   }
 
+  /**
+   * Sign out the current user
+   * Routes to appropriate auth provider (Cognito or Test)
+   */
   static async signOut() {
-    try {
-      await signOut();
-      this.clearIdToken();
-      return { success: true };
-    } catch (error) {
-      console.error("Sign out error:", error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Sign out failed",
-      };
-    }
+    const provider = getAuthProvider();
+    return provider.signOut();
   }
 
+  /**
+   * Reset password
+   * Note: Only works with Cognito auth
+   */
   static async resetPassword(email: string) {
     try {
       const { isPasswordReset, nextStep } = await resetPassword({
@@ -153,6 +135,10 @@ export class AuthService {
     }
   }
 
+  /**
+   * Confirm reset password
+   * Note: Only works with Cognito auth
+   */
   static async confirmResetPassword(
     email: string,
     code: string,
@@ -178,54 +164,46 @@ export class AuthService {
     }
   }
 
+  /**
+   * Get the current authenticated user
+   * Routes to appropriate auth provider (Cognito or Test)
+   */
   static async getCurrentUser() {
-    try {
-      const user = await getCurrentUser();
-      const attributes = await fetchUserAttributes();
-      return { success: true, user, attributes };
-    } catch (error) {
-      console.error("Get current user error:", error);
-      return { success: false, user: null, attributes: null };
-    }
+    const provider = getAuthProvider();
+    return provider.getCurrentUser();
   }
 
+  /**
+   * Check if user has completed profile setup
+   * Routes to appropriate auth provider (Cognito or Test)
+   */
   static async hasCompletedProfile(): Promise<boolean> {
-    try {
-      const session = await fetchAuthSession();
-      const idToken = session.tokens?.idToken;
-      
-      if (!idToken) return false;
-      
-      // Check if the ID token has the custom:customerId claim
-      const customerId = idToken.payload?.['custom:customerId'];
-      return !!customerId;
-    } catch (error) {
-      console.error("Error checking profile completion:", error);
-      return false;
-    }
+    const provider = getAuthProvider();
+    return provider.hasCompletedProfile();
   }
 
+  /**
+   * Get the current auth session
+   * Routes to appropriate auth provider (Cognito or Test)
+   */
   static async getSession() {
-    try {
-      const session = await fetchAuthSession();
-      return session;
-    } catch (error) {
-      console.error("Get session error:", error);
-      return null;
-    }
+    const provider = getAuthProvider();
+    return provider.getSession();
   }
 
+  /**
+   * Sync ID token to cookie
+   * Used for server-side authentication in middleware
+   */
   static async syncIdToken(): Promise<void> {
     try {
-      const session = await fetchAuthSession();
-      const idToken = session.tokens?.idToken?.toString();
+      const provider = getAuthProvider();
+      const idToken = await provider.getIdToken();
 
       if (idToken) {
-        // Only store ID token in cookie for server-side auth
-        // Amplify manages all tokens in localStorage for client-side
         Cookies.set(ID_TOKEN_COOKIE, idToken, {
           secure: process.env.NODE_ENV === "production",
-          sameSite: "lax", // Allow cookie to be sent on navigation
+          sameSite: "lax",
           expires: 1, // 1 day
         });
       }
@@ -234,30 +212,34 @@ export class AuthService {
     }
   }
 
+  /**
+   * Clear ID token cookie
+   */
   static clearIdToken() {
     Cookies.remove(ID_TOKEN_COOKIE);
   }
 
+  /**
+   * Refresh authentication tokens
+   * Routes to appropriate auth provider (Cognito or Test)
+   */
   static async refreshTokens() {
-    try {
-      const session = await fetchAuthSession({ forceRefresh: true });
-      if (session.tokens) {
-        await this.syncIdToken();
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error("Token refresh error:", error);
-      return false;
+    const provider = getAuthProvider();
+    const refreshed = await provider.refreshTokens();
+
+    if (refreshed) {
+      await this.syncIdToken();
     }
+
+    return refreshed;
   }
 
+  /**
+   * Check if user is authenticated
+   * Routes to appropriate auth provider (Cognito or Test)
+   */
   static async isAuthenticated(): Promise<boolean> {
-    try {
-      const session = await fetchAuthSession();
-      return !!session.tokens?.idToken;
-    } catch {
-      return false;
-    }
+    const provider = getAuthProvider();
+    return provider.isAuthenticated();
   }
 }

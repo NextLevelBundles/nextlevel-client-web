@@ -5,6 +5,7 @@ import {
   isTokenExpired,
   decodeTokenUnsafe,
 } from "@/lib/auth/token-validator";
+import { isTestAuthEnabled } from "@/lib/auth/auth-adapter";
 
 export async function middleware(request: NextRequest) {
   // Check for blocked countries
@@ -83,17 +84,29 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Now verify the token fully (signature, issuer, audience)
-  const decoded = await verifyToken(idTokenCookie.value);
+  // Check if this is a test auth token (from mock issuer)
+  const isTestAuthToken = decodedUnsafe.iss?.includes("mock-cognito");
+  const testAuthEnabled = isTestAuthEnabled();
 
-  // If verification fails (invalid signature, wrong issuer, etc.)
-  if (!decoded) {
-    console.error("Token verification failed - invalid signature or issuer");
-    const signInUrl = new URL("/auth/signin", request.url);
-    signInUrl.searchParams.set("callbackUrl", request.nextUrl.pathname);
-    const response = NextResponse.redirect(signInUrl);
-    response.cookies.delete("id_token");
-    return response;
+  let decoded: typeof decodedUnsafe | null = null;
+
+  // For test auth tokens in test mode, skip verification
+  if (isTestAuthToken && testAuthEnabled) {
+    console.log("[Middleware] Test auth token detected, skipping verification");
+    decoded = decodedUnsafe;
+  } else {
+    // Now verify the token fully (signature, issuer, audience)
+    decoded = await verifyToken(idTokenCookie.value);
+
+    // If verification fails (invalid signature, wrong issuer, etc.)
+    if (!decoded) {
+      console.error("[Middleware] Token verification failed - invalid signature or issuer");
+      const signInUrl = new URL("/auth/signin", request.url);
+      signInUrl.searchParams.set("callbackUrl", request.nextUrl.pathname);
+      const response = NextResponse.redirect(signInUrl);
+      response.cookies.delete("id_token");
+      return response;
+    }
   }
 
   // Check if user has completed profile setup (has customerId)
