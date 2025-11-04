@@ -14,16 +14,19 @@ export function BundleHero({ bundle }: BundleHeroProps) {
   const { timeLeft, hasEnded } = useCountdownTimer(bundle?.endsAt);
 
   // Count only products from base tiers
-  const baseTierIds = bundle.tiers
-    ?.filter((tier) => tier.type === TierType.Base)
-    .map((tier) => tier.id) || [];
+  const baseTierIds =
+    bundle.tiers
+      ?.filter((tier) => tier.type === TierType.Base)
+      .map((tier) => tier.id) || [];
 
-  const baseProductCount = bundle.products?.filter(
-    (product) => product.bundleTierId && baseTierIds.includes(product.bundleTierId)
-  ).length || 0;
+  const baseProductCount =
+    bundle.products?.filter(
+      (product) =>
+        product.bundleTierId && baseTierIds.includes(product.bundleTierId)
+    ).length || 0;
 
   return (
-    <div className="container max-w-[1560px] relative h-[50vh] min-h-[500px] w-full overflow-hidden rounded-3xl">
+    <div className="container max-w-[1560px] relative h-[44vh] min-h-[420px] w-full overflow-hidden rounded-3xl">
       {/* Background with static deck - full width */}
       <div className="absolute inset-0">
         <BundleStaticDeck
