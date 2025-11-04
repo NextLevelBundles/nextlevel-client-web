@@ -2,8 +2,9 @@
 
 import { Card } from "@/app/(shared)/components/ui/card";
 import { Markdown } from "@/app/(shared)/components/ui/markdown";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, ChevronDown } from "lucide-react";
 import { cn } from "@/app/(shared)/utils/tailwind";
+import { useState, useRef, useEffect } from "react";
 
 interface CuratorCommentsProps {
   content: string;
@@ -16,6 +17,19 @@ export function CuratorComments({
   className,
   compact = false,
 }: CuratorCommentsProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [showReadMore, setShowReadMore] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (compact && contentRef.current) {
+      // Check if content exceeds max height (150px)
+      const scrollHeight = contentRef.current.scrollHeight;
+      const clientHeight = 150; // max-h-[150px]
+      setShowReadMore(scrollHeight > clientHeight);
+    }
+  }, [compact, content]);
+
   if (!content || content.trim() === "") {
     return null;
   }
@@ -45,10 +59,39 @@ export function CuratorComments({
           {/* Content */}
           <div className="relative">
             <div className="absolute -left-1 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary/40 to-transparent rounded-full" />
-            <div className="pl-3">
-              <Markdown content={content} className="text-xs prose-sm" />
+            <div
+              ref={contentRef}
+              className={cn(
+                "pl-3 overflow-hidden transition-all duration-300",
+                !isExpanded && "max-h-[150px]"
+              )}
+            >
+              <Markdown
+                content={content}
+                className="text-xs prose-sm whitespace-break-spaces"
+              />
             </div>
+            {/* Gradient overlay when collapsed */}
+            {!isExpanded && showReadMore && (
+              <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card to-transparent pointer-events-none" />
+            )}
           </div>
+
+          {/* Read more button */}
+          {showReadMore && (
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="mt-3 flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors font-medium"
+            >
+              <span>{isExpanded ? "Show less" : "Read more"}</span>
+              <ChevronDown
+                className={cn(
+                  "w-3 h-3 transition-transform duration-300",
+                  isExpanded && "rotate-180"
+                )}
+              />
+            </button>
+          )}
         </div>
       </Card>
     );
@@ -86,7 +129,10 @@ export function CuratorComments({
         <div className="relative">
           <div className="absolute -left-2 top-0 bottom-0 w-1 bg-gradient-to-b from-primary/50 via-primary/30 to-transparent rounded-full" />
           <div className="pl-4">
-            <Markdown content={content} className="text-sm md:text-base" />
+            <Markdown
+              content={content}
+              className="text-sm md:text-base whitespace-break-spaces"
+            />
           </div>
         </div>
 
