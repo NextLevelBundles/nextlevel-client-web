@@ -8,13 +8,24 @@ import { Charity } from "@/app/(shared)/types/bundle";
 interface CharityHighlightProps {
   charities: Charity[];
   charityAmount: number;
+  totalRaisedForCharity?: number;
 }
 
 export function CharityHighlight({
   charities,
   charityAmount,
+  totalRaisedForCharity,
 }: CharityHighlightProps) {
   if (charities.length === 0) return null;
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
 
   return (
     <Card className="p-6 bg-white/80 dark:bg-card/70 backdrop-blur-xs">
@@ -25,6 +36,16 @@ export function CharityHighlight({
             Supporting Charities
           </h2>
         </div>
+        {totalRaisedForCharity !== undefined && totalRaisedForCharity > 0 && (
+          <div className="text-right">
+            <div className="text-xs text-muted-foreground uppercase tracking-wide mb-0.5">
+              Total raised from this bundle
+            </div>
+            <div className="text-xl font-bold text-rose-400">
+              {formatCurrency(totalRaisedForCharity)}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="space-y-6">

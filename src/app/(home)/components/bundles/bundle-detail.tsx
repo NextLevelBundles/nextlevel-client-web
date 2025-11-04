@@ -19,6 +19,7 @@ import {
 } from "@/app/(shared)/types/bundle";
 import { useBundleBookFormats } from "@/hooks/queries/useBundleBookFormats";
 import { useBundleTierAvailability } from "@/hooks/queries/useBundleTierAvailability";
+import { useBundleStatistics } from "@/hooks/queries/useBundleStatistics";
 import { BundleNotFound } from "./bundle-not-found";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
 import { Card } from "@/shared/components/ui/card";
@@ -116,6 +117,9 @@ export function BundleDetail({
     bundle.id,
     isAuthenticated && isSteamBundle
   );
+
+  // Fetch bundle statistics (total raised for charity)
+  const { data: bundleStatistics } = useBundleStatistics(bundle.id);
 
   // Separate tiers by type and sort by price (memoized to prevent infinite loops)
   // baseTiersCanonical: Always sorted low to high for business logic
@@ -462,6 +466,7 @@ export function BundleDetail({
                 <CharityHighlight
                   charities={bundle.charities.map((bc) => bc.charity)}
                   charityAmount={charityAmountForDisplay}
+                  totalRaisedForCharity={bundleStatistics?.totalRaisedForCharity}
                 />
               )}
             </div>
