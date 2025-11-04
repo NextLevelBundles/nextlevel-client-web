@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogIn, UserPlus, Loader2, Gift, Lock } from "lucide-react";
+import { LogIn, UserPlus, Loader2, Gift } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -16,20 +16,25 @@ import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { motion } from "framer-motion";
 
 interface GiftAuthPromptProps {
-  recipientEmail: string;
-  hasAccount: boolean;
   returnUrl: string;
   giftTitle?: string;
+  recipientEmail?: string;
+  hasAccount?: boolean;
 }
 
 export function GiftAuthPrompt({
-  recipientEmail,
-  hasAccount,
   returnUrl,
   giftTitle,
+  recipientEmail,
+  hasAccount = false,
 }: GiftAuthPromptProps) {
   const router = useRouter();
   const [isSigningIn, setIsSigningIn] = useState(false);
+
+  const signupUrl = recipientEmail
+    ? `/auth/signup?email=${encodeURIComponent(recipientEmail)}&returnUrl=${encodeURIComponent(returnUrl)}`
+    : `/auth/signup?returnUrl=${encodeURIComponent(returnUrl)}`;
+
   const signupLink = `${process.env.NEXT_PUBLIC_COGNITO_DOMAIN}/signup?response_type=code&client_id=${process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID}&redirect_uri=${process.env.NEXT_PUBLIC_COGNITO_REDIRECT_URI}&scope=openid+email+phone+profile`;
 
   const handleSignIn = () => {
@@ -48,7 +53,7 @@ export function GiftAuthPrompt({
       <Card className="border-2 border-primary/20 shadow-lg">
         <CardHeader className="text-center space-y-4 pb-6">
           <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-            <Lock className="h-8 w-8 text-primary" />
+            <Gift className="h-8 w-8 text-primary" />
           </div>
           <div>
             <CardTitle className="text-2xl">
@@ -66,11 +71,7 @@ export function GiftAuthPrompt({
           <Alert className="bg-primary/5 border-primary/20">
             <Gift className="h-4 w-4 text-primary" />
             <AlertDescription className="text-sm">
-              This gift is waiting for{" "}
-              <strong className="font-semibold">{recipientEmail}</strong>
-              {hasAccount
-                ? ". Sign in with this email to claim it."
-                : ". Create your free account with this email to get started."}
+              This gift is waiting for you. Create a free account or sign in to claim it.
             </AlertDescription>
           </Alert>
 

@@ -1,18 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
 import { Check, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
-import { toast } from "sonner";
-import { giftApi } from "@/lib/api";
-import { CartItemGift } from "@/lib/api/types/gift";
 import { GiftDetailsCard } from "@/app/(public)/components/gift-details-card";
 import { GiftAuthPrompt } from "@/app/(public)/components/gift-auth-prompt";
 import { GiftProductsList } from "@/app/(public)/components/gift-products-list";
 import { giftAcceptanceRateLimiter } from "@/lib/utils/rate-limiter";
+import { useCartItemGift, useAcceptCartItemGift } from "@/hooks/queries";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,66 +29,49 @@ export default function CartItemGiftPage() {
   const { user, isLoading: isLoadingAuth } = useAuth();
 
   const cartItemId = params.cartItemId as string;
-  const email = searchParams.get("email");
+  const email = searchParams.get("email") || user?.email || "";
 
-  const [gift, setGift] = useState<CartItemGift | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isAccepting, setIsAccepting] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
-  useEffect(() => {
-    if (!email) {
-      setError("Email parameter is required");
-      setIsLoading(false);
+  // Use TanStack Query to fetch gift details
+  const {
+    data: gift,
+    isLoading,
+    error: queryError,
+  } = useCartItemGift(cartItemId);
+
+  const acceptGiftMutation = useAcceptCartItemGift();
+
+  const error = queryError instanceof Error ? queryError.message : null;
+
+  const handleAcceptGift = async () => {
+    if (!gift) return;
+
+    const emailToUse = email || user?.email;
+    if (!emailToUse) {
+      console.error("No email available for gift acceptance");
       return;
     }
 
-    const fetchGiftDetails = async () => {
-      try {
-        setIsLoading(true);
-        const giftData = await giftApi.getCartItemGift(cartItemId, email);
-        console.log(giftData);
-        setGift(giftData);
-      } catch (err) {
-        console.error("Error fetching gift:", err);
-        setError(
-          err instanceof Error ? err.message : "Failed to load gift details"
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchGiftDetails();
-  }, [cartItemId, email]);
-
-  const handleAcceptGift = async () => {
-    if (!email || !gift) return;
-
     // Check rate limit
-    const rateLimitKey = `gift-accept:${cartItemId}:${email}`;
-    const { allowed, remainingAttempts } =
-      giftAcceptanceRateLimiter.check(rateLimitKey);
+    const rateLimitKey = `gift-accept:${cartItemId}:${emailToUse}`;
+    const { allowed } = giftAcceptanceRateLimiter.check(rateLimitKey);
 
     if (!allowed) {
-      toast.error("Too many attempts", {
-        description: "Please wait a few minutes before trying again.",
-      });
       setShowConfirmDialog(false);
       return;
     }
 
-    setIsAccepting(true);
     try {
-      const response = await giftApi.acceptCartItemGift(cartItemId, email);
-
-      toast.success("Gift accepted successfully!", {
-        description: "The item has been added to your library.",
+      const response = await acceptGiftMutation.mutateAsync({
+        cartItemId,
+        email: emailToUse,
       });
 
       // Reset rate limit on success
       giftAcceptanceRateLimiter.reset(rateLimitKey);
+
+      setShowConfirmDialog(false);
 
       if (response.redirectUrl) {
         router.push(response.redirectUrl);
@@ -99,20 +80,6 @@ export default function CartItemGiftPage() {
       }
     } catch (err) {
       console.error("Error accepting gift:", err);
-      const errorMessage =
-        err instanceof Error ? err.message : "Please try again later";
-
-      if (remainingAttempts > 0) {
-        toast.error("Failed to accept gift", {
-          description: `${errorMessage} (${remainingAttempts} attempts remaining)`,
-        });
-      } else {
-        toast.error("Failed to accept gift", {
-          description: "Too many failed attempts. Please try again later.",
-        });
-      }
-    } finally {
-      setIsAccepting(false);
       setShowConfirmDialog(false);
     }
   };
@@ -122,26 +89,12 @@ export default function CartItemGiftPage() {
     // Gift must be pending (not accepted yet)
     if (gift.giftAccepted === true) return false;
     // Check email match if recipientEmail is set
-    if (gift.recipientEmail && gift.recipientEmail !== user.email)
-      return false;
+    if (gift.recipientEmail && gift.recipientEmail !== user.email) return false;
     return true;
   };
 
   const isGiftPending = gift && !gift.giftAccepted;
   const isGiftAccepted = gift && gift.giftAccepted === true;
-
-  if (!email) {
-    return (
-      <div className="container mx-auto px-4 py-16">
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Invalid gift link. Email parameter is required.
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
 
   if (isLoading) {
     return (
@@ -156,34 +109,32 @@ export default function CartItemGiftPage() {
 
   if (error || !gift) {
     return (
-      <div className="container mx-auto px-4 py-16">
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            {error || "Gift not found. Please check your link and try again."}
-          </AlertDescription>
-        </Alert>
+      <div className="container mx-auto flex min-h-[60vh] items-center justify-center px-4">
+        <div className="mx-auto max-w-md">
+          <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-6 text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+              <AlertCircle className="h-6 w-6 text-destructive" />
+            </div>
+            <h3 className="mb-2 text-lg font-semibold text-foreground">
+              Gift Not Available
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {error || "This gift could not be found. Please check your link and try again."}
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
 
-  const returnUrl = `/gifts/bundles/${cartItemId}?email=${encodeURIComponent(email)}`;
+  const returnUrl = email
+    ? `/gifts/bundles/${cartItemId}?email=${encodeURIComponent(email)}`
+    : `/gifts/bundles/${cartItemId}`;
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mx-auto max-w-2xl space-y-6">
         {/* Welcome message for non-authenticated users */}
-        {!user && isGiftPending && (
-          <div className="text-center space-y-2 mb-8">
-            <h1 className="text-3xl font-bold">
-              You&apos;ve received a gift! 🎁
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              {gift.giftedByCustomerName} has sent you something special
-            </p>
-          </div>
-        )}
-
         <GiftDetailsCard
           title={gift.snapshotTitle}
           description={`${gift.quantity} × ${gift.snapshotProducts.length} items`}
@@ -212,8 +163,6 @@ export default function CartItemGiftPage() {
             ) : !user ? (
               <div className="mt-6">
                 <GiftAuthPrompt
-                  recipientEmail={gift.recipientEmail || email || ""}
-                  hasAccount={gift.recipientHasAccount || false}
                   returnUrl={returnUrl}
                   giftTitle={gift.snapshotTitle}
                 />
@@ -223,7 +172,7 @@ export default function CartItemGiftPage() {
                 <Button
                   size="lg"
                   onClick={() => setShowConfirmDialog(true)}
-                  disabled={isAccepting}
+                  disabled={acceptGiftMutation.isPending}
                   className="gap-2"
                 >
                   <Check className="h-5 w-5" />
@@ -253,7 +202,6 @@ export default function CartItemGiftPage() {
             </AlertDescription>
           </Alert>
         )}
-
       </div>
 
       {/* Confirmation Dialog */}
@@ -271,9 +219,9 @@ export default function CartItemGiftPage() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleAcceptGift}
-              disabled={isAccepting}
+              disabled={acceptGiftMutation.isPending}
             >
-              {isAccepting ? (
+              {acceptGiftMutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Accepting...

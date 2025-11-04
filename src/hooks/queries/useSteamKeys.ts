@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { steamKeyApi } from "@/lib/api";
-import { 
+import {
   SteamKeyQueryParams,
   GiftKeyRequest,
   SteamLibrarySyncStatus,
@@ -61,20 +61,13 @@ export function useGiftKey() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (giftData: GiftKeyRequest) =>
-      steamKeyApi.giftKey(giftData),
+    mutationFn: (giftData: GiftKeyRequest) => steamKeyApi.giftKey(giftData),
     onSuccess: () => {
       // Invalidate and refetch steam keys
       queryClient.invalidateQueries({ queryKey: steamKeyKeys.all });
 
-      toast.success("🎁 Gift sent successfully!", {
+      toast.success("Gift sent successfully!", {
         description: "The recipient will receive an email with their gift.",
-      });
-    },
-    onError: (error) => {
-      toast.error("Failed to send gift", {
-        description:
-          error instanceof Error ? error.message : "Something went wrong",
       });
     },
   });
@@ -100,24 +93,28 @@ export function useSyncSteamLibrary() {
       queryClient.invalidateQueries({ queryKey: ["steam-library-status"] });
 
       if (data.steamLibrarySyncStatus === "SyncSucceeded") {
-        toast.success("🔄 Steam Library Synced!", {
+        toast.success("Steam Library Synced!", {
           description: "Your game library has been refreshed successfully.",
         });
       } else if (data.steamLibrarySyncStatus === "SyncFailed") {
         toast.error("Sync failed", {
-          description: data.errorMessage || "Failed to sync your Steam library.",
+          description:
+            data.errorMessage || "Failed to sync your Steam library.",
         });
-      }
-      else if (data.steamLibrarySyncStatus === "SyncError") {
+      } else if (data.steamLibrarySyncStatus === "SyncError") {
         toast.error("Sync error", {
-          description: data.errorMessage || "Failed to sync your Steam library because of technical issues.",
+          description:
+            data.errorMessage ||
+            "Failed to sync your Steam library because of technical issues.",
         });
       }
     },
     onError: (error) => {
       toast.error("Sync error", {
         description:
-          error instanceof Error ? error.message : "Failed to sync your Steam library because of technical issues.",
+          error instanceof Error
+            ? error.message
+            : "Failed to sync your Steam library because of technical issues.",
       });
     },
   });

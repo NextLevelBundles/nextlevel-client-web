@@ -35,8 +35,11 @@ export function GiftDetailsCard({
   status,
   additionalInfo,
 }: GiftDetailsCardProps) {
-  const isExpired = status === "Expired" || (expiresAt && dayjs(expiresAt).isBefore(dayjs()));
-  const daysUntilExpiry = expiresAt ? dayjs(expiresAt).diff(dayjs(), "day") : null;
+  const isExpired =
+    status === "Expired" || (expiresAt && dayjs(expiresAt).isBefore(dayjs()));
+  const daysUntilExpiry = expiresAt
+    ? dayjs(expiresAt).diff(dayjs(), "day")
+    : null;
 
   return (
     <Card className="overflow-hidden">
@@ -46,7 +49,9 @@ export function GiftDetailsCard({
             <Gift className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold">You&apos;ve received a gift!</h2>
+            <h2 className="text-lg font-semibold">
+              You&apos;ve received a gift!
+            </h2>
             <p className="text-sm text-muted-foreground">
               From {giftedByName} • {dayjs(createdAt).fromNow()}
             </p>
@@ -58,12 +63,12 @@ export function GiftDetailsCard({
         {/* Gift Item Preview */}
         <div className="flex gap-4 mb-6">
           {imageUrl && (
-            <div className="relative h-24 w-24 overflow-hidden rounded-lg shadow-sm">
+            <div className="relative h-24 aspect-[16/7.5] overflow-hidden rounded-lg shadow-sm">
               <Image
                 src={imageUrl}
                 alt={title}
                 fill
-                className="object-cover"
+                className="object-contain"
               />
             </div>
           )}
@@ -109,8 +114,8 @@ export function GiftDetailsCard({
                     {daysUntilExpiry === 0
                       ? "Expires today"
                       : daysUntilExpiry === 1
-                      ? "Expires tomorrow"
-                      : `Expires in ${daysUntilExpiry} days`}
+                        ? "Expires tomorrow"
+                        : `Expires in ${daysUntilExpiry} days`}
                   </span>
                 </div>
               )}
@@ -119,9 +124,7 @@ export function GiftDetailsCard({
         </div>
 
         {/* Additional Info */}
-        {additionalInfo && (
-          <div className="mb-6">{additionalInfo}</div>
-        )}
+        {additionalInfo && <div className="mb-6">{additionalInfo}</div>}
 
         {/* Expired Alert */}
         {isExpired && (

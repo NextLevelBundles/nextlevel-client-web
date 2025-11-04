@@ -1,5 +1,5 @@
 import { ClientApi } from "../client-api";
-import { BundleBookFormatsResponse, BundleTierAvailabilityResponse, CustomerBundleDto } from "../types/bundle";
+import { BundleBookFormatsResponse, BundleTierAvailabilityResponse, BundleStatisticsResponse, CustomerBundleDto } from "../types/bundle";
 
 export class BundleApi {
   constructor(private api: ClientApi) {}
@@ -41,5 +41,23 @@ export class BundleApi {
    */
   async getCustomerBundles(): Promise<CustomerBundleDto[]> {
     return this.api.get<CustomerBundleDto[]>(`/customer/bundles`);
+  }
+
+  /**
+   * Get bundle statistics including total raised for charity
+   * @param bundleId The bundle ID
+   * @returns Bundle statistics or null if request fails
+   */
+  async getBundleStatistics(bundleId: string): Promise<BundleStatisticsResponse | null> {
+    try {
+      const response = await this.api.get<BundleStatisticsResponse>(
+        `/customer/bundles/${bundleId}/statistics`
+      );
+      return response;
+    } catch (error) {
+      // Gracefully handle errors - don't break the page
+      console.error("Failed to fetch bundle statistics:", error);
+      return null;
+    }
   }
 }

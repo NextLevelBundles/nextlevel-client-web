@@ -7,6 +7,7 @@ import { Hub } from "aws-amplify/utils";
 
 interface User {
   id?: string;
+  customerId?: string;
   email?: string;
   name?: string;
   emailVerified?: boolean;
@@ -31,8 +32,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const result = await AuthService.getCurrentUser();
       if (result.success && result.user) {
+        console.log(
+          "AuthProvider: User loaded:",
+          result.user,
+          "customerId:",
+          result.customerId
+        );
         setUser({
           id: result.user.userId,
+          customerId: result.customerId,
           email: result.attributes?.email,
           name: result.attributes?.name,
           emailVerified: result.attributes?.email_verified === "true",
@@ -49,10 +57,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     } catch (error) {
-      console.error("Error loading user:", error);
+      // Only log non-authentication errors to avoid noise for public pages
+      if (error instanceof Error && !error.message.includes("User needs to be authenticated")) {
+        console.error("Error loading user:", error);
+      }
       setUser(null);
-      // Retry once on error in case Amplify wasn't ready
-      if (!isRetry) {
+      // Don't retry on authentication errors - user is simply not logged in
+      if (error instanceof Error && error.message.includes("User needs to be authenticated")) {
+        setIsLoading(false);
+      } else if (!isRetry) {
+        // Retry once on other errors in case Amplify wasn't ready
         setTimeout(() => loadUser(true), 100);
       } else {
         setIsLoading(false);
@@ -133,7 +147,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, signIn, signOut, refreshAuth }}>
+    <AuthContext.Provider
+      value={{ user, isLoading, signIn, signOut, refreshAuth }}
+    >
       {children}
     </AuthContext.Provider>
   );

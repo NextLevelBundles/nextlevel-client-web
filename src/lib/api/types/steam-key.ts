@@ -30,39 +30,21 @@ export interface SteamKeyAssignment {
   id: string;
   steamKeyId: string;
   customerId: string;
-  productId: string;
   productTitle: string;
-  productCoverImage?: MediaData;
-  steamGameMetadata?: {
-    website?: string;
-    protonDbTier?: string;
-    pcRequirements?: {
-      minimum?: string;
-      recommended?: string;
-    };
-    macRequirements?: {
-      minimum?: string;
-      recommended?: string;
-    };
-    linuxRequirements?: {
-      minimum?: string;
-      recommended?: string;
-    };
-    developers?: Array<{
-      name: string;
-      website?: string;
-    }>;
-    publishers?: Array<{
-      name: string;
-      website?: string;
-    }>;
-    releaseDate?: {
-      date: string;
-    } | null;
-    platforms?: string[];
-    trailerUrl?: string;
-    screenshotUrlsJson?: string | null;
-    steamAppId?: number;
+  productCoverImage: MediaData;
+  steamGameMetadata: {
+    website: string | null;
+    protonDbTier: string | null;
+    pcRequirements: string | null;
+    macRequirements: string | null;
+    linuxRequirements: string | null;
+    developers: string[];
+    publishers: string[];
+    releaseDate: string | null;
+    platforms: string | null;
+    trailerUrl: string | null;
+    screenshotUrlsJson: string | null;
+    steamAppId: number;
   };
   status: "Assigned" | "Revealed" | "Expired" | "Refunded";
   assignedAt: string;
@@ -70,17 +52,17 @@ export interface SteamKeyAssignment {
   revealedAt: string | null;
   refundedAt: string | null;
   steamKeyValue: string | null;
-  giftAccepted: boolean | null;
+  giftAccepted: boolean;
   isGift: boolean;
-  isPurchaseGift: boolean;
+  isPurchaseGift: boolean | null;
   giftAcceptedAt: string | null;
-  giftedByCustomerName?: string;
-  giftedByCustomerId?: string;
-  giftRecipientEmail?: string;
-  giftRecipientName?: string;
-  giftMessage?: string;
-  giftedAt?: string;
-  exchangeCredits?: number | null;
+  giftedByCustomerName: string;
+  giftedByCustomerId: string;
+  giftRecipientEmail: string;
+  giftRecipientName: string;
+  giftMessage: string;
+  giftedAt: string;
+  exchangeCredits: number;
   alreadyOwnedOnSteam: boolean;
 }
 
