@@ -37,6 +37,25 @@ export function BundleHero({ bundle }: BundleHeroProps) {
         {/* Single dark overlay */}
         <div className="absolute inset-0 bg-black/55" />
       </div>
+      {/* Feature badges - top right */}
+      <div className="absolute right-6 top-6 flex gap-2 z-10">
+        {bundle.isFeatured && (
+          <div className="text-xs font-semibold rounded-full px-3 py-1 backdrop-blur-md bg-green-500/60 text-white shadow-md border border-white/10">
+            Featured
+          </div>
+        )}
+        {bundle.isEarlyAccess && (
+          <div className="text-xs font-semibold rounded-full px-3 py-1 backdrop-blur-md bg-purple-500/60 text-white shadow-md border border-white/10">
+            Early Access
+          </div>
+        )}
+        {bundle.isLimitedKeys && (
+          <div className="text-xs font-semibold rounded-full px-3 py-1 backdrop-blur-md bg-red-500/60 text-white shadow-md border border-white/10">
+            Limited Keys
+          </div>
+        )}
+      </div>
+
       {/* Content overlay */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="text-center space-y-6 px-4 max-w-4xl">
@@ -98,20 +117,6 @@ export function BundleHero({ bundle }: BundleHeroProps) {
                 </div>
               </div>
             </Card>
-
-            {/* Limited Keys Badge if applicable */}
-            {bundle.isLimitedKeys && (
-              <Card className="bg-red-500/20 backdrop-blur-md border-red-500/30 shadow-2xl">
-                <div className="px-6 py-4">
-                  <div className="text-sm uppercase tracking-wide text-red-300 mb-1">
-                    Limited
-                  </div>
-                  <div className="text-2xl font-mono font-bold text-red-400">
-                    Keys Left
-                  </div>
-                </div>
-              </Card>
-            )}
           </div>
         </div>
       </div>

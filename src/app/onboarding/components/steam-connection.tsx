@@ -262,22 +262,21 @@ export default function SteamConnection({
                 Connect Your Steam Account
               </h3>
               <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                To purchase Steam game bundles, you need to connect your Steam account. 
-                This is required to ensure proper key allocation and compatibility.
+                To purchase Steam game bundles, you need to connect your Steam account for verification purposes.
               </p>
 
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                  <span>Allocate region-appropriate Steam keys for your account</span>
+                  <span>Verify your identity to purchase Steam bundles</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                  <span>Ensure key compatibility with your Steam region</span>
+                  <span>Unlock access to Steam game bundle purchases</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-                  <span>Provide better customer support for your purchases</span>
+                  <span>Receive better customer support for your purchases</span>
                 </div>
               </div>
             </div>
@@ -349,38 +348,20 @@ export default function SteamConnection({
 
           <div className="text-center">
             <p className="text-xs text-muted-foreground">
-              Steam integration is mandatory to become part of our gaming
-              community and enjoy the full Digiphile experience. Your Steam
-              avatar, handle or name won&apos;t be shared publicly. We use your 
-              Steam ID to deliver game keys and your Steam country to ensure 
-              you receive region-appropriate keys that work in your location.
+              Steam integration is required to purchase Steam game bundles on Digiphile.
+              Your Steam avatar, handle or name won&apos;t be shared publicly.
+              We use your Steam account to verify your identity and enable bundle purchases.
             </p>
           </div>
         </>
       )}
 
       {steamConnected && (
-        <>
-          {(userCountry || steamProfile?.loccountrycode) && (
-            <Alert className="border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20">
-              <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-              <AlertDescription className="text-yellow-800 dark:text-yellow-200">
-                <strong>Important:</strong> Steam keys will be provided for your region{' '}
-                {userCountry ? (
-                  <>({userCountry.flag} {userCountry.name})</>
-                ) : (
-                  <>(Country Code: {steamProfile?.loccountrycode})</>
-                )}{' '}
-                only. Keys are region-locked based on your Steam account's country setting and cannot be activated in other regions.
-              </AlertDescription>
-            </Alert>
-          )}
-          <div className="text-center">
-            <p className="text-xs text-green-600 dark:text-green-400 font-medium">
-              Steam account successfully connected and ready for game delivery
-            </p>
-          </div>
-        </>
+        <div className="text-center">
+          <p className="text-xs text-green-600 dark:text-green-400 font-medium">
+            Steam account successfully connected. You can now purchase Steam game bundles.
+          </p>
+        </div>
       )}
     </div>
   );

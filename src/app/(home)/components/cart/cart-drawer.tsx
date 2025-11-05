@@ -128,7 +128,9 @@ export function CartDrawer() {
 
       // Validate: if linkId exists, trackdeskCid must also exist
       if (linkId && !trackdeskCid) {
-        toast.error("Affiliate tracking error. Please try again or contact support.");
+        toast.error(
+          "Affiliate tracking error. Please try again or contact support."
+        );
         setIsCheckoutLoading(false);
         return;
       }
@@ -157,7 +159,9 @@ export function CartDrawer() {
 
       // Validate: if linkId exists, trackdeskCid must also exist
       if (linkId && !trackdeskCid) {
-        toast.error("Affiliate tracking error. Please try again or contact support.");
+        toast.error(
+          "Affiliate tracking error. Please try again or contact support."
+        );
         setCaptchaToken(null);
         setIsCheckoutLoading(false);
         return;
@@ -308,14 +312,16 @@ export function CartDrawer() {
                             sizes="64px"
                             src={item.snapshotImageUrl ?? ""}
                             alt={item.snapshotTitle ?? "Cart item image"}
-                            className="object-cover"
+                            className="object-contain"
                           />
                           {/* Bundle type indicator */}
-                          <div className={`absolute bottom-1 left-1 p-1 rounded-full ${
-                            isBookBundle(item) 
-                              ? "bg-amber-500" 
-                              : "bg-blue-500"
-                          }`}>
+                          <div
+                            className={`absolute bottom-1 left-1 p-1 rounded-full ${
+                              isBookBundle(item)
+                                ? "bg-amber-500"
+                                : "bg-blue-500"
+                            }`}
+                          >
                             {isBookBundle(item) ? (
                               <BookOpen className="h-3 w-3 text-white" />
                             ) : (
@@ -335,18 +341,24 @@ export function CartDrawer() {
                               {item.snapshotTitle}
                             </h4>
                           </div>
-                          
+
                           {/* Bundle type badge */}
                           <div className="flex items-center gap-2 mb-2">
-                            <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
-                              isBookBundle(item)
-                                ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400"
-                                : "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400"
-                            }`}>
+                            <span
+                              className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
+                                isBookBundle(item)
+                                  ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400"
+                                  : "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400"
+                              }`}
+                            >
                               {isBookBundle(item) ? (
-                                <><BookOpen className="h-3 w-3" /> Book Bundle</>
+                                <>
+                                  <BookOpen className="h-3 w-3" /> Book Bundle
+                                </>
                               ) : (
-                                <><Gamepad2 className="h-3 w-3" /> Game Bundle</>
+                                <>
+                                  <Gamepad2 className="h-3 w-3" /> Game Bundle
+                                </>
                               )}
                             </span>
                           </div>
@@ -367,7 +379,8 @@ export function CartDrawer() {
                                 ${item.totalAmount?.toFixed(2)}
                               </div>
                               <span className="text-xs text-muted-foreground">
-                                {item.snapshotProducts.length} {isBookBundle(item) ? "books" : "games"}
+                                {item.snapshotProducts.length}{" "}
+                                {isBookBundle(item) ? "books" : "games"}
                               </span>
                             </div>
                           </div>

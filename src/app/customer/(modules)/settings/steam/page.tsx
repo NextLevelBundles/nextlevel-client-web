@@ -125,9 +125,6 @@ export default function SteamAccountSettings() {
                       <p>Username: {customer.steamUsername}</p>
                     )}
                     <p>Steam ID: {customer.steamId}</p>
-                    {customer.steamCountry && (
-                      <p>Region: {customer.steamCountry}</p>
-                    )}
                   </div>
                 </div>
                 <Button
@@ -153,7 +150,7 @@ export default function SteamAccountSettings() {
               <Alert>
                 <Info className="h-4 w-4" />
                 <AlertDescription>
-                  Your Steam account is connected. You can purchase Steam game bundles and receive region-appropriate keys.
+                  Your Steam account is connected. This allows you to purchase Steam game bundles on our platform.
                 </AlertDescription>
               </Alert>
             </div>
@@ -162,7 +159,7 @@ export default function SteamAccountSettings() {
               <Alert>
                 <Info className="h-4 w-4" />
                 <AlertDescription>
-                  Connect your Steam account to purchase Steam game bundles. This ensures you receive region-appropriate keys for your account.
+                  Connect your Steam account to verify your identity and unlock the ability to purchase Steam game bundles.
                 </AlertDescription>
               </Alert>
               

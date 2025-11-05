@@ -8,11 +8,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/app/(shared)/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/(shared)/components/ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/app/(shared)/components/ui/tabs";
 import { ScrollArea } from "@/app/(shared)/components/ui/scroll-area";
 import { CartItem } from "@/lib/api/types/cart";
 import { isBookBundle } from "@/app/(shared)/utils/cart";
-import { ExternalLink, Heart, BookOpen, Gamepad2, FileText } from "lucide-react";
+import {
+  ExternalLink,
+  Heart,
+  BookOpen,
+  Gamepad2,
+  FileText,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -22,11 +33,7 @@ interface CartItemModalProps {
   onClose: () => void;
 }
 
-export function CartItemModal({
-  item,
-  isOpen,
-  onClose,
-}: CartItemModalProps) {
+export function CartItemModal({ item, isOpen, onClose }: CartItemModalProps) {
   if (!item) return null;
 
   // Calculate revenue distribution
@@ -54,15 +61,20 @@ export function CartItemModal({
               <span>{item.snapshotTitle}</span>
               <Badge
                 variant="outline"
-                className={isBookBundle(item)
-                  ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border-amber-300"
-                  : "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border-blue-300"
+                className={
+                  isBookBundle(item)
+                    ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border-amber-300"
+                    : "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border-blue-300"
                 }
               >
                 {isBookBundle(item) ? (
-                  <><BookOpen className="h-3 w-3 mr-1" /> Book Bundle</>
+                  <>
+                    <BookOpen className="h-3 w-3 mr-1" /> Book Bundle
+                  </>
                 ) : (
-                  <><Gamepad2 className="h-3 w-3 mr-1" /> Game Bundle</>
+                  <>
+                    <Gamepad2 className="h-3 w-3 mr-1" /> Game Bundle
+                  </>
                 )}
               </Badge>
             </div>
@@ -85,7 +97,15 @@ export function CartItemModal({
           <TabsContent value="details" className="space-y-4">
             <div>
               <h4 className="font-semibold mb-3">
-                {item.snapshotProducts.length} {isBookBundle(item) ? item.snapshotProducts.length === 1 ? "Book" : "Books" : item.snapshotProducts.length === 1 ? "Game" : "Games"} Included
+                {item.snapshotProducts.length}{" "}
+                {isBookBundle(item)
+                  ? item.snapshotProducts.length === 1
+                    ? "Book"
+                    : "Books"
+                  : item.snapshotProducts.length === 1
+                    ? "Game"
+                    : "Games"}{" "}
+                Included
               </h4>
               <ScrollArea className="h-96">
                 <div className="grid gap-3">
@@ -99,7 +119,7 @@ export function CartItemModal({
                         height={150}
                         src={product.coverImageUrl}
                         alt={product.title}
-                        className="w-12 h-12 rounded object-cover"
+                        className="w-12 object-contain rounded aspect-[2/3]"
                       />
                       <div className="flex-1">
                         <h5 className="font-medium text-sm">{product.title}</h5>
@@ -110,16 +130,23 @@ export function CartItemModal({
                                 by {product.bookInfo.metadata.author}
                               </div>
                             )}
-                            {product.bookInfo.metadata?.availableFormats && product.bookInfo.metadata.availableFormats.length > 0 && (
-                              <div className="flex gap-1">
-                                {product.bookInfo.metadata.availableFormats.map((format) => (
-                                  <span key={format} className="inline-flex items-center gap-0.5 text-xs bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded">
-                                    <FileText className="h-3 w-3" />
-                                    {format}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
+                            {product.bookInfo.metadata?.availableFormats &&
+                              product.bookInfo.metadata.availableFormats
+                                .length > 0 && (
+                                <div className="flex gap-1">
+                                  {product.bookInfo.metadata.availableFormats.map(
+                                    (format) => (
+                                      <span
+                                        key={format}
+                                        className="inline-flex items-center gap-0.5 text-xs bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded"
+                                      >
+                                        <FileText className="h-3 w-3" />
+                                        {format}
+                                      </span>
+                                    )
+                                  )}
+                                </div>
+                              )}
                           </div>
                         ) : product.steamGameInfo ? (
                           <div className="text-xs text-muted-foreground mt-1">
@@ -239,7 +266,8 @@ export function CartItemModal({
             {item.tipAmount > 0 && (
               <div className="mt-6 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
                 <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">
-                  Your ${item.tipAmount.toFixed(2)} tip for Publishers goes 100% to Publishers
+                  Your ${item.tipAmount.toFixed(2)} tip for Publishers goes 100%
+                  to Publishers
                 </p>
               </div>
             )}
@@ -273,9 +301,7 @@ export function CartItemModal({
             {/* Total Amount - Prominent at bottom */}
             <div className="mt-6 pt-4 border-t">
               <div className="flex justify-between items-center">
-                <h4 className="text-lg font-semibold">
-                  Total Amount
-                </h4>
+                <h4 className="text-lg font-semibold">Total Amount</h4>
                 <p className="text-2xl font-bold">${totalAmount.toFixed(2)}</p>
               </div>
             </div>

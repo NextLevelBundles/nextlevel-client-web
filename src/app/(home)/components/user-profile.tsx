@@ -15,7 +15,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/shared/components/ui/avatar";
-import { Settings, MessageCircleIcon, GamepadIcon } from "lucide-react";
+import { Settings, MessageCircleIcon, GamepadIcon, User } from "lucide-react";
 import Link from "next/link";
 import SignInButton from "./SignInButton";
 import SignUpButton from "./SignUpButton";
@@ -47,14 +47,12 @@ export function UserProfile() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="relative h-8 w-8 rounded-full hover:opacity-85 ring shadow-xs ring-foreground/5 dark:ring-ring transition-colors"
+          className="relative h-8 w-8 ml-4 rounded-full hover:opacity-85 ring shadow-xs ring-foreground/5 dark:ring-ring transition-colors"
         >
           <Avatar className="h-8 w-8">
-            <AvatarImage
-              src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=400&h=400&auto=format&fit=crop"
-              alt="@user"
-            />
-            <AvatarFallback>GT</AvatarFallback>
+            <AvatarFallback className="bg-primary/10">
+              <User className="h-4 w-4 text-primary" />
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>

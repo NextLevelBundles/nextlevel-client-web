@@ -19,6 +19,7 @@ import {
   SettingsIcon,
   MessageCircleIcon,
   SearchIcon,
+  User,
 } from "lucide-react";
 import SignOutButton from "@/app/(home)/components/SignOutButton";
 import { Input } from "@/app/(shared)/components/ui/input";
@@ -78,11 +79,9 @@ export function TopNav({ user }: TopNavProps) {
                 className="relative h-8 w-8 rounded-full hover:opacity-85 ring shadow-xs ring-foreground/20 dark:ring-foreground  transition-colors"
               >
                 <Avatar className="h-8 w-8">
-                  <AvatarImage
-                    src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=400&h=400&auto=format&fit=crop"
-                    alt="@user"
-                  />
-                  <AvatarFallback>GT</AvatarFallback>
+                  <AvatarFallback className="bg-primary/10">
+                    <User className="h-4 w-4 text-primary" />
+                  </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>

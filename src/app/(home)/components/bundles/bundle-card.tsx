@@ -62,22 +62,20 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
             </div>
 
             {/* Status badges on image */}
-            <div className="absolute right-3 top-3 flex gap-2 z-10">
-              {(bundle.isFeatured ||
-                bundle.isEarlyAccess ||
-                bundle.isLimitedKeys) && (
-                <div
-                  className={`text-xs font-semibold rounded-full px-3 py-1 backdrop-blur-md transition-transform group-hover:scale-105 ${
-                    bundle.isFeatured
-                      ? "bg-green-500/80 text-white shadow-lg shadow-green-500/20"
-                      : bundle.isEarlyAccess
-                        ? "bg-purple-500/80 text-white shadow-lg shadow-purple-500/20"
-                        : "bg-red-500/80 text-white shadow-lg shadow-red-500/20"
-                  }`}
-                >
-                  {bundle.isFeatured && "Featured"}
-                  {bundle.isEarlyAccess && "Early Access"}
-                  {bundle.isLimitedKeys && "Limited Keys"}
+            <div className="absolute right-3 top-3 flex gap-2 z-20">
+              {bundle.isFeatured && (
+                <div className="text-xs font-semibold rounded-full px-2.5 py-0.5 backdrop-blur-md transition-transform group-hover:scale-105 bg-green-500/60 text-white shadow-md border border-white/10">
+                  Featured
+                </div>
+              )}
+              {bundle.isEarlyAccess && (
+                <div className="text-xs font-semibold rounded-full px-2.5 py-0.5 backdrop-blur-md transition-transform group-hover:scale-105 bg-purple-500/60 text-white shadow-md border border-white/10">
+                  Early Access
+                </div>
+              )}
+              {bundle.isLimitedKeys && (
+                <div className="text-xs font-semibold rounded-full px-2.5 py-0.5 backdrop-blur-md transition-transform group-hover:scale-105 bg-red-500/60 text-white shadow-md border border-white/10">
+                  Limited Keys
                 </div>
               )}
             </div>

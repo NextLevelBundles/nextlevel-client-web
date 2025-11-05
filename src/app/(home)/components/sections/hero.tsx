@@ -59,23 +59,10 @@ export async function HeroSection() {
             </div>
 
             <div className="flex flex-wrap gap-4">
-              <Link
-                href={`/bundles/${bundle.id}/buy`}
-                className="cursor-pointer"
-              >
-                <Button
-                  size={"lg"}
-                  className="cursor-pointer bg-primary text-primary-foreground px-6 py-3 rounded-md shadow-lg hover:scale-105 hover:shadow-xl hover:shadow-primary/30 dark:hover:shadow-primary/40 transition-all duration-300 animate-glow"
-                >
-                  Buy Now
-                </Button>
-              </Link>
-
               <Link className="cursor-pointer" href={`/bundles/${bundle.id}`}>
                 <Button
                   size="lg"
-                  variant="outline"
-                  className="cursor-pointer px-6 py-3 hover:bg-secondary/10 hover:text-secondary hover:scale-105 hover:shadow-lg hover:shadow-secondary/20 dark:hover:shadow-secondary/30 transition-all duration-300"
+                  className="cursor-pointer bg-primary text-primary-foreground px-6 py-3 rounded-md shadow-lg hover:scale-105 hover:shadow-xl hover:shadow-primary/30 dark:hover:shadow-primary/40 transition-all duration-300 animate-glow"
                 >
                   View Bundle
                 </Button>
