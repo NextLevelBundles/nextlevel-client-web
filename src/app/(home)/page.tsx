@@ -8,7 +8,7 @@ import { BlogPreview } from "@/home/components/sections/blog-preview";
 import { Newsletter } from "@/home/components/sections/newsletter";
 import { Footer } from "@/home/components/sections/footer";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
   return (
@@ -17,9 +17,9 @@ export default async function Home() {
       <HeroSection />
       <CurrentBundles />
       <HowItWorks />
-      <CharityStats />
-      <BadgesPreview />
-      <BlogPreview />
+      {/* <CharityStats /> */}
+      {/* <BadgesPreview /> */}
+      {/* <BlogPreview /> */}
       <Newsletter />
       <Footer />
     </>
