@@ -17,7 +17,7 @@ import {
 const navigation = [
   { name: "Dashboard", href: "/customer/dashboard", icon: GamepadIcon },
   { name: "Purchase History", href: "/customer/purchases", icon: ReceiptIcon },
-  { name: "Steam Games", href: "/customer/keys", icon: Gamepad2 },
+  { name: "Games Library", href: "/customer/keys", icon: Gamepad2 },
   { name: "Book Library", href: "/customer/library/books", icon: BookOpen },
   {
     name: "Exchange History",
@@ -26,7 +26,7 @@ const navigation = [
   },
   // { name: "Charity", href: "/customer/charity", icon: HeartIcon },
   // { name: "Badges", href: "/customer/badges", icon: AwardIcon },
-  { name: "Support", href: "/customer/support", icon: HelpCircleIcon },
+  // { name: "Support", href: "/customer/support", icon: HelpCircleIcon },
 ];
 
 export function MainNav() {
