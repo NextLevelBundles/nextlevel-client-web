@@ -30,6 +30,7 @@ import {
   RefreshCw,
   X,
   Check,
+  Info,
 } from "lucide-react";
 import {
   Tooltip,
@@ -550,72 +551,40 @@ export default function KeysPage() {
 
   // Format sync time for display
   const formatSyncTime = (dateString: string) => {
-    return dayjs(dateString).format("M/D h:mma") + " CT";
+    return dayjs(dateString).fromNow();
   };
 
-  // Get button text based on state
-  const getButtonText = () => {
-    console.log("Button state check:", {
-      isPending: syncSteamLibraryMutation?.isPending,
-      isError: syncSteamLibraryMutation?.isError,
-      isSuccess: syncSteamLibraryMutation?.isSuccess,
-      lastSyncTime,
-      syncErrorMessage,
-      steamLibraryStatus: steamLibraryStatus?.steamLibrarySyncStatus,
-    });
-
+  // Get tooltip text based on sync status
+  const getSyncTooltipText = () => {
     if (syncSteamLibraryMutation?.isPending) {
-      return (
-        <>
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Refreshing...
-        </>
-      );
+      return "Syncing your Steam library. This may take a few moments...";
     }
 
-    // Show error state if there's a sync error message
-    if (syncErrorMessage) {
-      const syncTime = lastSyncTime || steamLibraryStatus?.lastSyncedAt;
-      return (
-        <>
-          <X className="h-4 w-4" />
-          Steam Library Sync Failed {syncTime && formatSyncTime(syncTime)}
-        </>
-      );
-    }
+    const syncStatus = steamLibraryStatus?.steamLibrarySyncStatus;
+    const syncTime = lastSyncTime || steamLibraryStatus?.lastSyncedAt;
 
-    if (syncSteamLibraryMutation?.isError) {
-      return (
-        <>
-          <X className="h-4 w-4" />
-          Refresh failed - Try Again
-        </>
-      );
-    }
+    switch (syncStatus) {
+      case "SyncSucceeded":
+        return syncTime
+          ? `Last synced ${formatSyncTime(syncTime)}. Click to sync again.`
+          : "Steam library synced successfully. Click to sync again.";
 
-    // Show success state if mutation was successful OR if we have successful sync status from API
-    if (
-      (lastSyncTime &&
-        syncSteamLibraryMutation?.isSuccess &&
-        !syncErrorMessage) ||
-      (steamLibraryStatus?.steamLibrarySyncStatus === "SyncSucceeded" &&
-        steamLibraryStatus?.lastSyncedAt)
-    ) {
-      const syncTime = lastSyncTime || steamLibraryStatus?.lastSyncedAt;
-      return (
-        <>
-          <Check className="h-4 w-4" />
-          Steam Library Refreshed {syncTime && formatSyncTime(syncTime)}
-        </>
-      );
-    }
+      case "SyncFailed":
+        return syncErrorMessage === "profile-private"
+          ? "Sync failed: Your Steam profile is not public. Please make your profile and game details public, then try again."
+          : syncTime
+            ? `Last sync failed ${formatSyncTime(syncTime)}. This usually happens when your Steam profile is private. Click to retry.`
+            : "Sync failed. This usually happens when your Steam profile is private. Click to retry.";
 
-    return (
-      <>
-        <RefreshCw className="h-4 w-4" />
-        Refresh Steam Library
-      </>
-    );
+      case "SyncError":
+        return syncTime
+          ? `Technical error occurred ${formatSyncTime(syncTime)}. This could be due to network issues or Steam API problems. Click to retry.`
+          : "Technical error occurred while syncing. This could be due to network issues or Steam API problems. Click to retry.";
+
+      case "NeverSynced":
+      default:
+        return "Sync your Steam library to unlock exchange options for games you already own and get better recommendations.";
+    }
   };
 
   return (
@@ -714,28 +683,34 @@ export default function KeysPage() {
               )}
             </CardTitle>
             {steamKeys.length > 0 && (
-              <button
-                onClick={handleRefreshSteamLibrary}
-                disabled={syncSteamLibraryMutation?.isPending}
-                className={`flex items-center gap-2 px-3 py-2 text-sm border rounded-md transition-colors ${
-                  syncSteamLibraryMutation?.isPending
-                    ? "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed"
-                    : syncErrorMessage
-                      ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
-                      : syncSteamLibraryMutation?.isError
-                        ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
-                        : (lastSyncTime &&
-                              syncSteamLibraryMutation?.isSuccess &&
-                              !syncErrorMessage) ||
-                            (steamLibraryStatus?.steamLibrarySyncStatus ===
-                              "SyncSucceeded" &&
-                              steamLibraryStatus?.lastSyncedAt)
-                          ? "border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
-                          : "border-gray-300 hover:bg-gray-100"
-                }`}
-              >
-                {getButtonText()}
-              </button>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleRefreshSteamLibrary}
+                  disabled={syncSteamLibraryMutation?.isPending}
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                >
+                  {syncSteamLibraryMutation?.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4" />
+                  )}
+                  Sync Steam Library
+                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center justify-center w-5 h-5 rounded-full border border-muted-foreground/30 hover:border-muted-foreground/60 cursor-help transition-colors">
+                        <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p>{getSyncTooltipText()}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
             )}
           </div>
           {/* Sync Error Message */}
