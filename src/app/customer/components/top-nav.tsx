@@ -113,27 +113,35 @@ export function TopNav({ user }: TopNavProps) {
                         Profile
                       </Link>
                     </DropdownMenuItem> */}
-              <DropdownMenuItem className="rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary">
-                <SettingsIcon className="mr-2 h-4 w-4" />
-                <Link href="/customer/settings" className="flex-1">
-                  Settings
+              <DropdownMenuItem
+                asChild
+                className="cursor-pointer rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary"
+              >
+                <Link href="/customer/settings" className="flex items-center cursor-pointer">
+                  <SettingsIcon className="mr-2 h-4 w-4" />
+                  <span className="flex-1">Settings</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem
                 asChild
-                className="rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary"
+                className="cursor-pointer rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary"
               >
-                <Link href="/customer/support" className="flex items-center">
+                <a
+                  href="https://sites.google.com/digiphile.co/help"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center cursor-pointer"
+                >
                   <MessageCircleIcon className="mr-2 h-4 w-4" />
                   <span className="flex-1">Support</span>
-                </Link>
+                </a>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 asChild
-                className="text-destructive rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-destructive/5 hover:text-destructive dark:hover:bg-destructive/10 dark:hover:text-destructive focus:bg-destructive/5 focus:text-destructive dark:focus:bg-destructive/10 dark:focus:text-destructive"
+                className="cursor-pointer text-destructive rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-destructive/5 hover:text-destructive dark:hover:bg-destructive/10 dark:hover:text-destructive focus:bg-destructive/5 focus:text-destructive dark:focus:bg-destructive/10 dark:focus:text-destructive"
               >
-                <div>
+                <div className="cursor-pointer">
                   <SignOutButton variant="dropdown" />
                 </div>
               </DropdownMenuItem>

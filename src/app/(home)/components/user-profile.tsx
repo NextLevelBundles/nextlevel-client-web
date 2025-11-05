@@ -76,15 +76,18 @@ export function UserProfile() {
             asChild
             className="cursor-pointer rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary"
           >
-            <Link href="/customer/dashboard" className="flex items-center">
+            <Link href="/customer/dashboard" className="flex items-center cursor-pointer">
               <GamepadIcon className="mr-2 h-4 w-4" />
               <span className="flex-1">Dashboard</span>
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary">
-            <Settings className="mr-2 h-4 w-4" />
-            <Link href="/customer/settings" className="flex-1">
-              Settings
+          <DropdownMenuItem
+            asChild
+            className="cursor-pointer rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary"
+          >
+            <Link href="/customer/settings" className="flex items-center cursor-pointer">
+              <Settings className="mr-2 h-4 w-4" />
+              <span className="flex-1">Settings</span>
             </Link>
           </DropdownMenuItem>
           {/* <DropdownMenuItem
@@ -100,14 +103,19 @@ export function UserProfile() {
             asChild
             className="cursor-pointer rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary"
           >
-            <Link href="customer/support" className="flex items-center">
+            <a
+              href="https://sites.google.com/digiphile.co/help"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center cursor-pointer"
+            >
               <MessageCircleIcon className="mr-2 h-4 w-4" />
               <span className="flex-1">Support</span>
-            </Link>
+            </a>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-red-600 dark:text-red-400">
+        <DropdownMenuItem className="cursor-pointer text-red-600 dark:text-red-400">
           <SignOutButton variant="dropdown" />
         </DropdownMenuItem>
       </DropdownMenuContent>
