@@ -25,6 +25,8 @@ import {
   SearchIcon,
   XIcon,
   SparklesIcon,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -39,15 +41,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/app/(shared)/components/ui/pagination";
 import {
   useBookAssignments,
   useGenerateDownloadUrl,
@@ -134,7 +127,9 @@ export default function BooksLibraryPage() {
       : undefined
   );
   const [page, setPage] = useState(parseInt(searchParams.get("page") || "1"));
-  const [pageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(
+    parseInt(searchParams.get("pageSize") || "20")
+  );
 
   const [downloadingFiles, setDownloadingFiles] = useState<Set<string>>(
     new Set()
@@ -161,9 +156,10 @@ export default function BooksLibraryPage() {
     if (bundleId) params.set("bundleId", bundleId);
     if (hasDownloadedBefore !== "all")
       params.set("hasDownloadedBefore", hasDownloadedBefore);
-    if (fromDate) params.set("fromDate", fromDate.toISOString());
-    if (toDate) params.set("toDate", toDate.toISOString());
+    if (fromDate) params.set("fromDate", format(fromDate, "yyyy-MM-dd"));
+    if (toDate) params.set("toDate", format(toDate, "yyyy-MM-dd"));
     if (page > 1) params.set("page", page.toString());
+    if (pageSize !== 20) params.set("pageSize", pageSize.toString());
 
     const newSearch = params.toString();
     const newUrl = newSearch ? `?${newSearch}` : window.location.pathname;
@@ -178,6 +174,7 @@ export default function BooksLibraryPage() {
     fromDate,
     toDate,
     page,
+    pageSize,
   ]);
 
   // Fetch customer bundles for filter dropdown
@@ -185,6 +182,7 @@ export default function BooksLibraryPage() {
 
   // Build query params for API
   const queryParams = useMemo(() => {
+    const timezoneOffset = new Date().getTimezoneOffset();
     return {
       search: searchQuery || undefined,
       giftFilter: giftFilter !== "All" ? giftFilter : undefined,
@@ -193,8 +191,9 @@ export default function BooksLibraryPage() {
         hasDownloadedBefore !== "all"
           ? hasDownloadedBefore === "true"
           : undefined,
-      fromDate: fromDate?.toISOString(),
-      toDate: toDate?.toISOString(),
+      fromDate: fromDate ? format(fromDate, "yyyy-MM-dd") : undefined,
+      toDate: toDate ? format(toDate, "yyyy-MM-dd") : undefined,
+      timezoneOffset,
       page,
       pageSize,
     };
@@ -279,46 +278,6 @@ export default function BooksLibraryPage() {
       }
     );
   };
-
-  // Generate page numbers for pagination
-  const pageNumbers = useMemo(() => {
-    const pages = [];
-    const maxVisible = 5;
-
-    if (totalPages <= maxVisible) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      if (page <= 3) {
-        for (let i = 1; i <= Math.min(maxVisible - 1, totalPages); i++) {
-          pages.push(i);
-        }
-        pages.push(-1); // Ellipsis
-        pages.push(totalPages);
-      } else if (page >= totalPages - 2) {
-        pages.push(1);
-        pages.push(-1); // Ellipsis
-        for (
-          let i = Math.max(totalPages - maxVisible + 2, 1);
-          i <= totalPages;
-          i++
-        ) {
-          pages.push(i);
-        }
-      } else {
-        pages.push(1);
-        pages.push(-1); // Ellipsis
-        pages.push(page - 1);
-        pages.push(page);
-        pages.push(page + 1);
-        pages.push(-2); // Ellipsis
-        pages.push(totalPages);
-      }
-    }
-
-    return pages;
-  }, [page, totalPages]);
 
   const clearAllFilters = () => {
     setSearchInput("");
@@ -451,73 +410,45 @@ export default function BooksLibraryPage() {
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
                 Purchase Date From
               </label>
-              <div className="relative">
-                <input
-                  type="date"
-                  value={fromDate ? format(fromDate, "yyyy-MM-dd") : ""}
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      const newDate = new Date(e.target.value + "T00:00:00");
-                      setFromDate(newDate);
-                      setPage(1);
-                    } else {
-                      setFromDate(undefined);
-                      setPage(1);
-                    }
-                  }}
-                  max={format(new Date(), "yyyy-MM-dd")}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pr-10"
-                />
-                {fromDate && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setFromDate(undefined);
-                      setPage(1);
-                    }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded"
-                  >
-                    <XIcon className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
+              <Input
+                type="date"
+                value={fromDate ? format(fromDate, "yyyy-MM-dd") : ""}
+                onInput={(e: React.FormEvent<HTMLInputElement>) => {
+                  const target = e.target as HTMLInputElement;
+                  if (target.value && target.validity.valid) {
+                    setFromDate(new Date(target.value));
+                    setPage(1);
+                  } else if (!target.value) {
+                    setFromDate(undefined);
+                    setPage(1);
+                  }
+                }}
+                max={new Date().toISOString().split("T")[0]}
+                className="bg-background"
+              />
             </div>
 
             <div>
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
                 Purchase Date To
               </label>
-              <div className="relative">
-                <input
-                  type="date"
-                  value={toDate ? format(toDate, "yyyy-MM-dd") : ""}
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      const newDate = new Date(e.target.value + "T00:00:00");
-                      setToDate(newDate);
-                      setPage(1);
-                    } else {
-                      setToDate(undefined);
-                      setPage(1);
-                    }
-                  }}
-                  min={fromDate ? format(fromDate, "yyyy-MM-dd") : undefined}
-                  max={format(new Date(), "yyyy-MM-dd")}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pr-10"
-                />
-                {toDate && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setToDate(undefined);
-                      setPage(1);
-                    }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded"
-                  >
-                    <XIcon className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
+              <Input
+                type="date"
+                value={toDate ? format(toDate, "yyyy-MM-dd") : ""}
+                onInput={(e: React.FormEvent<HTMLInputElement>) => {
+                  const target = e.target as HTMLInputElement;
+                  if (target.value && target.validity.valid) {
+                    setToDate(new Date(target.value));
+                    setPage(1);
+                  } else if (!target.value) {
+                    setToDate(undefined);
+                    setPage(1);
+                  }
+                }}
+                min={fromDate ? format(fromDate, "yyyy-MM-dd") : undefined}
+                max={new Date().toISOString().split("T")[0]}
+                className="bg-background"
+              />
             </div>
           </div>
 
@@ -545,7 +476,7 @@ export default function BooksLibraryPage() {
               Available Books
               {totalBooks > 0 && (
                 <span className="text-sm text-muted-foreground">
-                  &nbsp; ({totalBooks} total, showing {bookAssignments.length})
+                  &nbsp; ({totalBooks} total)
                 </span>
               )}
             </CardTitle>
@@ -561,97 +492,91 @@ export default function BooksLibraryPage() {
             )}
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {isLoading ? (
-            <div className="flex min-h-[400px] flex-col items-center justify-center">
+            <div className="flex min-h-[80vh] flex-col items-center justify-center">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
               <p className="mt-4 text-sm text-muted-foreground">
                 Loading your book library...
               </p>
             </div>
           ) : isError ? (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center justify-center rounded-lg border bg-card/30 p-8 text-center"
-            >
-              <div className="mb-4 rounded-full bg-red-100 p-3">
-                <BookOpen className="h-8 w-8 text-red-600" />
-              </div>
-              <h3 className="mb-2 text-xl font-semibold">
-                Error loading books
-              </h3>
-              <p className="mb-6 max-w-md text-muted-foreground">
-                {error instanceof Error
-                  ? error.message
-                  : "Something went wrong"}
-              </p>
-              <Button
-                onClick={() => window.location.reload()}
-                className="bg-linear-to-r from-primary to-primary/90"
+            <div className="flex min-h-[80vh] flex-col items-center justify-center p-8">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col items-center justify-center rounded-lg border bg-card/30 p-8 text-center"
               >
-                Try Again
-              </Button>
-            </motion.div>
-          ) : bookAssignments.length === 0 && !hasActiveFilters ? (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center justify-center rounded-lg border bg-card/30 p-8 text-center"
-            >
-              <div className="mb-4 rounded-full bg-primary/10 p-3">
-                <BookOpen className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="mb-2 text-xl font-semibold">
-                No books in your library yet
-              </h3>
-              <p className="mb-6 max-w-md text-muted-foreground">
-                Purchase a bundle with books to build your digital library!
-              </p>
-              <Link href="/bundles">
-                <Button className="bg-linear-to-r from-primary to-primary/90">
-                  Browse Bundles
+                <div className="mb-4 rounded-full bg-red-100 p-3">
+                  <BookOpen className="h-8 w-8 text-red-600" />
+                </div>
+                <h3 className="mb-2 text-xl font-semibold">
+                  Error loading books
+                </h3>
+                <p className="mb-6 max-w-md text-muted-foreground">
+                  {error instanceof Error
+                    ? error.message
+                    : "Something went wrong"}
+                </p>
+                <Button
+                  onClick={() => window.location.reload()}
+                  className="bg-linear-to-r from-primary to-primary/90"
+                >
+                  Try Again
                 </Button>
-              </Link>
-            </motion.div>
-          ) : bookAssignments.length === 0 && hasActiveFilters ? (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center justify-center rounded-lg border bg-card/30 p-8 text-center"
-            >
-              <div className="mb-4 rounded-full bg-secondary/10 p-3">
-                {giftFilter === "ReceivedByMe" ? (
-                  <GiftIcon className="h-8 w-8 text-secondary" />
-                ) : (
-                  <SearchIcon className="h-8 w-8 text-secondary" />
-                )}
-              </div>
-              <h3 className="mb-2 text-xl font-semibold">
-                {giftFilter === "ReceivedByMe"
-                  ? "No books received as gifts"
-                  : giftFilter === "Owned"
-                    ? "No personal books found"
-                    : "No results found"}
-              </h3>
-              <p className="mb-6 max-w-md text-muted-foreground">
-                {giftFilter === "ReceivedByMe"
-                  ? "You haven't received any books as gifts matching these filters."
-                  : giftFilter === "Owned"
-                    ? "No books in your personal library match these filters."
-                    : "We couldn't find any books matching your search criteria."}
-              </p>
-              <Button
-                variant="outline"
-                onClick={clearAllFilters}
-                className="gap-2"
+              </motion.div>
+            </div>
+          ) : bookAssignments.length === 0 && !hasActiveFilters ? (
+            <div className="flex min-h-[80vh] flex-col items-center justify-center p-8">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col items-center justify-center text-center"
               >
-                <XIcon className="h-4 w-4" />
-                Clear Filters
-              </Button>
-            </motion.div>
+                <div className="mb-4 rounded-full bg-primary/10 p-6">
+                  <BookOpen className="h-12 w-12 text-primary" />
+                </div>
+                <h3 className="mb-2 text-2xl font-semibold">No books yet</h3>
+                <p className="mb-6 max-w-md text-muted-foreground">
+                  Start building your digital library by purchasing a bundle
+                  with books!
+                </p>
+                <Link href="/bundles">
+                  <Button className="bg-linear-to-r from-primary to-primary/90">
+                    Browse Bundles
+                  </Button>
+                </Link>
+              </motion.div>
+            </div>
+          ) : bookAssignments.length === 0 && hasActiveFilters ? (
+            <div className="flex min-h-[80vh] flex-col items-center justify-center p-8">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col items-center justify-center text-center"
+              >
+                <div className="mb-4 rounded-full bg-muted p-6">
+                  <SearchIcon className="h-12 w-12 text-muted-foreground" />
+                </div>
+                <h3 className="mb-2 text-2xl font-semibold">
+                  No results found
+                </h3>
+                <p className="mb-6 max-w-md text-muted-foreground">
+                  We couldn't find any books matching your search criteria. Try
+                  adjusting your filters.
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={clearAllFilters}
+                  className="gap-2"
+                >
+                  <XIcon className="h-4 w-4" />
+                  Clear All Filters
+                </Button>
+              </motion.div>
+            </div>
           ) : (
-            <div className="space-y-4">
+            <div className="h-[70vh] overflow-auto p-4 pb-0 space-y-4">
               {bookAssignments.map((book) => {
                 const bookTitle =
                   book.book?.title || book.bookTitle || book.productTitle;
@@ -683,8 +608,15 @@ export default function BooksLibraryPage() {
                       </div>
 
                       <div className="space-y-2 flex-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold">{bookTitle}</h3>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-semibold">
+                            {bookTitle}
+                            {book.book?.author && (
+                              <span className="text-sm font-normal text-muted-foreground ml-2">
+                                by {book.book.author}
+                              </span>
+                            )}
+                          </h3>
                           {isNewlyAssigned(book) && (
                             <Badge
                               variant="outline"
@@ -703,7 +635,6 @@ export default function BooksLibraryPage() {
                         </div>
                         <div className="space-y-1">
                           <p className="text-sm text-muted-foreground">
-                            {book.book?.author && <>by {book.book.author} • </>}
                             Added on{" "}
                             {book.assignedAt
                               ? new Date(book.assignedAt).toLocaleDateString()
@@ -817,58 +748,54 @@ export default function BooksLibraryPage() {
               })}
 
               {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="mt-6">
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (page > 1) setPage(page - 1);
-                          }}
-                          className={
-                            page === 1 ? "pointer-events-none opacity-50" : ""
-                          }
-                        />
-                      </PaginationItem>
+              {totalBooks > 0 && (
+                <div className="sticky bottom-0 bg-card border-t mt-4 p-4 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>Show:</span>
+                    <Select
+                      value={pageSize.toString()}
+                      onValueChange={(value) => {
+                        setPageSize(parseInt(value));
+                        setPage(1);
+                      }}
+                    >
+                      <SelectTrigger className="w-20">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="10">10</SelectItem>
+                        <SelectItem value="20">20</SelectItem>
+                        <SelectItem value="50">50</SelectItem>
+                        <SelectItem value="100">100</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                      {pageNumbers.map((pageNum, index) => (
-                        <PaginationItem key={index}>
-                          {pageNum === -1 || pageNum === -2 ? (
-                            <PaginationEllipsis />
-                          ) : (
-                            <PaginationLink
-                              href="#"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                setPage(pageNum);
-                              }}
-                              isActive={page === pageNum}
-                            >
-                              {pageNum}
-                            </PaginationLink>
-                          )}
-                        </PaginationItem>
-                      ))}
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setPage(page - 1)}
+                      disabled={page === 1}
+                      className="h-8 w-8"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
 
-                      <PaginationItem>
-                        <PaginationNext
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (page < totalPages) setPage(page + 1);
-                          }}
-                          className={
-                            page === totalPages
-                              ? "pointer-events-none opacity-50"
-                              : ""
-                          }
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
+                    <div className="text-sm text-muted-foreground min-w-[100px] text-center">
+                      Page {page} of {totalPages}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setPage(page + 1)}
+                      disabled={page === totalPages}
+                      className="h-8 w-8"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
@@ -888,8 +815,8 @@ export default function BooksLibraryPage() {
             hasDownloadedBefore !== "all"
               ? hasDownloadedBefore === "true"
               : undefined,
-          fromDate: fromDate?.toISOString(),
-          toDate: toDate?.toISOString(),
+          fromDate: fromDate ? format(fromDate, "yyyy-MM-dd") : undefined,
+          toDate: toDate ? format(toDate, "yyyy-MM-dd") : undefined,
         }}
         totalBooks={totalBooks}
       />

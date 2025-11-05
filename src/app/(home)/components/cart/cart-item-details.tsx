@@ -12,7 +12,13 @@ import {
 import { ScrollArea } from "@/app/(shared)/components/ui/scroll-area";
 import { CartItem } from "@/lib/api/types/cart";
 import { isBookBundle } from "@/app/(shared)/utils/cart";
-import { ExternalLink, Heart, BookOpen, Gamepad2, FileText } from "lucide-react";
+import {
+  ExternalLink,
+  Heart,
+  BookOpen,
+  Gamepad2,
+  FileText,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -52,17 +58,22 @@ export function CartItemDetails({ item }: CartItemDetailsProps) {
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <Badge variant="secondary">{item.snapshotTierTitle}</Badge>
-            <Badge 
-              variant="outline" 
-              className={isBookBundle(item) 
-                ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border-amber-300" 
-                : "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border-blue-300"
+            <Badge
+              variant="outline"
+              className={
+                isBookBundle(item)
+                  ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border-amber-300"
+                  : "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border-blue-300"
               }
             >
               {isBookBundle(item) ? (
-                <><BookOpen className="h-3 w-3 mr-1" /> Book Bundle</>
+                <>
+                  <BookOpen className="h-3 w-3 mr-1" /> Book Bundle
+                </>
               ) : (
-                <><Gamepad2 className="h-3 w-3 mr-1" /> Game Bundle</>
+                <>
+                  <Gamepad2 className="h-3 w-3 mr-1" /> Game Bundle
+                </>
               )}
             </Badge>
             {item.charityAmount && item.charityAmount > 0 && (
@@ -79,21 +90,25 @@ export function CartItemDetails({ item }: CartItemDetailsProps) {
               ${item.totalAmount?.toFixed(2)}
             </span>
           </div>
-          
-          {item.charityAmount && item.charityAmount > 0 && item.snapshotTierPrice && (
-            <div className="p-3 bg-rose-50 dark:bg-rose-950/30 rounded-lg border border-rose-200 dark:border-rose-800">
-              <p className="text-sm text-rose-700 dark:text-rose-300">
-                <Heart className="inline h-4 w-4 mr-1" />
-                Charity Tier: ${item.charityAmount.toFixed(2)} goes directly to charity!
-              </p>
-            </div>
-          )}
+
+          {item.charityAmount &&
+            item.charityAmount > 0 &&
+            item.snapshotTierPrice && (
+              <div className="p-3 bg-rose-50 dark:bg-rose-950/30 rounded-lg border border-rose-200 dark:border-rose-800">
+                <p className="text-sm text-rose-700 dark:text-rose-300">
+                  <Heart className="inline h-4 w-4 mr-1" />
+                  Charity Tier: ${item.charityAmount.toFixed(2)} goes directly
+                  to charity!
+                </p>
+              </div>
+            )}
 
           <div>
             <h4 className="font-semibold mb-3">
-              Included {isBookBundle(item) ? "Books" : "Games"} ({item.snapshotProducts.length})
+              Included {isBookBundle(item) ? "Books" : "Games"} (
+              {item.snapshotProducts.length})
             </h4>
-            <ScrollArea className="h-96">
+            <ScrollArea className="h-full">
               <div className="grid gap-3">
                 {item.snapshotProducts.map((product) => (
                   <div
@@ -116,20 +131,23 @@ export function CartItemDetails({ item }: CartItemDetailsProps) {
                               by {product.bookInfo.metadata.author}
                             </div>
                           )}
-                          {product.bookInfo.metadata?.availableFormats && product.bookInfo.metadata.availableFormats.length > 0 && (
-                            <div className="flex gap-1">
-                              {product.bookInfo.metadata.availableFormats.map((format) => (
-                                <span key={format} className="inline-flex items-center gap-0.5 text-xs bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded">
-                                  <FileText className="h-3 w-3" />
-                                  {format}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      ) : product.steamGameInfo ? (
-                        <div className="text-xs text-muted-foreground mt-1">
-                          Steam Package: {product.steamGameInfo.packageId}
+                          {product.bookInfo.metadata?.availableFormats &&
+                            product.bookInfo.metadata.availableFormats.length >
+                              0 && (
+                              <div className="flex gap-1">
+                                {product.bookInfo.metadata.availableFormats.map(
+                                  (format) => (
+                                    <span
+                                      key={format}
+                                      className="inline-flex items-center gap-0.5 text-xs bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded"
+                                    >
+                                      <FileText className="h-3 w-3" />
+                                      {format}
+                                    </span>
+                                  )
+                                )}
+                              </div>
+                            )}
                         </div>
                       ) : null}
                     </div>

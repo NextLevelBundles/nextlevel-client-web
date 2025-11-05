@@ -643,7 +643,7 @@ export function PurchaseSummary({
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => router.push("/customer/dashboard")}
+                onClick={() => router.push("/customer/settings/steam")}
               >
                 <Steam className="mr-2 h-4 w-4" />
                 Connect Steam Account

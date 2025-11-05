@@ -47,8 +47,8 @@ export function CartItemModal({ item, isOpen, onClose }: CartItemModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh]">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Image
               width={150}
@@ -81,20 +81,20 @@ export function CartItemModal({ item, isOpen, onClose }: CartItemModalProps) {
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="details" className="w-full">
+        <Tabs defaultValue="details" className="w-full mt-4">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="details" className="gap-2">
+            <TabsTrigger value="details" className="gap-2 cursor-pointer">
               <BookOpen className="h-4 w-4" />
               What's Included
             </TabsTrigger>
-            <TabsTrigger value="revenue" className="gap-2">
+            <TabsTrigger value="revenue" className="gap-2 cursor-pointer">
               <Heart className="h-4 w-4" />
-              Where Your Money Goes
+              Payment Breakdown
             </TabsTrigger>
           </TabsList>
 
           {/* Details Tab */}
-          <TabsContent value="details" className="space-y-4">
+          <TabsContent value="details" className="mt-4">
             <div>
               <h4 className="font-semibold mb-3">
                 {item.snapshotProducts.length}{" "}
@@ -107,7 +107,7 @@ export function CartItemModal({ item, isOpen, onClose }: CartItemModalProps) {
                     : "Games"}{" "}
                 Included
               </h4>
-              <ScrollArea className="h-96">
+              <ScrollArea className="h-[500px] pr-4">
                 <div className="grid gap-3">
                   {item.snapshotProducts.map((product) => (
                     <div
@@ -148,10 +148,6 @@ export function CartItemModal({ item, isOpen, onClose }: CartItemModalProps) {
                                 </div>
                               )}
                           </div>
-                        ) : product.steamGameInfo ? (
-                          <div className="text-xs text-muted-foreground mt-1">
-                            Steam Package: {product.steamGameInfo.packageId}
-                          </div>
                         ) : null}
                       </div>
                       {!product.bookInfo && product.steamGameInfo && (
@@ -172,139 +168,145 @@ export function CartItemModal({ item, isOpen, onClose }: CartItemModalProps) {
           </TabsContent>
 
           {/* Revenue Summary Tab */}
-          <TabsContent value="revenue" className="space-y-4 py-4">
-            {/* Distribution Bar */}
-            <div className="relative h-8 rounded-lg overflow-hidden flex bg-gray-200 dark:bg-gray-700">
-              <div
-                className="bg-yellow-400 dark:bg-yellow-600 transition-all"
-                style={{
-                  width:
-                    totalAmount > 0
-                      ? `${Math.max(0, (publisherAmount / totalAmount) * 100)}%`
-                      : "0%",
-                }}
-              />
-              <div
-                className="bg-blue-400 dark:bg-blue-600 transition-all"
-                style={{
-                  width:
-                    totalAmount > 0
-                      ? `${Math.max(0, (platformAmount / totalAmount) * 100)}%`
-                      : "0%",
-                }}
-              />
-              <div
-                className="bg-rose-400 dark:bg-rose-600 transition-all"
-                style={{
-                  width:
-                    totalAmount > 0
-                      ? `${Math.max(0, (charityAmount / totalAmount) * 100)}%`
-                      : "0%",
-                }}
-              />
-              {developerSupportAmount > 0 && (
-                <div
-                  className="bg-purple-400 dark:bg-purple-600 transition-all"
-                  style={{
-                    width:
-                      totalAmount > 0
-                        ? `${Math.max(0, (developerSupportAmount / totalAmount) * 100)}%`
-                        : "0%",
-                  }}
-                />
-              )}
-            </div>
-
-            {/* Distribution Labels */}
-            <div className="space-y-3 mt-4">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-yellow-400 dark:bg-yellow-600" />
-                  <span className="text-sm font-medium">Publishers</span>
+          <TabsContent value="revenue" className="mt-4">
+            <ScrollArea className="h-[500px] pr-4">
+              <div className="space-y-4">
+                {/* Distribution Bar */}
+                <div className="relative h-8 rounded-lg overflow-hidden flex bg-gray-200 dark:bg-gray-700">
+                  <div
+                    className="bg-yellow-400 dark:bg-yellow-600 transition-all"
+                    style={{
+                      width:
+                        totalAmount > 0
+                          ? `${Math.max(0, (publisherAmount / totalAmount) * 100)}%`
+                          : "0%",
+                    }}
+                  />
+                  <div
+                    className="bg-blue-400 dark:bg-blue-600 transition-all"
+                    style={{
+                      width:
+                        totalAmount > 0
+                          ? `${Math.max(0, (platformAmount / totalAmount) * 100)}%`
+                          : "0%",
+                    }}
+                  />
+                  <div
+                    className="bg-rose-400 dark:bg-rose-600 transition-all"
+                    style={{
+                      width:
+                        totalAmount > 0
+                          ? `${Math.max(0, (charityAmount / totalAmount) * 100)}%`
+                          : "0%",
+                    }}
+                  />
+                  {developerSupportAmount > 0 && (
+                    <div
+                      className="bg-purple-400 dark:bg-purple-600 transition-all"
+                      style={{
+                        width:
+                          totalAmount > 0
+                            ? `${Math.max(0, (developerSupportAmount / totalAmount) * 100)}%`
+                            : "0%",
+                      }}
+                    />
+                  )}
                 </div>
-                <span className="text-sm font-bold">
-                  ${publisherAmount.toFixed(2)}
-                </span>
-              </div>
 
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-blue-400 dark:bg-blue-600" />
-                  <span className="text-sm font-medium">Platform</span>
-                </div>
-                <span className="text-sm font-bold">
-                  ${platformAmount.toFixed(2)}
-                </span>
-              </div>
-
-              {charityAmount > 0 && (
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-rose-400 dark:bg-rose-600" />
-                    <span className="text-sm font-medium">Charity</span>
+                {/* Distribution Labels */}
+                <div className="space-y-3 mt-4">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-yellow-400 dark:bg-yellow-600" />
+                      <span className="text-sm font-medium">Publishers</span>
+                    </div>
+                    <span className="text-sm font-bold">
+                      ${publisherAmount.toFixed(2)}
+                    </span>
                   </div>
-                  <span className="text-sm font-bold">
-                    ${charityAmount.toFixed(2)}
-                  </span>
-                </div>
-              )}
 
-              {developerSupportAmount > 0 && (
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-purple-400 dark:bg-purple-600" />
-                    <span className="text-sm font-medium">Extras</span>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-blue-400 dark:bg-blue-600" />
+                      <span className="text-sm font-medium">Platform</span>
+                    </div>
+                    <span className="text-sm font-bold">
+                      ${platformAmount.toFixed(2)}
+                    </span>
                   </div>
-                  <span className="text-sm font-bold">
-                    ${developerSupportAmount.toFixed(2)}
-                  </span>
-                </div>
-              )}
-            </div>
 
-            {/* Tip Information - Prominent Section */}
-            {item.tipAmount > 0 && (
-              <div className="mt-6 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
-                <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">
-                  Your ${item.tipAmount.toFixed(2)} tip for Publishers goes 100%
-                  to Publishers
-                </p>
-              </div>
-            )}
+                  {charityAmount > 0 && (
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-rose-400 dark:bg-rose-600" />
+                        <span className="text-sm font-medium">Charity</span>
+                      </div>
+                      <span className="text-sm font-bold">
+                        ${charityAmount.toFixed(2)}
+                      </span>
+                    </div>
+                  )}
 
-            {/* Breakdown details */}
-            <div className="mt-6 pt-4 border-t space-y-2 text-xs text-muted-foreground">
-              <div className="flex justify-between">
-                <span>Bundle Tier</span>
-                <span>${item.baseAmount.toFixed(2)}</span>
-              </div>
-              {item.charityAmount > 0 && (
-                <div className="flex justify-between">
-                  <span>Charity Tier</span>
-                  <span>${item.charityAmount.toFixed(2)}</span>
+                  {developerSupportAmount > 0 && (
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-purple-400 dark:bg-purple-600" />
+                        <span className="text-sm font-medium">Extras</span>
+                      </div>
+                      <span className="text-sm font-bold">
+                        ${developerSupportAmount.toFixed(2)}
+                      </span>
+                    </div>
+                  )}
                 </div>
-              )}
-              {item.tipAmount > 0 && (
-                <div className="flex justify-between">
-                  <span>Tip for Publishers</span>
-                  <span>${item.tipAmount.toFixed(2)}</span>
-                </div>
-              )}
-              {item.upsellAmount > 0 && (
-                <div className="flex justify-between">
-                  <span>Extra Items</span>
-                  <span>${item.upsellAmount.toFixed(2)}</span>
-                </div>
-              )}
-            </div>
 
-            {/* Total Amount - Prominent at bottom */}
-            <div className="mt-6 pt-4 border-t">
-              <div className="flex justify-between items-center">
-                <h4 className="text-lg font-semibold">Total Amount</h4>
-                <p className="text-2xl font-bold">${totalAmount.toFixed(2)}</p>
+                {/* Tip Information - Prominent Section */}
+                {item.tipAmount > 0 && (
+                  <div className="mt-6 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
+                    <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+                      Your ${item.tipAmount.toFixed(2)} tip for Publishers goes
+                      100% to Publishers
+                    </p>
+                  </div>
+                )}
+
+                {/* Breakdown details */}
+                <div className="mt-6 pt-4 border-t space-y-2 text-xs text-muted-foreground">
+                  <div className="flex justify-between">
+                    <span>Bundle Tier</span>
+                    <span>${item.baseAmount.toFixed(2)}</span>
+                  </div>
+                  {item.charityAmount > 0 && (
+                    <div className="flex justify-between">
+                      <span>Charity Tier</span>
+                      <span>${item.charityAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {item.tipAmount > 0 && (
+                    <div className="flex justify-between">
+                      <span>Tip for Publishers</span>
+                      <span>${item.tipAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {item.upsellAmount > 0 && (
+                    <div className="flex justify-between">
+                      <span>Extra Items</span>
+                      <span>${item.upsellAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Total Amount - Prominent at bottom */}
+                <div className="mt-6 pt-4 border-t">
+                  <div className="flex justify-between items-center">
+                    <h4 className="text-lg font-semibold">Total Amount</h4>
+                    <p className="text-2xl font-bold">
+                      ${totalAmount.toFixed(2)}
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
+            </ScrollArea>
           </TabsContent>
         </Tabs>
       </DialogContent>
