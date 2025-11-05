@@ -39,9 +39,9 @@ export function Footer() {
 
   return (
     <footer className="relative border-t border-[#e5e5e5]/30 dark:border-border/50 bg-linear-to-b from-background via-white to-[#fafafa] dark:via-[#0e121b] dark:to-[#090c12] shadow-[0_-1px_3px_rgba(0,0,0,0.05)]">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(57,130,245,0.05),transparent_60%)] dark:bg-[radial-gradient(ellipse_at_top,rgba(57,130,245,0.08),transparent_60%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(57,130,245,0.05),transparent_60%)] dark:bg-[radial-gradient(ellipse_at_top,rgba(57,130,245,0.08),transparent_60%)] pointer-events-none" />
       <div className="container px-4 py-12">
-        <div className="relative mb-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        {/* <div className="relative mb-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category}>
               <h3 className="font-rajdhani mb-4 text-lg font-semibold text-[#1a1a1a] dark:text-foreground">
@@ -61,9 +61,9 @@ export function Footer() {
               </ul>
             </div>
           ))}
-        </div>
+        </div> */}
 
-        <div className="flex flex-col items-center justify-between gap-6 border-t border-[#e5e5e5]/50 dark:border-border/50 pt-8 sm:flex-row">
+        <div className="flex flex-col items-center justify-between gap-6 border-[#e5e5e5]/50 dark:border-border/50  sm:flex-row">
           <div className="flex items-center gap-2">
             <Link href="/" className="p-3">
               <Logo width={120} height={0} />
@@ -71,20 +71,29 @@ export function Footer() {
           </div>
 
           <div className="flex items-center gap-4 text-sm text-[#4b5563] dark:text-muted-foreground">
-            <a href="#" className="hover:text-primary transition-colors">
+            <Link
+              href="/terms"
+              className="hover:text-primary transition-colors"
+            >
               Terms
-            </a>
+            </Link>
             <span>•</span>
-            <a href="#" className="hover:text-primary transition-colors">
+            <Link
+              href="/privacy-policy"
+              className="hover:text-primary transition-colors"
+            >
               Privacy
-            </a>
+            </Link>
             <span>•</span>
-            <a href="#" className="hover:text-primary transition-colors">
+            <Link
+              href="/cookies"
+              className="hover:text-primary transition-colors"
+            >
               Cookies
-            </a>
+            </Link>
           </div>
 
-          <div className="flex items-center gap-4">
+          {/* <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="icon"
@@ -106,7 +115,7 @@ export function Footer() {
             >
               <Github className="h-5 w-5" />
             </Button>
-          </div>
+          </div> */}
 
           <Button
             variant="ghost"
