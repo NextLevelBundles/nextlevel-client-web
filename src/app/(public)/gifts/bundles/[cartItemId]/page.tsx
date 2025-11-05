@@ -88,10 +88,14 @@ export default function CartItemGiftPage() {
     if (!gift || !user) return false;
     // Gift must be pending (not accepted yet)
     if (gift.giftAccepted === true) return false;
+    // Users cannot accept their own gifts
+    if (gift.giftedByCustomerId === user.customerId) return false;
     // Check email match if recipientEmail is set
     if (gift.recipientEmail && gift.recipientEmail !== user.email) return false;
     return true;
   };
+
+  const isSelfGift = gift && user && gift.giftedByCustomerId === user.customerId;
 
   const isGiftPending = gift && !gift.giftAccepted;
   const isGiftAccepted = gift && gift.giftAccepted === true;
@@ -167,6 +171,13 @@ export default function CartItemGiftPage() {
                   giftTitle={gift.snapshotTitle}
                 />
               </div>
+            ) : isSelfGift ? (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  You cannot accept your own gift. This gift was sent by you and needs to be accepted by the recipient.
+                </AlertDescription>
+              </Alert>
             ) : canAcceptGift() ? (
               <div className="flex justify-center">
                 <Button

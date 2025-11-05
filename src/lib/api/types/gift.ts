@@ -29,6 +29,7 @@ export interface CartItemGift {
   snapshotTierTitle?: string;
   snapshotTierPrice?: number;
   snapshotProducts: SnapshotProduct[];
+  giftedByCustomerId: string;
   giftedByCustomerName: string;
   giftMessage?: string;
   giftedAt: string;
