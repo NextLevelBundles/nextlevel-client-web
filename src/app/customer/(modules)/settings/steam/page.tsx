@@ -45,19 +45,17 @@ export default function SteamAccountSettings() {
     try {
       // Update the customer's Steam details via API
       await userApi.updateSteamDetails(data.steamId, data.steamCountry || null, data.steamUsername || null);
-      
+
       // Invalidate and refetch customer data and location data
       await queryClient.invalidateQueries({ queryKey: customerQueryKey });
       await queryClient.invalidateQueries({ queryKey: customerLocationQueryKey });
-      
+
       toast.success("Steam account connected successfully!", {
         description: "Your Steam account has been linked to your Digiphile profile.",
       });
     } catch (error) {
       console.error("Failed to update Steam details:", error);
-      toast.error("Failed to save Steam connection", {
-        description: "Please try again or contact support if the issue persists.",
-      });
+      // Error toast already shown by global error handler
       // Reset state on error
       setSteamConnected(false);
       setSteamUserInfo(null);
@@ -72,23 +70,21 @@ export default function SteamAccountSettings() {
     try {
       // Clear Steam details via API
       await userApi.updateSteamDetails(null, null, null);
-      
+
       // Invalidate and refetch customer data and location data
       await queryClient.invalidateQueries({ queryKey: customerQueryKey });
       await queryClient.invalidateQueries({ queryKey: customerLocationQueryKey });
-      
+
       // Reset local state
       setSteamConnected(false);
       setSteamUserInfo(null);
-      
+
       toast.success("Steam account disconnected", {
         description: "Your Steam account has been unlinked from your profile.",
       });
     } catch (error) {
       console.error("Failed to disconnect Steam account:", error);
-      toast.error("Failed to disconnect Steam account", {
-        description: "Please try again or contact support if the issue persists.",
-      });
+      // Error toast already shown by global error handler
     } finally {
       setIsDisconnecting(false);
     }

@@ -74,26 +74,16 @@ export default function BillingAddressPage() {
   // Handle loading states
   const isLoading = isLoadingCountries || isLoadingCustomer;
 
-  // Handle errors
+  // Handle errors - global error handler already shows toasts
   useEffect(() => {
     if (countriesError) {
       console.error("Error loading countries:", countriesError);
-      if (countriesError instanceof ClientApiError) {
-        toast.error(`Failed to load countries: ${countriesError.message}`);
-      } else {
-        toast.error("Failed to load countries. Please try again.");
-      }
     }
   }, [countriesError]);
 
   useEffect(() => {
     if (customerError) {
       console.error("Error loading customer:", customerError);
-      if (customerError instanceof ClientApiError) {
-        toast.error(`Failed to load customer data: ${customerError.message}`);
-      } else {
-        toast.error("Failed to load customer data. Please try again.");
-      }
     }
   }, [customerError]);
 
@@ -137,11 +127,7 @@ export default function BillingAddressPage() {
       toast.success("Billing address updated successfully");
     } catch (error) {
       console.error("Error updating billing address:", error);
-      if (error instanceof ClientApiError) {
-        toast.error(`Failed to update billing address: ${error.message}`);
-      } else {
-        toast.error("Failed to update billing address. Please try again.");
-      }
+      // Error toast already shown by global error handler
     }
   };
 

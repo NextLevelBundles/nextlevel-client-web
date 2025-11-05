@@ -83,10 +83,7 @@ export default function GeneralSettingsPage() {
       setSelectedCountry("");
     } catch (error) {
       console.error("Failed to update country:", error);
-      toast.error("Failed to update country", {
-        description:
-          "Please try again or contact support if the issue persists.",
-      });
+      // Error toast already shown by global error handler
     } finally {
       setIsUpdating(false);
     }
