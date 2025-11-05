@@ -310,28 +310,14 @@ export function OnboardingForm() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/customer`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${(await fetchAuthSession()).tokens?.idToken?.toString()}`,
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      await apiClient.post("/customer", formData);
 
-      if (response.ok) {
-        // Refresh auth tokens after onboarding
-        await AuthService.refreshTokens();
-        setIsSubmitted(true);
-      } else {
-        throw new Error("Failed to submit form");
-      }
+      // Refresh auth tokens after onboarding
+      await AuthService.refreshTokens();
+      setIsSubmitted(true);
     } catch (error) {
       console.error("Error submitting form:", error);
-      // Handle error (you might want to show an error message)
+      // Error toast is already handled by the global error handler in apiClient
     } finally {
       setIsSubmitting(false);
     }
