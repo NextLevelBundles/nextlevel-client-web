@@ -12,6 +12,7 @@ import { CharityTierSection } from "./charity-tier-section";
 import { UpsellTierSection } from "./upsell-tier-section";
 import { MobileStickyCTA } from "./mobile-sticky-cta";
 import { MobilePurchaseSheet } from "./mobile-purchase-sheet";
+import { BundleCountdown } from "./bundle-countdown";
 import {
   Bundle,
   BundleType,
@@ -265,41 +266,6 @@ export function BundleDetail({
   }
   // If tip goes to publishers, 100% goes to publishers (nothing to charity)
 
-  // Countdown timer for not-yet-started bundles
-  const [countdown, setCountdown] = useState<{
-    days: number;
-    hours: number;
-    minutes: number;
-    seconds: number;
-  } | null>(null);
-
-  useEffect(() => {
-    if (bundleState !== 'not-started') return;
-
-    const updateCountdown = () => {
-      const now = new Date().getTime();
-      const start = startDate.getTime();
-      const distance = start - now;
-
-      if (distance < 0) {
-        setCountdown(null);
-        return;
-      }
-
-      setCountdown({
-        days: Math.floor(distance / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-        minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-        seconds: Math.floor((distance % (1000 * 60)) / 1000),
-      });
-    };
-
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
-
-    return () => clearInterval(interval);
-  }, [bundleState, startDate]);
-
   // Handle Add to Cart for mobile
   const handleMobileAddToCart = () => {
     if (!currentTier || totalAmount === 0) return;
@@ -336,9 +302,7 @@ export function BundleDetail({
         borderColor: 'border-blue-200 dark:border-blue-800',
         textColor: 'text-blue-700 dark:text-blue-300',
         title: 'Bundle Not Yet Started',
-        description: countdown
-          ? `Starts in ${countdown.days}d ${countdown.hours}h ${countdown.minutes}m ${countdown.seconds}s`
-          : 'This bundle has not started yet.',
+        description: null, // Will be rendered as component below
       },
       expired: {
         icon: AlertCircle,
@@ -364,7 +328,11 @@ export function BundleDetail({
               {config.title}
             </p>
             <p className={`text-xs ${config.textColor}`}>
-              {config.description}
+              {bundleState === 'not-started' ? (
+                <BundleCountdown startDate={startDate} />
+              ) : (
+                config.description
+              )}
             </p>
           </div>
         </div>
