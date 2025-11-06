@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { TooltipProvider } from "@/shared/components/ui/tooltip";
 import { BundleHero } from "./bundle-hero";
 import { BundleProgress } from "./bundle-progress";
@@ -10,6 +10,8 @@ import { PurchaseSummary } from "./purchase-summary";
 import { CuratorComments } from "./curator-comments";
 import { CharityTierSection } from "./charity-tier-section";
 import { UpsellTierSection } from "./upsell-tier-section";
+import { MobileStickyCTA } from "./mobile-sticky-cta";
+import { MobilePurchaseSheet } from "./mobile-purchase-sheet";
 import {
   Bundle,
   BundleType,
@@ -24,6 +26,7 @@ import { BundleNotFound } from "./bundle-not-found";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
 import { Card } from "@/shared/components/ui/card";
 import { AlertCircle, Clock, Eye } from "lucide-react";
+import { useCart } from "@/app/(shared)/contexts/cart/cart-provider";
 
 // Configuration: Base tier display order
 // 'asc' = low to high (cheapest first), 'desc' = high to low (most expensive first)
@@ -49,7 +52,10 @@ export function BundleDetail({
   isPreviewMode?: boolean;
 }) {
   const { user } = useAuth();
+  const { addToCart } = useCart();
   const isAuthenticated = !!user;
+  const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+  const purchaseSummaryRef = useRef<HTMLDivElement>(null);
 
   // Check bundle timing and status (memoized to prevent recalculation)
   const startDate = useMemo(() => new Date(bundle.startsAt), [bundle.startsAt]);
@@ -294,6 +300,31 @@ export function BundleDetail({
     return () => clearInterval(interval);
   }, [bundleState, startDate]);
 
+  // Handle Add to Cart for mobile
+  const handleMobileAddToCart = () => {
+    if (!currentTier || totalAmount === 0) return;
+
+    addToCart({
+      bundleId: bundle.id,
+      baseTierId: currentTier.id,
+      ...(selectedCharityTierIds.length > 0 && { charityTierId: selectedCharityTierIds[0] }),
+      ...(selectedUpsellTierIds.length > 0 && { upsellTierIds: selectedUpsellTierIds }),
+      ...(tipAmount > 0 && { tipAmount }),
+    });
+  };
+
+  // Scroll to purchase summary on mobile
+  const handleViewDetails = () => {
+    setMobileSheetOpen(true);
+  };
+
+  // Check if CTA should be disabled
+  const isCtaDisabled =
+    !hasAvailableBaseTiers ||
+    isBundleExpired ||
+    bundleState === "not-started" ||
+    totalAmount === 0;
+
   // Render status banner based on bundle state
   const renderStatusBanner = () => {
     if (bundleState === 'active' || bundleState === 'preview') return null;
@@ -343,7 +374,7 @@ export function BundleDetail({
 
   return (
     <TooltipProvider>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 lg:pb-8">
         <BundleHero bundle={bundle} />
 
         {renderStatusBanner()}
@@ -471,36 +502,73 @@ export function BundleDetail({
               )}
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4" ref={purchaseSummaryRef}>
               {/* Curator Comments - Compact version in right column */}
               {bundle.curatorComment && (
                 <CuratorComments content={bundle.curatorComment} compact />
               )}
 
-              <PurchaseSummary
-                bundle={bundle}
-                tiers={tiers}
-                currentTier={currentTier}
-                baseAmount={baseAmount}
-                totalAmount={totalAmount}
-                unlockedProductsValue={unlockedProductsValue}
-                setBaseAmount={setBaseAmount}
-                selectedCharityTierIds={selectedCharityTierIds}
-                selectedUpsellTierIds={selectedUpsellTierIds}
-                setSelectedCharityTierIds={setSelectedCharityTierIds}
-                setSelectedUpsellTierIds={setSelectedUpsellTierIds}
-                tipAmount={tipAmount}
-                setTipAmount={setTipAmount}
-                bookFormats={bookFormats}
-                isBundleExpired={isBundleExpired}
-                tierAvailability={tierAvailability}
-                hasAvailableBaseTiers={hasAvailableBaseTiers}
-                bundleUnavailabilityReason={bundleUnavailabilityReason}
-                bundleState={bundleState}
-              />
+              {/* Desktop Purchase Summary */}
+              <div className="hidden lg:block">
+                <PurchaseSummary
+                  bundle={bundle}
+                  tiers={tiers}
+                  currentTier={currentTier}
+                  baseAmount={baseAmount}
+                  totalAmount={totalAmount}
+                  unlockedProductsValue={unlockedProductsValue}
+                  setBaseAmount={setBaseAmount}
+                  selectedCharityTierIds={selectedCharityTierIds}
+                  selectedUpsellTierIds={selectedUpsellTierIds}
+                  setSelectedCharityTierIds={setSelectedCharityTierIds}
+                  setSelectedUpsellTierIds={setSelectedUpsellTierIds}
+                  tipAmount={tipAmount}
+                  setTipAmount={setTipAmount}
+                  bookFormats={bookFormats}
+                  isBundleExpired={isBundleExpired}
+                  tierAvailability={tierAvailability}
+                  hasAvailableBaseTiers={hasAvailableBaseTiers}
+                  bundleUnavailabilityReason={bundleUnavailabilityReason}
+                  bundleState={bundleState}
+                />
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Mobile Sticky CTA Bar */}
+        <MobileStickyCTA
+          totalAmount={totalAmount}
+          unlockedProductsCount={unlockedProducts.length}
+          onAddToCart={handleMobileAddToCart}
+          onViewDetails={handleViewDetails}
+          isDisabled={isCtaDisabled}
+        />
+
+        {/* Mobile Purchase Sheet */}
+        <MobilePurchaseSheet
+          open={mobileSheetOpen}
+          onOpenChange={setMobileSheetOpen}
+          bundle={bundle}
+          tiers={tiers}
+          currentTier={currentTier}
+          baseAmount={baseAmount}
+          totalAmount={totalAmount}
+          unlockedProductsValue={unlockedProductsValue}
+          setBaseAmount={setBaseAmount}
+          selectedCharityTierIds={selectedCharityTierIds}
+          selectedUpsellTierIds={selectedUpsellTierIds}
+          setSelectedCharityTierIds={setSelectedCharityTierIds}
+          setSelectedUpsellTierIds={setSelectedUpsellTierIds}
+          tipAmount={tipAmount}
+          setTipAmount={setTipAmount}
+          bookFormats={bookFormats}
+          isBundleExpired={isBundleExpired}
+          tierAvailability={tierAvailability}
+          hasAvailableBaseTiers={hasAvailableBaseTiers}
+          bundleUnavailabilityReason={bundleUnavailabilityReason}
+          bundleState={bundleState}
+        />
       </div>
     </TooltipProvider>
   );
