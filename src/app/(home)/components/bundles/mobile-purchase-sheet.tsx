@@ -8,7 +8,7 @@ import {
 } from "@/shared/components/ui/sheet";
 import { PurchaseSummary } from "./purchase-summary";
 import { Bundle, Tier } from "@/shared/types/bundle";
-import { BookFormat } from "@/lib/api/types/bundle";
+import { BundleBookFormatsResponse } from "@/lib/api/types/bundle";
 
 interface MobilePurchaseSheetProps {
   bundle: Bundle;
@@ -24,7 +24,7 @@ interface MobilePurchaseSheetProps {
   setSelectedUpsellTierIds: (ids: string[]) => void;
   tipAmount: number;
   setTipAmount: (amount: number) => void;
-  bookFormats?: BookFormat[];
+  bookFormats?: BundleBookFormatsResponse | null;
   isBundleExpired: boolean;
   tierAvailability?: Record<string, number>;
   hasAvailableBaseTiers: boolean;
