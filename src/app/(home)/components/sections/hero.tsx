@@ -35,7 +35,7 @@ export async function HeroSection() {
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 items-center">
           <div className="flex flex-col justify-center space-y-8">
             <div>
-              <h1 className="font-orbitron mb-4 text-4xl font-bold leading-[1.1] tracking-tighter text-[#1a1a1a] dark:text-primary md:text-6xl lg:text-7xl bg-[linear-gradient(135deg,rgba(57,130,245,0.2),transparent_80%)] dark:bg-transparent bg-clip-text">
+              <h1 className="mb-4 text-4xl font-bold leading-[1.1] tracking-tighter text-[#1a1a1a] dark:text-primary md:text-6xl lg:text-7xl bg-[linear-gradient(135deg,rgba(57,130,245,0.2),transparent_80%)] dark:bg-transparent bg-clip-text">
                 <span className="block bg-linear-to-r from-teal-500 via-violet-500 to-orange-500 bg-clip-text text-transparent">
                   {bundle.title}
                 </span>

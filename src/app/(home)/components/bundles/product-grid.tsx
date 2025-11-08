@@ -169,7 +169,7 @@ export function ProductGrid({
                   </div>
                 </div>
                 <div className="p-5">
-                  <h3 className="font-rajdhani text-lg font-bold line-clamp-2 text-gray-900 dark:text-foreground">
+                  <h3 className="text-lg font-bold line-clamp-2 text-gray-900 dark:text-foreground">
                     {product.title}
                   </h3>
 

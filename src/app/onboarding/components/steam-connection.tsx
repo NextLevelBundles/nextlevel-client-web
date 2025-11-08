@@ -157,7 +157,7 @@ export default function SteamConnection({
               </svg>
             </div>
             <div className="flex-1">
-              <h3 className="font-rajdhani text-lg font-bold text-green-600 dark:text-green-400 mb-2">
+              <h3 className="text-lg font-bold text-green-600 dark:text-green-400 mb-2">
                 Steam Account Connected!
               </h3>
               {steamUserInfo && (
@@ -258,7 +258,7 @@ export default function SteamConnection({
               </svg>
             </div>
             <div className="flex-1">
-              <h3 className="font-rajdhani text-lg font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
+              <h3 className="text-lg font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
                 Connect Your Steam Account
               </h3>
               <p className="text-sm text-muted-foreground mb-4 leading-relaxed">

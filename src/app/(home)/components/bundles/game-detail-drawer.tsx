@@ -110,7 +110,7 @@ export function GameDetailDrawer({
             )}
             <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/50 to-transparent" />
             <div className="absolute bottom-6 left-6 flex items-center gap-4">
-              <h2 className="font-rajdhani text-3xl font-bold text-white drop-shadow-md">
+              <h2 className="text-3xl font-bold text-white drop-shadow-md">
                 {product.title}
               </h2>
               <div className="flex gap-2">

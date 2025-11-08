@@ -78,7 +78,7 @@ export function GameGrid({
             </div>
             <div className="p-5">
               <div className="flex items-start justify-between gap-2">
-                <h3 className="font-rajdhani text-lg font-bold line-clamp-1 text-gray-900 dark:text-foreground">
+                <h3 className="text-lg font-bold line-clamp-1 text-gray-900 dark:text-foreground">
                   {product.title}
                 </h3>
                 <span className="text-sm font-medium bg-blue-50 line-through text-blue-700 dark:bg-primary/20 dark:text-primary px-2 py-0.5 rounded-full">

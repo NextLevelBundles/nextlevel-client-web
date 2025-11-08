@@ -62,7 +62,7 @@ export function Newsletter() {
                 <Mail className="h-6 w-6" />
               )}
             </div>
-            <h2 className="font-orbitron mb-4 text-3xl font-bold tracking-tight md:text-4xl text-[#1c1c1e] dark:text-foreground">
+            <h2 className="mb-4 text-3xl font-bold tracking-tight md:text-4xl text-[#1c1c1e] dark:text-foreground">
               Stay in the Loop
             </h2>
             <p className="mb-8 text-[#4b5563] dark:text-muted-foreground">

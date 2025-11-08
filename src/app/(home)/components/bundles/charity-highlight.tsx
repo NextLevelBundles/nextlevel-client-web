@@ -32,7 +32,7 @@ export function CharityHighlight({
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <Heart className="h-6 w-6 text-red-500" />
-          <h2 className="font-rajdhani text-2xl font-bold">
+          <h2 className="text-2xl font-bold">
             Supporting Charities
           </h2>
         </div>
@@ -62,7 +62,7 @@ export function CharityHighlight({
               />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-rajdhani text-lg font-bold mb-2">
+              <h3 className="text-lg font-bold mb-2">
                 {charity.name}
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed mb-3">

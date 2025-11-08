@@ -37,7 +37,7 @@ export function HowItWorks() {
             <span className="mb-2 inline-block text-sm font-medium text-primary">
               Quick Start Guide
             </span>
-            <h2 className="font-orbitron mb-4 text-3xl font-bold tracking-tight md:text-4xl text-[#1c1c1e] dark:text-foreground">
+            <h2 className="mb-4 text-3xl font-bold tracking-tight md:text-4xl text-[#1c1c1e] dark:text-foreground">
               How It Works
             </h2>
             <p className="text-muted-foreground">
@@ -56,7 +56,7 @@ export function HowItWorks() {
                   <div className="rounded-full bg-primary/20 text-primary w-6 h-6 flex items-center justify-center text-sm font-bold">
                     {index + 1}
                   </div>
-                  <h3 className="font-rajdhani text-xl font-semibold text-[#1c1c1e] dark:text-foreground group-hover:text-primary transition-colors">
+                  <h3 className="text-xl font-semibold text-[#1c1c1e] dark:text-foreground group-hover:text-primary transition-colors">
                     {step.title}
                   </h3>
                 </div>

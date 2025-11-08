@@ -107,7 +107,7 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
               </div>
             </div>
 
-            <h3 className="font-rajdhani mb-3 text-xl font-bold text-[#1c1c1e] dark:text-foreground transition-colors group-hover:text-primary">
+            <h3 className="mb-3 text-xl font-bold text-[#1c1c1e] dark:text-foreground transition-colors group-hover:text-primary">
               {bundle.title}
             </h3>
 

@@ -12,7 +12,7 @@ export async function CurrentBundles() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(57,130,245,0.15),transparent_70%),radial-gradient(ellipse_at_bottom,rgba(249,113,20,0.1),transparent_70%)] opacity-30 dark:opacity-40" />
       <div className="container relative px-4 mx-auto overflow-visible">
         <div className="mb-12 text-center">
-          <h2 className="font-orbitron mb-4 text-3xl font-bold tracking-tight md:text-4xl bg-linear-to-r from-primary via-foreground to-secondary bg-clip-text text-transparent animate-glow">
+          <h2 className="mb-4 text-3xl font-bold tracking-tight md:text-4xl bg-linear-to-r from-primary via-foreground to-secondary bg-clip-text text-transparent animate-glow">
             Current Bundles
           </h2>
           <p className="text-muted-foreground">
@@ -80,7 +80,7 @@ export async function CurrentBundles() {
                       </div>
                     </div>
                     <div className="flex flex-1 flex-col p-6">
-                      <h3 className="font-rajdhani mb-2 text-xl font-bold text-foreground transition-colors group-hover:text-primary">
+                      <h3 className="mb-2 text-xl font-bold text-foreground transition-colors group-hover:text-primary">
                         {bundle.title}
                       </h3>
                       <div className="mb-4 grid grid-cols-2 gap-4">

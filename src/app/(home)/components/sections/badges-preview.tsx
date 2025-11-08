@@ -56,7 +56,7 @@ export function BadgesPreview() {
         <div className="relative rounded-3xl bg-white/90 dark:bg-primary/10 px-6 py-12 border border-white/20 dark:border-border shadow-xl dark:shadow-2xl hover:shadow-[0_4px_40px_rgba(57,130,245,0.15)] dark:hover:shadow-[0_4px_30px_rgba(57,130,245,0.2)] transition-all duration-300">
           <div className="absolute inset-0 bg-linear-to-br rounded-3xl opacity-20 from-[#3982f5]/10 to-[#f97114]/10 dark:from-[#3982f5]/30 dark:to-[#f97114]/30" />
           <div className="relative mb-16 text-center">
-            <h2 className="font-orbitron mb-4 text-3xl font-bold tracking-tight md:text-4xl text-[#1c1c1e] dark:text-foreground">
+            <h2 className="mb-4 text-3xl font-bold tracking-tight md:text-4xl text-[#1c1c1e] dark:text-foreground">
               Unlock Achievements
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -77,7 +77,7 @@ export function BadgesPreview() {
                 >
                   <badge.icon className="h-7 w-7" />
                 </div>
-                <h3 className="font-rajdhani mb-2 text-xl font-semibold text-[#1c1c1e] dark:text-foreground group-hover:text-primary transition-colors">
+                <h3 className="mb-2 text-xl font-semibold text-[#1c1c1e] dark:text-foreground group-hover:text-primary transition-colors">
                   {badge.name}
                 </h3>
                 <p className="text-sm text-[#4b5563] dark:text-muted-foreground">

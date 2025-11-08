@@ -83,7 +83,7 @@ export function BundleHero({ bundle }: BundleHeroProps) {
           </div>
 
           {/* Bundle Title */}
-          <h1 className="font-orbitron text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-tight">
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-tight">
             {bundle.title}
           </h1>
 

@@ -62,7 +62,7 @@ export function CharityStats() {
               <span className="mb-2 inline-block text-sm font-medium text-primary animate-pulse">
                 Community Impact
               </span>
-              <h2 className="font-orbitron mb-4 text-3xl font-bold tracking-tight md:text-4xl bg-linear-to-br from-primary to-secondary text-transparent bg-clip-text animate-glow">
+              <h2 className="mb-4 text-3xl font-bold tracking-tight md:text-4xl bg-linear-to-br from-primary to-secondary text-transparent bg-clip-text animate-glow">
                 Making a Difference
               </h2>
               <p className="text-[#4b5563] dark:text-muted-foreground max-w-2xl mx-auto">
@@ -85,7 +85,7 @@ export function CharityStats() {
                     <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20 text-primary animate-pulse ring-1 ring-primary/30">
                       <stat.icon className="h-6 w-6" />
                     </div>
-                    <div className="font-rajdhani text-4xl font-bold bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">
+                    <div className="text-4xl font-bold bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">
                       {stat.value}
                     </div>
                     <p className="text-base text-[#4b5563] dark:text-muted-foreground mt-1">

@@ -182,7 +182,7 @@ export function PurchaseSummary({
   return (
     <div className="lg:sticky lg:top-20 lg:h-fit space-y-4 lg:w-[370px] w-full animate-fade-up">
       <Card className="p-6 bg-white dark:bg-card/70 backdrop-blur-xs border border-gray-100 dark:border-border shadow-xs hover:shadow-md transition-all duration-300 rounded-xl">
-        <h3 className="font-rajdhani text-xl font-bold mb-4">Bundle Summary</h3>
+        <h3 className="text-xl font-bold mb-4">Bundle Summary</h3>
 
         {/* Step 1: Base Bundle Selection */}
         <div className="mb-6">

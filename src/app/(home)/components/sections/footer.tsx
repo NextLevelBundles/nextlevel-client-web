@@ -44,7 +44,7 @@ export function Footer() {
         {/* <div className="relative mb-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category}>
-              <h3 className="font-rajdhani mb-4 text-lg font-semibold text-[#1a1a1a] dark:text-foreground">
+              <h3 className="mb-4 text-lg font-semibold text-[#1a1a1a] dark:text-foreground">
                 {category}
               </h3>
               <ul className="space-y-2">

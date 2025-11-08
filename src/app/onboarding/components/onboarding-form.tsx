@@ -380,7 +380,7 @@ export function OnboardingForm() {
             <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20 text-green-500">
               <CheckCircle className="h-8 w-8" />
             </div>
-            <h1 className="font-orbitron mb-4 text-3xl font-bold text-foreground">
+            <h1 className="mb-4 text-3xl font-bold text-foreground">
               You&apos;re all set! 🎉
             </h1>
             <p className="text-muted-foreground mb-8">
@@ -408,7 +408,7 @@ export function OnboardingForm() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(57,130,245,0.15),transparent_70%),radial-gradient(ellipse_at_bottom,rgba(249,113,20,0.1),transparent_70%)] opacity-30 dark:opacity-40" />
       <div className="container relative px-4 max-w-4xl mx-auto">
         <div className="mb-12 text-center">
-          <h1 className="font-orbitron mb-4 text-3xl font-bold tracking-tight md:text-4xl text-foreground">
+          <h1 className="mb-4 text-3xl font-bold tracking-tight md:text-4xl text-foreground">
             Welcome to Digiphile!
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -444,7 +444,7 @@ export function OnboardingForm() {
             ))}
           </div>
           <div className="text-center">
-            <h2 className="font-rajdhani text-xl font-bold text-foreground">
+            <h2 className="text-xl font-bold text-foreground">
               {formSections[currentSection].title}
             </h2>
             <p className="text-sm text-muted-foreground">

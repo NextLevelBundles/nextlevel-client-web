@@ -42,7 +42,7 @@ export function BlogPreview() {
       <div className="container px-4">
         <div className="mb-12 flex items-center justify-between">
           <div>
-            <h2 className="font-orbitron mb-4 text-3xl font-bold tracking-tight md:text-4xl text-[#1c1c1e] dark:text-foreground">
+            <h2 className="mb-4 text-3xl font-bold tracking-tight md:text-4xl text-[#1c1c1e] dark:text-foreground">
               Latest News
             </h2>
             <p className="text-[#4b5563] dark:text-muted-foreground">
@@ -79,7 +79,7 @@ export function BlogPreview() {
                   <span>•</span>
                   <span>{post.readTime}</span>
                 </div>
-                <h3 className="font-rajdhani mb-2 text-xl font-semibold text-[#1c1c1e] dark:text-foreground group-hover:text-primary transition-colors">
+                <h3 className="mb-2 text-xl font-semibold text-[#1c1c1e] dark:text-foreground group-hover:text-primary transition-colors">
                   {post.title}
                 </h3>
                 <p className="mb-4 text-sm text-[#4b5563] dark:text-muted-foreground line-clamp-3">

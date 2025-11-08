@@ -85,7 +85,7 @@ export function BundlesGrid({ bundles }: BundlesGridProps) {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(57,130,245,0.15),transparent_70%),radial-gradient(ellipse_at_bottom,rgba(249,113,20,0.1),transparent_70%)] opacity-30 dark:opacity-40" />
         <div className="container relative px-4">
           <div className="mb-12">
-            <h1 className="font-orbitron mb-4 text-3xl font-bold tracking-tight md:text-4xl text-foreground">
+            <h1 className="mb-4 text-3xl font-bold tracking-tight md:text-4xl text-foreground">
               All Bundles
             </h1>
             <p className="text-muted-foreground max-w-2xl">
