@@ -71,12 +71,12 @@ export function BundleHero({ bundle }: BundleHeroProps) {
               {bundle.type === BundleType.EBook ? (
                 <>
                   <BookOpen className="h-5 w-5" />
-                  Book Bundle
+                  Book Collection
                 </>
               ) : (
                 <>
                   <Gamepad2 className="h-5 w-5" />
-                  Game Bundle
+                  Game Collection
                 </>
               )}
             </div>

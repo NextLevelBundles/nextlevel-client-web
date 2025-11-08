@@ -27,8 +27,8 @@ const ITEMS_PER_PAGE = 9;
 
 const filters = [
   { label: "All", value: "all" },
-  { label: "Game Bundles", value: "games", icon: Gamepad2 },
-  { label: "Book Bundles", value: "books", icon: BookOpen },
+  { label: "Game Collections", value: "games", icon: Gamepad2 },
+  { label: "Book Collections", value: "books", icon: BookOpen },
   { label: "Featured", value: "featured" },
   { label: "Early Access", value: "early_acces" },
   { label: "Limited Keys", value: "limited_keys" },

@@ -353,11 +353,11 @@ export function CartDrawer() {
                             >
                               {isBookBundle(item) ? (
                                 <>
-                                  <BookOpen className="h-3 w-3" /> Book Bundle
+                                  <BookOpen className="h-3 w-3" /> Book Collection
                                 </>
                               ) : (
                                 <>
-                                  <Gamepad2 className="h-3 w-3" /> Game Bundle
+                                  <Gamepad2 className="h-3 w-3" /> Game Collection
                                 </>
                               )}
                             </span>

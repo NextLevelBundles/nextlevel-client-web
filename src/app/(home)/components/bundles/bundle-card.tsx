@@ -96,12 +96,12 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
                 bundle.type === BundleType.EBook ? (
                   <>
                     <BookOpen className="h-3.5 w-3.5" />
-                    <span>Book Bundle</span>
+                    <span>Book Collection</span>
                   </>
                 ) : (
                   <>
                     <Gamepad2 className="h-3.5 w-3.5" />
-                    <span>Game Bundle</span>
+                    <span>Game Collection</span>
                   </>
                 )}
               </div>

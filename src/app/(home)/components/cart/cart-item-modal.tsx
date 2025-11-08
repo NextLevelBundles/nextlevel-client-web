@@ -69,11 +69,11 @@ export function CartItemModal({ item, isOpen, onClose }: CartItemModalProps) {
               >
                 {isBookBundle(item) ? (
                   <>
-                    <BookOpen className="h-3 w-3 mr-1" /> Book Bundle
+                    <BookOpen className="h-3 w-3 mr-1" /> Book Collection
                   </>
                 ) : (
                   <>
-                    <Gamepad2 className="h-3 w-3 mr-1" /> Game Bundle
+                    <Gamepad2 className="h-3 w-3 mr-1" /> Game Collection
                   </>
                 )}
               </Badge>

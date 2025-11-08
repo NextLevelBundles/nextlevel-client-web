@@ -387,7 +387,7 @@ export function OnboardingForm() {
               Your account has been successfully created and your profile is
               ready.
               <br />
-              Start discovering incredible game bundles, support meaningful
+              Start discovering incredible game and book collections, support meaningful
               causes, and enjoy exclusive deals tailored just for you.
             </p>
             <Button
@@ -688,7 +688,7 @@ export function OnboardingForm() {
                             </div>
                             <div className="flex-1">
                               <h4 className="font-semibold mb-1">
-                                Steam Game Bundles
+                                Game Collections
                               </h4>
                               <p className="text-xs text-muted-foreground">
                                 I'm interested in Steam games. I'll need to
@@ -708,10 +708,10 @@ export function OnboardingForm() {
                             </div>
                             <div className="flex-1">
                               <h4 className="font-semibold mb-1">
-                                Book Bundles Only
+                                Book Collections Only
                               </h4>
                               <p className="text-xs text-muted-foreground">
-                                I'm only interested in eBook bundles. No Steam
+                                I'm only interested in eBook collections. No Steam
                                 account needed.
                               </p>
                             </div>
@@ -984,10 +984,10 @@ export function OnboardingForm() {
                             <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5" />
                             <div className="text-sm">
                               <p className="font-medium text-green-700 dark:text-green-300">
-                                Great! You're all set for book bundles.
+                                Great! You're all set for book collections.
                               </p>
                               <p className="text-green-600 dark:text-green-400">
-                                You can start exploring our eBook collection
+                                You can start exploring our eBook collections
                                 right away. If you decide to purchase Steam
                                 games later, you can connect your Steam account
                                 anytime from your account settings.
