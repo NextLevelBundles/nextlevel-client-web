@@ -61,7 +61,12 @@ export const CuratorComments = memo(function CuratorComments({
             <div
               ref={contentRef}
               className={cn(
-                "pl-3 overflow-hidden transition-all duration-300 prose prose-sm max-w-none [&_p:empty::before]:content-['\\00a0'] [&_p:empty::before]:inline-block [&_iframe]:w-full",
+                "pl-3 overflow-hidden transition-all duration-300 prose prose-sm max-w-none",
+                "[&_p:empty]:min-h-[1.5em]",
+                "[&_iframe]:w-full",
+                "[&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-2",
+                "[&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-2",
+                "[&_li]:my-1",
                 !isExpanded && "max-h-[150px]"
               )}
               dangerouslySetInnerHTML={{ __html: content }}
@@ -124,7 +129,14 @@ export const CuratorComments = memo(function CuratorComments({
         <div className="relative">
           <div className="absolute -left-2 top-0 bottom-0 w-1 bg-gradient-to-b from-primary/50 via-primary/30 to-transparent rounded-full" />
           <div
-            className="pl-4 prose prose-sm md:prose-base max-w-none [&_p:empty::before]:content-['\\00a0'] [&_p:empty::before]:inline-block [&_iframe]:w-full"
+            className={cn(
+              "pl-4 prose prose-sm md:prose-base max-w-none",
+              "[&_p:empty]:min-h-[1.5em]",
+              "[&_iframe]:w-full",
+              "[&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-2",
+              "[&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-2",
+              "[&_li]:my-1"
+            )}
             dangerouslySetInnerHTML={{ __html: content }}
           />
         </div>
