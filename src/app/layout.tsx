@@ -2,7 +2,7 @@ import "./globals.css";
 import "@fontsource/orbitron/700.css";
 import "@fontsource/rajdhani/600.css";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "./(shared)/components/theme-provider";
 import { AuthProvider } from "./(shared)/providers/auth-provider";
@@ -12,7 +12,9 @@ import AmplifyClientLoader from "./(shared)/components/amplify/load-amplify";
 import { TrackdeskScript } from "./(shared)/components/trackdesk/trackdesk-script";
 import { LinkIdCapture } from "./(shared)/components/trackdesk/linkId-capture";
 
-const inter = Inter({ subsets: ["latin"] });
+const funnelDisplay = localFont({
+  src: "./../assets/fonts/Funnel_Display/FunnelDisplay-VariableFont_wght.ttf",
+});
 
 export const metadata: Metadata = {
   title: "Digiphile | Gaming Bundles That Make a Difference",
@@ -39,7 +41,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={funnelDisplay.className}>
         <AmplifyClientLoader />
         <TrackdeskScript />
         <LinkIdCapture />
@@ -66,9 +68,7 @@ export default function RootLayout({
 
           <AuthProvider>
             <AmplifyAuthListener />
-            <QueryClientProviderWrapper>
-              {children}
-            </QueryClientProviderWrapper>
+            <QueryClientProviderWrapper>{children}</QueryClientProviderWrapper>
           </AuthProvider>
         </ThemeProvider>
       </body>
