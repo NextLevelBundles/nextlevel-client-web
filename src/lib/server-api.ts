@@ -160,11 +160,11 @@ class ServerApiClient {
     }
   }
 
-  async getBundleById(id: string): Promise<Bundle | null> {
+  async getBundleBySlug(slug: string): Promise<Bundle | null> {
     try {
       const headers = await this.getAuthHeaders();
       const response = await this.fetchWithRetry(
-        `${API_BASE_URL}/customer/bundles/${id}`,
+        `${API_BASE_URL}/customer/bundles/slug/${slug}`,
         {
           method: "GET",
           headers,

@@ -46,7 +46,7 @@ export async function CurrentBundles() {
               >
                 <Card className="border-0 bg-transparent h-full">
                   <Link
-                    href={`/bundles/${bundle.id}`}
+                    href={`/bundles/${bundle.slug}`}
                     className="flex h-full flex-col"
                   >
                     <div className="relative">

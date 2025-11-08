@@ -14,6 +14,7 @@ export enum BundleStatus {
 // Partial bundle data for list views
 export interface BundleListItem {
   id: string;
+  slug: string;
   title: string;
   imageMedia: MediaData[];
   description: string;
@@ -28,6 +29,15 @@ export interface BundleListItem {
   status: string;
   createdAt: string;
   updatedAt: string;
+  seo?: {
+    title: string;
+    description: string;
+    keywords: string;
+    image?: MediaData & {
+      width?: number;
+      height?: number;
+    };
+  };
 }
 
 // Full bundle data with all relations for detail views

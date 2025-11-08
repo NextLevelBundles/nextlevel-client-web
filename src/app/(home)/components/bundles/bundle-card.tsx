@@ -39,7 +39,7 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
   }, []);
 
   return (
-    <Link href={`/bundles/${bundle.id}`} className="flex h-full flex-col">
+    <Link href={`/bundles/${bundle.slug}`} className="flex h-full flex-col">
       <div
         ref={cardRef}
         tabIndex={0}

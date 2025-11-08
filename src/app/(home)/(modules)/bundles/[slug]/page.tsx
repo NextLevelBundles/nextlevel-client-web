@@ -6,8 +6,59 @@ import { BundleError } from "@/home/components/bundles/bundle-error";
 import { Footer } from "@/home/components/sections/footer";
 import { serverApiClient } from "@/lib/server-api";
 import React from "react";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: any;
+}): Promise<Metadata> {
+  const { slug } = await params;
+
+  try {
+    const bundle = await serverApiClient.getBundleBySlug(slug);
+
+    if (!bundle || !bundle.seo) {
+      return {
+        title: bundle?.title || "Bundle Not Found",
+        description: bundle?.description || "Bundle details",
+      };
+    }
+
+    return {
+      title: bundle.seo.title,
+      description: bundle.seo.description,
+      keywords: bundle.seo.keywords,
+      openGraph: {
+        title: bundle.seo.title,
+        description: bundle.seo.description,
+        images: bundle.seo.image?.url
+          ? [
+              {
+                url: bundle.seo.image.url,
+                width: bundle.seo.image.width,
+                height: bundle.seo.image.height,
+              },
+            ]
+          : undefined,
+        type: "website",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: bundle.seo.title,
+        description: bundle.seo.description,
+        images: bundle.seo.image?.url ? [bundle.seo.image.url] : undefined,
+      },
+    };
+  } catch {
+    return {
+      title: "Bundle Not Found",
+      description: "The bundle you are looking for could not be found.",
+    };
+  }
+}
 
 export default async function BundleDetailPage({
   params,
@@ -16,7 +67,7 @@ export default async function BundleDetailPage({
   params: any;
   searchParams: any;
 }) {
-  const { id } = await params;
+  const { slug } = await params;
   const resolvedSearchParams = await searchParams;
   const isPreviewMode = resolvedSearchParams?.preview === "true";
 
@@ -25,7 +76,7 @@ export default async function BundleDetailPage({
   let isNotFound = false;
 
   try {
-    bundle = await serverApiClient.getBundleById(id);
+    bundle = await serverApiClient.getBundleBySlug(slug);
     console.log("Fetched bundle:", bundle);
     if (!bundle) {
       isNotFound = true;
