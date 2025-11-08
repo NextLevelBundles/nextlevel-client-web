@@ -3,7 +3,7 @@
 import { Card } from "@/app/(shared)/components/ui/card";
 import { MessageSquare, ChevronDown } from "lucide-react";
 import { cn } from "@/app/(shared)/utils/tailwind";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 
 interface CuratorCommentsProps {
   content: string;
@@ -11,7 +11,7 @@ interface CuratorCommentsProps {
   compact?: boolean;
 }
 
-export function CuratorComments({
+export const CuratorComments = memo(function CuratorComments({
   content,
   className,
   compact = false,
@@ -61,7 +61,7 @@ export function CuratorComments({
             <div
               ref={contentRef}
               className={cn(
-                "pl-3 overflow-hidden transition-all duration-300 prose prose-sm max-w-none",
+                "pl-3 overflow-hidden transition-all duration-300 prose prose-sm max-w-none [&_p:empty::before]:content-['\\00a0'] [&_p:empty::before]:inline-block [&_iframe]:w-full",
                 !isExpanded && "max-h-[150px]"
               )}
               dangerouslySetInnerHTML={{ __html: content }}
@@ -124,7 +124,7 @@ export function CuratorComments({
         <div className="relative">
           <div className="absolute -left-2 top-0 bottom-0 w-1 bg-gradient-to-b from-primary/50 via-primary/30 to-transparent rounded-full" />
           <div
-            className="pl-4 prose prose-sm md:prose-base max-w-none"
+            className="pl-4 prose prose-sm md:prose-base max-w-none [&_p:empty::before]:content-['\\00a0'] [&_p:empty::before]:inline-block [&_iframe]:w-full"
             dangerouslySetInnerHTML={{ __html: content }}
           />
         </div>
@@ -143,4 +143,4 @@ export function CuratorComments({
       </div>
     </Card>
   );
-}
+});
