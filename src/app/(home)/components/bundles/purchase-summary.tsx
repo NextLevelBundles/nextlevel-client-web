@@ -320,28 +320,32 @@ export function PurchaseSummary({
 
         {/* Step 3: Optional Tip */}
         <div className="mb-6">
-          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-            3.{" "}
-            {bundle.excessDistributionType === ExcessDistributionType.Publishers
-              ? "Add a Tip for Publishers (Optional)"
-              : "Add a Tip for Charity (Optional)"}
-          </h4>
-          <p className="text-xs text-muted-foreground mb-3">
-            100% of your tip goes directly to{" "}
-            <span
-              className={`font-semibold ${
-                bundle.excessDistributionType ===
-                ExcessDistributionType.Publishers
-                  ? "text-blue-600 dark:text-blue-400"
-                  : "text-rose-600 dark:text-rose-400"
-              }`}
-            >
-              {bundle.excessDistributionType ===
-              ExcessDistributionType.Publishers
-                ? "Publishers"
-                : "Charity"}
-            </span>
-          </p>
+          {bundle.excessDistributionType ===
+          ExcessDistributionType.Publishers ? (
+            <>
+              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                3. Support the Devs
+              </h4>
+              <p className="text-xs text-muted-foreground mb-3">
+                100% of your tip goes directly to{" "}
+                <span className="font-semibold text-blue-600 dark:text-blue-400">
+                  Publishers
+                </span>
+              </p>
+            </>
+          ) : (
+            <>
+              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                3. Donate more to Charity (optional)
+              </h4>
+              <p className="text-xs text-muted-foreground mb-3">
+                100% of your tip goes directly to{" "}
+                <span className="font-semibold text-rose-600 dark:text-rose-400">
+                  {bundle.charities?.[0]?.charity?.name ?? "Charity"}
+                </span>
+              </p>
+            </>
+          )}
           <div className="relative">
             <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -350,7 +354,7 @@ export function PurchaseSummary({
               min="0"
               value={tipInputValue}
               onChange={(e) => handleTipInputChange(e.target.value)}
-              placeholder="Enter tip amount"
+              placeholder="Amount"
               className="pl-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-left font-mono bg-white dark:bg-card border-gray-200 dark:border-border focus:border-primary/50 transition-colors"
             />
           </div>
