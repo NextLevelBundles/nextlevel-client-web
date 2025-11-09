@@ -2,8 +2,9 @@
 
 import Logo from "@/app/(shared)/components/logo";
 import { Button } from "@/shared/components/ui/button";
-import { Twitter, Github, Disc as Discord, ArrowUp } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 import Link from "next/link";
+import { FaBluesky, FaInstagram, FaReddit } from "react-icons/fa6";
 
 const footerLinks = {
   Company: [
@@ -93,29 +94,53 @@ export function Footer() {
             </Link>
           </div>
 
-          {/* <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="icon"
+              asChild
               className="text-[#3a3a3a] dark:text-foreground hover:text-primary dark:hover:text-primary transition-colors"
             >
-              <Twitter className="h-5 w-5" />
+              <Link
+                href="https://bsky.app/profile/digiphile-team.bsky.social"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Bluesky"
+              >
+                <FaBluesky className="h-5 w-5" />
+              </Link>
             </Button>
             <Button
               variant="ghost"
               size="icon"
+              asChild
               className="text-[#3a3a3a] dark:text-foreground hover:text-primary dark:hover:text-primary transition-colors"
             >
-              <Discord className="h-5 w-5" />
+              <Link
+                href="https://www.instagram.com/digiphile.team/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+              >
+                <FaInstagram className="h-5 w-5" />
+              </Link>
             </Button>
             <Button
               variant="ghost"
               size="icon"
+              asChild
               className="text-[#3a3a3a] dark:text-foreground hover:text-primary dark:hover:text-primary transition-colors"
             >
-              <Github className="h-5 w-5" />
+              <Link
+                href="https://www.reddit.com/r/digiphile/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Reddit"
+              >
+                <FaReddit className="h-5 w-5" />
+              </Link>
             </Button>
-          </div> */}
+          </div>
 
           <Button
             variant="ghost"
