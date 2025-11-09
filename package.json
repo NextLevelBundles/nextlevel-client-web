@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "build:development": "cp .env.dev .env && next build",
+    "build:test": "cp .env.test .env && next build",
     "build:staging": "cp .env.staging .env && next build",
     "build:production": "cp .env.prod .env && next build"
   },
