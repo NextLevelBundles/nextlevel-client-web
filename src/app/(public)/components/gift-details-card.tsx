@@ -74,11 +74,6 @@ export function GiftDetailsCard({
           )}
           <div className="flex-1">
             <h3 className="text-xl font-semibold mb-1">{title}</h3>
-            {bundleName && (
-              <p className="text-sm text-muted-foreground mb-2">
-                From {bundleName}
-              </p>
-            )}
             {description && (
               <p className="text-sm text-muted-foreground line-clamp-2">
                 {description}

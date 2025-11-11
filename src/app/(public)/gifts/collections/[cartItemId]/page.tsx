@@ -3,14 +3,14 @@
 import { useState } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
-import { Check, Loader2, AlertCircle } from "lucide-react";
+import { Check, Loader2, AlertCircle, Stamp as Steam } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { GiftDetailsCard } from "@/app/(public)/components/gift-details-card";
 import { GiftAuthPrompt } from "@/app/(public)/components/gift-auth-prompt";
 import { GiftProductsList } from "@/app/(public)/components/gift-products-list";
 import { giftAcceptanceRateLimiter } from "@/lib/utils/rate-limiter";
-import { useCartItemGift, useAcceptCartItemGift } from "@/hooks/queries";
+import { useCartItemGift, useAcceptCartItemGift, useCustomer } from "@/hooks/queries";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,9 +40,19 @@ export default function CartItemGiftPage() {
     error: queryError,
   } = useCartItemGift(cartItemId);
 
+  // Fetch customer data to check Steam connection status (only if authenticated)
+  const { data: customer } = useCustomer();
+
   const acceptGiftMutation = useAcceptCartItemGift();
 
   const error = queryError instanceof Error ? queryError.message : null;
+
+  // Check if this is a Steam gift (based on platform)
+  const isSteamGift = gift?.snapshotPlatform === "Steam";
+
+  // Check if user has connected Steam
+  const isSteamConnected = customer && customer.steamId;
+  const needsSteamConnection = isSteamGift && user && !isSteamConnected;
 
   const handleAcceptGift = async () => {
     if (!gift) return;
@@ -178,6 +188,21 @@ export default function CartItemGiftPage() {
                   You cannot accept your own gift. This gift was sent by you and needs to be accepted by the recipient.
                 </AlertDescription>
               </Alert>
+            ) : needsSteamConnection ? (
+              <div className="space-y-2">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full"
+                  onClick={() => router.push("/customer/settings/steam")}
+                >
+                  <Steam className="mr-2 h-4 w-4" />
+                  Connect Steam Account
+                </Button>
+                <p className="text-xs text-center text-muted-foreground">
+                  Connect your Steam account to accept this gift
+                </p>
+              </div>
             ) : canAcceptGift() ? (
               <div className="flex justify-center">
                 <Button
