@@ -950,6 +950,22 @@ export default function KeysPage() {
                           </Tooltip>
                         </TooltipProvider>
                       </>
+                    ) : (key.status as string) === "ReceivedFromExchange" ? (
+                      <>
+                        {/* Only show Redeem on Steam button for keys received from exchange */}
+                        <motion.div
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <Button
+                            className="cursor-pointer gap-2 bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60"
+                            onClick={() => handleRevealKey(key.id, key.title)}
+                          >
+                            <ExternalLinkIcon className="h-4 w-4" />
+                            Redeem on Steam
+                          </Button>
+                        </motion.div>
+                      </>
                     ) : key.status === "Assigned" ? (
                       <>
                         {/* Only show buttons if:
