@@ -17,7 +17,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import Link from "next/link";
 import { useRecentPurchases } from "@/hooks/queries/usePurchases";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import { BundleProductsPopup } from "@/customer/components/purchases/bundle-products-popup";
+import { BundleProductsPopup } from "@/customer/components/purchases/collection-products-popup";
 
 export function RecentBundles() {
   const { data: recentPurchases = [], isLoading, isError } = useRecentPurchases();
