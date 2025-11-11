@@ -590,7 +590,7 @@ export default function KeysPage() {
   return (
     <div className="grid gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">My Game Keys</h1>
+        <h1 className="text-3xl font-bold">My Steam Game Keys</h1>
         {/* <div className="flex items-center gap-4">
           <div className="hidden sm:block">
             <GameLevelProgress
@@ -814,19 +814,19 @@ export default function KeysPage() {
               </h3>
               <p className="mb-6 max-w-md text-muted-foreground">
                 {giftFilter === "Owned"
-                  ? "Purchase a bundle to get started with your personal game collection!"
+                  ? "Purchase a collection to get started with your personal Steam game collection!"
                   : giftFilter === "Gifted"
                     ? "When you give or receive gift keys, they'll appear here."
                     : giftFilter === "GivenByMe"
                       ? "When you gift game keys to others, they'll appear here."
                       : giftFilter === "ReceivedByMe"
                         ? "When someone gifts you game keys, they'll appear here."
-                        : "Purchase a bundle to get started with your game collection!"}
+                        : "Purchase a collection to get started with your Steam game collection!"}
               </p>
               {giftFilter !== "ReceivedByMe" && (
-                <Link href="/bundles">
+                <Link href="/collections">
                   <Button className="bg-linear-to-r from-primary to-primary/90">
-                    Browse Bundles
+                    Browse Collections
                   </Button>
                 </Link>
               )}
@@ -1210,7 +1210,7 @@ export default function KeysPage() {
               <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
               <AlertDescription className="text-sm">
                 <strong>Please note:</strong> Once you redeem this Steam key,
-                the entire bundle containing this game becomes{" "}
+                the entire collection containing this game becomes{" "}
                 <strong>non-refundable</strong>.
               </AlertDescription>
             </Alert>
@@ -1236,7 +1236,7 @@ export default function KeysPage() {
               <p className="text-xs">By proceeding, you acknowledge that:</p>
               <ul className="space-y-1 text-xs list-disc list-inside">
                 <li>The Steam key will be permanently redeemed</li>
-                <li>The bundle containing this key cannot be refunded</li>
+                <li>The collection containing this key cannot be refunded</li>
                 <li>This action cannot be undone</li>
               </ul>
             </div>

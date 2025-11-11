@@ -38,7 +38,7 @@ export function TopNav({ user }: TopNavProps) {
           <div className="relative">
             <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search games, bundles..."
+              placeholder="Search games, collections..."
               className="w-full pl-9 focus:ring-2 ring-primary/20"
             />
           </div>
@@ -49,7 +49,7 @@ export function TopNav({ user }: TopNavProps) {
           <div className="flex h-16 items-center justify-between">
             <div className="hidden md:flex md:items-center md:gap-8">
               <a
-                href="/bundles"
+                href="/collections"
                 className="text-sm font-medium hover:text-primary transition-colors"
               >
                 Bundles

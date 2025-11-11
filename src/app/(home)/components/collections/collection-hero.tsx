@@ -4,14 +4,21 @@ import { Card } from "@/shared/components/ui/card";
 import { Timer, BookOpen, Gamepad2, Package } from "lucide-react";
 import { Bundle, BundleType, TierType } from "@/app/(shared)/types/bundle";
 import { useCountdownTimer } from "@/app/(shared)/hooks/useCountdownTimer";
-import { BundleStaticDeck } from "./bundle-static-deck";
+import { BundleStaticDeck } from "./collection-static-deck";
+import { useMemo } from "react";
 
 interface BundleHeroProps {
   bundle: Bundle;
 }
 
 export function BundleHero({ bundle }: BundleHeroProps) {
-  const { timeLeft, hasEnded } = useCountdownTimer(bundle?.endsAt);
+  const startDate = useMemo(() => new Date(bundle.startsAt), [bundle.startsAt]);
+  const endDate = useMemo(() => new Date(bundle.endsAt), [bundle.endsAt]);
+  const now = new Date();
+  const hasStarted = now >= startDate;
+
+  // Use start date for countdown if not started, otherwise use end date
+  const { timeLeft, hasEnded } = useCountdownTimer(hasStarted ? bundle?.endsAt : bundle?.startsAt);
 
   // Count only products from base tiers
   const baseTierIds =
@@ -76,7 +83,7 @@ export function BundleHero({ bundle }: BundleHeroProps) {
               ) : (
                 <>
                   <Gamepad2 className="h-5 w-5" />
-                  Game Collection
+                  Steam Game Collection
                 </>
               )}
             </div>
@@ -94,7 +101,13 @@ export function BundleHero({ bundle }: BundleHeroProps) {
               <div className="px-6 py-4">
                 <div className="flex items-center gap-2 text-white/80 text-sm uppercase tracking-wide mb-1">
                   <Timer className="h-4 w-4" />
-                  <span>{hasEnded ? "Bundle Ended" : "Ends in"}</span>
+                  <span>
+                    {hasEnded
+                      ? "Collection Ended"
+                      : hasStarted
+                        ? "Ends in"
+                        : "Starts in"}
+                  </span>
                 </div>
                 <div className="text-2xl font-mono font-bold text-white">
                   {timeLeft}
@@ -112,7 +125,7 @@ export function BundleHero({ bundle }: BundleHeroProps) {
                 <div className="text-2xl font-mono font-bold text-white">
                   {baseProductCount}{" "}
                   <span className="text-lg font-normal text-white/90">
-                    {bundle.type === BundleType.EBook ? "Books" : "Games"}
+                    {bundle.type === BundleType.EBook ? "Books" : "Steam Games"}
                   </span>
                 </div>
               </div>

@@ -1,13 +1,13 @@
 "use client";
 
-import { Heart, Lock, Unlock, Plus } from "lucide-react";
+import { Gamepad2, Lock, Unlock, Plus } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/shared/utils/tailwind";
 import { Tier, Product, BundleType } from "@/app/(shared)/types/bundle";
 import { Card } from "@/shared/components/ui/card";
 import Image from "next/image";
 
-interface CharityTierSectionProps {
+interface UpsellTierSectionProps {
   tier: Tier;
   products: Product[];
   isUnlocked: boolean;
@@ -15,12 +15,13 @@ interface CharityTierSectionProps {
   onUnlock: () => void;
   onCancel: () => void;
   bundleType: BundleType;
+  highestBaseTierPrice: number;
   isAvailable?: boolean;
   keysCount?: number;
   hasAvailableBaseTiers?: boolean;
 }
 
-export function CharityTierSection({
+export function UpsellTierSection({
   tier,
   products,
   isUnlocked,
@@ -30,7 +31,7 @@ export function CharityTierSection({
   isAvailable = true,
   keysCount,
   hasAvailableBaseTiers = true,
-}: CharityTierSectionProps) {
+}: UpsellTierSectionProps) {
   const tierProducts = products.filter((p) => p.bundleTierId === tier.id);
   const isBookBundle = bundleType === BundleType.EBook;
 
@@ -41,7 +42,7 @@ export function CharityTierSection({
       className={cn(
         "overflow-hidden transition-all duration-300 relative",
         isUnlocked
-          ? "bg-gradient-to-br from-rose-50/50 to-pink-50/50 dark:from-rose-950/20 dark:to-pink-950/20 border-rose-200 dark:border-rose-800"
+          ? "bg-gradient-to-br from-purple-50/50 to-indigo-50/50 dark:from-purple-950/20 dark:to-indigo-950/20 border-purple-200 dark:border-purple-800"
           : "bg-card border-border",
         !isAvailable && hasAvailableBaseTiers && "opacity-60"
       )}
@@ -58,31 +59,32 @@ export function CharityTierSection({
             <div
               className={cn(
                 "p-2.5 rounded-full",
-                isUnlocked ? "bg-rose-100 dark:bg-rose-900/30" : "bg-muted"
+                isUnlocked ? "bg-purple-100 dark:bg-purple-900/30" : "bg-muted"
               )}
             >
-              <Heart
+              <Gamepad2
                 className={cn(
                   "h-5 w-5",
                   isUnlocked
-                    ? "text-rose-600 dark:text-rose-400 fill-rose-600 dark:fill-rose-400"
+                    ? "text-purple-600 dark:text-purple-400"
                     : "text-muted-foreground"
                 )}
               />
             </div>
             <div>
               <h3 className="text-lg font-semibold">
-                {tier.name || "Charity Tier"}
+                {tier.name || "Extra Items"}
               </h3>
               <p className="text-sm text-muted-foreground">
-                100% of this tier goes to charity • {tierProducts.length}{" "}
+                100% of this tier goes for this publisher •{" "}
+                {tierProducts.length}{" "}
                 {isBookBundle
                   ? tierProducts.length === 1
                     ? "book"
                     : "books"
                   : tierProducts.length === 1
-                    ? "game"
-                    : "games"}
+                    ? "Steam game"
+                    : "Steam games"}
               </p>
             </div>
           </div>
@@ -110,7 +112,7 @@ export function CharityTierSection({
               className={cn(
                 "relative aspect-[2/3] rounded-lg overflow-hidden group cursor-pointer transition-all",
                 isUnlocked
-                  ? "ring-1 ring-rose-200 dark:ring-rose-800"
+                  ? "ring-1 ring-purple-200 dark:ring-purple-800"
                   : "ring-1 ring-border opacity-60"
               )}
             >
@@ -124,7 +126,7 @@ export function CharityTierSection({
                 />
               ) : (
                 <div className="absolute inset-0 bg-muted flex items-center justify-center">
-                  <Heart className="h-8 w-8 text-muted-foreground/50" />
+                  <Gamepad2 className="h-8 w-8 text-muted-foreground/50" />
                 </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-transparent">
@@ -167,18 +169,18 @@ export function CharityTierSection({
             <Button
               onClick={onUnlock}
               disabled={!isAvailable}
-              className="w-48 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-48 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
               size="default"
             >
-              <Heart className="mr-2 h-4 w-4 fill-current" />
-              {isAvailable ? "Add Charity Tier" : "Unavailable"}
+              <Gamepad2 className="mr-2 h-4 w-4" />
+              {isAvailable ? "Add Extra Items" : "Unavailable"}
             </Button>
           </div>
         ) : (
           <div className="flex justify-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-rose-100 dark:bg-rose-900/20">
-              <span className="text-xs font-medium text-rose-700 dark:text-rose-300">
-                ❤️ Supporting charity
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-100 dark:bg-purple-900/20">
+              <span className="text-xs font-medium text-purple-700 dark:text-purple-300">
+                💜 Supporting publishers
               </span>
             </div>
           </div>

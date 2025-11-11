@@ -270,7 +270,7 @@ export function ProductDetailModal({
                   {isGame ? (
                     <Badge variant="default">
                       <Gamepad2 className="h-3 w-3 mr-1" />
-                      Game
+                      Steam Game
                     </Badge>
                   ) : isBook ? (
                     <Badge variant="secondary">
@@ -634,7 +634,7 @@ function GameDetails({ product }: { product: Product }) {
       {/* Description */}
       <div>
         <h3 className="font-medium text-sm lg:text-base mb-1.5 lg:mb-2">
-          About This Game
+          About This Steam Game
         </h3>
         <p className="text-muted-foreground text-sm lg:text-base leading-relaxed">
           {product.description}

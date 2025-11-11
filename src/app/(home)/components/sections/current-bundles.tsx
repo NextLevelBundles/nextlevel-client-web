@@ -1,6 +1,6 @@
 import { Button } from "@/shared/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { BundleCard } from "@/home/components/bundles/bundle-card";
+import { BundleCard } from "@/home/components/collections/collection-card";
 import Link from "next/link";
 import { serverApiClient } from "@/lib/server-api";
 
@@ -46,7 +46,7 @@ export async function CurrentBundles() {
               >
                 <Card className="border-0 bg-transparent h-full">
                   <Link
-                    href={`/bundles/${bundle.slug}`}
+                    href={`/collections/${bundle.slug}`}
                     className="flex h-full flex-col"
                   >
                     <div className="relative">
@@ -120,7 +120,7 @@ export async function CurrentBundles() {
 
         <div className="mt-12 text-center">
           <Link
-            href="/bundles"
+            href="/collections"
             className="inline-flex items-center cursor-pointer"
           >
             <Button

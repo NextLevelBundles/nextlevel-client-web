@@ -1,6 +1,6 @@
 "use client";
 
-import { BundleImageDeck } from "../bundles/bundle-image-deck";
+import { BundleImageDeck } from "../collections/collection-image-deck";
 import MediaData from "@/app/(shared)/types/media";
 
 interface HeroImageProps {

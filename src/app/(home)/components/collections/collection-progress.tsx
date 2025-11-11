@@ -84,7 +84,7 @@ export function BundleProgress({
       )}
     >
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold">Bundle Progress</h3>
+        <h3 className="text-lg font-bold">Collection Progress</h3>
         <div className="flex items-center gap-2">
           {isComplete ? (
             <div className="flex items-center gap-2 text-sm font-medium text-primary animate-pulse dark:text-primary/90">

@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Navigation } from "@/home/components/navigation";
-import { BundleDetail } from "@/home/components/bundles/bundle-detail";
-import { BundleNotFound } from "@/home/components/bundles/bundle-not-found";
-import { BundleError } from "@/home/components/bundles/bundle-error";
+import { BundleDetail } from "@/home/components/collections/collection-detail";
+import { BundleNotFound } from "@/home/components/collections/collection-not-found";
+import { BundleError } from "@/home/components/collections/collection-error";
 import { Footer } from "@/home/components/sections/footer";
 import { serverApiClient } from "@/lib/server-api";
 import React from "react";
@@ -22,8 +22,8 @@ export async function generateMetadata({
 
     if (!bundle || !bundle.seo) {
       return {
-        title: bundle?.title || "Bundle Not Found",
-        description: bundle?.description || "Bundle details",
+        title: bundle?.title || "Collection Not Found",
+        description: bundle?.description || "Collection details",
       };
     }
 
@@ -54,8 +54,8 @@ export async function generateMetadata({
     };
   } catch {
     return {
-      title: "Bundle Not Found",
-      description: "The bundle you are looking for could not be found.",
+      title: "Collection Not Found",
+      description: "The collection you are looking for could not be found.",
     };
   }
 }

@@ -17,16 +17,16 @@ const funnelDisplay = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Digiphile | Gaming Bundles That Make a Difference",
+  title: "Digiphile | Steam Gaming Collections That Make a Difference",
   icons: [
     { rel: "icon", url: "/favicon/favicon.ico" },
     { rel: "apple-touch-icon", url: "/favicon/apple-touch-icon.png" },
   ],
   description:
     "Digiphile makes discovering content more collaborative. Our thoughtfully curated platform helps you find great new games, albums, films, and more. Explore exclusive promotions, engage with a knowledgeable community, and showcase your expertise as you discover new content together.",
-  keywords: "game bundles, steam keys, charity gaming, indie games, game deals",
+  keywords: "steam game collections, steam keys, charity gaming, indie games, game deals",
   openGraph: {
-    title: "Digiphile Gaming Bundles",
+    title: "Digiphile Steam Gaming Collections",
     description:
       "Digiphile makes discovering content more collaborative. Our thoughtfully curated platform helps you find great new games, albums, films, and more. Explore exclusive promotions, engage with a knowledgeable community, and showcase your expertise as you discover new content together.",
     type: "website",

@@ -132,8 +132,8 @@ export default function CartItemGiftPage() {
   }
 
   const returnUrl = email
-    ? `/gifts/bundles/${cartItemId}?email=${encodeURIComponent(email)}`
-    : `/gifts/bundles/${cartItemId}`;
+    ? `/gifts/collections/${cartItemId}?email=${encodeURIComponent(email)}`
+    : `/gifts/collections/${cartItemId}`;
 
   return (
     <div className="container mx-auto px-4 py-8">

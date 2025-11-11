@@ -182,12 +182,12 @@ export function PurchaseSummary({
   return (
     <div className="lg:sticky lg:top-20 lg:h-fit space-y-4 lg:w-[370px] w-full animate-fade-up">
       <Card className="p-6 bg-white dark:bg-card/70 backdrop-blur-xs border border-gray-100 dark:border-border shadow-xs hover:shadow-md transition-all duration-300 rounded-xl">
-        <h3 className="text-xl font-bold mb-4">Bundle Summary</h3>
+        <h3 className="text-xl font-bold mb-4">Collection Summary</h3>
 
-        {/* Step 1: Base Bundle Selection */}
+        {/* Step 1: Base Collection Selection */}
         <div className="mb-6">
           <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-            1. Select Bundle Tier
+            1. Select Collection Tier
           </h4>
           <div className="flex items-center gap-2 mb-2">
             {bundle.type === BundleType.EBook ? (
@@ -197,7 +197,7 @@ export function PurchaseSummary({
             )}
             <span className="text-sm font-medium">
               You&apos;re getting ${unlockedProductsValue.toFixed(2)} worth of{" "}
-              {bundle.type === BundleType.EBook ? "books" : "games"}
+              {bundle.type === BundleType.EBook ? "books" : "Steam games"}
             </span>
           </div>
           <div className="grid grid-cols-3 gap-2">
@@ -585,12 +585,12 @@ export function PurchaseSummary({
                 <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
                   <p className="text-xs font-medium text-red-700 dark:text-red-300 mb-1">
-                    Bundle Not Available
+                    Collection Not Available
                   </p>
                   <p className="text-xs text-red-600 dark:text-red-400">
                     {bundleUnavailabilityReason === "country"
-                      ? "The bundle is not available in your country"
-                      : "The bundle is sold out"}
+                      ? "The collection is not available in your country"
+                      : "The collection is sold out"}
                   </p>
                 </div>
               </div>
@@ -631,10 +631,10 @@ export function PurchaseSummary({
                 <Clock className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-red-700 dark:text-red-300 mb-1">
-                    Bundle Ended
+                    Collection Ended
                   </p>
                   <p className="text-xs text-red-600 dark:text-red-400">
-                    This bundle ended on{" "}
+                    This collection ended on{" "}
                     {dayjs(bundle.endsAt).format("MMMM D, YYYY [at] h:mm A")}
                   </p>
                 </div>

@@ -50,10 +50,10 @@ export function Navigation() {
               Home
             </Link>
             <Link
-              href="/bundles"
+              href="/collections"
               className="text-sm font-medium hover:text-primary transition-colors"
             >
-              Bundles
+              Collections
             </Link>
             <Link
               href="/exchange"
@@ -110,10 +110,10 @@ export function Navigation() {
                   Home
                 </Link>
                 <Link
-                  href="/bundles"
+                  href="/collections"
                   className="text-sm font-medium text-foreground/90 hover:text-primary transition-colors"
                 >
-                  Bundles
+                  Collections
                 </Link>
                 <Link
                   href="/exchange"

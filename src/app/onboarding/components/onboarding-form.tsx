@@ -393,9 +393,9 @@ export function OnboardingForm() {
             <Button
               size="lg"
               className="bg-primary text-white hover:bg-primary/90"
-              onClick={() => (window.location.href = "/bundles")}
+              onClick={() => (window.location.href = "/collections")}
             >
-              Explore Bundles
+              Explore Collections
             </Button>
           </Card>
         </div>
@@ -688,7 +688,7 @@ export function OnboardingForm() {
                             </div>
                             <div className="flex-1">
                               <h4 className="font-semibold mb-1">
-                                Game Collections
+                                Steam Game Collections
                               </h4>
                               <p className="text-xs text-muted-foreground">
                                 I'm interested in Steam games. I'll need to

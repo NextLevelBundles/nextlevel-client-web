@@ -72,7 +72,7 @@ export function CartItemDetails({ item }: CartItemDetailsProps) {
                 </>
               ) : (
                 <>
-                  <Gamepad2 className="h-3 w-3 mr-1" /> Game Collection
+                  <Gamepad2 className="h-3 w-3 mr-1" /> Steam Game Collection
                 </>
               )}
             </Badge>
@@ -105,7 +105,7 @@ export function CartItemDetails({ item }: CartItemDetailsProps) {
 
           <div>
             <h4 className="font-semibold mb-3">
-              Included {isBookBundle(item) ? "Books" : "Games"} (
+              Included {isBookBundle(item) ? "Books" : "Steam Games"} (
               {item.snapshotProducts.length})
             </h4>
             <ScrollArea className="h-full">

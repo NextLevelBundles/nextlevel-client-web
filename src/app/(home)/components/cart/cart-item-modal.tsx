@@ -73,7 +73,7 @@ export function CartItemModal({ item, isOpen, onClose }: CartItemModalProps) {
                   </>
                 ) : (
                   <>
-                    <Gamepad2 className="h-3 w-3 mr-1" /> Game Collection
+                    <Gamepad2 className="h-3 w-3 mr-1" /> Steam Game Collection
                   </>
                 )}
               </Badge>
@@ -103,8 +103,8 @@ export function CartItemModal({ item, isOpen, onClose }: CartItemModalProps) {
                     ? "Book"
                     : "Books"
                   : item.snapshotProducts.length === 1
-                    ? "Game"
-                    : "Games"}{" "}
+                    ? "Steam Game"
+                    : "Steam Games"}{" "}
                 Included
               </h4>
               <ScrollArea className="h-[500px] pr-4">
@@ -273,7 +273,7 @@ export function CartItemModal({ item, isOpen, onClose }: CartItemModalProps) {
                 {/* Breakdown details */}
                 <div className="mt-6 pt-4 border-t space-y-2 text-xs text-muted-foreground">
                   <div className="flex justify-between">
-                    <span>Bundle Tier</span>
+                    <span>Collection Tier</span>
                     <span>${item.baseAmount.toFixed(2)}</span>
                   </div>
                   {item.charityAmount > 0 && (

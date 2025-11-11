@@ -219,7 +219,7 @@ export function BundleDetails({ bundleDetails }: BundleDetailsProps) {
                 value={`$${bundleDetails.amount.toFixed(2)}`}
               />
               <PurchaseSummaryItem
-                label="Bundle Tier"
+                label="Collection Tier"
                 value={`${bundleDetails.tier} (${bundleDetails.itemCount} Items)`}
               />
               <PurchaseSummaryItem
@@ -281,9 +281,9 @@ export function BundleDetails({ bundleDetails }: BundleDetailsProps) {
               </Link>
             </motion.div>
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Link href="/bundles">
+              <Link href="/collections">
                 <Button variant="outline" className="w-full">
-                  Browse More Bundles
+                  Browse More Collections
                 </Button>
               </Link>
             </motion.div>

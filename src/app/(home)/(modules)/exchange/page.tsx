@@ -4,13 +4,7 @@ import { Navigation } from "@/home/components/navigation";
 import { Footer } from "@/home/components/sections/footer";
 import { useExchangeData } from "@/hooks/queries/use-exchange";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
-import {
-  AlertTriangle,
-  TrendingUp,
-  Trophy,
-  Flame,
-  Coins,
-} from "lucide-react";
+import { AlertTriangle, TrendingUp, Trophy, Flame, Coins } from "lucide-react";
 import { ExchangeGameCard } from "./components/exchange-game-card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Button } from "@/shared/components/ui/button";
@@ -56,10 +50,12 @@ export default function ExchangePage() {
             <div className="py-10 flex items-center justify-between">
               <div>
                 <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">
-                  Exchange
+                  The Exchange
                 </h1>
                 <p className="text-gray-600 dark:text-white/80 text-sm mt-1">
-                  Use your credits to unlock premium games
+                  Trade in What You Own, Discover What You Don’t <br />
+                  Turn Steam games you already own into credit for new titles
+                  featured in our collections
                 </p>
               </div>
 
@@ -88,38 +84,47 @@ export default function ExchangePage() {
 
             {/* Stats Bar */}
             <div className="py-6 border-t border-gray-300 dark:border-white/10">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-center">
-                  <div className="flex items-center justify-center gap-2">
-                    <Flame className="w-5 h-5 text-orange-500 dark:text-orange-400" />
+                  <div className="flex items-center justify-center gap-2 mb-2">
                     <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {exchangeData?.exchangeGames?.length || 0}
+                      Step 1
                     </span>
                   </div>
-                  <p className="text-gray-600 dark:text-white/60 text-sm mt-1">
-                    Available Games
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                    Verify Your Games
+                  </h3>
+                  <p className="text-gray-600 dark:text-white/60 text-sm">
+                    Up to 3 per collection are eligible for trade-in. (Steam
+                    verification required.)
                   </p>
                 </div>
                 <div className="text-center">
-                  <div className="flex items-center justify-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
+                  <div className="flex items-center justify-center gap-2 mb-2">
                     <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                      Instant
+                      Step 2
                     </span>
                   </div>
-                  <p className="text-gray-600 dark:text-white/60 text-sm mt-1">
-                    Key Delivery
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                    Browse Available Games
+                  </h3>
+                  <p className="text-gray-600 dark:text-white/60 text-sm">
+                    Discover something from a previous collection or save your
+                    credits for later.
                   </p>
                 </div>
                 <div className="text-center">
-                  <div className="flex items-center justify-center gap-2">
-                    <Trophy className="w-5 h-5 text-yellow-500 dark:text-yellow-400" />
+                  <div className="flex items-center justify-center gap-2 mb-2">
                     <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                      AAA
+                      Step 3
                     </span>
                   </div>
-                  <p className="text-gray-600 dark:text-white/60 text-sm mt-1">
-                    Premium Titles
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                    Instant Delivery
+                  </h3>
+                  <p className="text-gray-600 dark:text-white/60 text-sm">
+                    Redeem your credits for new titles that are instantly added
+                    to your game library.
                   </p>
                 </div>
               </div>
@@ -131,7 +136,7 @@ export default function ExchangePage() {
         <section className="py-12 bg-background">
           <div className="container mx-auto px-4">
             <div className="mb-8">
-              <h2 className="text-3xl font-bold">Browse Collection</h2>
+              <h2 className="text-3xl font-bold">Browse the Exchange</h2>
               <p className="text-muted-foreground mt-1">
                 Discover your next favorite game
               </p>

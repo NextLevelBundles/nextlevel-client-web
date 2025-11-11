@@ -1,4 +1,4 @@
-import { BundleDetails } from "./bundle-details";
+import { BundleDetails } from "./collection-details";
 
 // Mock data - replace with API call
 const bundleDetails = {

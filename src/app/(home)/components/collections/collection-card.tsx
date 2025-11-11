@@ -7,7 +7,7 @@ import { Timer, ArrowRight, BookOpen, Gamepad2 } from "lucide-react";
 import Link from "next/link";
 import { BundleListItem, BundleType } from "@/app/(shared)/types/bundle";
 import { useCountdownTimer } from "@/app/(shared)/hooks/useCountdownTimer";
-import { BundleImageDeck } from "./bundle-image-deck";
+import { BundleImageDeck } from "./collection-image-deck";
 
 interface BundleCardProps {
   bundle: BundleListItem;
@@ -39,12 +39,12 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
   }, []);
 
   return (
-    <Link href={`/bundles/${bundle.slug}`} className="flex h-full flex-col">
+    <Link href={`/collections/${bundle.slug}`} className="flex h-full flex-col">
       <div
         ref={cardRef}
         tabIndex={0}
         role="article"
-        aria-label={`${bundle.title} bundle`}
+        aria-label={`${bundle.title} collection`}
         className={`group relative h-full overflow-visible rounded-3xl bg-white/80 dark:bg-card/70 backdrop-blur-xs transition-all duration-300 hover:translate-y-[-4px] hover:shadow-[0_8px_30px_rgba(57,130,245,0.2)] dark:hover:shadow-[0_8px_30px_rgba(57,130,245,0.3)] border border-white/20 dark:border-border hover:border-primary/50 cursor-pointer ring-1 ring-black/5 dark:ring-white/20 before:absolute before:inset-[1px] before:rounded-3xl before:border before:border-black/[0.03] dark:before:border-white/[0.03] before:pointer-events-none ${
           isVisible ? "animate-fade-up opacity-100" : "opacity-0"
         }`}
@@ -101,7 +101,7 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
                 ) : (
                   <>
                     <Gamepad2 className="h-3.5 w-3.5" />
-                    <span>Game Collection</span>
+                    <span>Steam Game Collection</span>
                   </>
                 )}
               </div>
@@ -132,10 +132,10 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
               <Button
                 variant="outline"
                 className="cursor-pointer relative z-10 transition-all hover:bg-primary hover:text-white border-primary/50 hover:border-primary hover:shadow-[0_0_20px_rgba(57,130,245,0.5)] hover:brightness-110 duration-300 group-hover:translate-y-[-1px]"
-                aria-label={`View ${bundle.title} bundle details`}
+                aria-label={`View ${bundle.title} collection details`}
               >
                 <span className="flex items-center gap-2">
-                  View Bundle
+                  View Collection
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </span>
               </Button>

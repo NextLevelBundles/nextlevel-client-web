@@ -2,8 +2,8 @@
 
 import { useState, useMemo, useEffect, useRef } from "react";
 import { TooltipProvider } from "@/shared/components/ui/tooltip";
-import { BundleHero } from "./bundle-hero";
-import { BundleProgress } from "./bundle-progress";
+import { BundleHero } from "./collection-hero";
+import { BundleProgress } from "./collection-progress";
 import { ProductGrid } from "./product-grid";
 import { CharityHighlight } from "./charity-highlight";
 import { PurchaseSummary } from "./purchase-summary";
@@ -12,7 +12,6 @@ import { CharityTierSection } from "./charity-tier-section";
 import { UpsellTierSection } from "./upsell-tier-section";
 import { MobileStickyCTA } from "./mobile-sticky-cta";
 import { MobilePurchaseSheet } from "./mobile-purchase-sheet";
-import { BundleCountdown } from "./bundle-countdown";
 import {
   Bundle,
   BundleType,
@@ -23,10 +22,10 @@ import {
 import { useBundleBookFormats } from "@/hooks/queries/useBundleBookFormats";
 import { useBundleTierAvailability } from "@/hooks/queries/useBundleTierAvailability";
 import { useBundleStatistics } from "@/hooks/queries/useBundleStatistics";
-import { BundleNotFound } from "./bundle-not-found";
+import { BundleNotFound } from "./collection-not-found";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
 import { Card } from "@/shared/components/ui/card";
-import { AlertCircle, Clock, Eye } from "lucide-react";
+import { AlertCircle, Eye } from "lucide-react";
 import { useCart } from "@/app/(shared)/contexts/cart/cart-provider";
 
 // Configuration: Base tier display order
@@ -293,28 +292,23 @@ export function BundleDetail({
 
   // Render status banner based on bundle state
   const renderStatusBanner = () => {
-    if (bundleState === 'active' || bundleState === 'preview') return null;
+    // Only show banner for expired state, not for not-started (timer is in hero)
+    if (bundleState === 'active' || bundleState === 'preview' || bundleState === 'not-started') return null;
 
     const bannerConfig = {
-      'not-started': {
-        icon: Clock,
-        bgColor: 'bg-blue-50 dark:bg-blue-950/30',
-        borderColor: 'border-blue-200 dark:border-blue-800',
-        textColor: 'text-blue-700 dark:text-blue-300',
-        title: 'Bundle Not Yet Started',
-        description: null, // Will be rendered as component below
-      },
       expired: {
         icon: AlertCircle,
         bgColor: 'bg-orange-50 dark:bg-orange-950/30',
         borderColor: 'border-orange-200 dark:border-orange-800',
         textColor: 'text-orange-700 dark:text-orange-300',
-        title: 'Bundle Ended',
-        description: 'This bundle has ended and is no longer available for purchase.',
+        title: 'Collection Ended',
+        description: 'This collection has ended and is no longer available for purchase.',
       },
     };
 
     const config = bannerConfig[bundleState];
+    if (!config) return null;
+
     const Icon = config.icon;
 
     return (
@@ -328,11 +322,7 @@ export function BundleDetail({
               {config.title}
             </p>
             <p className={`text-xs ${config.textColor}`}>
-              {bundleState === 'not-started' ? (
-                <BundleCountdown startDate={startDate} />
-              ) : (
-                config.description
-              )}
+              {config.description}
             </p>
           </div>
         </div>

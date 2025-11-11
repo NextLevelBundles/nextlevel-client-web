@@ -276,7 +276,7 @@ export function CartDrawer() {
             <ShoppingBag className="h-16 w-16 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">Your cart is empty</h3>
             <p className="text-muted-foreground mb-6">
-              Browse our amazing bundles and add some games to your cart!
+              Browse our amazing collections and add some Steam games to your cart!
             </p>
           </div>
         ) : (
@@ -357,7 +357,7 @@ export function CartDrawer() {
                                 </>
                               ) : (
                                 <>
-                                  <Gamepad2 className="h-3 w-3" /> Game Collection
+                                  <Gamepad2 className="h-3 w-3" /> Steam Game Collection
                                 </>
                               )}
                             </span>
@@ -380,7 +380,7 @@ export function CartDrawer() {
                               </div>
                               <span className="text-xs text-muted-foreground">
                                 {item.snapshotProducts.length}{" "}
-                                {isBookBundle(item) ? "books" : "games"}
+                                {isBookBundle(item) ? "books" : "Steam games"}
                               </span>
                             </div>
                           </div>

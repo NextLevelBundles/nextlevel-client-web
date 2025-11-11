@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/shared/components/ui/button";
-import { BundleCard } from "@/home/components/bundles/bundle-card";
+import { BundleCard } from "@/home/components/collections/collection-card";
 // import { bundles as allBundles, Bundle } from "@/home/data/bundles";
 import {
   Select,
@@ -27,7 +27,7 @@ const ITEMS_PER_PAGE = 9;
 
 const filters = [
   { label: "All", value: "all" },
-  { label: "Game Collections", value: "games", icon: Gamepad2 },
+  { label: "Steam Game Collections", value: "games", icon: Gamepad2 },
   { label: "Book Collections", value: "books", icon: BookOpen },
   { label: "Featured", value: "featured" },
   { label: "Early Access", value: "early_acces" },
@@ -86,12 +86,10 @@ export function BundlesGrid({ bundles }: BundlesGridProps) {
         <div className="container relative px-4">
           <div className="mb-12">
             <h1 className="mb-4 text-3xl font-bold tracking-tight md:text-4xl text-foreground">
-              All Bundles
+              All Collections
             </h1>
             <p className="text-muted-foreground max-w-2xl">
-              Browse our collection of premium game and book bundles. Each
-              bundle is carefully curated to bring you the best experience at
-              unbeatable prices.
+              Browse all of our collections, past and present!
             </p>
           </div>
 

@@ -330,7 +330,7 @@ export default function BooksLibraryPage() {
             {/* Bundle Filter */}
             <div>
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                Bundle
+                Collection
               </label>
               <Select
                 value={bundleId || "all"}
@@ -340,10 +340,10 @@ export default function BooksLibraryPage() {
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="All Bundles" />
+                  <SelectValue placeholder="All Collections" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Bundles</SelectItem>
+                  <SelectItem value="all">All Collections</SelectItem>
                   {customerBundles.map((bundle) => (
                     <SelectItem key={bundle.id} value={bundle.id}>
                       {bundle.title}
@@ -538,12 +538,12 @@ export default function BooksLibraryPage() {
                 </div>
                 <h3 className="mb-2 text-2xl font-semibold">No books yet</h3>
                 <p className="mb-6 max-w-md text-muted-foreground">
-                  Start building your digital library by purchasing a bundle
+                  Start building your digital library by purchasing a collection
                   with books!
                 </p>
-                <Link href="/bundles">
+                <Link href="/collections">
                   <Button className="bg-linear-to-r from-primary to-primary/90">
-                    Browse Bundles
+                    Browse Collections
                   </Button>
                 </Link>
               </motion.div>
