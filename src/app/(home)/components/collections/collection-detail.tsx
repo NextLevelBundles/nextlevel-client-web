@@ -284,10 +284,11 @@ export function BundleDetail({
   };
 
   // Check if CTA should be disabled
+  // In preview mode, allow purchases even if bundle hasn't started
   const isCtaDisabled =
     !hasAvailableBaseTiers ||
     isBundleExpired ||
-    bundleState === "not-started" ||
+    (bundleState === "not-started" && !isPreviewMode) ||
     totalAmount === 0;
 
   // Render status banner based on bundle state
@@ -494,6 +495,7 @@ export function BundleDetail({
                   hasAvailableBaseTiers={hasAvailableBaseTiers}
                   bundleUnavailabilityReason={bundleUnavailabilityReason}
                   bundleState={bundleState}
+                  isPreviewMode={isPreviewMode}
                 />
               </div>
             </div>
@@ -533,6 +535,7 @@ export function BundleDetail({
           hasAvailableBaseTiers={hasAvailableBaseTiers}
           bundleUnavailabilityReason={bundleUnavailabilityReason}
           bundleState={bundleState}
+          isPreviewMode={isPreviewMode}
         />
       </div>
     </TooltipProvider>

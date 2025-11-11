@@ -54,6 +54,7 @@ interface PurchaseSummaryProps {
   hasAvailableBaseTiers: boolean;
   bundleUnavailabilityReason: "country" | "soldout" | null;
   bundleState: "preview" | "not-started" | "expired" | "active";
+  isPreviewMode?: boolean;
 }
 
 export function PurchaseSummary({
@@ -75,6 +76,7 @@ export function PurchaseSummary({
   hasAvailableBaseTiers,
   bundleUnavailabilityReason,
   bundleState,
+  isPreviewMode = false,
 }: PurchaseSummaryProps) {
   const [tipInputValue, setTipInputValue] = useState("");
   const { user } = useAuth();
@@ -667,7 +669,10 @@ export function PurchaseSummary({
               isBundleExpired={bundleState === "expired" || isBundleExpired}
               hasAvailableBaseTiers={hasAvailableBaseTiers}
               bundleUnavailabilityReason={bundleUnavailabilityReason}
-              disabled={bundleState !== "active"}
+              disabled={
+                bundleState === "expired" ||
+                (bundleState === "not-started" && !isPreviewMode)
+              }
             />
           )}
         </div>

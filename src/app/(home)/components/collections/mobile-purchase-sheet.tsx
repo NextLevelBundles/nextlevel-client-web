@@ -30,6 +30,7 @@ interface MobilePurchaseSheetProps {
   hasAvailableBaseTiers: boolean;
   bundleUnavailabilityReason: "country" | "soldout" | null;
   bundleState: "preview" | "not-started" | "expired" | "active";
+  isPreviewMode?: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
