@@ -6,6 +6,7 @@ import { cn } from "@/shared/utils/tailwind";
 import { Tier, Product, BundleType } from "@/app/(shared)/types/bundle";
 import { Card } from "@/shared/components/ui/card";
 import Image from "next/image";
+import rotisArtwork from "@/assets/arts/rotis.jpg";
 
 interface CharityTierSectionProps {
   tier: Tier;
@@ -33,6 +34,17 @@ export function CharityTierSection({
 }: CharityTierSectionProps) {
   const tierProducts = products.filter((p) => p.bundleTierId === tier.id);
   const isBookBundle = bundleType === BundleType.EBook;
+
+  // Add hard-coded artwork to charity tier products
+  const charitySupportArtwork = {
+    id: "charity-artwork-rotis",
+    title: "Exclusive Charity Artwork",
+    price: 0,
+    coverImage: { url: rotisArtwork.src },
+  };
+
+  // Combine actual products with the artwork
+  const allCharityItems = [...tierProducts, charitySupportArtwork];
 
   if (tierProducts.length === 0) return null;
 
@@ -82,7 +94,7 @@ export function CharityTierSection({
                     : "books"
                   : tierProducts.length === 1
                     ? "Steam game"
-                    : "Steam games"}
+                    : "Steam games"} + exclusive artwork
               </p>
             </div>
           </div>
@@ -104,7 +116,7 @@ export function CharityTierSection({
 
         {/* Products Grid - matching base tier grid sizing */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6 mb-4">
-          {tierProducts.slice(0, 4).map((product, idx) => (
+          {allCharityItems.slice(0, 4).map((product, idx) => (
             <div
               key={product.id}
               className={cn(
@@ -119,7 +131,7 @@ export function CharityTierSection({
                   src={product.coverImage.url}
                   alt={product.title}
                   fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-300"
+                  className="object-contain group-hover:scale-105 transition-transform duration-300"
                   sizes="(max-width: 768px) 25vw, 150px"
                 />
               ) : (
@@ -132,16 +144,18 @@ export function CharityTierSection({
                   <p className="text-xs font-medium text-white truncate">
                     {product.title}
                   </p>
-                  <p className="text-[10px] text-white/80">
-                    ${product.price} value
-                  </p>
+                  {product.price > 0 && (
+                    <p className="text-[10px] text-white/80">
+                      ${product.price} value
+                    </p>
+                  )}
                 </div>
               </div>
-              {idx === 3 && tierProducts.length > 4 && (
+              {idx === 3 && allCharityItems.length > 4 && (
                 <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center">
                   <Plus className="h-6 w-6 text-white mb-1" />
                   <span className="text-xs font-medium text-white">
-                    +{tierProducts.length - 4} more
+                    +{allCharityItems.length - 4} more
                   </span>
                 </div>
               )}
