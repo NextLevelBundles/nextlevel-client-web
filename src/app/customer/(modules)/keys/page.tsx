@@ -104,6 +104,7 @@ const getStatusDisplayName = (status: string): string => {
     Revealed: "Redeemed",
     Expired: "Expired",
     Refunded: "Refunded",
+    Revoked: "Revoked",
   };
 
   return statusMap[status] || status;
@@ -1144,6 +1145,13 @@ export default function KeysPage() {
                           </>
                         )}
                       </>
+                    ) : key.status === "Revoked" ? (
+                      <Badge
+                        variant="destructive"
+                        className="gap-1 bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800"
+                      >
+                        Revoked
+                      </Badge>
                     ) : key.isGift && key.giftAccepted === null ? (
                       <Badge variant="secondary" className="gap-1">
                         <GiftIcon className="h-3 w-3" />
