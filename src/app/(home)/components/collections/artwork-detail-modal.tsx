@@ -47,16 +47,54 @@ export function ArtworkDetailModal({
                 </p>
               </div>
 
-              {description && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">
-                    About This Artwork
-                  </h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {description}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">
+                  About This Artwork
+                </h3>
+                <div className="space-y-3 text-muted-foreground leading-relaxed">
+                  <p>
+                    We were thrilled to commission Danilo Laynes to create the
+                    artwork for our inaugural collection.
                   </p>
+                  <p>
+                    He is the creator of the Maldito poster, illustrator for
+                    Magic: The Gathering, and storyboard & illustration lead for
+                    The Hawkeyes: The Story of Clint Barton & Kate Bishop from
+                    Marvel Entertainment.
+                  </p>
+                  <p>If you like what you see, please follow Danilo:</p>
+                  <div className="pl-4 space-y-1">
+                    <div>@danilo.laynes</div>
+                    <a
+                      href="https://www.instagram.com/danilo.laynes/reels/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline block"
+                    >
+                      https://www.instagram.com/danilo.laynes/reels/
+                    </a>
+                  </div>
+                  <p>And check out his incredible work here:</p>
+                  <div className="pl-4 space-y-1">
+                    <a
+                      href="https://malditoposter.com/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline block"
+                    >
+                      https://malditoposter.com/
+                    </a>
+                    <a
+                      href="https://danilolaynes.com/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline block"
+                    >
+                      https://danilolaynes.com/
+                    </a>
+                  </div>
                 </div>
-              )}
+              </div>
 
               <div className="space-y-4">
                 <div>
@@ -82,6 +120,15 @@ export function ArtworkDetailModal({
                       </div>
                       <div className="font-medium">
                         Hi-resolution JPEG (5120x2880) - no watermark
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="text-muted-foreground min-w-[100px]">
+                        Delivery
+                      </div>
+                      <div className="font-medium">
+                        Custom artwork will be delivered to your default email
+                        address 2 weeks after the promotion.
                       </div>
                     </div>
                   </div>
