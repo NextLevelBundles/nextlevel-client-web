@@ -75,7 +75,11 @@ export async function HeroSection() {
             <div className="absolute inset-0 rounded-2xl bg-[linear-gradient(135deg,rgba(57,130,245,0.2),rgba(249,113,20,0.2))] animate-pulse-slow" />
             <Card className="group relative overflow-hidden rounded-xl border border-white/20 dark:border-border bg-white/80 dark:bg-card/50 p-2 backdrop-blur-xs lg:mt-0 animate-float shadow-xl dark:shadow-2xl hover:shadow-2xl hover:shadow-primary/20 dark:hover:shadow-primary/30 transition-all duration-300 before:absolute before:inset-[1px] before:rounded-xl before:border before:border-black/[0.03] dark:before:border-white/[0.03] before:pointer-events-none sm:bg-white/70 md:bg-white/75 lg:bg-white/80">
               <div className="relative aspect-16/9 overflow-hidden rounded-lg">
-                <HeroImage images={bundle.imageMedia} title={bundle.title} />
+                <HeroImage
+                  images={bundle.imageMedia}
+                  title={bundle.title}
+                  seoImage={bundle.seo?.image}
+                />
               </div>
               <div className="hidden dark:block absolute inset-0 rounded-lg bg-linear-to-t from-background/80 via-background/20 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 h-px bg-linear-to-r from-transparent via-primary/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
