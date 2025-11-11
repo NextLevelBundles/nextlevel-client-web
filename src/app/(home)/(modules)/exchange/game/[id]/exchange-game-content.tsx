@@ -49,17 +49,16 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
     exchangeCreditsForKeyMutation.mutate(steamApp.id, {
       onSuccess: () => {
         // Optionally redirect to customer dashboard or refresh the page
-        router.push('/customer/dashboard');
-      }
+        router.push("/customer/dashboard");
+      },
     });
   };
   const screenshots = steamApp.screenshots || [];
   const videos = steamApp.movies || [];
-  const mainVideo = videos.find(v => v.highlight) || videos[0];
+  const mainVideo = videos.find((v) => v.highlight) || videos[0];
 
-  const allMedia = [
-    ...screenshots.map(s => s.pathFull),
-  ].filter(Boolean);
+  console.log(mainVideo, videos);
+  const allMedia = [...screenshots.map((s) => s.pathFull)].filter(Boolean);
 
   const getSecureUrl = (url: string | undefined) => {
     if (!url) return undefined;
@@ -70,9 +69,7 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
     <>
       {/* Title and Platforms */}
       <div className="mb-6">
-        <h1 className="text-3xl lg:text-4xl font-bold mb-3">
-          {steamApp.name}
-        </h1>
+        <h1 className="text-3xl lg:text-4xl font-bold mb-3">{steamApp.name}</h1>
         {/* Supported Platforms */}
         {steamApp.platforms && (
           <div>
@@ -108,7 +105,10 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
             <div className="relative aspect-video bg-muted/50 border rounded-lg overflow-hidden">
               <Image
                 fill
-                src={getSecureUrl(allMedia[selectedImageIndex]) || "/placeholder.jpg"}
+                src={
+                  getSecureUrl(allMedia[selectedImageIndex]) ||
+                  "/placeholder.jpg"
+                }
                 alt={`${steamApp.name} screenshot`}
                 className="object-contain bg-black/5"
               />
@@ -126,13 +126,21 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
               {allMedia.length > 1 && (
                 <>
                   <button
-                    onClick={() => setSelectedImageIndex((prev) => (prev - 1 + allMedia.length) % allMedia.length)}
+                    onClick={() =>
+                      setSelectedImageIndex(
+                        (prev) => (prev - 1 + allMedia.length) % allMedia.length
+                      )
+                    }
                     className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-background/80 backdrop-blur hover:bg-background/90"
                   >
                     <ChevronLeft className="h-5 w-5" />
                   </button>
                   <button
-                    onClick={() => setSelectedImageIndex((prev) => (prev + 1) % allMedia.length)}
+                    onClick={() =>
+                      setSelectedImageIndex(
+                        (prev) => (prev + 1) % allMedia.length
+                      )
+                    }
                     className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-background/80 backdrop-blur hover:bg-background/90"
                   >
                     <ChevronRight className="h-5 w-5" />
@@ -193,7 +201,9 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
           </div>
 
           {/* System Requirements */}
-          {(steamApp.pcRequirements || steamApp.macRequirements || steamApp.linuxRequirements) && (
+          {(steamApp.pcRequirements ||
+            steamApp.macRequirements ||
+            steamApp.linuxRequirements) && (
             <div className="space-y-4">
               <h2 className="text-2xl font-bold">System Requirements</h2>
               <div className="space-y-4">
@@ -208,10 +218,16 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
                     <div className="space-y-4">
                       <div
                         className="text-sm text-muted-foreground space-y-1 [&>strong]:text-foreground [&>strong]:font-medium [&>br]:leading-relaxed [&>ul]:ml-4 [&>ul]:list-disc"
-                        dangerouslySetInnerHTML={{ __html:
-                          (steamApp.pcRequirements.minimum && steamApp.pcRequirements.recommended)
-                            ? steamApp.pcRequirements.minimum + '<br/><br/>' + steamApp.pcRequirements.recommended
-                            : steamApp.pcRequirements.minimum || steamApp.pcRequirements.recommended || ''
+                        dangerouslySetInnerHTML={{
+                          __html:
+                            steamApp.pcRequirements.minimum &&
+                            steamApp.pcRequirements.recommended
+                              ? steamApp.pcRequirements.minimum +
+                                "<br/><br/>" +
+                                steamApp.pcRequirements.recommended
+                              : steamApp.pcRequirements.minimum ||
+                                steamApp.pcRequirements.recommended ||
+                                "",
                         }}
                       />
                     </div>
@@ -228,10 +244,16 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
                     <div className="space-y-4">
                       <div
                         className="text-sm text-muted-foreground space-y-1 [&>strong]:text-foreground [&>strong]:font-medium [&>br]:leading-relaxed [&>ul]:ml-4 [&>ul]:list-disc"
-                        dangerouslySetInnerHTML={{ __html:
-                          (steamApp.macRequirements.minimum && steamApp.macRequirements.recommended)
-                            ? steamApp.macRequirements.minimum + '<br/><br/>' + steamApp.macRequirements.recommended
-                            : steamApp.macRequirements.minimum || steamApp.macRequirements.recommended || ''
+                        dangerouslySetInnerHTML={{
+                          __html:
+                            steamApp.macRequirements.minimum &&
+                            steamApp.macRequirements.recommended
+                              ? steamApp.macRequirements.minimum +
+                                "<br/><br/>" +
+                                steamApp.macRequirements.recommended
+                              : steamApp.macRequirements.minimum ||
+                                steamApp.macRequirements.recommended ||
+                                "",
                         }}
                       />
                     </div>
@@ -248,10 +270,16 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
                     <div className="space-y-4">
                       <div
                         className="text-sm text-muted-foreground space-y-1 [&>strong]:text-foreground [&>strong]:font-medium [&>br]:leading-relaxed [&>ul]:ml-4 [&>ul]:list-disc"
-                        dangerouslySetInnerHTML={{ __html:
-                          (steamApp.linuxRequirements.minimum && steamApp.linuxRequirements.recommended)
-                            ? steamApp.linuxRequirements.minimum + '<br/><br/>' + steamApp.linuxRequirements.recommended
-                            : steamApp.linuxRequirements.minimum || steamApp.linuxRequirements.recommended || ''
+                        dangerouslySetInnerHTML={{
+                          __html:
+                            steamApp.linuxRequirements.minimum &&
+                            steamApp.linuxRequirements.recommended
+                              ? steamApp.linuxRequirements.minimum +
+                                "<br/><br/>" +
+                                steamApp.linuxRequirements.recommended
+                              : steamApp.linuxRequirements.minimum ||
+                                steamApp.linuxRequirements.recommended ||
+                                "",
                         }}
                       />
                     </div>
@@ -270,10 +298,14 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
 
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Credits Required</span>
+                <span className="text-sm text-muted-foreground">
+                  Credits Required
+                </span>
                 <div className="flex items-center gap-1">
                   <Coins className="h-4 w-4 text-primary" />
-                  <span className="font-semibold text-lg">{game.outputCredits}</span>
+                  <span className="font-semibold text-lg">
+                    {game.outputCredits}
+                  </span>
                 </div>
               </div>
 
@@ -282,7 +314,13 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
                 <span className="text-muted-foreground">Your Credits</span>
                 <div className="flex items-center gap-1">
                   <Coins className="h-3 w-3 text-muted-foreground" />
-                  <span className={userCredits >= game.outputCredits ? "text-green-600" : "text-red-600"}>
+                  <span
+                    className={
+                      userCredits >= game.outputCredits
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }
+                  >
                     {userCredits}
                   </span>
                 </div>
@@ -290,11 +328,13 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
 
               {userCredits >= game.outputCredits ? (
                 <p className="text-xs text-muted-foreground">
-                  Spend {game.outputCredits} credits to claim this game and add it to your library.
+                  Spend {game.outputCredits} credits to claim this game and add
+                  it to your library.
                 </p>
               ) : (
                 <p className="text-xs text-red-600">
-                  You need {game.outputCredits - userCredits} more credits to claim this game.
+                  You need {game.outputCredits - userCredits} more credits to
+                  claim this game.
                 </p>
               )}
             </div>
@@ -334,7 +374,11 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
                   <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
                   <div>
                     <div className="text-muted-foreground">Release Date</div>
-                    <div>{steamApp.releaseDate.comingSoon ? "Coming Soon" : steamApp.releaseDate.date}</div>
+                    <div>
+                      {steamApp.releaseDate.comingSoon
+                        ? "Coming Soon"
+                        : steamApp.releaseDate.date}
+                    </div>
                   </div>
                 </div>
               )}
@@ -365,8 +409,12 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
                   <div>
                     <div className="text-muted-foreground">Genres</div>
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {steamApp.genres.map(genre => (
-                        <Badge key={genre.id} variant="outline" className="text-xs">
+                      {steamApp.genres.map((genre) => (
+                        <Badge
+                          key={genre.id}
+                          variant="outline"
+                          className="text-xs"
+                        >
                           {genre.description}
                         </Badge>
                       ))}
@@ -374,7 +422,6 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
                   </div>
                 </div>
               )}
-
 
               {steamApp.website && (
                 <div className="flex items-start gap-3">
@@ -399,7 +446,10 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
                   <Gamepad2 className="h-4 w-4 text-muted-foreground mt-0.5" />
                   <div>
                     <div className="text-muted-foreground">User Reviews</div>
-                    <div>{steamApp.recommendations.total.toLocaleString()} recommendations</div>
+                    <div>
+                      {steamApp.recommendations.total.toLocaleString()}{" "}
+                      recommendations
+                    </div>
                   </div>
                 </div>
               )}
@@ -410,7 +460,7 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
               <div className="pt-3 mt-3 border-t">
                 <div className="text-xs text-muted-foreground">
                   <span className="font-medium">Features:</span>{" "}
-                  {steamApp.categories.map(cat => cat.description).join(", ")}
+                  {steamApp.categories.map((cat) => cat.description).join(", ")}
                 </div>
               </div>
             )}
@@ -459,8 +509,14 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
             <video
               autoPlay
               controls
+              playsInline
               className="w-full h-full"
-              src={getSecureUrl(mainVideo.webm?.videoMax || mainVideo.mp4?.videoMax)}
+              src={getSecureUrl(
+                mainVideo.webm?.videoMax ||
+                  mainVideo.mp4?.videoMax ||
+                  mainVideo.webm?.video480 ||
+                  mainVideo.mp4?.video480
+              )}
             />
             <button
               onClick={() => setShowTrailerModal(false)}

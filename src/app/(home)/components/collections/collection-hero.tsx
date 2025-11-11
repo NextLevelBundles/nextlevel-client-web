@@ -18,7 +18,9 @@ export function BundleHero({ bundle }: BundleHeroProps) {
   const hasStarted = now >= startDate;
 
   // Use start date for countdown if not started, otherwise use end date
-  const { timeLeft, hasEnded } = useCountdownTimer(hasStarted ? bundle?.endsAt : bundle?.startsAt);
+  const { timeLeft, hasEnded } = useCountdownTimer(
+    hasStarted ? bundle?.endsAt : bundle?.startsAt
+  );
 
   // Count only products from base tiers
   const baseTierIds =
@@ -116,7 +118,7 @@ export function BundleHero({ bundle }: BundleHeroProps) {
             </Card>
 
             {/* Products Count Card */}
-            <Card className="bg-black/50 backdrop-blur-md border-white/20 shadow-2xl">
+            {/* <Card className="bg-black/50 backdrop-blur-md border-white/20 shadow-2xl">
               <div className="px-6 py-4">
                 <div className="flex items-center gap-2 text-white/80 text-sm uppercase tracking-wide mb-1">
                   <Package className="h-4 w-4" />
@@ -129,7 +131,7 @@ export function BundleHero({ bundle }: BundleHeroProps) {
                   </span>
                 </div>
               </div>
-            </Card>
+            </Card> */}
           </div>
         </div>
       </div>

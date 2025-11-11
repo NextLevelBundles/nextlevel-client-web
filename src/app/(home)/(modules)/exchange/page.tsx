@@ -170,9 +170,11 @@ export default function ExchangePage() {
               </Card>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {exchangeData.exchangeGames.map((game) => (
-                  <ExchangeGameCard key={game.id} game={game} />
-                ))}
+                {[...exchangeData.exchangeGames]
+                  .sort((a, b) => b.outputCredits - a.outputCredits)
+                  .map((game) => (
+                    <ExchangeGameCard key={game.id} game={game} />
+                  ))}
               </div>
             )}
           </div>

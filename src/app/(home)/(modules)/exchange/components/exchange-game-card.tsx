@@ -15,24 +15,15 @@ export function ExchangeGameCard({ game }: ExchangeGameCardProps) {
   return (
     <Link href={`/exchange/game/${game.id}`} className="block">
       <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 bg-white dark:bg-gray-800/80 border border-gray-200/80 dark:border-gray-700/50 cursor-pointer">
-        {/* Premium Badge */}
-        {game.inputCredits > 100 && (
-          <div className="absolute top-2 right-2 z-10">
-            <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0">
-              Premium
-            </Badge>
-          </div>
-        )}
-
-        {/* 16:9 Header Image */}
-        <div className="relative aspect-video w-full overflow-hidden bg-gradient-to-br from-purple-500/10 to-blue-500/10">
+        {/* 2:3 Cover Image */}
+        <div className="relative w-full overflow-hidden bg-gradient-to-br from-purple-500/10 to-blue-500/10" style={{ aspectRatio: "2/3" }}>
           {game.steamApp.headerImage ? (
             <>
               <Image
                 src={game.steamApp.headerImage}
                 alt={game.steamApp.name}
                 fill
-                className="object-cover transition-transform duration-500 group-hover:scale-110"
+                className="object-contain transition-transform duration-500 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </>
