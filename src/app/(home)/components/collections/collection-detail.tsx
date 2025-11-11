@@ -507,6 +507,7 @@ export function BundleDetail({
           onAddToCart={handleMobileAddToCart}
           onViewDetails={handleViewDetails}
           isDisabled={isCtaDisabled}
+          bundleTitle={bundle.title}
         />
 
         {/* Mobile Purchase Sheet */}

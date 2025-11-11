@@ -11,6 +11,7 @@ interface MobileStickyCTAProps {
   onViewDetails: () => void;
   isDisabled?: boolean;
   className?: string;
+  bundleTitle?: string;
 }
 
 export function MobileStickyCTA({
@@ -20,6 +21,7 @@ export function MobileStickyCTA({
   onViewDetails,
   isDisabled = false,
   className,
+  bundleTitle,
 }: MobileStickyCTAProps) {
   return (
     <div
@@ -30,7 +32,23 @@ export function MobileStickyCTA({
         className
       )}
     >
-      <div className="px-4 py-3">
+      <div className="px-4 py-3 space-y-2">
+        {/* Collection Title */}
+        {bundleTitle && (
+          <>
+            <div className="text-center pb-2">
+              <h3 className="font-semibold text-sm text-foreground truncate">
+                {bundleTitle}
+              </h3>
+            </div>
+            <div className="border-t border-border pt-2">
+              <p className="text-xs text-muted-foreground text-left">
+                Collection Summary
+              </p>
+            </div>
+          </>
+        )}
+
         <div className="flex items-center justify-between gap-3">
           {/* Price and Items Info */}
           <button
