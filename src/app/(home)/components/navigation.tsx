@@ -61,7 +61,12 @@ export function Navigation() {
             >
               Exchange
             </Link>
-            <a href="#" className="text-sm font-medium hover:text-primary">
+            <a
+              href="https://sites.google.com/digiphile.co/help/construction"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium hover:text-primary"
+            >
               Blog
             </a>
             <a
@@ -127,7 +132,9 @@ export function Navigation() {
                   Exchange
                 </Link>
                 <a
-                  href="#"
+                  href="https://sites.google.com/digiphile.co/help/construction"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-sm font-medium text-foreground/90 hover:text-primary transition-colors"
                 >
                   Blog
