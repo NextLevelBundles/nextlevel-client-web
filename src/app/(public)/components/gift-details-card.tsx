@@ -63,12 +63,12 @@ export function GiftDetailsCard({
         {/* Gift Item Preview */}
         <div className="flex gap-4 mb-6">
           {imageUrl && (
-            <div className="relative h-24 aspect-[16/7.5] overflow-hidden rounded-lg shadow-sm">
+            <div className="relative w-32 aspect-[2/3] overflow-hidden rounded-lg shadow-sm flex-shrink-0">
               <Image
                 src={imageUrl}
                 alt={title}
                 fill
-                className="object-contain"
+                className="object-cover"
               />
             </div>
           )}

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { giftApi } from "@/lib/api";
-import { CartItemGift, SteamKeyGift, AcceptGiftResponse } from "@/lib/api/types/gift";
+import { CartItemGift, AcceptGiftResponse } from "@/lib/api/types/gift";
+import { SteamKeyAssignment } from "@/lib/api/types/steam-key";
 import { toast } from "sonner";
 
 // Query key factory
@@ -49,11 +50,11 @@ export function useAcceptCartItemGift() {
 }
 
 // Steam Key Gift Hooks
-export function useSteamKeyGift(assignmentId: string, email: string, enabled = true) {
+export function useSteamKeyGift(assignmentId: string, enabled = true) {
   return useQuery({
-    queryKey: giftKeys.steamKey(assignmentId, email),
-    queryFn: () => giftApi.getSteamKeyGift(assignmentId, email),
-    enabled: !!assignmentId && !!email && enabled,
+    queryKey: giftKeys.steamKey(assignmentId, ""),
+    queryFn: () => giftApi.getSteamKeyGift(assignmentId),
+    enabled: !!assignmentId && enabled,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 1, // Only retry once for gift pages
   });

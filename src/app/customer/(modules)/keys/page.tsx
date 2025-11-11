@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import dayjs from "dayjs";
 import {
   Card,
@@ -30,6 +31,7 @@ import {
   X,
   Check,
   Info,
+  Copy,
 } from "lucide-react";
 import {
   Tooltip,
@@ -133,6 +135,17 @@ export default function KeysPage() {
   const [syncErrorMessage, setSyncErrorMessage] = useState<string | null>(null);
   const [showSteamPrivacyHelp, setShowSteamPrivacyHelp] = useState(false);
   const [viewingKeyId, setViewingKeyId] = useState<string | null>(null);
+  const [viewKeyDialog, setViewKeyDialog] = useState<{
+    isOpen: boolean;
+    keyValue: string | null;
+    gameTitle: string;
+    coverImageUrl: string | null;
+  }>({
+    isOpen: false,
+    keyValue: null,
+    gameTitle: "",
+    coverImageUrl: null,
+  });
   const [redeemConfirmDialog, setRedeemConfirmDialog] = useState<{
     isOpen: boolean;
     keyId: string | null;
@@ -305,22 +318,19 @@ export default function KeysPage() {
     });
   };
 
-  const handleViewKey = async (keyId: string) => {
+  const handleViewKey = async (keyId: string, gameTitle: string, coverImageUrl: string | null) => {
     setViewingKeyId(keyId);
     try {
       // Call API to get the key value
       const response = await viewKeyMutation.mutateAsync(keyId);
 
       if (response.steamKeyValue) {
-        // Open Steam registration page with the key
-        window.open(
-          `https://store.steampowered.com/account/registerkey?key=${response.steamKeyValue}`,
-          "_blank"
-        );
-
-        toast.success("Opening Steam key redemption page...", {
-          icon: <ExternalLinkIcon className="h-5 w-5" />,
-          duration: 2000,
+        // Show dialog with the key
+        setViewKeyDialog({
+          isOpen: true,
+          keyValue: response.steamKeyValue,
+          gameTitle: gameTitle,
+          coverImageUrl: coverImageUrl,
         });
       } else {
         toast.error("Steam key not available");
@@ -330,6 +340,19 @@ export default function KeysPage() {
       toast.error("Failed to retrieve key. Please try again.");
     } finally {
       setViewingKeyId(null);
+    }
+  };
+
+  const handleCopyKey = async (keyValue: string) => {
+    try {
+      await navigator.clipboard.writeText(keyValue);
+      toast.success("Steam key copied to clipboard!", {
+        icon: <Copy className="h-5 w-5" />,
+        duration: 2000,
+      });
+    } catch (error) {
+      console.error("Error copying key:", error);
+      toast.error("Failed to copy key. Please try again.");
     }
   };
 
@@ -917,7 +940,7 @@ export default function KeysPage() {
                                 <Button
                                   variant="outline"
                                   className="gap-2"
-                                  onClick={() => handleViewKey(key.id)}
+                                  onClick={() => handleViewKey(key.id, key.title, key.coverImage?.url || null)}
                                   disabled={viewingKeyId === key.id}
                                 >
                                   {viewingKeyId === key.id ? (
@@ -1434,6 +1457,96 @@ export default function KeysPage() {
             >
               <ExternalLinkIcon className="h-4 w-4 mr-2" />
               Steam Privacy Guide
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Key Dialog */}
+      <Dialog
+        open={viewKeyDialog.isOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setViewKeyDialog({
+              isOpen: false,
+              keyValue: null,
+              gameTitle: "",
+              coverImageUrl: null,
+            });
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Steam Key</DialogTitle>
+            <DialogDescription>
+              {viewKeyDialog.gameTitle}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Game Cover Image */}
+            {viewKeyDialog.coverImageUrl && (
+              <div className="flex justify-center">
+                <div className="relative w-32 aspect-[2/3] overflow-hidden rounded-lg shadow-md">
+                  <Image
+                    src={viewKeyDialog.coverImageUrl}
+                    alt={viewKeyDialog.gameTitle}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Steam Key */}
+            <div className="flex items-center gap-2">
+              <div className="flex-1 rounded-md border bg-muted px-3 py-2 font-mono text-sm select-all">
+                {viewKeyDialog.keyValue}
+              </div>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => viewKeyDialog.keyValue && handleCopyKey(viewKeyDialog.keyValue)}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertDescription className="text-sm">
+                Click the key to select it, or use the copy button. You can redeem this key on Steam.
+              </AlertDescription>
+            </Alert>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (viewKeyDialog.keyValue) {
+                  window.open(
+                    `https://store.steampowered.com/account/registerkey?key=${viewKeyDialog.keyValue}`,
+                    "_blank"
+                  );
+                }
+              }}
+            >
+              <ExternalLinkIcon className="h-4 w-4 mr-2" />
+              Redeem on Steam
+            </Button>
+            <Button
+              onClick={() =>
+                setViewKeyDialog({
+                  isOpen: false,
+                  keyValue: null,
+                  gameTitle: "",
+                  coverImageUrl: null,
+                })
+              }
+            >
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

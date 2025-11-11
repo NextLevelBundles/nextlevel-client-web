@@ -1,5 +1,6 @@
 import { ClientApi } from "../client-api";
-import { CartItemGift, SteamKeyGift, AcceptGiftResponse } from "../types/gift";
+import { CartItemGift, AcceptGiftResponse } from "../types/gift";
+import { SteamKeyAssignment } from "../types/steam-key";
 
 export class GiftApi {
   private client: ClientApi;
@@ -25,13 +26,10 @@ export class GiftApi {
   }
 
   async getSteamKeyGift(
-    assignmentId: string,
-    email: string
-  ): Promise<SteamKeyGift> {
-    const params = email ? new URLSearchParams({ email }) : new URLSearchParams();
-    const queryString = params.toString() ? `?${params.toString()}` : "";
-    return await this.client.get<SteamKeyGift>(
-      `/gifts/steam-keys/${assignmentId}${queryString}`
+    assignmentId: string
+  ): Promise<SteamKeyAssignment> {
+    return await this.client.get<SteamKeyAssignment>(
+      `/gifts/steam-keys/${assignmentId}`
     );
   }
 
