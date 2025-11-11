@@ -17,11 +17,11 @@ export function ExchangeGameCard({ game }: ExchangeGameCardProps) {
       <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 bg-white dark:bg-gray-800/80 border border-gray-200/80 dark:border-gray-700/50 cursor-pointer">
         {/* 2:3 Cover Image */}
         <div className="relative w-full overflow-hidden bg-gradient-to-br from-purple-500/10 to-blue-500/10" style={{ aspectRatio: "2/3" }}>
-          {game.steamApp.headerImage ? (
+          {game.coverImage?.url ? (
             <>
               <Image
-                src={game.steamApp.headerImage}
-                alt={game.steamApp.name}
+                src={game.coverImage.url}
+                alt={game.title}
                 fill
                 className="object-contain transition-transform duration-500 group-hover:scale-105"
               />
@@ -45,7 +45,7 @@ export function ExchangeGameCard({ game }: ExchangeGameCardProps) {
         <div className="p-5 space-y-4">
           {/* Title */}
           <h3 className="font-bold text-lg line-clamp-2 group-hover:text-primary transition-colors">
-            {game.steamApp.name}
+            {game.title}
           </h3>
 
           {/* Credits Section */}

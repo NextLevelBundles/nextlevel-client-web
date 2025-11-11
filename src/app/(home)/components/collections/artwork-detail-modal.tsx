@@ -80,7 +80,9 @@ export function ArtworkDetailModal({
                       <div className="text-muted-foreground min-w-[100px]">
                         Format
                       </div>
-                      <div className="font-medium">High-Resolution JPEG</div>
+                      <div className="font-medium">
+                        Hi-resolution JPEG (5120x2880) - no watermark
+                      </div>
                     </div>
                   </div>
                 </div>

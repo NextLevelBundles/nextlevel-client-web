@@ -22,13 +22,13 @@ import {
   Coins,
   Loader2,
 } from "lucide-react";
-import { ExchangeGame } from "@/lib/api/types/exchange-game";
+import { ExchangeGameDetails } from "@/lib/api/types/exchange-game";
 import { useExchangeCreditsForKey } from "@/hooks/queries/use-exchange";
 import { useUserCredits } from "@/hooks/queries/use-user-credits";
 import { useRouter } from "next/navigation";
 
 interface ExchangeGameContentProps {
-  game: ExchangeGame;
+  game: ExchangeGameDetails;
 }
 
 export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
@@ -69,7 +69,7 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
     <>
       {/* Title and Platforms */}
       <div className="mb-6">
-        <h1 className="text-3xl lg:text-4xl font-bold mb-3">{steamApp.name}</h1>
+        <h1 className="text-3xl lg:text-4xl font-bold mb-3">{game.title}</h1>
         {/* Supported Platforms */}
         {steamApp.platforms && (
           <div>
