@@ -17,7 +17,6 @@ import { motion } from "framer-motion";
 import {
   KeyIcon,
   ExternalLinkIcon,
-  CopyIcon,
   GiftIcon,
   SearchIcon,
   XIcon,
@@ -88,13 +87,6 @@ const ownershipOptions = [
   { value: "ReceivedByMe", label: "Received as gift" },
 ];
 
-const copyMessages = [
-  "🔑 You got it!",
-  "📋 Locked and loaded.",
-  "🚀 Ready to redeem!",
-  "🗝️ Another one in your collection!",
-];
-
 // Function to convert technical status names to user-friendly ones
 const getStatusDisplayName = (status: string): string => {
   const statusMap: Record<string, string> = {
@@ -140,6 +132,7 @@ export default function KeysPage() {
   const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
   const [syncErrorMessage, setSyncErrorMessage] = useState<string | null>(null);
   const [showSteamPrivacyHelp, setShowSteamPrivacyHelp] = useState(false);
+  const [viewingKeyId, setViewingKeyId] = useState<string | null>(null);
   const [redeemConfirmDialog, setRedeemConfirmDialog] = useState<{
     isOpen: boolean;
     keyId: string | null;
@@ -312,37 +305,21 @@ export default function KeysPage() {
     });
   };
 
-  const handleCopyKey = async (keyId: string) => {
+  const handleViewKey = async (keyId: string) => {
+    setViewingKeyId(keyId);
     try {
       // Call API to get the key value
       const response = await viewKeyMutation.mutateAsync(keyId);
 
       if (response.steamKeyValue) {
-        navigator.clipboard.writeText(response.steamKeyValue);
-        const message =
-          copyMessages[Math.floor(Math.random() * copyMessages.length)];
+        // Open Steam registration page with the key
+        window.open(
+          `https://store.steampowered.com/account/registerkey?key=${response.steamKeyValue}`,
+          "_blank"
+        );
 
-        // Create a small confetti burst for copy action
-        confetti({
-          particleCount: 20,
-          spread: 30,
-          origin: { y: 0.8 },
-          colors: ["#4F46E5", "#10B981"],
-          gravity: 0.5,
-          scalar: 0.5,
-          ticks: 50,
-        });
-
-        toast.success(message, {
-          icon: (
-            <motion.div
-              initial={{ rotate: -20 }}
-              animate={{ rotate: 20 }}
-              transition={{ duration: 0.3, repeat: 3, repeatType: "reverse" }}
-            >
-              <SparklesIcon className="h-5 w-5 text-yellow-400" />
-            </motion.div>
-          ),
+        toast.success("Opening Steam key redemption page...", {
+          icon: <ExternalLinkIcon className="h-5 w-5" />,
           duration: 2000,
         });
       } else {
@@ -350,6 +327,9 @@ export default function KeysPage() {
       }
     } catch (error) {
       console.error("Error viewing key:", error);
+      toast.error("Failed to retrieve key. Please try again.");
+    } finally {
+      setViewingKeyId(null);
     }
   };
 
@@ -930,24 +910,31 @@ export default function KeysPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     {key.status === "Revealed" ? (
                       <>
-                        <code className="rounded bg-muted/10 px-2 py-1 font-mono text-muted-foreground">
-                          {getKeyValue(key)}
-                        </code>
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <motion.div whileTap={{ scale: 0.95 }}>
                                 <Button
                                   variant="outline"
-                                  size="icon"
-                                  className="h-8 w-8 transition-all duration-200"
-                                  onClick={() => handleCopyKey(key.id)}
+                                  className="gap-2"
+                                  onClick={() => handleViewKey(key.id)}
+                                  disabled={viewingKeyId === key.id}
                                 >
-                                  <CopyIcon className="h-4 w-4" />
+                                  {viewingKeyId === key.id ? (
+                                    <>
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                      Loading...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <ExternalLinkIcon className="h-4 w-4" />
+                                      View Key
+                                    </>
+                                  )}
                                 </Button>
                               </motion.div>
                             </TooltipTrigger>
-                            <TooltipContent>Copy key</TooltipContent>
+                            <TooltipContent>Open Steam redemption page with this key</TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       </>
