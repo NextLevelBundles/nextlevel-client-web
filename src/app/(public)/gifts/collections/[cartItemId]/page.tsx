@@ -86,7 +86,7 @@ export default function CartItemGiftPage() {
       if (response.redirectUrl) {
         router.push(response.redirectUrl);
       } else {
-        router.push("/customer/dashboard");
+        router.push("/customer/keys");
       }
     } catch (err) {
       console.error("Error accepting gift:", err);
