@@ -126,16 +126,10 @@ export function CartDrawer() {
       const trackdeskCid = getTrackdeskCid();
       const linkId = getLinkId();
 
-      // Validate: if linkId exists, trackdeskCid must also exist
-      if (linkId && !trackdeskCid) {
-        toast.error(
-          "Affiliate tracking error. Please try again or contact support."
-        );
-        setIsCheckoutLoading(false);
-        return;
-      }
+      const finalCid = trackdeskCid && linkId ? trackdeskCid : null;
+      const finalLinkId = linkId && trackdeskCid ? linkId : null;
 
-      const response = await reserveCart(captchaToken, trackdeskCid, linkId);
+      const response = await reserveCart(captchaToken, finalCid, finalLinkId);
       // Redirect to Stripe checkout
       window.location.href = response.url;
     } catch (error) {
@@ -154,20 +148,14 @@ export function CartDrawer() {
     setIsCheckoutLoading(true);
     try {
       // Capture Trackdesk cid and linkId for conversion tracking
+
       const trackdeskCid = getTrackdeskCid();
       const linkId = getLinkId();
 
-      // Validate: if linkId exists, trackdeskCid must also exist
-      if (linkId && !trackdeskCid) {
-        toast.error(
-          "Affiliate tracking error. Please try again or contact support."
-        );
-        setCaptchaToken(null);
-        setIsCheckoutLoading(false);
-        return;
-      }
+      const finalCid = trackdeskCid && linkId ? trackdeskCid : null;
+      const finalLinkId = linkId && trackdeskCid ? linkId : null;
 
-      const response = await reserveCart(token, trackdeskCid, linkId);
+      const response = await reserveCart(token, finalCid, finalLinkId);
       // Redirect to Stripe checkout
       window.location.href = response.url;
     } catch (error) {
@@ -276,7 +264,8 @@ export function CartDrawer() {
             <ShoppingBag className="h-16 w-16 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">Your cart is empty</h3>
             <p className="text-muted-foreground mb-6">
-              Browse our amazing collections and add some Steam games to your cart!
+              Browse our amazing collections and add some Steam games to your
+              cart!
             </p>
           </div>
         ) : (
@@ -353,11 +342,13 @@ export function CartDrawer() {
                             >
                               {isBookBundle(item) ? (
                                 <>
-                                  <BookOpen className="h-3 w-3" /> Book Collection
+                                  <BookOpen className="h-3 w-3" /> Book
+                                  Collection
                                 </>
                               ) : (
                                 <>
-                                  <Gamepad2 className="h-3 w-3" /> Steam Game Collection
+                                  <Gamepad2 className="h-3 w-3" /> Steam Game
+                                  Collection
                                 </>
                               )}
                             </span>
