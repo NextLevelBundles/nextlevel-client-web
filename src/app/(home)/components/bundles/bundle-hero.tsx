@@ -35,7 +35,7 @@ export function BundleHero({ bundle }: BundleHeroProps) {
           containerClassName="w-full h-full"
         />
         {/* Single dark overlay */}
-        <div className="absolute inset-0 bg-black/55" />
+        <div className="absolute inset-0 bg-black/30" />
       </div>
       {/* Feature badges - top right */}
       <div className="absolute right-6 top-6 flex gap-2 z-10">
