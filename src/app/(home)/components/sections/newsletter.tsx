@@ -6,7 +6,11 @@ import { Input } from "@/shared/components/ui/input";
 import { Shield, Mail, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
-export function Newsletter() {
+interface NewsletterProps {
+  showAsFirstCollection?: boolean;
+}
+
+export function Newsletter({ showAsFirstCollection = false }: NewsletterProps) {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -63,10 +67,12 @@ export function Newsletter() {
               )}
             </div>
             <h2 className="mb-4 text-3xl font-bold tracking-tight md:text-4xl text-[#1c1c1e] dark:text-foreground">
-              Stay in the Loop
+              {showAsFirstCollection ? "Be the first to know" : "Stay in the Loop"}
             </h2>
             <p className="mb-8 text-[#4b5563] dark:text-muted-foreground">
-              Be the first to know when we release a new collection.
+              {showAsFirstCollection
+                ? "Get an email as soon as our first collection goes live"
+                : "Be the first to know when we release a new collection."}
             </p>
 
             {isSubscribed ? (

@@ -7,6 +7,11 @@ import { serverApiClient } from "@/lib/server-api";
 export async function CurrentBundles() {
   const bundles = await serverApiClient.getBundles();
 
+  // Don't render this section if there are no bundles
+  if (!bundles || bundles.length === 0) {
+    return null;
+  }
+
   return (
     <section className="relative py-24 px-6 md:px-12">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(57,130,245,0.15),transparent_70%),radial-gradient(ellipse_at_bottom,rgba(249,113,20,0.1),transparent_70%)] opacity-30 dark:opacity-40" />
