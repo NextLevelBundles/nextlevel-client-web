@@ -32,6 +32,8 @@ export interface SteamKeyAssignment {
   customerId: string;
   productTitle: string;
   productCoverImage: MediaData;
+  title: string;
+  coverImage: MediaData;
   steamGameMetadata: {
     website: string | null;
     protonDbTier: string | null;

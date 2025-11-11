@@ -1,15 +1,5 @@
-import { SteamApp } from './steam-app';
-
-// Image type for exchange game cover
-export interface ExchangeGameImage {
-  id: string;
-  s3Key: string;
-  fileName: string;
-  createdAt: string;
-  fileSize: number;
-  mimeType: string;
-  url: string;
-}
+import MediaData from "@/app/(shared)/types/media";
+import { SteamApp } from "./steam-app";
 
 // List view interface - simplified structure from API
 export interface ExchangeGame {
@@ -17,11 +7,11 @@ export interface ExchangeGame {
   createdAt: string;
   updatedAt: string;
   steamAppId: number;
-  status: 'Active' | 'Inactive';
+  status: "Active" | "Inactive";
   inputCredits: number;
   outputCredits: number;
   title: string;
-  coverImage: ExchangeGameImage;
+  coverImage: MediaData;
 }
 
 // Details view interface - full structure with SteamApp details
@@ -30,10 +20,10 @@ export interface ExchangeGameDetails {
   publisherId: string;
   inputCredits: number;
   outputCredits: number;
-  status: 'Active' | 'Inactive';
+  status: "Active" | "Inactive";
   createdAt: string;
   updatedAt: string;
   title: string;
-  coverImage: ExchangeGameImage;
+  coverImage: MediaData;
   steamApp: SteamApp;
 }

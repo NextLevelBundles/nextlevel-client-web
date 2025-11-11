@@ -875,10 +875,10 @@ export default function KeysPage() {
                       <div className="h-20 aspect-[2/3]">
                         <img
                           src={
-                            key.productCoverImage?.url ||
+                            key.coverImage?.url ||
                             "https://static.digiphile.co/product-placeholder-image.jpg"
                           }
-                          alt={key.productTitle || "Product"}
+                          alt={key.title || "Product"}
                           className="w-full h-full object-contain rounded-lg shadow-md"
                         />
                       </div>
@@ -886,7 +886,7 @@ export default function KeysPage() {
 
                     <div className="space-y-2 flex-1">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{key.productTitle}</h3>
+                        <h3 className="font-semibold">{key.title}</h3>
                         {isNewlyAssigned(key) && (
                           <Badge
                             variant="outline"
@@ -998,7 +998,7 @@ export default function KeysPage() {
                                     key.alreadyOwnedOnSteam &&
                                     key.exchangeCredits &&
                                     key.exchangeCredits > 0
-                                  ) && handleRevealKey(key.id, key.productTitle)
+                                  ) && handleRevealKey(key.id, key.title)
                                 }
                               >
                                 <ExternalLinkIcon className="h-4 w-4" />

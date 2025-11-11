@@ -185,7 +185,7 @@ export function SteamKeyGiftIndicator({
                 Game:
               </span>
               <span className="text-sm font-medium">
-                {steamKey.productTitle}
+                {steamKey.title}
               </span>
             </div>
 
