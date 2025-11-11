@@ -452,11 +452,12 @@ export default function KeysPage() {
       );
       if (result.success === true || typeof result.credits === "number") {
         toast.success(`Steam key exchanged for ${result.credits} credits!`);
-        // Invalidate queries to refresh the keys data
+        // Invalidate queries to refresh the keys data and user credits
         queryClient.invalidateQueries({ queryKey: ["steam-keys"] });
         queryClient.invalidateQueries({
           queryKey: ["steam-keys", "status-counts"],
         });
+        queryClient.invalidateQueries({ queryKey: ["user-credits"] });
       } else {
         toast.error("Exchange failed. Please try again.");
       }
