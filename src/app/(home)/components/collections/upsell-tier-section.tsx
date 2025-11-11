@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { Gamepad2, Lock, Unlock, Plus } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/shared/utils/tailwind";
-import { Tier, Product, BundleType } from "@/app/(shared)/types/bundle";
+import { Tier, Product, BundleType, Bundle } from "@/app/(shared)/types/bundle";
 import { Card } from "@/shared/components/ui/card";
 import Image from "next/image";
+import { ProductDetailModal } from "./product-detail-modal";
 
 interface UpsellTierSectionProps {
   tier: Tier;
@@ -19,6 +21,9 @@ interface UpsellTierSectionProps {
   isAvailable?: boolean;
   keysCount?: number;
   hasAvailableBaseTiers?: boolean;
+  bundle?: Bundle;
+  allBundleProducts?: Product[];
+  allUnlockedProducts?: Product[];
 }
 
 export function UpsellTierSection({
@@ -31,7 +36,11 @@ export function UpsellTierSection({
   isAvailable = true,
   keysCount,
   hasAvailableBaseTiers = true,
+  bundle,
+  allBundleProducts,
+  allUnlockedProducts,
 }: UpsellTierSectionProps) {
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const tierProducts = products.filter((p) => p.bundleTierId === tier.id);
   const isBookBundle = bundleType === BundleType.EBook;
 
@@ -109,6 +118,7 @@ export function UpsellTierSection({
           {tierProducts.slice(0, 4).map((product, idx) => (
             <div
               key={product.id}
+              onClick={() => setSelectedProduct(product)}
               className={cn(
                 "relative aspect-[2/3] rounded-lg overflow-hidden group cursor-pointer transition-all",
                 isUnlocked
@@ -186,6 +196,19 @@ export function UpsellTierSection({
           </div>
         )}
       </div>
+
+      {/* Product Detail Modal */}
+      {bundle && (
+        <ProductDetailModal
+          product={selectedProduct}
+          bundle={bundle}
+          isOpen={!!selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          onNavigateToProduct={(product) => setSelectedProduct(product)}
+          allProducts={allBundleProducts || tierProducts}
+          unlockedProducts={allUnlockedProducts || tierProducts}
+        />
+      )}
     </Card>
   );
 }

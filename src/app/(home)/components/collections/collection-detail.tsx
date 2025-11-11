@@ -401,6 +401,9 @@ export function BundleDetail({
                     isAvailable={isAvailable}
                     keysCount={keysCount}
                     hasAvailableBaseTiers={hasAvailableBaseTiers}
+                    bundle={bundle}
+                    allBundleProducts={allProducts}
+                    allUnlockedProducts={[...baseUnlockedProducts, ...allProducts.filter(p => selectedCharityTierIds.includes(p.bundleTierId || '')), ...allProducts.filter(p => selectedUpsellTierIds.includes(p.bundleTierId || ''))]}
                   />
                 );
               })}
@@ -441,6 +444,9 @@ export function BundleDetail({
                     isAvailable={isAvailable}
                     keysCount={keysCount}
                     hasAvailableBaseTiers={hasAvailableBaseTiers}
+                    bundle={bundle}
+                    allBundleProducts={allProducts}
+                    allUnlockedProducts={[...baseUnlockedProducts, ...allProducts.filter(p => selectedCharityTierIds.includes(p.bundleTierId || '')), ...allProducts.filter(p => selectedUpsellTierIds.includes(p.bundleTierId || ''))]}
                   />
                 );
               })}

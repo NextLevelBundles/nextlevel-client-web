@@ -1,12 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import { Heart, Lock, Unlock, Plus } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/shared/utils/tailwind";
-import { Tier, Product, BundleType } from "@/app/(shared)/types/bundle";
+import { Tier, Product, BundleType, Bundle } from "@/app/(shared)/types/bundle";
 import { Card } from "@/shared/components/ui/card";
 import Image from "next/image";
 import rotisArtwork from "@/assets/arts/rotis.jpg";
+import { ProductDetailModal } from "./product-detail-modal";
+import { ArtworkDetailModal } from "./artwork-detail-modal";
 
 interface CharityTierSectionProps {
   tier: Tier;
@@ -19,6 +22,9 @@ interface CharityTierSectionProps {
   isAvailable?: boolean;
   keysCount?: number;
   hasAvailableBaseTiers?: boolean;
+  bundle?: Bundle;
+  allBundleProducts?: Product[];
+  allUnlockedProducts?: Product[];
 }
 
 export function CharityTierSection({
@@ -31,7 +37,12 @@ export function CharityTierSection({
   isAvailable = true,
   keysCount,
   hasAvailableBaseTiers = true,
+  bundle,
+  allBundleProducts,
+  allUnlockedProducts,
 }: CharityTierSectionProps) {
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [showArtworkModal, setShowArtworkModal] = useState(false);
   const tierProducts = products.filter((p) => p.bundleTierId === tier.id);
   const isBookBundle = bundleType === BundleType.EBook;
 
@@ -94,7 +105,8 @@ export function CharityTierSection({
                     : "books"
                   : tierProducts.length === 1
                     ? "Steam game"
-                    : "Steam games"} + exclusive artwork
+                    : "Steam games"}{" "}
+                + exclusive artwork
               </p>
             </div>
           </div>
@@ -119,6 +131,15 @@ export function CharityTierSection({
           {allCharityItems.slice(0, 4).map((product, idx) => (
             <div
               key={product.id}
+              onClick={() => {
+                if (product.id === "charity-artwork-rotis") {
+                  // Open artwork modal for the charity artwork
+                  setShowArtworkModal(true);
+                } else {
+                  // Open product modal for regular products
+                  setSelectedProduct(product as Product);
+                }
+              }}
               className={cn(
                 "relative aspect-[2/3] rounded-lg overflow-hidden group cursor-pointer transition-all",
                 isUnlocked
@@ -198,6 +219,28 @@ export function CharityTierSection({
           </div>
         )}
       </div>
+
+      {/* Product Detail Modal */}
+      {bundle && (
+        <ProductDetailModal
+          product={selectedProduct}
+          bundle={bundle}
+          isOpen={!!selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          onNavigateToProduct={(product) => setSelectedProduct(product)}
+          allProducts={allBundleProducts || tierProducts}
+          unlockedProducts={allUnlockedProducts || tierProducts}
+        />
+      )}
+
+      {/* Artwork Detail Modal */}
+      <ArtworkDetailModal
+        isOpen={showArtworkModal}
+        onClose={() => setShowArtworkModal(false)}
+        artworkSrc={rotisArtwork.src}
+        title="Exclusive Charity Artwork"
+        description="This beautiful artwork is exclusively available to supporters who contribute to the Charity Tier. By adding the Charity Tier to your purchase, you receive this high-resolution digital artwork as a token of appreciation for your support. 100% of your charity tier contribution goes directly to our featured charitable cause, making a real difference while receiving this exclusive collectible."
+      />
     </Card>
   );
 }
