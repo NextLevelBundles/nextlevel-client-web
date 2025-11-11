@@ -66,9 +66,7 @@ export function Newsletter() {
               Stay in the Loop
             </h2>
             <p className="mb-8 text-[#4b5563] dark:text-muted-foreground">
-              Subscribe to our newsletter for exclusive bundle alerts, curated
-              content recommendations, and special offers on games, books, and
-              more
+              Be the first to know when we release a new collection.
             </p>
 
             {isSubscribed ? (

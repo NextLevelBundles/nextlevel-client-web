@@ -13,10 +13,10 @@ export async function CurrentBundles() {
       <div className="container relative px-4 mx-auto overflow-visible">
         <div className="mb-12 text-center">
           <h2 className="mb-4 text-3xl font-bold tracking-tight md:text-4xl bg-linear-to-r from-primary via-foreground to-secondary bg-clip-text text-transparent animate-glow">
-            Current Bundles
+            Current Offers
           </h2>
           <p className="text-muted-foreground">
-            Choose from our handpicked collection of premium game bundles
+            Choose from our meticulously curated collections
           </p>
         </div>
 
@@ -129,7 +129,7 @@ export async function CurrentBundles() {
               type="button"
               className="bg-card/50 backdrop-blur-xs hover:bg-primary/20 cursor-pointer transition-all hover:shadow-[0_0_30px_rgba(57,130,245,0.2)] ring-1 ring-white/20"
             >
-              View All Bundles
+              View All Collections
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
