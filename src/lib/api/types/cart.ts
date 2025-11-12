@@ -54,6 +54,7 @@ export interface CartItem {
   canOnlyBeGifted?: boolean;
   giftAccepted?: boolean | null;
   giftAcceptedAt?: string | null;
+  giftExpiresAt?: string | null;
 }
 
 export interface Cart {

@@ -48,7 +48,7 @@ export class SteamKeyApi {
 
   async viewKey(keyId: string): Promise<ViewKeyResponse> {
     return await this.client.post<ViewKeyResponse>(
-      `customer/steam-keys/${keyId}/view`
+      `/customer/steam-keys/${keyId}/view`
     );
   }
 

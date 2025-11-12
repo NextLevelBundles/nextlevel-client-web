@@ -936,10 +936,6 @@ export default function KeysPage() {
                           <SteamKeyGiftIndicator
                             steamKey={key}
                             currentCustomerId={currentCustomerId}
-                            currentUserEmail={currentUserEmail || undefined}
-                            onGiftAccepted={() => {
-                              window.location.reload();
-                            }}
                           />
                         )}
                       </div>

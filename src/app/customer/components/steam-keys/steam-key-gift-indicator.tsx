@@ -43,14 +43,12 @@ import Link from "next/link";
 interface SteamKeyGiftIndicatorProps {
   steamKey: SteamKeyAssignment;
   currentCustomerId?: string;
-  currentUserEmail?: string;
   onGiftAccepted?: () => void;
 }
 
 export function SteamKeyGiftIndicator({
   steamKey,
   currentCustomerId,
-  currentUserEmail,
   onGiftAccepted,
 }: SteamKeyGiftIndicatorProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -63,7 +61,6 @@ export function SteamKeyGiftIndicator({
   // Determine if current user is the gifter or receiver
   // Current user is the gifter if their customerId matches giftedByCustomerId
   const isGifter = steamKey.giftedByCustomerId === currentCustomerId;
-  console.log(steamKey.giftedByCustomerId, currentCustomerId, isGifter);
   const isReceiver = !isGifter;
   const Icon = isReceiver ? Gift : Send;
 
@@ -99,7 +96,7 @@ export function SteamKeyGiftIndicator({
   }
 
   const handleAcceptGift = async () => {
-    if (!steamKey.id || !currentUserEmail) return;
+    if (!steamKey.id) return;
 
     setIsAccepting(true);
     try {
@@ -326,7 +323,6 @@ export function SteamKeyGiftIndicator({
               {/* Accept button for pending received gifts (only if not part of purchase gift) */}
               {isReceiver &&
                 steamKey.id &&
-                currentUserEmail &&
                 !steamKey.giftAccepted &&
                 !steamKey.isPurchaseGift && (
                   <Button

@@ -52,7 +52,6 @@ const ownershipOptions = [
   { value: "All", label: "All Purchases" },
   { value: "Owned", label: "My Purchases" },
   { value: "GivenByMe", label: "Gifted" },
-  { value: "ReceivedByMe", label: "Received as gift" },
 ];
 
 export function PurchaseHistory() {
@@ -320,8 +319,8 @@ export function PurchaseHistory() {
               </div>
               <h3 className="mb-2 text-xl font-semibold">No results found</h3>
               <p className="mb-6 max-w-md text-muted-foreground">
-                We couldn&apos;t find any collections matching your search criteria.
-                Try adjusting your filters or search term.
+                We couldn&apos;t find any collections matching your search
+                criteria. Try adjusting your filters or search term.
               </p>
               <Button
                 variant="outline"
@@ -399,28 +398,7 @@ export function PurchaseHistory() {
                           <div>
                             {purchase.snapshotTitle || "Unknown Collection"}
                           </div>
-                          <GiftIndicator
-                            isGift={purchase.isGift}
-                            giftMessage={purchase.giftMessage}
-                            giftRecipientEmail={purchase.giftRecipientEmail}
-                            giftRecipientName={purchase.giftRecipientName}
-                            giftAccepted={purchase.giftAccepted}
-                            giftAcceptedAt={purchase.giftAcceptedAt}
-                            variant="compact"
-                            cartItemId={purchase.id}
-                            cartItemCustomerId={purchase.customerId}
-                            currentCustomerId={currentCustomerId}
-                            recipientEmail={
-                              // For incoming gifts, use current user's email
-                              purchase.customerId !== currentCustomerId
-                                ? user?.email || undefined
-                                : purchase.giftRecipientEmail
-                            }
-                            onGiftAccepted={() => {
-                              // Refresh the purchases list
-                              window.location.reload();
-                            }}
-                          />
+                          <GiftIndicator cartItem={purchase} />
                         </div>
                       </TableCell>
                       <TableCell>
@@ -436,7 +414,10 @@ export function PurchaseHistory() {
                       </TableCell>
                       <TableCell>${purchase.totalAmount.toFixed(2)}</TableCell>
                       <TableCell>
-                        ${(purchase.charityAmount || purchase.baseAmount * 0.05).toFixed(2)}
+                        $
+                        {(
+                          purchase.charityAmount || purchase.baseAmount * 0.05
+                        ).toFixed(2)}
                       </TableCell>
                       <TableCell className="text-center">
                         <BundleProductsPopup purchase={purchase} />
