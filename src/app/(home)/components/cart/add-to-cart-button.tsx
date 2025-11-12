@@ -8,6 +8,7 @@ import { Check, Loader2, ShoppingCart, LogIn } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
 import { useRouter } from "next/navigation";
+import { BundleType } from "@/app/(shared)/types/bundle";
 
 interface AddToCartButtonProps {
   bundleId: string;
@@ -22,6 +23,7 @@ interface AddToCartButtonProps {
   hasAvailableBaseTiers?: boolean;
   bundleUnavailabilityReason?: "country" | "soldout" | null;
   disabled?: boolean;
+  bundleType: BundleType;
 }
 
 export function AddToCartButton({
@@ -37,6 +39,7 @@ export function AddToCartButton({
   hasAvailableBaseTiers = true,
   bundleUnavailabilityReason = null,
   disabled = false,
+  bundleType,
 }: AddToCartButtonProps) {
   const { addToCart, isLoading } = useCart();
   const { user, isLoading: isLoadingAuth } = useAuth();
@@ -89,16 +92,6 @@ export function AddToCartButton({
     isBundleExpired ||
     !hasAvailableBaseTiers;
 
-  console.log("AddToCartButton - isDisabled:", isDisabled);
-  console.log("disabled:", disabled);
-  console.log("isLoading:", isLoading);
-  console.log("isAdding:", isAdding);
-  console.log("totalAmount:", totalAmount);
-  console.log("baseTierId:", baseTierId);
-  console.log("isLoadingSession:", isLoadingSession);
-  console.log("isBundleExpired:", isBundleExpired);
-  console.log("hasAvailableBaseTiers:", hasAvailableBaseTiers);
-
   return (
     <div className="flex flex-col items-center gap-2">
       <Button
@@ -140,13 +133,15 @@ export function AddToCartButton({
       </Button>
       <p className="text-xs text-center text-muted-foreground mt-2">
         {isBundleExpired
-          ? "This bundle has ended and is no longer available for purchase."
+          ? "This collection has ended and is no longer available for purchase."
           : !hasAvailableBaseTiers && bundleUnavailabilityReason === "country"
-            ? "This bundle is not available in your country."
+            ? "This collection is not available in your country."
             : !hasAvailableBaseTiers && bundleUnavailabilityReason === "soldout"
-              ? "This bundle is sold out."
+              ? "This collection is sold out."
               : isAuthenticated
-                ? "Your bundle will be added to the cart. You can complete checkout later."
+                ? bundleType == BundleType.SteamGame
+                  ? "Keys expire 90 days after the start date of the promotion."
+                  : "Your collection will be added to the cart. You can complete checkout later."
                 : "Please log in to add items to your cart."}
       </p>
     </div>

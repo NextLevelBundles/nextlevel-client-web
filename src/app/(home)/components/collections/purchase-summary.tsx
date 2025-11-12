@@ -669,6 +669,7 @@ export function PurchaseSummary({
                 selectedUpsellTierIds={selectedUpsellTierIds}
                 isBundleExpired={bundleState === "expired" || isBundleExpired}
                 hasAvailableBaseTiers={hasAvailableBaseTiers}
+                bundleType={bundle.type}
                 bundleUnavailabilityReason={bundleUnavailabilityReason}
                 disabled={
                   bundleState === "expired" ||
