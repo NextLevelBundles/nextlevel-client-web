@@ -659,21 +659,34 @@ export function PurchaseSummary({
               </p>
             </div>
           ) : (
-            <AddToCartButton
-              bundleId={bundle.id}
-              baseTierId={currentTier?.id}
-              charityTierId={selectedCharityTierIds[0]} // API expects single charity tier
-              tipAmount={tipAmount}
-              totalAmount={totalAmount}
-              selectedUpsellTierIds={selectedUpsellTierIds}
-              isBundleExpired={bundleState === "expired" || isBundleExpired}
-              hasAvailableBaseTiers={hasAvailableBaseTiers}
-              bundleUnavailabilityReason={bundleUnavailabilityReason}
-              disabled={
+            <>
+              <AddToCartButton
+                bundleId={bundle.id}
+                baseTierId={currentTier?.id}
+                charityTierId={selectedCharityTierIds[0]} // API expects single charity tier
+                tipAmount={tipAmount}
+                totalAmount={totalAmount}
+                selectedUpsellTierIds={selectedUpsellTierIds}
+                isBundleExpired={bundleState === "expired" || isBundleExpired}
+                hasAvailableBaseTiers={hasAvailableBaseTiers}
+                bundleUnavailabilityReason={bundleUnavailabilityReason}
+                disabled={
+                  bundleState === "expired" ||
+                  (bundleState === "not-started" && !isPreviewMode)
+                }
+              />
+              {!(
                 bundleState === "expired" ||
-                (bundleState === "not-started" && !isPreviewMode)
-              }
-            />
+                (bundleState === "not-started" && !isPreviewMode) ||
+                !hasAvailableBaseTiers ||
+                bundleUnavailabilityReason
+              ) && (
+                <p className="text-xs text-center text-muted-foreground mt-2">
+                  * Sales tax may be calculated during checkout depending on
+                  your location
+                </p>
+              )}
+            </>
           )}
         </div>
       </Card>

@@ -100,12 +100,13 @@ export default function SteamKeyGiftPage() {
     if (gift.giftAccepted === true) return false;
     // Users cannot accept their own gifts
     if (gift.giftedByCustomerId === user.customerId) return false;
-    // Check email match if recipientEmail is set
-    if (gift.giftRecipientEmail && gift.giftRecipientEmail !== user.email) return false;
+    // Check email match if recipientEmail is set (Optional)
+    // if (gift.giftRecipientEmail && gift.giftRecipientEmail !== user.email) return false;
     return true;
   };
 
-  const isSelfGift = gift && user && gift.giftedByCustomerId === user.customerId;
+  const isSelfGift =
+    gift && user && gift.giftedByCustomerId === user.customerId;
   const isGiftPending = gift && !gift.giftAccepted;
   const isGiftAccepted = gift && gift.giftAccepted === true;
 
@@ -233,7 +234,8 @@ export default function SteamKeyGiftPage() {
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  You cannot accept your own gift. This gift was sent by you and needs to be accepted by the recipient.
+                  You cannot accept your own gift. This gift was sent by you and
+                  needs to be accepted by the recipient.
                 </AlertDescription>
               </Alert>
             ) : needsSteamConnection ? (
@@ -267,8 +269,8 @@ export default function SteamKeyGiftPage() {
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  This gift is for {gift.giftRecipientEmail}. Please sign
-                  in with the correct account to accept it.
+                  This gift is for {gift.giftRecipientEmail}. Please sign in
+                  with the correct account to accept it.
                 </AlertDescription>
               </Alert>
             )}

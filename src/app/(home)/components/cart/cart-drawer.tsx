@@ -461,6 +461,10 @@ export function CartDrawer() {
                   </>
                 )}
               </Button>
+              <p className="text-xs text-center text-muted-foreground mt-2">
+                * Sales tax may be calculated during checkout depending on your
+                location
+              </p>
               <p className="text-xs text-center text-muted-foreground mb-2">
                 {cart?.reservationStatus === "Active"
                   ? "You have already reserved your Steam keys. Proceed to Checkout"
