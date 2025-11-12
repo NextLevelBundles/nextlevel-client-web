@@ -18,6 +18,7 @@ export interface CartItem {
   snapshotPlatform?: string;
   snapshotTierTitle?: string;
   snapshotTierPrice?: number;
+  snapshotExcessDistributionType?: "Publishers" | "Charity";
   snapshotProducts: {
     productId: string;
     title: string;

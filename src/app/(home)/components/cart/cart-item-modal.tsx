@@ -41,7 +41,16 @@ export function CartItemModal({ item, isOpen, onClose }: CartItemModalProps) {
   let platformAmount = item.baseAmount * 0.2;
   let charityAmount = item.baseAmount * 0.05;
   charityAmount += item.charityAmount;
-  publisherAmount += item.tipAmount;
+
+  // Tip distribution based on excess distribution type
+  if (item.tipAmount > 0) {
+    if (item.snapshotExcessDistributionType === "Publishers") {
+      publisherAmount += item.tipAmount;
+    } else {
+      charityAmount += item.tipAmount;
+    }
+  }
+
   const developerSupportAmount = item.upsellAmount;
   const totalAmount = item.totalAmount;
 
@@ -264,8 +273,14 @@ export function CartItemModal({ item, isOpen, onClose }: CartItemModalProps) {
                 {item.tipAmount > 0 && (
                   <div className="mt-6 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
                     <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">
-                      Your ${item.tipAmount.toFixed(2)} tip for Publishers goes
-                      100% to Publishers
+                      Your ${item.tipAmount.toFixed(2)} tip for{" "}
+                      {item.snapshotExcessDistributionType === "Publishers"
+                        ? "Publishers"
+                        : "Charity"}{" "}
+                      goes 100% to{" "}
+                      {item.snapshotExcessDistributionType === "Publishers"
+                        ? "Publishers"
+                        : "Charity"}
                     </p>
                   </div>
                 )}
@@ -284,7 +299,12 @@ export function CartItemModal({ item, isOpen, onClose }: CartItemModalProps) {
                   )}
                   {item.tipAmount > 0 && (
                     <div className="flex justify-between">
-                      <span>Tip for Publishers</span>
+                      <span>
+                        Tip for{" "}
+                        {item.snapshotExcessDistributionType === "Publishers"
+                          ? "Publishers"
+                          : "Charity"}
+                      </span>
                       <span>${item.tipAmount.toFixed(2)}</span>
                     </div>
                   )}
