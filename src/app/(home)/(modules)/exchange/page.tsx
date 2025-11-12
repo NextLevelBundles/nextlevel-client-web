@@ -57,7 +57,8 @@ export default function ExchangePage() {
                 </p>
                 <p className="text-gray-600 dark:text-white/80 text-sm md:text-base mt-2">
                   Already own a game on Steam from our collections? Trade it in
-                  for credits to get another game from our exchange.
+                  for credits to get another game from the Exchange. (Steam
+                  verification required)
                 </p>
               </div>
 
@@ -97,8 +98,8 @@ export default function ExchangePage() {
                     Verify Your Games
                   </h3>
                   <p className="text-gray-600 dark:text-white/60 text-sm">
-                    Up to 3 per collection are eligible for trade-in. (Steam
-                    verification required.)
+                    Up to 3 games per collection are eligible for exchange
+                    (excluding DLC)
                   </p>
                 </div>
                 <div className="text-center">
