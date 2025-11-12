@@ -1,9 +1,11 @@
 # Cloudflare Turnstile Backend Implementation Instructions
 
 ## Overview
+
 The frontend is now sending a Cloudflare Turnstile token with the checkout request. The backend needs to verify this token with Cloudflare's API before processing the checkout.
 
 ## What's Changed on Frontend
+
 - The `/customer/checkout/reserve` endpoint now receives a POST body with:
   ```json
   {
@@ -14,7 +16,9 @@ The frontend is now sending a Cloudflare Turnstile token with the checkout reque
 ## Backend Implementation Required
 
 ### 1. Add Turnstile Secret Key to Environment
+
 Add to your backend environment variables:
+
 ```
 TURNSTILE_SECRET_KEY=YOUR_SECRET_KEY_FROM_CLOUDFLARE
 ```
@@ -49,7 +53,7 @@ public async Task<IActionResult> ReserveCheckout([FromBody] ReserveCheckoutReque
 private async Task<bool> VerifyTurnstileToken(string token)
 {
     var secretKey = Environment.GetEnvironmentVariable("TURNSTILE_SECRET_KEY");
-    
+
     using var httpClient = new HttpClient();
     var formData = new FormUrlEncodedContent(new[]
     {
@@ -69,7 +73,7 @@ private async Task<bool> VerifyTurnstileToken(string token)
 
     var jsonResponse = await response.Content.ReadAsStringAsync();
     var result = JsonSerializer.Deserialize<TurnstileVerifyResponse>(jsonResponse);
-    
+
     return result?.Success ?? false;
 }
 
@@ -77,13 +81,13 @@ public class TurnstileVerifyResponse
 {
     [JsonPropertyName("success")]
     public bool Success { get; set; }
-    
+
     [JsonPropertyName("error-codes")]
     public List<string> ErrorCodes { get; set; }
-    
+
     [JsonPropertyName("challenge_ts")]
     public string ChallengeTimestamp { get; set; }
-    
+
     [JsonPropertyName("hostname")]
     public string Hostname { get; set; }
 }
@@ -98,6 +102,7 @@ public class ReserveCheckoutRequest
 ### 3. Error Handling
 
 Make sure to handle these scenarios:
+
 - **Missing token**: Return 400 with message "Security verification required"
 - **Invalid token**: Return 400 with message "Security verification failed. Please try again."
 - **Turnstile API error**: Log the error and return 500 with generic message
@@ -106,6 +111,7 @@ Make sure to handle these scenarios:
 ### 4. Cloudflare Turnstile Verification API Response
 
 The Turnstile verification API returns:
+
 ```json
 {
   "success": true|false,
@@ -118,6 +124,7 @@ The Turnstile verification API returns:
 ```
 
 Common error codes:
+
 - `missing-input-secret`: Secret key is missing
 - `invalid-input-secret`: Secret key is invalid
 - `missing-input-response`: Token is missing
@@ -127,13 +134,14 @@ Common error codes:
 ### 5. Optional Security Enhancements
 
 1. **IP Validation**: Pass the user's IP address in the verification request
-2. **Timestamp Check**: Verify the challenge timestamp is recent (within 5 minutes)
+2. **Timestamp Check**: Verify the challenge timestamp is recent (within 10 minutes)
 3. **Hostname Validation**: Ensure the hostname matches your expected domain
 4. **Rate Limiting**: Implement rate limiting on failed attempts
 
 ### 6. Testing
 
 For testing purposes, Cloudflare provides test keys:
+
 - **Always passes**: `1x00000000000000000000AA`
 - **Always fails**: `2x00000000000000000000AB`
 
@@ -151,5 +159,6 @@ Use these in development/staging environments.
 - [ ] Consider implementing rate limiting
 
 ## Reference Links
+
 - [Cloudflare Turnstile Server-side Validation](https://developers.cloudflare.com/turnstile/get-started/server-side-validation/)
 - [Turnstile Dashboard](https://dash.cloudflare.com/)

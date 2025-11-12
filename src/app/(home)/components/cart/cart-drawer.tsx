@@ -468,7 +468,7 @@ export function CartDrawer() {
               <p className="text-xs text-center text-muted-foreground mb-2">
                 {cart?.reservationStatus === "Active"
                   ? "You have already reserved your Steam keys. Proceed to Checkout"
-                  : `Steam keys are reserved for 5 minutes once you click "Proceed to Checkout"`}
+                  : `Steam keys are reserved for 10 minutes once you click "Proceed to Checkout"`}
               </p>
             </div>
           </div>
