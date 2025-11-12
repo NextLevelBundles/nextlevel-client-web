@@ -13,8 +13,8 @@ export function useExchangeData() {
   return useQuery({
     queryKey: ['exchange-data'],
     queryFn: async () => {
-      // Only fetch exchange games, not credits (handled by useUserCredits hook)
-      const exchangeGames = await exchangeApi.getExchangeGames('Active');
+      // Fetch exchange games available for purchase (backend filters to Active/CreditsToKeyOnly)
+      const exchangeGames = await exchangeApi.getExchangeGames();
       return {
         exchangeGames,
       };

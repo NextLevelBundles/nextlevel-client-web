@@ -20,7 +20,7 @@ export interface ExchangeGameDetails {
   publisherId: string;
   inputCredits: number;
   outputCredits: number;
-  status: "Active" | "Inactive";
+  status: 'Active' | 'Inactive' | 'KeyToCreditsOnly' | 'CreditsToKeyOnly';
   createdAt: string;
   updatedAt: string;
   title: string;

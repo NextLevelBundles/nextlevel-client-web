@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "cp .env.dev .env && npx cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 next dev --turbopack --experimental-https",
+    "dev-windows": "copy .env.dev .env && npx cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 next dev --turbopack --experimental-https",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

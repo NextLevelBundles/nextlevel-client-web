@@ -38,9 +38,9 @@ export class ExchangeApi {
     );
   }
 
-  async getExchangeGames(status: 'Active' | 'Inactive' = 'Active'): Promise<ExchangeGame[]> {
+  async getExchangeGames(): Promise<ExchangeGame[]> {
     return await this.client.get<ExchangeGame[]>(
-      `/customer/exchange/games?status=${status}`
+      `/customer/exchange/games`
     );
   }
 }

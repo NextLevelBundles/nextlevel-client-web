@@ -26,6 +26,9 @@ const nextConfig: NextConfig = {
       {
         hostname: "**.digiphile.co",
       },
+      {
+        hostname: "placeholder.com",
+      },
     ],
   },
   async redirects() {
