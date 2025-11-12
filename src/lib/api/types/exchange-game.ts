@@ -5,7 +5,7 @@ export interface ExchangeGame {
   publisherId: string;
   inputCredits: number;
   outputCredits: number;
-  status: 'Active' | 'Inactive';
+  status: 'Active' | 'Inactive' | 'KeyToCreditsOnly' | 'CreditsToKeyOnly';
   createdAt: string;
   updatedAt: string;
   steamApp: SteamApp;
