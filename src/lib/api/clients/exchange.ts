@@ -1,6 +1,6 @@
 
 import { ClientApi } from "../client-api";
-import { ExchangeGame } from "../types/exchange-game";
+import { ExchangeGame, ExchangeGameDetails } from "../types/exchange-game";
 
 export class ExchangeApi {
   private client: ClientApi;
@@ -32,8 +32,8 @@ export class ExchangeApi {
     );
   }
 
-  async getExchangeGameDetails(id: string): Promise<ExchangeGame> {
-    return await this.client.get<ExchangeGame>(
+  async getExchangeGameDetails(id: string): Promise<ExchangeGameDetails> {
+    return await this.client.get<ExchangeGameDetails>(
       `/customer/exchange/games/${id}`
     );
   }

@@ -50,10 +50,10 @@ export function Navigation() {
               Home
             </Link>
             <Link
-              href="/bundles"
+              href="/collections"
               className="text-sm font-medium hover:text-primary transition-colors"
             >
-              Bundles
+              Collections
             </Link>
             <Link
               href="/exchange"
@@ -61,10 +61,20 @@ export function Navigation() {
             >
               Exchange
             </Link>
-            <a href="#" className="text-sm font-medium hover:text-primary">
+            <a
+              href="https://sites.google.com/digiphile.co/help/construction"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium hover:text-primary"
+            >
               Blog
             </a>
-            <a href="#" className="text-sm font-medium hover:text-primary">
+            <a
+              href="https://sites.google.com/digiphile.co/help"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium hover:text-primary"
+            >
               Support
             </a>
           </div>
@@ -110,10 +120,10 @@ export function Navigation() {
                   Home
                 </Link>
                 <Link
-                  href="/bundles"
+                  href="/collections"
                   className="text-sm font-medium text-foreground/90 hover:text-primary transition-colors"
                 >
-                  Bundles
+                  Collections
                 </Link>
                 <Link
                   href="/exchange"
@@ -122,13 +132,17 @@ export function Navigation() {
                   Exchange
                 </Link>
                 <a
-                  href="#"
+                  href="https://sites.google.com/digiphile.co/help/construction"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-sm font-medium text-foreground/90 hover:text-primary transition-colors"
                 >
                   Blog
                 </a>
                 <a
-                  href="#"
+                  href="https://sites.google.com/digiphile.co/help"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-sm font-medium text-foreground/90 hover:text-primary transition-colors"
                 >
                   Support

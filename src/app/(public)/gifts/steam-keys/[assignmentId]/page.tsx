@@ -3,14 +3,25 @@
 import { useState } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
-import { Check, Loader2, AlertCircle, Gamepad2, ExternalLink } from "lucide-react";
+import {
+  Check,
+  Loader2,
+  AlertCircle,
+  Gamepad2,
+  ExternalLink,
+  Stamp as Steam,
+} from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { Badge } from "@/shared/components/ui/badge";
 import { GiftDetailsCard } from "@/app/(public)/components/gift-details-card";
 import { GiftAuthPrompt } from "@/app/(public)/components/gift-auth-prompt";
 import { giftAcceptanceRateLimiter } from "@/lib/utils/rate-limiter";
-import { useSteamKeyGift, useAcceptSteamKeyGift } from "@/hooks/queries";
+import {
+  useSteamKeyGift,
+  useAcceptSteamKeyGift,
+  useCustomer,
+} from "@/hooks/queries";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,7 +40,6 @@ export default function SteamKeyGiftPage() {
   const { user, isLoading: isLoadingAuth } = useAuth();
 
   const assignmentId = params.assignmentId as string;
-  const email = searchParams.get("email") || user?.email || "";
 
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
@@ -38,23 +48,23 @@ export default function SteamKeyGiftPage() {
     data: gift,
     isLoading,
     error: queryError,
-  } = useSteamKeyGift(assignmentId, email, true);
+  } = useSteamKeyGift(assignmentId);
+  // Fetch customer data to check Steam connection status (only if authenticated)
+  const { data: customer } = useCustomer();
 
   const acceptGiftMutation = useAcceptSteamKeyGift();
 
   const error = queryError instanceof Error ? queryError.message : null;
 
-  const handleAcceptGift = async () => {
-    if (!gift) return;
+  // Check if user has connected Steam (Steam key gifts always require Steam connection)
+  const isSteamConnected = customer && customer.steamId;
+  const needsSteamConnection = user && !isSteamConnected;
 
-    const emailToUse = email || user?.email;
-    if (!emailToUse) {
-      console.error("No email available for gift acceptance");
-      return;
-    }
+  const handleAcceptGift = async () => {
+    if (!gift || !user?.email) return;
 
     // Check rate limit
-    const rateLimitKey = `gift-accept:${assignmentId}:${emailToUse}`;
+    const rateLimitKey = `gift-accept:${assignmentId}:${user.email}`;
     const { allowed } = giftAcceptanceRateLimiter.check(rateLimitKey);
 
     if (!allowed) {
@@ -65,7 +75,7 @@ export default function SteamKeyGiftPage() {
     try {
       const response = await acceptGiftMutation.mutateAsync({
         assignmentId,
-        email: emailToUse,
+        email: user.email,
       });
 
       // Reset rate limit on success
@@ -86,14 +96,20 @@ export default function SteamKeyGiftPage() {
 
   const canAcceptGift = () => {
     if (!gift || !user) return false;
-    if (gift.giftAccepted) return false;
-    if (gift.recipientEmail && gift.recipientEmail !== user.email) return false;
+    // Gift must be pending (not accepted yet)
+    if (gift.giftAccepted === true) return false;
+    // Users cannot accept their own gifts
+    if (gift.giftedByCustomerId === user.customerId) return false;
+    // Check email match if recipientEmail is set
+    if (gift.giftRecipientEmail && gift.giftRecipientEmail !== user.email) return false;
     return true;
   };
 
+  const isSelfGift = gift && user && gift.giftedByCustomerId === user.customerId;
   const isGiftPending = gift && !gift.giftAccepted;
   const isGiftAccepted = gift && gift.giftAccepted === true;
 
+  // Show loading state while gift is loading
   if (isLoading) {
     return (
       <div className="container mx-auto flex min-h-[60vh] items-center justify-center px-4">
@@ -105,6 +121,7 @@ export default function SteamKeyGiftPage() {
     );
   }
 
+  // Show error if gift not found
   if (error || !gift) {
     return (
       <div className="container mx-auto flex min-h-[60vh] items-center justify-center px-4">
@@ -117,7 +134,8 @@ export default function SteamKeyGiftPage() {
               Gift Not Available
             </h3>
             <p className="text-sm text-muted-foreground">
-              {error || "This gift could not be found. Please check your link and try again."}
+              {error ||
+                "This gift could not be found. Please check your link and try again."}
             </p>
           </div>
         </div>
@@ -125,9 +143,7 @@ export default function SteamKeyGiftPage() {
     );
   }
 
-  const returnUrl = email
-    ? `/gifts/steam-keys/${assignmentId}?email=${encodeURIComponent(email)}`
-    : `/gifts/steam-keys/${assignmentId}`;
+  const returnUrl = `/gifts/steam-keys/${assignmentId}`;
 
   // Additional info for Steam key gifts
   const additionalInfo = (
@@ -136,30 +152,32 @@ export default function SteamKeyGiftPage() {
         <Gamepad2 className="h-4 w-4 text-muted-foreground" />
         <span className="text-sm font-medium">Game Details</span>
       </div>
-      
+
       <div className="grid gap-2 text-sm">
-        {gift.steamGameMetadata.developers && gift.steamGameMetadata.developers.length > 0 && (
-          <div>
-            <span className="text-muted-foreground">Developer:</span>{" "}
-            {gift.steamGameMetadata.developers.join(", ")}
-          </div>
-        )}
+        {gift.steamGameMetadata?.developers &&
+          gift.steamGameMetadata.developers.length > 0 && (
+            <div>
+              <span className="text-muted-foreground">Developer:</span>{" "}
+              {gift.steamGameMetadata.developers.join(", ")}
+            </div>
+          )}
 
-        {gift.steamGameMetadata.publishers && gift.steamGameMetadata.publishers.length > 0 && (
-          <div>
-            <span className="text-muted-foreground">Publisher:</span>{" "}
-            {gift.steamGameMetadata.publishers.join(", ")}
-          </div>
-        )}
+        {gift.steamGameMetadata?.publishers &&
+          gift.steamGameMetadata.publishers.length > 0 && (
+            <div>
+              <span className="text-muted-foreground">Publisher:</span>{" "}
+              {gift.steamGameMetadata.publishers.join(", ")}
+            </div>
+          )}
 
-        {gift.steamGameMetadata.releaseDate && (
+        {gift.steamGameMetadata?.releaseDate && (
           <div>
             <span className="text-muted-foreground">Release Date:</span>{" "}
             {new Date(gift.steamGameMetadata.releaseDate).toLocaleDateString()}
           </div>
         )}
 
-        {gift.steamGameMetadata.steamAppId && (
+        {gift.steamGameMetadata?.steamAppId && (
           <div>
             <a
               href={`https://store.steampowered.com/app/${gift.steamGameMetadata.steamAppId}`}
@@ -173,11 +191,12 @@ export default function SteamKeyGiftPage() {
           </div>
         )}
       </div>
-      
+
       <Alert>
         <Gamepad2 className="h-4 w-4" />
         <AlertDescription>
-          This is a Steam game key. Once accepted, you&apos;ll be able to reveal the key and activate it on Steam.
+          This is a Steam game key. Once accepted, you&apos;ll be able to reveal
+          the key and activate it on Steam.
         </AlertDescription>
       </Alert>
     </div>
@@ -189,12 +208,12 @@ export default function SteamKeyGiftPage() {
         <GiftDetailsCard
           title={gift.title}
           description={undefined}
-          imageUrl={gift.headerImage}
+          imageUrl={gift.coverImage?.url}
           bundleName={undefined}
           giftedByName={gift.giftedByCustomerName}
           giftMessage={gift.giftMessage}
           createdAt={gift.giftedAt}
-          expiresAt={gift.expiresAt}
+          expiresAt={gift.giftExpiresAt || undefined}
           status={isGiftAccepted ? "Accepted" : "Pending"}
           additionalInfo={additionalInfo}
         />
@@ -208,10 +227,29 @@ export default function SteamKeyGiftPage() {
               </div>
             ) : !user ? (
               <div className="mt-6">
-                <GiftAuthPrompt
-                  returnUrl={returnUrl}
-                  giftTitle={gift.title}
-                />
+                <GiftAuthPrompt returnUrl={returnUrl} giftTitle={gift.title} />
+              </div>
+            ) : isSelfGift ? (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  You cannot accept your own gift. This gift was sent by you and needs to be accepted by the recipient.
+                </AlertDescription>
+              </Alert>
+            ) : needsSteamConnection ? (
+              <div className="space-y-2">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full"
+                  onClick={() => router.push("/customer/settings/steam")}
+                >
+                  <Steam className="mr-2 h-4 w-4" />
+                  Connect Steam Account
+                </Button>
+                <p className="text-xs text-center text-muted-foreground">
+                  Connect your Steam account to accept this Steam key gift
+                </p>
               </div>
             ) : canAcceptGift() ? (
               <div className="flex justify-center">
@@ -229,7 +267,8 @@ export default function SteamKeyGiftPage() {
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  This gift is for {gift.recipientEmail}. Please sign in with the correct account to accept it.
+                  This gift is for {gift.giftRecipientEmail}. Please sign
+                  in with the correct account to accept it.
                 </AlertDescription>
               </Alert>
             )}
@@ -255,7 +294,9 @@ export default function SteamKeyGiftPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Accept Steam Key Gift?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to accept this Steam key? Once accepted, it will be added to your keys library and cannot be transferred to another account.
+              Are you sure you want to accept this Steam key? Once accepted, it
+              will be added to your keys library and cannot be transferred to
+              another account.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

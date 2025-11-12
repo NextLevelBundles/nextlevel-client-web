@@ -31,10 +31,10 @@ export function PublicNavigation() {
               Home
             </Link>
             <Link
-              href="/bundles"
+              href="/collections"
               className="text-sm font-medium hover:text-primary transition-colors"
             >
-              Bundles
+              Collections
             </Link>
             <a href="#" className="text-sm font-medium hover:text-primary">
               Blog
@@ -84,10 +84,10 @@ export function PublicNavigation() {
                   Home
                 </Link>
                 <Link
-                  href="/bundles"
+                  href="/collections"
                   className="text-sm font-medium text-foreground/90 hover:text-primary transition-colors"
                 >
-                  Bundles
+                  Collections
                 </Link>
                 <a
                   href="#"

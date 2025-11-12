@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import dayjs from "dayjs";
 import {
   Card,
@@ -17,7 +18,6 @@ import { motion } from "framer-motion";
 import {
   KeyIcon,
   ExternalLinkIcon,
-  CopyIcon,
   GiftIcon,
   SearchIcon,
   XIcon,
@@ -31,6 +31,7 @@ import {
   X,
   Check,
   Info,
+  Copy,
 } from "lucide-react";
 import {
   Tooltip,
@@ -88,13 +89,6 @@ const ownershipOptions = [
   { value: "ReceivedByMe", label: "Received as gift" },
 ];
 
-const copyMessages = [
-  "🔑 You got it!",
-  "📋 Locked and loaded.",
-  "🚀 Ready to redeem!",
-  "🗝️ Another one in your collection!",
-];
-
 // Function to convert technical status names to user-friendly ones
 const getStatusDisplayName = (status: string): string => {
   const statusMap: Record<string, string> = {
@@ -104,6 +98,7 @@ const getStatusDisplayName = (status: string): string => {
     Revealed: "Redeemed",
     Expired: "Expired",
     Refunded: "Refunded",
+    Revoked: "Revoked",
   };
 
   return statusMap[status] || status;
@@ -139,6 +134,18 @@ export default function KeysPage() {
   const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
   const [syncErrorMessage, setSyncErrorMessage] = useState<string | null>(null);
   const [showSteamPrivacyHelp, setShowSteamPrivacyHelp] = useState(false);
+  const [viewingKeyId, setViewingKeyId] = useState<string | null>(null);
+  const [viewKeyDialog, setViewKeyDialog] = useState<{
+    isOpen: boolean;
+    keyValue: string | null;
+    gameTitle: string;
+    coverImageUrl: string | null;
+  }>({
+    isOpen: false,
+    keyValue: null,
+    gameTitle: "",
+    coverImageUrl: null,
+  });
   const [redeemConfirmDialog, setRedeemConfirmDialog] = useState<{
     isOpen: boolean;
     keyId: string | null;
@@ -311,44 +318,41 @@ export default function KeysPage() {
     });
   };
 
-  const handleCopyKey = async (keyId: string) => {
+  const handleViewKey = async (keyId: string, gameTitle: string, coverImageUrl: string | null) => {
+    setViewingKeyId(keyId);
     try {
       // Call API to get the key value
       const response = await viewKeyMutation.mutateAsync(keyId);
 
       if (response.steamKeyValue) {
-        navigator.clipboard.writeText(response.steamKeyValue);
-        const message =
-          copyMessages[Math.floor(Math.random() * copyMessages.length)];
-
-        // Create a small confetti burst for copy action
-        confetti({
-          particleCount: 20,
-          spread: 30,
-          origin: { y: 0.8 },
-          colors: ["#4F46E5", "#10B981"],
-          gravity: 0.5,
-          scalar: 0.5,
-          ticks: 50,
-        });
-
-        toast.success(message, {
-          icon: (
-            <motion.div
-              initial={{ rotate: -20 }}
-              animate={{ rotate: 20 }}
-              transition={{ duration: 0.3, repeat: 3, repeatType: "reverse" }}
-            >
-              <SparklesIcon className="h-5 w-5 text-yellow-400" />
-            </motion.div>
-          ),
-          duration: 2000,
+        // Show dialog with the key
+        setViewKeyDialog({
+          isOpen: true,
+          keyValue: response.steamKeyValue,
+          gameTitle: gameTitle,
+          coverImageUrl: coverImageUrl,
         });
       } else {
         toast.error("Steam key not available");
       }
     } catch (error) {
       console.error("Error viewing key:", error);
+      toast.error("Failed to retrieve key. Please try again.");
+    } finally {
+      setViewingKeyId(null);
+    }
+  };
+
+  const handleCopyKey = async (keyValue: string) => {
+    try {
+      await navigator.clipboard.writeText(keyValue);
+      toast.success("Steam key copied to clipboard!", {
+        icon: <Copy className="h-5 w-5" />,
+        duration: 2000,
+      });
+    } catch (error) {
+      console.error("Error copying key:", error);
+      toast.error("Failed to copy key. Please try again.");
     }
   };
 
@@ -451,11 +455,12 @@ export default function KeysPage() {
       );
       if (result.success === true || typeof result.credits === "number") {
         toast.success(`Steam key exchanged for ${result.credits} credits!`);
-        // Invalidate queries to refresh the keys data
+        // Invalidate queries to refresh the keys data and user credits
         queryClient.invalidateQueries({ queryKey: ["steam-keys"] });
         queryClient.invalidateQueries({
           queryKey: ["steam-keys", "status-counts"],
         });
+        queryClient.invalidateQueries({ queryKey: ["user-credits"] });
       } else {
         toast.error("Exchange failed. Please try again.");
       }
@@ -590,7 +595,7 @@ export default function KeysPage() {
   return (
     <div className="grid gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">My Game Keys</h1>
+        <h1 className="text-3xl font-bold">My Steam Game Keys</h1>
         {/* <div className="flex items-center gap-4">
           <div className="hidden sm:block">
             <GameLevelProgress
@@ -814,19 +819,19 @@ export default function KeysPage() {
               </h3>
               <p className="mb-6 max-w-md text-muted-foreground">
                 {giftFilter === "Owned"
-                  ? "Purchase a bundle to get started with your personal game collection!"
+                  ? "Purchase a collection to get started with your personal Steam game collection!"
                   : giftFilter === "Gifted"
                     ? "When you give or receive gift keys, they'll appear here."
                     : giftFilter === "GivenByMe"
                       ? "When you gift game keys to others, they'll appear here."
                       : giftFilter === "ReceivedByMe"
                         ? "When someone gifts you game keys, they'll appear here."
-                        : "Purchase a bundle to get started with your game collection!"}
+                        : "Purchase a collection to get started with your Steam game collection!"}
               </p>
               {giftFilter !== "ReceivedByMe" && (
-                <Link href="/bundles">
+                <Link href="/collections">
                   <Button className="bg-linear-to-r from-primary to-primary/90">
-                    Browse Bundles
+                    Browse Collections
                   </Button>
                 </Link>
               )}
@@ -875,10 +880,10 @@ export default function KeysPage() {
                       <div className="h-20 aspect-[2/3]">
                         <img
                           src={
-                            key.productCoverImage?.url ||
+                            key.coverImage?.url ||
                             "https://static.digiphile.co/product-placeholder-image.jpg"
                           }
-                          alt={key.productTitle || "Product"}
+                          alt={key.title || "Product"}
                           className="w-full h-full object-contain rounded-lg shadow-md"
                         />
                       </div>
@@ -886,7 +891,7 @@ export default function KeysPage() {
 
                     <div className="space-y-2 flex-1">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{key.productTitle}</h3>
+                        <h3 className="font-semibold">{key.title}</h3>
                         {isNewlyAssigned(key) && (
                           <Badge
                             variant="outline"
@@ -928,26 +933,49 @@ export default function KeysPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     {key.status === "Revealed" ? (
                       <>
-                        <code className="rounded bg-muted/10 px-2 py-1 font-mono text-muted-foreground">
-                          {getKeyValue(key)}
-                        </code>
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <motion.div whileTap={{ scale: 0.95 }}>
                                 <Button
                                   variant="outline"
-                                  size="icon"
-                                  className="h-8 w-8 transition-all duration-200"
-                                  onClick={() => handleCopyKey(key.id)}
+                                  className="gap-2"
+                                  onClick={() => handleViewKey(key.id, key.title, key.coverImage?.url || null)}
+                                  disabled={viewingKeyId === key.id}
                                 >
-                                  <CopyIcon className="h-4 w-4" />
+                                  {viewingKeyId === key.id ? (
+                                    <>
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                      Loading...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <ExternalLinkIcon className="h-4 w-4" />
+                                      View Key
+                                    </>
+                                  )}
                                 </Button>
                               </motion.div>
                             </TooltipTrigger>
-                            <TooltipContent>Copy key</TooltipContent>
+                            <TooltipContent>Open Steam redemption page with this key</TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
+                      </>
+                    ) : (key.status as string) === "ReceivedFromExchange" ? (
+                      <>
+                        {/* Only show Redeem on Steam button for keys received from exchange */}
+                        <motion.div
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <Button
+                            className="cursor-pointer gap-2 bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60"
+                            onClick={() => handleRevealKey(key.id, key.title)}
+                          >
+                            <ExternalLinkIcon className="h-4 w-4" />
+                            Redeem on Steam
+                          </Button>
+                        </motion.div>
                       </>
                     ) : key.status === "Assigned" ? (
                       <>
@@ -998,7 +1026,7 @@ export default function KeysPage() {
                                     key.alreadyOwnedOnSteam &&
                                     key.exchangeCredits &&
                                     key.exchangeCredits > 0
-                                  ) && handleRevealKey(key.id, key.productTitle)
+                                  ) && handleRevealKey(key.id, key.title)
                                 }
                               >
                                 <ExternalLinkIcon className="h-4 w-4" />
@@ -1144,6 +1172,13 @@ export default function KeysPage() {
                           </>
                         )}
                       </>
+                    ) : key.status === "Revoked" ? (
+                      <Badge
+                        variant="destructive"
+                        className="gap-1 bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800"
+                      >
+                        Revoked
+                      </Badge>
                     ) : key.isGift && key.giftAccepted === null ? (
                       <Badge variant="secondary" className="gap-1">
                         <GiftIcon className="h-3 w-3" />
@@ -1210,7 +1245,7 @@ export default function KeysPage() {
               <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
               <AlertDescription className="text-sm">
                 <strong>Please note:</strong> Once you redeem this Steam key,
-                the entire bundle containing this game becomes{" "}
+                the entire collection containing this game becomes{" "}
                 <strong>non-refundable</strong>.
               </AlertDescription>
             </Alert>
@@ -1236,7 +1271,7 @@ export default function KeysPage() {
               <p className="text-xs">By proceeding, you acknowledge that:</p>
               <ul className="space-y-1 text-xs list-disc list-inside">
                 <li>The Steam key will be permanently redeemed</li>
-                <li>The bundle containing this key cannot be refunded</li>
+                <li>The collection containing this key cannot be refunded</li>
                 <li>This action cannot be undone</li>
               </ul>
             </div>
@@ -1422,6 +1457,96 @@ export default function KeysPage() {
             >
               <ExternalLinkIcon className="h-4 w-4 mr-2" />
               Steam Privacy Guide
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Key Dialog */}
+      <Dialog
+        open={viewKeyDialog.isOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setViewKeyDialog({
+              isOpen: false,
+              keyValue: null,
+              gameTitle: "",
+              coverImageUrl: null,
+            });
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Steam Key</DialogTitle>
+            <DialogDescription>
+              {viewKeyDialog.gameTitle}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Game Cover Image */}
+            {viewKeyDialog.coverImageUrl && (
+              <div className="flex justify-center">
+                <div className="relative w-32 aspect-[2/3] overflow-hidden rounded-lg shadow-md">
+                  <Image
+                    src={viewKeyDialog.coverImageUrl}
+                    alt={viewKeyDialog.gameTitle}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Steam Key */}
+            <div className="flex items-center gap-2">
+              <div className="flex-1 rounded-md border bg-muted px-3 py-2 font-mono text-sm select-all">
+                {viewKeyDialog.keyValue}
+              </div>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => viewKeyDialog.keyValue && handleCopyKey(viewKeyDialog.keyValue)}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertDescription className="text-sm">
+                Click the key to select it, or use the copy button. You can redeem this key on Steam.
+              </AlertDescription>
+            </Alert>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (viewKeyDialog.keyValue) {
+                  window.open(
+                    `https://store.steampowered.com/account/registerkey?key=${viewKeyDialog.keyValue}`,
+                    "_blank"
+                  );
+                }
+              }}
+            >
+              <ExternalLinkIcon className="h-4 w-4 mr-2" />
+              Redeem on Steam
+            </Button>
+            <Button
+              onClick={() =>
+                setViewKeyDialog({
+                  isOpen: false,
+                  keyValue: null,
+                  gameTitle: "",
+                  coverImageUrl: null,
+                })
+              }
+            >
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -35,8 +35,6 @@ export function GiftAuthPrompt({
     ? `/auth/signup?email=${encodeURIComponent(recipientEmail)}&returnUrl=${encodeURIComponent(returnUrl)}`
     : `/auth/signup?returnUrl=${encodeURIComponent(returnUrl)}`;
 
-  const signupLink = `${process.env.NEXT_PUBLIC_COGNITO_DOMAIN}/signup?response_type=code&client_id=${process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID}&redirect_uri=${process.env.NEXT_PUBLIC_COGNITO_REDIRECT_URI}&scope=openid+email+phone+profile`;
-
   const handleSignIn = () => {
     setIsSigningIn(true);
     const signInUrl = new URL("/auth/signin", window.location.origin);
@@ -107,10 +105,7 @@ export function GiftAuthPrompt({
                   </div>
                 </div>
                 <Button asChild variant="outline" className="w-full" size="lg">
-                  <Link
-                    href={signupLink}
-                    // href={`/signup?email=${encodeURIComponent(recipientEmail)}&returnUrl=${encodeURIComponent(returnUrl)}`}
-                  >
+                  <Link href={signupUrl}>
                     <UserPlus className="mr-2 h-4 w-4" />
                     Create New Account
                   </Link>
@@ -119,11 +114,7 @@ export function GiftAuthPrompt({
             ) : (
               <>
                 <Button asChild className="w-full" size="lg">
-                  <Link
-                    href={signupLink}
-
-                    // href={`/signup?email=${encodeURIComponent(recipientEmail)}&returnUrl=${encodeURIComponent(returnUrl)}`}
-                  >
+                  <Link href={signupUrl}>
                     <UserPlus className="mr-2 h-4 w-4" />
                     Create Your Free Account
                   </Link>

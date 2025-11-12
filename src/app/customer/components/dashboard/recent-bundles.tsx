@@ -17,7 +17,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import Link from "next/link";
 import { useRecentPurchases } from "@/hooks/queries/usePurchases";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import { BundleProductsPopup } from "@/customer/components/purchases/bundle-products-popup";
+import { BundleProductsPopup } from "@/customer/components/purchases/collection-products-popup";
 
 export function RecentBundles() {
   const { data: recentPurchases = [], isLoading, isError } = useRecentPurchases();
@@ -94,12 +94,12 @@ export function RecentBundles() {
             </div>
             <h3 className="mb-2 text-xl font-semibold">No purchases yet</h3>
             <p className="mb-6 max-w-md text-muted-foreground">
-              Start your gaming journey by exploring our curated bundles. Every
+              Start your gaming journey by exploring our curated collections. Every
               purchase supports amazing causes!
             </p>
-            <Link href="/bundles">
+            <Link href="/collections">
               <Button className="bg-linear-to-r from-primary to-primary/90">
-                Browse Bundles
+                Browse Collections
               </Button>
             </Link>
           </motion.div>
@@ -119,7 +119,7 @@ export function RecentBundles() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <p className="font-medium">
-                      {purchase.snapshotTitle || "Unknown Bundle"}
+                      {purchase.snapshotTitle || "Unknown Collection"}
                     </p>
                     {purchase.isGift && (
                       <Badge variant="secondary" className="gap-1">

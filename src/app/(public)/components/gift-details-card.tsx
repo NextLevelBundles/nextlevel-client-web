@@ -63,22 +63,17 @@ export function GiftDetailsCard({
         {/* Gift Item Preview */}
         <div className="flex gap-4 mb-6">
           {imageUrl && (
-            <div className="relative h-24 aspect-[16/7.5] overflow-hidden rounded-lg shadow-sm">
+            <div className="relative w-32 aspect-[2/3] overflow-hidden rounded-lg shadow-sm flex-shrink-0">
               <Image
                 src={imageUrl}
                 alt={title}
                 fill
-                className="object-contain"
+                className="object-cover"
               />
             </div>
           )}
           <div className="flex-1">
             <h3 className="text-xl font-semibold mb-1">{title}</h3>
-            {bundleName && (
-              <p className="text-sm text-muted-foreground mb-2">
-                From {bundleName}
-              </p>
-            )}
             {description && (
               <p className="text-sm text-muted-foreground line-clamp-2">
                 {description}

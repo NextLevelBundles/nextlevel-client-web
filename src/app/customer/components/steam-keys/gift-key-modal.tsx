@@ -117,7 +117,7 @@ export function GiftKeyModal({
           {/* Game Preview */}
           <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border">
             <div className="flex-1">
-              <h4 className="font-semibold text-sm">{steamKey.productTitle}</h4>
+              <h4 className="font-semibold text-sm">{steamKey.title}</h4>
               <p className="text-xs text-muted-foreground">
                 Steam Key
               </p>
@@ -242,7 +242,7 @@ export function GiftKeyModal({
                 )}
               </div>
               <div>
-                <span className="font-medium">Game:</span> {steamKey.productTitle}
+                <span className="font-medium">Game:</span> {steamKey.title}
               </div>
               {form.getValues("message") && (
                 <div>

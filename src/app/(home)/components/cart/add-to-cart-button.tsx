@@ -52,7 +52,9 @@ export function AddToCartButton({
         baseTierId: baseTierId!,
         ...(charityTierId && { charityTierId }),
         ...(tipAmount > 0 && { tipAmount }),
-        ...(selectedUpsellTierIds.length > 0 && { upsellTierIds: selectedUpsellTierIds }),
+        ...(selectedUpsellTierIds.length > 0 && {
+          upsellTierIds: selectedUpsellTierIds,
+        }),
       };
 
       await addToCart(cartItem);
@@ -86,6 +88,16 @@ export function AddToCartButton({
     isLoadingSession ||
     isBundleExpired ||
     !hasAvailableBaseTiers;
+
+  console.log("AddToCartButton - isDisabled:", isDisabled);
+  console.log("disabled:", disabled);
+  console.log("isLoading:", isLoading);
+  console.log("isAdding:", isAdding);
+  console.log("totalAmount:", totalAmount);
+  console.log("baseTierId:", baseTierId);
+  console.log("isLoadingSession:", isLoadingSession);
+  console.log("isBundleExpired:", isBundleExpired);
+  console.log("hasAvailableBaseTiers:", hasAvailableBaseTiers);
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -130,12 +142,12 @@ export function AddToCartButton({
         {isBundleExpired
           ? "This bundle has ended and is no longer available for purchase."
           : !hasAvailableBaseTiers && bundleUnavailabilityReason === "country"
-          ? "This bundle is not available in your country."
-          : !hasAvailableBaseTiers && bundleUnavailabilityReason === "soldout"
-          ? "This bundle is sold out."
-          : isAuthenticated
-          ? "Your bundle will be added to the cart. You can complete checkout later."
-          : "Please log in to add items to your cart."}
+            ? "This bundle is not available in your country."
+            : !hasAvailableBaseTiers && bundleUnavailabilityReason === "soldout"
+              ? "This bundle is sold out."
+              : isAuthenticated
+                ? "Your bundle will be added to the cart. You can complete checkout later."
+                : "Please log in to add items to your cart."}
       </p>
     </div>
   );

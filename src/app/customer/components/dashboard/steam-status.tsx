@@ -43,7 +43,7 @@ export function SteamStatus() {
         </CardHeader>
         <CardContent className="flex items-center justify-between gap-6">
           <div className="text-sm text-muted-foreground">
-            Connect your Steam account to be able to purchase Steam Bundles
+            Connect your Steam account to be able to purchase Steam Collections
           </div>
           <Button
             className="relative overflow-hidden"

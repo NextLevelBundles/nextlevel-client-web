@@ -32,6 +32,8 @@ export interface SteamKeyAssignment {
   customerId: string;
   productTitle: string;
   productCoverImage: MediaData;
+  title: string;
+  coverImage: MediaData;
   steamGameMetadata: {
     website: string | null;
     protonDbTier: string | null;
@@ -46,11 +48,12 @@ export interface SteamKeyAssignment {
     screenshotUrlsJson: string | null;
     steamAppId: number;
   };
-  status: "Assigned" | "Revealed" | "Expired" | "Refunded";
+  status: "Assigned" | "Revealed" | "Expired" | "Refunded" | "Revoked";
   assignedAt: string;
   expiresAt: string;
   revealedAt: string | null;
   refundedAt: string | null;
+  revokedAt: string | null;
   steamKeyValue: string | null;
   giftAccepted: boolean;
   isGift: boolean;
@@ -62,13 +65,14 @@ export interface SteamKeyAssignment {
   giftRecipientName: string;
   giftMessage: string;
   giftedAt: string;
+  giftExpiresAt: string | null;
   exchangeCredits: number;
   alreadyOwnedOnSteam: boolean;
 }
 
 export interface SteamKeyQueryParams {
   searchQuery?: string;
-  status?: "Assigned" | "Revealed" | "Expired" | "Refunded";
+  status?: "Assigned" | "Revealed" | "Expired" | "Refunded" | "Revoked";
   giftFilter?: GiftFilterType;
 }
 

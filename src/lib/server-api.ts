@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { Cart } from "./api/types/cart";
 import { Bundle, BundleListItem } from "@/app/(shared)/types/bundle";
-import { ExchangeGame } from "./api/types/exchange-game";
+import { ExchangeGame, ExchangeGameDetails } from "./api/types/exchange-game";
 
 const API_BASE_URL = process.env.API_URL ?? "";
 
@@ -251,7 +251,7 @@ class ServerApiClient {
     }
   }
 
-  async getExchangeGameDetails(id: string): Promise<ExchangeGame | null> {
+  async getExchangeGameDetails(id: string): Promise<ExchangeGameDetails | null> {
     try {
       const headers = await this.getAuthHeaders();
       const response = await this.fetchWithRetry(
@@ -285,7 +285,7 @@ class ServerApiClient {
 
       // Try to parse JSON
       try {
-        return JSON.parse(text) as ExchangeGame;
+        return JSON.parse(text) as ExchangeGameDetails;
       } catch (parseError) {
         console.error(
           "Failed to parse exchange game response:",

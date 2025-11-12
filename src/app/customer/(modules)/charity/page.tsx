@@ -209,7 +209,7 @@ export default function CharityPage() {
             <Card className="bg-linear-to-br from-card to-card/95">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Bundles Contributed
+                  Collections Contributed
                 </CardTitle>
                 <PackageIcon className="h-4 w-4 text-primary" />
               </CardHeader>
@@ -286,7 +286,7 @@ export default function CharityPage() {
                           <div className="font-medium">${value}</div>
                           {data?.bundles && data?.charities && (
                             <div className="text-xs text-muted-foreground">
-                              {data.bundles} bundles • {data.charities}{" "}
+                              {data.bundles} collections • {data.charities}{" "}
                               charities
                             </div>
                           )}
@@ -332,7 +332,7 @@ export default function CharityPage() {
                 <div className="relative flex-1">
                   <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
-                    placeholder="Search bundles..."
+                    placeholder="Search collections..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-9"
@@ -386,7 +386,7 @@ export default function CharityPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Bundle Name</TableHead>
+                      <TableHead>Collection Name</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Charity</TableHead>
                       <TableHead>Amount</TableHead>
@@ -428,7 +428,7 @@ export default function CharityPage() {
                             }
                           >
                             <ExternalLinkIcon className="h-4 w-4 mr-2" />
-                            View Bundle
+                            View Collection
                           </Button>
                         </TableCell>
                       </motion.tr>
@@ -464,7 +464,7 @@ export default function CharityPage() {
           transition={{ delay: 0.6 }}
           className="text-center text-muted-foreground text-sm"
         >
-          Each time you support a bundle, a portion goes to a cause you care
+          Each time you support a collection, a portion goes to a cause you care
           about. Thank you for being part of the mission. ❤️
         </motion.div>
       </div>

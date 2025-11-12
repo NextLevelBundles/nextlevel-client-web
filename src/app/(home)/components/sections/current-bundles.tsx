@@ -1,11 +1,16 @@
 import { Button } from "@/shared/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { BundleCard } from "@/home/components/bundles/bundle-card";
+import { BundleCard } from "@/home/components/collections/collection-card";
 import Link from "next/link";
 import { serverApiClient } from "@/lib/server-api";
 
 export async function CurrentBundles() {
   const bundles = await serverApiClient.getBundles();
+
+  // Don't render this section if there are no bundles
+  if (!bundles || bundles.length === 0) {
+    return null;
+  }
 
   return (
     <section className="relative py-24 px-6 md:px-12">
@@ -13,10 +18,10 @@ export async function CurrentBundles() {
       <div className="container relative px-4 mx-auto overflow-visible">
         <div className="mb-12 text-center">
           <h2 className="mb-4 text-3xl font-bold tracking-tight md:text-4xl bg-linear-to-r from-primary via-foreground to-secondary bg-clip-text text-transparent animate-glow">
-            Current Bundles
+            Current Offers
           </h2>
           <p className="text-muted-foreground">
-            Choose from our handpicked collection of premium game bundles
+            Choose from our meticulously curated collections
           </p>
         </div>
 
@@ -46,7 +51,7 @@ export async function CurrentBundles() {
               >
                 <Card className="border-0 bg-transparent h-full">
                   <Link
-                    href={`/bundles/${bundle.slug}`}
+                    href={`/collections/${bundle.slug}`}
                     className="flex h-full flex-col"
                   >
                     <div className="relative">
@@ -120,7 +125,7 @@ export async function CurrentBundles() {
 
         <div className="mt-12 text-center">
           <Link
-            href="/bundles"
+            href="/collections"
             className="inline-flex items-center cursor-pointer"
           >
             <Button
@@ -129,7 +134,7 @@ export async function CurrentBundles() {
               type="button"
               className="bg-card/50 backdrop-blur-xs hover:bg-primary/20 cursor-pointer transition-all hover:shadow-[0_0_30px_rgba(57,130,245,0.2)] ring-1 ring-white/20"
             >
-              View All Bundles
+              View All Collections
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>

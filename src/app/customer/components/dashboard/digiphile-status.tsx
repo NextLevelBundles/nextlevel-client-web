@@ -77,10 +77,10 @@ export function DigiphileStatus() {
             </div>
           </div>
         </div>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="relative overflow-hidden group"
-          onClick={() => window.open(`https://digiphile.io/@${customer.handle}`, '_blank')}
+          onClick={() => window.open('https://sites.google.com/digiphile.co/help/construction', '_blank')}
         >
           <span className="relative z-10 flex items-center gap-2">
             View Profile

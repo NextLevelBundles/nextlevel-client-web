@@ -1,5 +1,4 @@
 export const BLOCKED_COUNTRIES = [
-  "CN", // China
   "RU", // Russia
   "KP", // North Korea
   "IR", // Iran

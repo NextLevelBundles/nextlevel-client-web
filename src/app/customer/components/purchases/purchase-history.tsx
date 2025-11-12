@@ -41,7 +41,7 @@ import {
 } from "lucide-react";
 import { usePurchases } from "@/hooks/queries/usePurchases";
 import { PurchaseQueryParams, GiftFilterType } from "@/lib/api/types/purchase";
-import { BundleProductsPopup } from "./bundle-products-popup";
+import { BundleProductsPopup } from "./collection-products-popup";
 import { GiftIndicator } from "../gift-indicator";
 import { FilterDropdown } from "../filter-dropdown";
 
@@ -194,7 +194,7 @@ export function PurchaseHistory() {
               <div className="relative">
                 <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="Search bundles by name..."
+                  placeholder="Search collections by name..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9 bg-background"
@@ -292,19 +292,19 @@ export function PurchaseHistory() {
               </h3>
               <p className="mb-6 max-w-md text-muted-foreground">
                 {giftFilter === "Owned"
-                  ? "Ready to start your gaming journey? Check out our curated bundles and build your game library."
+                  ? "Ready to start your gaming journey? Check out our curated collections and build your game library."
                   : giftFilter === "Gifted"
                     ? "When you give or receive gifts, they will appear here."
                     : giftFilter === "GivenByMe"
-                      ? "Share the joy of gaming! Browse our bundles and send them as gifts to your friends."
+                      ? "Share the joy of gaming! Browse our collections and send them as gifts to your friends."
                       : giftFilter === "ReceivedByMe"
-                        ? "When someone sends you a bundle as a gift, it will appear here."
-                        : "Ready to start your gaming journey? Check out our curated bundles and support amazing causes while building your game library."}
+                        ? "When someone sends you a collection as a gift, it will appear here."
+                        : "Ready to start your gaming journey? Check out our curated collections and support amazing causes while building your game library."}
               </p>
               {giftFilter !== "ReceivedByMe" && (
-                <Link href="/bundles">
+                <Link href="/collections">
                   <Button className="bg-linear-to-r from-primary to-primary/90">
-                    Browse Bundles
+                    Browse Collections
                   </Button>
                 </Link>
               )}
@@ -320,7 +320,7 @@ export function PurchaseHistory() {
               </div>
               <h3 className="mb-2 text-xl font-semibold">No results found</h3>
               <p className="mb-6 max-w-md text-muted-foreground">
-                We couldn&apos;t find any bundles matching your search criteria.
+                We couldn&apos;t find any collections matching your search criteria.
                 Try adjusting your filters or search term.
               </p>
               <Button
@@ -342,7 +342,7 @@ export function PurchaseHistory() {
                       onClick={() => handleHeaderClick("Title")}
                     >
                       <div className="flex items-center gap-2">
-                        Bundle Name
+                        Collection Name
                         {getSortIcon("Title")}
                       </div>
                     </TableHead>
@@ -397,7 +397,7 @@ export function PurchaseHistory() {
                       <TableCell className="font-medium">
                         <div className="space-y-1">
                           <div>
-                            {purchase.snapshotTitle || "Unknown Bundle"}
+                            {purchase.snapshotTitle || "Unknown Collection"}
                           </div>
                           <GiftIndicator
                             isGift={purchase.isGift}

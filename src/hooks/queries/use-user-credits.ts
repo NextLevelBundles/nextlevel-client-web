@@ -9,16 +9,14 @@ export function useUserCredits() {
   return useQuery({
     queryKey: ["user-credits"],
     queryFn: async () => {
-      // Return 0 credits for non-authenticated users
-      if (!isAuthenticated) {
-        return 0;
-      }
-
       const response = await exchangeApi.getCustomerCredits();
       return response.netCredits ?? 0;
     },
-    enabled: true, // Always enabled, but returns 0 for non-authenticated users
-    staleTime: 30000, // 30 seconds
-    refetchInterval: false, // Never refetch
+    enabled: isAuthenticated, // Only fetch when authenticated
+    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
+    gcTime: 1000 * 60 * 10, // Keep in cache for 10 minutes
+    refetchOnWindowFocus: false, // Refetch when user returns to tab
+    refetchOnMount: false, // Refetch when component mounts
+    retry: 2, // Retry failed requests twice
   });
 }

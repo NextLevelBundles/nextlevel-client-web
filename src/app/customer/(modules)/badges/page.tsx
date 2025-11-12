@@ -27,8 +27,8 @@ const userBadges = {
       id: "early-adopter",
       name: "Early Adopter",
       icon: "🕹️",
-      description: "You unlocked this by purchasing your very first bundle!",
-      shortDescription: "Unlocked after purchasing your first bundle.",
+      description: "You unlocked this by purchasing your very first collection!",
+      shortDescription: "Unlocked after purchasing your first collection.",
       earned: true,
       earnedDate: "2024-03-15",
       color: "from-blue-500/20 to-blue-600/20",
@@ -39,8 +39,8 @@ const userBadges = {
       id: "backer",
       name: "Backer",
       icon: "🎮",
-      description: "You unlocked this by purchasing 2 bundles.",
-      shortDescription: "Unlocked after 2 bundles.",
+      description: "You unlocked this by purchasing 2 collections.",
+      shortDescription: "Unlocked after 2 collections.",
       earned: true,
       earnedDate: "2024-03-18",
       color: "from-purple-500/20 to-purple-600/20",
@@ -52,8 +52,8 @@ const userBadges = {
       name: "Founder",
       icon: "🧙",
       description:
-        "You unlocked this by purchasing 3 bundles. You're an early supporter!",
-      shortDescription: "Unlocked after 3 bundles.",
+        "You unlocked this by purchasing 3 collections. You're an early supporter!",
+      shortDescription: "Unlocked after 3 collections.",
       earned: true,
       earnedDate: "2024-03-20",
       color: "from-amber-500/20 to-amber-600/20",
@@ -210,7 +210,7 @@ export default function BadgesPage() {
           <div>
             <h3 className="mb-1 font-semibold">Want to earn more badges?</h3>
             <p className="text-sm text-muted-foreground">
-              Support amazing causes through bundle purchases to unlock special
+              Support amazing causes through collection purchases to unlock special
               achievements!
             </p>
           </div>

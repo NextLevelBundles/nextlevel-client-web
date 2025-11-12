@@ -185,3 +185,5 @@ dist
 .DS_Store
 
 certificates
+# Sentry Config File
+.env.sentry-build-plugin
