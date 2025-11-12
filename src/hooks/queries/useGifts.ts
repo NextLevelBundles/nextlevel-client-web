@@ -8,7 +8,8 @@ import { toast } from "sonner";
 const giftKeys = {
   all: ["gifts"] as const,
   cartItems: () => [...giftKeys.all, "cart-items"] as const,
-  cartItem: (cartItemId: string) => [...giftKeys.cartItems(), cartItemId] as const,
+  cartItem: (cartItemId: string) =>
+    [...giftKeys.cartItems(), cartItemId] as const,
   steamKeys: () => [...giftKeys.all, "steam-keys"] as const,
   steamKey: (assignmentId: string, email: string) =>
     [...giftKeys.steamKeys(), assignmentId, email] as const,
@@ -29,12 +30,17 @@ export function useAcceptCartItemGift() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ cartItemId, email }: { cartItemId: string; email: string }) =>
-      giftApi.acceptCartItemGift(cartItemId, email),
+    mutationFn: ({
+      cartItemId,
+      email,
+    }: {
+      cartItemId: string;
+      email: string;
+    }) => giftApi.acceptCartItemGift(cartItemId),
     onSuccess: (data, variables) => {
       // Invalidate the specific gift query
       queryClient.invalidateQueries({
-        queryKey: giftKeys.cartItem(variables.cartItemId)
+        queryKey: giftKeys.cartItem(variables.cartItemId),
       });
 
       toast.success("Gift accepted successfully!", {
@@ -43,7 +49,8 @@ export function useAcceptCartItemGift() {
     },
     onError: (error) => {
       toast.error("Failed to accept gift", {
-        description: error instanceof Error ? error.message : "Please try again later",
+        description:
+          error instanceof Error ? error.message : "Please try again later",
       });
     },
   });
@@ -64,12 +71,17 @@ export function useAcceptSteamKeyGift() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ assignmentId, email }: { assignmentId: string; email: string }) =>
-      giftApi.acceptSteamKeyGift(assignmentId, email),
+    mutationFn: ({
+      assignmentId,
+      email,
+    }: {
+      assignmentId: string;
+      email: string;
+    }) => giftApi.acceptSteamKeyGift(assignmentId),
     onSuccess: (data, variables) => {
       // Invalidate the specific gift query
       queryClient.invalidateQueries({
-        queryKey: giftKeys.steamKey(variables.assignmentId, variables.email)
+        queryKey: giftKeys.steamKey(variables.assignmentId, variables.email),
       });
 
       toast.success("Steam key gift accepted!", {
@@ -78,7 +90,8 @@ export function useAcceptSteamKeyGift() {
     },
     onError: (error) => {
       toast.error("Failed to accept gift", {
-        description: error instanceof Error ? error.message : "Please try again later",
+        description:
+          error instanceof Error ? error.message : "Please try again later",
       });
     },
   });
@@ -87,7 +100,8 @@ export function useAcceptSteamKeyGift() {
 // Resend Email Hooks
 export function useResendPurchaseGiftEmail() {
   return useMutation({
-    mutationFn: (cartItemId: string) => giftApi.resendPurchaseGiftEmail(cartItemId),
+    mutationFn: (cartItemId: string) =>
+      giftApi.resendCartItemGiftEmail(cartItemId),
     onSuccess: () => {
       toast.success("Email sent!", {
         description: "Gift notification has been resent to the recipient",
@@ -95,7 +109,8 @@ export function useResendPurchaseGiftEmail() {
     },
     onError: (error) => {
       toast.error("Failed to resend email", {
-        description: error instanceof Error ? error.message : "Please try again later",
+        description:
+          error instanceof Error ? error.message : "Please try again later",
       });
     },
   });
@@ -103,7 +118,8 @@ export function useResendPurchaseGiftEmail() {
 
 export function useResendSteamKeyGiftEmail() {
   return useMutation({
-    mutationFn: (assignmentId: string) => giftApi.resendSteamKeyGiftEmail(assignmentId),
+    mutationFn: (assignmentId: string) =>
+      giftApi.resendSteamKeyGiftEmail(assignmentId),
     onSuccess: () => {
       toast.success("Email sent!", {
         description: "Gift notification has been resent to the recipient",
@@ -111,7 +127,8 @@ export function useResendSteamKeyGiftEmail() {
     },
     onError: (error) => {
       toast.error("Failed to resend email", {
-        description: error instanceof Error ? error.message : "Please try again later",
+        description:
+          error instanceof Error ? error.message : "Please try again later",
       });
     },
   });
