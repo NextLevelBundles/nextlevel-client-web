@@ -52,10 +52,12 @@ export default function ExchangePage() {
                 <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">
                   The Exchange
                 </h1>
-                <p className="text-gray-600 dark:text-white/80 text-sm mt-1">
-                  Trade in What You Own, Discover What You Don’t <br />
-                  Turn Steam games you already own into credit for new titles
-                  featured in our collections
+                <p className="text-lg md:text-xl font-medium text-gray-700 dark:text-white/90 mt-2">
+                  Trade in What You Own, Discover What You Don't
+                </p>
+                <p className="text-gray-600 dark:text-white/80 text-sm md:text-base mt-2">
+                  Already own a game on Steam from our collections? Trade it in
+                  for credits to get another game from our exchange.
                 </p>
               </div>
 
