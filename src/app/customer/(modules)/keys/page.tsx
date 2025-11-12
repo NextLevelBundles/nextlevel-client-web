@@ -32,6 +32,7 @@ import {
   Check,
   Info,
   Copy,
+  Mail,
 } from "lucide-react";
 import {
   Tooltip,
@@ -59,6 +60,10 @@ import {
   useSyncSteamLibrary,
   useSteamLibraryStatus,
 } from "@/hooks/queries/useSteamKeys";
+import {
+  useResendSteamKeyGiftEmail,
+  useResendPurchaseGiftEmail,
+} from "@/hooks/queries/useGifts";
 import {
   SteamKeyAssignment,
   SteamKeyQueryParams,
@@ -135,6 +140,7 @@ export default function KeysPage() {
   const [syncErrorMessage, setSyncErrorMessage] = useState<string | null>(null);
   const [showSteamPrivacyHelp, setShowSteamPrivacyHelp] = useState(false);
   const [viewingKeyId, setViewingKeyId] = useState<string | null>(null);
+  const [resendingKeyId, setResendingKeyId] = useState<string | null>(null);
   const [viewKeyDialog, setViewKeyDialog] = useState<{
     isOpen: boolean;
     keyValue: string | null;
@@ -204,6 +210,10 @@ export default function KeysPage() {
 
   // Gift key mutation
   const giftKeyMutation = useGiftKey();
+
+  // Resend gift email mutations
+  const resendSteamKeyGiftMutation = useResendSteamKeyGiftEmail();
+  const resendPurchaseGiftMutation = useResendPurchaseGiftEmail();
 
   // Sync Steam library mutation
   const syncSteamLibraryMutation = useSyncSteamLibrary();
@@ -318,7 +328,11 @@ export default function KeysPage() {
     });
   };
 
-  const handleViewKey = async (keyId: string, gameTitle: string, coverImageUrl: string | null) => {
+  const handleViewKey = async (
+    keyId: string,
+    gameTitle: string,
+    coverImageUrl: string | null
+  ) => {
     setViewingKeyId(keyId);
     try {
       // Call API to get the key value
@@ -353,6 +367,23 @@ export default function KeysPage() {
     } catch (error) {
       console.error("Error copying key:", error);
       toast.error("Failed to copy key. Please try again.");
+    }
+  };
+
+  const handleResendGiftEmail = async (key: SteamKeyAssignment) => {
+    setResendingKeyId(key.id);
+    try {
+      if (key.isPurchaseGift) {
+        // Purchase gift - use cartItemId
+        await resendPurchaseGiftMutation.mutateAsync(key.id);
+      } else {
+        // Individual gift - use assignmentId
+        await resendSteamKeyGiftMutation.mutateAsync(key.id);
+      }
+    } catch (error) {
+      console.error("Error resending gift email:", error);
+    } finally {
+      setResendingKeyId(null);
     }
   };
 
@@ -901,7 +932,7 @@ export default function KeysPage() {
                             New
                           </Badge>
                         )}
-                        {key.isGift && (
+                        {key.isGift && !key.isPurchaseGift && (
                           <SteamKeyGiftIndicator
                             steamKey={key}
                             currentCustomerId={currentCustomerId}
@@ -931,6 +962,46 @@ export default function KeysPage() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
+                    {/* Resend button for gifted keys that haven't been accepted */}
+                    {key.isGift &&
+                      key.giftedByCustomerId === currentCustomerId &&
+                      !key.giftAcceptedAt &&
+                      !key.isPurchaseGift && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <motion.div whileTap={{ scale: 0.95 }}>
+                                <Button
+                                  variant="outline"
+                                  className="gap-2"
+                                  onClick={() => handleResendGiftEmail(key)}
+                                  disabled={resendingKeyId === key.id}
+                                >
+                                  {resendingKeyId === key.id ? (
+                                    <>
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                      Sending...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Mail className="h-4 w-4" />
+                                      {key.isPurchaseGift
+                                        ? "Resend Collection Gift"
+                                        : "Resend Steam Key Gift"}
+                                    </>
+                                  )}
+                                </Button>
+                              </motion.div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {key.isPurchaseGift
+                                ? "Resend gift key notification to recipient"
+                                : "Resend gift notification email to recipient"}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+
                     {key.status === "Revealed" ? (
                       <>
                         <TooltipProvider>
@@ -940,7 +1011,13 @@ export default function KeysPage() {
                                 <Button
                                   variant="outline"
                                   className="gap-2"
-                                  onClick={() => handleViewKey(key.id, key.title, key.coverImage?.url || null)}
+                                  onClick={() =>
+                                    handleViewKey(
+                                      key.id,
+                                      key.title,
+                                      key.coverImage?.url || null
+                                    )
+                                  }
                                   disabled={viewingKeyId === key.id}
                                 >
                                   {viewingKeyId === key.id ? (
@@ -957,7 +1034,9 @@ export default function KeysPage() {
                                 </Button>
                               </motion.div>
                             </TooltipTrigger>
-                            <TooltipContent>Open Steam redemption page with this key</TooltipContent>
+                            <TooltipContent>
+                              Open Steam redemption page with this key
+                            </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       </>
@@ -1035,6 +1114,7 @@ export default function KeysPage() {
                             </motion.div>
                           </>
                         )}
+
                         {!key.isGift && (
                           <>
                             <TooltipProvider>
@@ -1479,9 +1559,7 @@ export default function KeysPage() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Steam Key</DialogTitle>
-            <DialogDescription>
-              {viewKeyDialog.gameTitle}
-            </DialogDescription>
+            <DialogDescription>{viewKeyDialog.gameTitle}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
@@ -1507,7 +1585,10 @@ export default function KeysPage() {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => viewKeyDialog.keyValue && handleCopyKey(viewKeyDialog.keyValue)}
+                onClick={() =>
+                  viewKeyDialog.keyValue &&
+                  handleCopyKey(viewKeyDialog.keyValue)
+                }
               >
                 <Copy className="h-4 w-4" />
               </Button>
@@ -1516,7 +1597,8 @@ export default function KeysPage() {
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription className="text-sm">
-                Click the key to select it, or use the copy button. You can redeem this key on Steam.
+                Click the key to select it, or use the copy button. You can
+                redeem this key on Steam.
               </AlertDescription>
             </Alert>
           </div>

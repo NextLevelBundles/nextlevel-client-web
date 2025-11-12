@@ -66,6 +66,7 @@ export interface SteamKeyAssignment {
   giftMessage: string;
   giftedAt: string;
   giftExpiresAt: string | null;
+  giftCartItemId: string | null;
   exchangeCredits: number;
   alreadyOwnedOnSteam: boolean;
 }
