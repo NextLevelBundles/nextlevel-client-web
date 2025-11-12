@@ -21,6 +21,7 @@ import {
   Gamepad2,
   Coins,
   Loader2,
+  Key,
 } from "lucide-react";
 import { ExchangeGameDetails } from "@/lib/api/types/exchange-game";
 import { useExchangeCreditsForKey } from "@/hooks/queries/use-exchange";
@@ -368,6 +369,29 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
           {/* Game Details Card */}
           <div className="rounded-lg border bg-card p-6 space-y-4">
             <h3 className="font-semibold">Game Information</h3>
+
+            {/* Steam Game Key Badge and Button */}
+            <div className="flex items-center justify-between pb-3 border-b">
+              <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border-blue-300">
+                <Key className="h-3 w-3 mr-1" />
+                Steam Game Key
+              </Badge>
+              <Button
+                variant="outline"
+                size="sm"
+                asChild
+              >
+                <a
+                  href={`https://store.steampowered.com/app/${steamApp.steamAppid}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <ExternalLink className="h-3 w-3 mr-2" />
+                  View on Steam
+                </a>
+              </Button>
+            </div>
+
             <div className="space-y-3 text-sm">
               {steamApp.releaseDate && (
                 <div className="flex items-start gap-3">
