@@ -48,19 +48,13 @@ export class SteamKeyApi {
 
   async viewKey(keyId: string): Promise<ViewKeyResponse> {
     return await this.client.post<ViewKeyResponse>(
-      `/customer/steam-keys/${keyId}/view`
-    );
-  }
-
-  async getGiftableKeys(): Promise<SteamKeyAssignment[]> {
-    return await this.client.get<SteamKeyAssignment[]>(
-      "/customer/steam-keys/giftable"
+      `customer/steam-keys/${keyId}/view`
     );
   }
 
   async giftKey(giftData: GiftKeyRequest): Promise<GiftKeyResponse> {
     return await this.client.post<GiftKeyResponse, GiftKeyRequest>(
-      `/customer/steam-key-gifts/gift`,
+      `/customer/gifts/steam-keys/gift`,
       giftData
     );
   }
@@ -72,10 +66,14 @@ export class SteamKeyApi {
   }
 
   async syncSteamLibrary(): Promise<SyncSteamLibraryResponse> {
-    return await this.client.get<SyncSteamLibraryResponse>("/customer/sync-steam-library");
+    return await this.client.get<SyncSteamLibraryResponse>(
+      "/customer/sync-steam-library"
+    );
   }
 
   async getSteamLibraryStatus(): Promise<SteamLibraryStatusResponse> {
-    return await this.client.get<SteamLibraryStatusResponse>("/customer/steam-library-status");
+    return await this.client.get<SteamLibraryStatusResponse>(
+      "/customer/steam-library-status"
+    );
   }
 }

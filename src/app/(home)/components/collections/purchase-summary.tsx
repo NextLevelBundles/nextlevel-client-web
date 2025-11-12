@@ -637,7 +637,7 @@ export function PurchaseSummary({
                   </p>
                   <p className="text-xs text-red-600 dark:text-red-400">
                     This collection ended on{" "}
-                    {dayjs(bundle.endsAt).format("MMMM D, YYYY [at] h:mm A")}
+                    {dayjs(bundle.endsAt).format("MMM D, YYYY [at] h:mm A")}
                   </p>
                 </div>
               </div>

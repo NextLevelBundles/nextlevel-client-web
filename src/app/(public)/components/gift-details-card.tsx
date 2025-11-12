@@ -68,7 +68,7 @@ export function GiftDetailsCard({
                 src={imageUrl}
                 alt={title}
                 fill
-                className="object-cover"
+                className="object-contain"
               />
             </div>
           )}

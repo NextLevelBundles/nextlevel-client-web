@@ -793,7 +793,7 @@ export default function KeysPage() {
             <div className="flex min-h-[400px] flex-col items-center justify-center">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
               <p className="mt-4 text-sm text-muted-foreground">
-                Loading your game keys...
+                Loading your Steam game keys...
               </p>
             </div>
           ) : isError ? (
@@ -947,13 +947,17 @@ export default function KeysPage() {
                         <p className="text-sm text-muted-foreground">
                           Assigned on{" "}
                           {key.assignedAt
-                            ? new Date(key.assignedAt).toLocaleDateString()
+                            ? dayjs(key.assignedAt).format(
+                                "MMM D, YYYY [at] h:mm A"
+                              )
                             : "Unknown"}
                           {key.status === "Assigned" && key.expiresAt && (
                             <>
                               {" "}
-                              • Expires on{" "}
-                              {new Date(key.expiresAt).toLocaleDateString()}
+                              <br /> Expires on{" "}
+                              {dayjs(key.expiresAt).format(
+                                "MMM D, YYYY [at] h:mm A"
+                              )}
                             </>
                           )}
                         </p>

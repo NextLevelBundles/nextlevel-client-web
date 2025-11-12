@@ -76,7 +76,7 @@ export function GiftIndicator({
 
   let label = "Gift";
   let badgeClassName = "";
-  
+
   if (isReceived) {
     if (giftedByCustomerName) {
       label = `From ${giftedByCustomerName}`;
@@ -84,17 +84,21 @@ export function GiftIndicator({
       label = "Received Gift";
     }
     if (giftAccepted === true) {
-      badgeClassName = "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/30 border-green-200 dark:border-green-800";
+      badgeClassName =
+        "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/30 border-green-200 dark:border-green-800";
     } else {
-      badgeClassName = "bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30 border-amber-200 dark:border-amber-800";
+      badgeClassName =
+        "bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30 border-amber-200 dark:border-amber-800";
     }
   } else if (isOutgoing) {
     const recipient = giftRecipientName || giftRecipientEmail || "someone";
     label = `To ${recipient}`;
     if (giftAccepted === true) {
-      badgeClassName = "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/30 border-green-200 dark:border-green-800";
+      badgeClassName =
+        "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/30 border-green-200 dark:border-green-800";
     } else {
-      badgeClassName = "bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30 border-blue-200 dark:border-blue-800";
+      badgeClassName =
+        "bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30 border-blue-200 dark:border-blue-800";
     }
   }
 
@@ -114,7 +118,7 @@ export function GiftIndicator({
         recipientEmail={recipientEmail}
         onGiftAccepted={onGiftAccepted}
         trigger={
-          <Badge 
+          <Badge
             className={`inline-flex items-center gap-1 cursor-pointer transition-colors w-fit ${badgeClassName}`}
           >
             <Icon className="h-3 w-3" />
@@ -163,7 +167,7 @@ export function GiftIndicator({
           recipientEmail={recipientEmail}
           onGiftAccepted={onGiftAccepted}
           trigger={
-            <Badge 
+            <Badge
               className={`inline-flex items-center gap-1 cursor-pointer transition-colors w-fit ${badgeClassName}`}
             >
               <Gift className="h-3 w-3" />
@@ -281,7 +285,8 @@ function GiftDetailsDialog({
             </DialogTitle>
             <DialogDescription>
               {isReceived ? "Gift received" : "Gift sent"}
-              {giftedAt && ` on ${dayjs(giftedAt).format("MMMM D, YYYY")}`}
+              {giftedAt &&
+                ` on ${dayjs(giftedAt).format("MMM D, YYYY [at] h:mm A")}`}
             </DialogDescription>
           </DialogHeader>
 
@@ -318,7 +323,7 @@ function GiftDetailsDialog({
                         <span className="text-sm text-green-600">
                           Accepted
                           {giftAcceptedAt
-                            ? ` on ${dayjs(giftAcceptedAt).format("MMM D, YYYY")}`
+                            ? ` on ${dayjs(giftAcceptedAt).format("MMM D, YYYY [at] h:mm A")}`
                             : ""}
                         </span>
                       </>
@@ -345,7 +350,7 @@ function GiftDetailsDialog({
                         <span className="text-sm text-green-600">
                           Accepted
                           {giftAcceptedAt
-                            ? ` on ${dayjs(giftAcceptedAt).format("MMM D, YYYY")}`
+                            ? ` on ${dayjs(giftAcceptedAt).format("MMM D, YYYY [at] h:mm A")}`
                             : ""}
                         </span>
                       </>

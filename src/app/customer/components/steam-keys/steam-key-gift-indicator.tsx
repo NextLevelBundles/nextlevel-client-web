@@ -103,7 +103,7 @@ export function SteamKeyGiftIndicator({
 
     setIsAccepting(true);
     try {
-      await giftApi.acceptSteamKeyGift(steamKey.id, currentUserEmail);
+      await giftApi.acceptSteamKeyGift(steamKey.id);
 
       toast.success("Gift accepted successfully!", {
         description: "The game key has been added to your library.",
@@ -174,7 +174,7 @@ export function SteamKeyGiftIndicator({
             <DialogDescription>
               {isReceiver ? "Gift received" : "Gift sent"}
               {steamKey.giftedAt &&
-                ` on ${dayjs(steamKey.giftedAt).format("MMMM D, YYYY")}`}
+                ` on ${dayjs(steamKey.giftedAt).format("MMM D, YYYY [at] h:mm A")}`}
             </DialogDescription>
           </DialogHeader>
 
@@ -184,9 +184,7 @@ export function SteamKeyGiftIndicator({
               <span className="text-sm font-medium text-muted-foreground">
                 Game:
               </span>
-              <span className="text-sm font-medium">
-                {steamKey.title}
-              </span>
+              <span className="text-sm font-medium">{steamKey.title}</span>
             </div>
 
             {/* Gift sender/recipient info */}
@@ -226,7 +224,7 @@ export function SteamKeyGiftIndicator({
                       <span className="text-sm text-green-600 font-medium">
                         Accepted
                         {steamKey.giftAcceptedAt
-                          ? ` on ${dayjs(steamKey.giftAcceptedAt).format("MMM D, YYYY")}`
+                          ? ` on ${dayjs(steamKey.giftAcceptedAt).format("MMM D, YYYY [at] h:mm A")}`
                           : ""}
                       </span>
                     </div>
@@ -241,15 +239,17 @@ export function SteamKeyGiftIndicator({
                         </span>
                       </div>
                       {/* Show expiration info for pending gifts */}
-                      {steamKey.expiresAt && (
-                        <div className="flex items-start gap-2 ml-6">
+                      {steamKey.giftExpiresAt && (
+                        <div className="flex items-start gap-2">
                           <AlertCircle className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
                           <span className="text-xs text-muted-foreground">
-                            {isGifter ? "Expires" : "You must accept by"}{" "}
-                            {dayjs(steamKey.expiresAt).format(
+                            {isGifter
+                              ? "Gift Expires on"
+                              : "You must accept by"}{" "}
+                            {dayjs(steamKey.giftExpiresAt).format(
                               "MMM D, YYYY [at] h:mm A"
                             )}{" "}
-                            ({dayjs(steamKey.expiresAt).fromNow()})
+                            ({dayjs(steamKey.giftExpiresAt).fromNow()})
                           </span>
                         </div>
                       )}
@@ -317,7 +317,7 @@ export function SteamKeyGiftIndicator({
                   ) : (
                     <>
                       <Mail className="h-4 w-4" />
-                      Resend Email
+                      Resend Steam Key Gift
                     </>
                   )}
                 </Button>

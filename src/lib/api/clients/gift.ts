@@ -9,45 +9,39 @@ export class GiftApi {
     this.client = client;
   }
 
+  // CartItem Gifts
+  // Anonoumous request
   async getCartItemGift(cartItemId: string): Promise<CartItemGift> {
     return await this.client.get<CartItemGift>(
-      `/gifts/cart-items/${cartItemId}`
+      `/customer/gifts/cart-items/${cartItemId}`
     );
   }
 
-  async acceptCartItemGift(
-    cartItemId: string,
-    email: string
-  ): Promise<AcceptGiftResponse> {
-    const params = new URLSearchParams({ email });
+  async acceptCartItemGift(cartItemId: string): Promise<AcceptGiftResponse> {
     return await this.client.post<AcceptGiftResponse>(
-      `/gifts/cart-items/${cartItemId}/accept?${params.toString()}`
+      `/customer/gifts/cart-items/${cartItemId}/accept`
     );
   }
 
-  async getSteamKeyGift(
-    assignmentId: string
-  ): Promise<SteamKeyAssignment> {
-    return await this.client.get<SteamKeyAssignment>(
-      `/gifts/steam-keys/${assignmentId}`
-    );
-  }
-
-  async acceptSteamKeyGift(
-    assignmentId: string,
-    email: string
-  ): Promise<AcceptGiftResponse> {
-    const params = new URLSearchParams({ email });
-    return await this.client.post<AcceptGiftResponse>(
-      `/gifts/steam-keys/${assignmentId}/accept?${params.toString()}`
-    );
-  }
-
-  async resendPurchaseGiftEmail(
+  async resendCartItemGiftEmail(
     cartItemId: string
   ): Promise<{ message: string }> {
     return await this.client.post<{ message: string }>(
-      `/customer/gift-management/purchase-gifts/${cartItemId}/resend-email`
+      `/customer/gifts/cart-items/${cartItemId}/resend-email`
+    );
+  }
+
+  // Steam Key Gifts
+  // Anonoumous request
+  async getSteamKeyGift(assignmentId: string): Promise<SteamKeyAssignment> {
+    return await this.client.get<SteamKeyAssignment>(
+      `/customer/gifts/steam-keys/${assignmentId}`
+    );
+  }
+
+  async acceptSteamKeyGift(assignmentId: string): Promise<AcceptGiftResponse> {
+    return await this.client.post<AcceptGiftResponse>(
+      `/customer/gifts/steam-keys/${assignmentId}/accept`
     );
   }
 
@@ -55,7 +49,7 @@ export class GiftApi {
     assignmentId: string
   ): Promise<{ message: string }> {
     return await this.client.post<{ message: string }>(
-      `/customer/gift-management/steam-key-gifts/${assignmentId}/resend-email`
+      `/customer/gifts/steam-keys/${assignmentId}/resend-email`
     );
   }
 }
