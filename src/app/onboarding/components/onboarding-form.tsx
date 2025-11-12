@@ -150,6 +150,9 @@ export function OnboardingForm() {
   });
 
   const onSteamInfoReceived = (data: SteamUserInfo) => {
+    console.log("[Onboarding Form] Steam info received callback triggered");
+    console.log("[Onboarding Form] Steam data:", data);
+
     setSteamUserInfo(data);
     setSteamConnected(true);
 
@@ -159,6 +162,10 @@ export function OnboardingForm() {
       steamUsername: data.steamUsername || null,
       steamCountry: data.steamCountry || null,
     }));
+
+    console.log("[Onboarding Form] Steam connection state updated");
+    console.log("[Onboarding Form] steamConnected:", true);
+    console.log("[Onboarding Form] Form data updated with Steam ID:", data.steamId);
   };
 
   const handleHandleChange = (value: string) => {

@@ -92,38 +92,106 @@ export default function SteamConnection({
 
   useEffect(() => {
     const handler = (event: MessageEvent) => {
-      if (event.origin !== window.location.origin) return;
+      console.log("[Steam Connection] Message received");
+      console.log("[Steam Connection] Event origin:", event.origin);
+      console.log("[Steam Connection] Window origin:", window.location.origin);
+      console.log("[Steam Connection] Message data:", event.data);
+
+      // Relaxed origin check - allow same protocol and domain
+      const eventUrl = new URL(event.origin);
+      const windowUrl = new URL(window.location.origin);
+
+      if (eventUrl.protocol !== windowUrl.protocol || eventUrl.hostname !== windowUrl.hostname) {
+        console.warn("[Steam Connection] Origin mismatch, ignoring message");
+        return;
+      }
 
       const { type, steamId, steamUsername, steamCountry } = event.data || {};
 
       if (type === "STEAM_CONNECT_SUCCESS") {
+        console.log("[Steam Connection] Success message received");
+        console.log("[Steam Connection] Steam ID:", steamId);
+        console.log("[Steam Connection] Username:", steamUsername);
+        console.log("[Steam Connection] Country:", steamCountry);
+
+        // Send acknowledgment back to popup
+        try {
+          event.source?.postMessage({ type: 'STEAM_CONNECT_ACK' }, event.origin);
+          console.log("[Steam Connection] Acknowledgment sent to popup");
+        } catch (e) {
+          console.error("[Steam Connection] Failed to send acknowledgment:", e);
+        }
+
         onSteamInfoReceived({
           steamId: steamId,
           steamUsername: steamUsername,
           steamCountry: steamCountry,
         });
+      } else if (type === "STEAM_CONNECT_FAILURE") {
+        console.error("[Steam Connection] Failure message received");
+        alert("Steam connection failed. Please try again or contact support if the issue persists.");
       }
     };
 
+    // Check localStorage for fallback data on component mount
+    const checkLocalStorage = () => {
+      try {
+        const storedData = localStorage.getItem('steam_auth_result');
+        if (storedData) {
+          console.log("[Steam Connection] Found data in localStorage:", storedData);
+          const data = JSON.parse(storedData);
+          if (data.type === "STEAM_CONNECT_SUCCESS" && data.steamId) {
+            console.log("[Steam Connection] Using localStorage fallback data");
+            onSteamInfoReceived({
+              steamId: data.steamId,
+              steamUsername: data.steamUsername,
+              steamCountry: data.steamCountry,
+            });
+            // Clear the stored data after using it
+            localStorage.removeItem('steam_auth_result');
+          }
+        }
+      } catch (e) {
+        console.error("[Steam Connection] Error reading from localStorage:", e);
+      }
+    };
+
+    // Check localStorage immediately and set up interval to check periodically
+    checkLocalStorage();
+    const interval = setInterval(checkLocalStorage, 1000);
+
     window.addEventListener("message", handler);
-    return () => window.removeEventListener("message", handler);
+    return () => {
+      window.removeEventListener("message", handler);
+      clearInterval(interval);
+    };
   }, [onSteamInfoReceived]);
 
   const handleConnect = () => {
     if (steamConnected) {
+      console.log("[Steam Connection] Already connected, ignoring click");
       return; // Already connected, do nothing
     }
+
+    console.log("[Steam Connection] Opening Steam authentication popup");
 
     const width = 600;
     const height = 700;
     const left = window.screenX + (window.innerWidth - width) / 2;
     const top = window.screenY + (window.innerHeight - height) / 2;
 
-    window.open(
+    const popup = window.open(
       "/api/steam/init",
       "SteamLogin",
       `width=${width},height=${height},top=${top},left=${left}`
     );
+
+    if (!popup) {
+      console.error("[Steam Connection] Failed to open popup - likely blocked by browser");
+      alert("Pop-up blocked! Please allow pop-ups for this site and try again.");
+    } else {
+      console.log("[Steam Connection] Popup opened successfully");
+    }
   };
   return (
     <div className="space-y-4">
