@@ -69,8 +69,10 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
   return (
     <>
       {/* Title and Platforms */}
-      <div className="mb-6">
-        <h1 className="text-3xl lg:text-4xl font-bold mb-3">{game.title}</h1>
+      <div className="mb-8">
+        <h1 className="text-4xl lg:text-5xl font-extrabold mb-4 text-foreground">
+          {steamApp.name || game.title}
+        </h1>
         {/* Supported Platforms */}
         {steamApp.platforms && (
           <div>
