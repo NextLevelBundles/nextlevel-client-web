@@ -165,6 +165,32 @@ export function ProductDetailModal({
     fetchTradeInValues();
   }, [isOpen, bundle.type, bundle.id]);
 
+  // Keyboard navigation for product carousel
+  useEffect(() => {
+    if (!isOpen || sortedProducts.length <= 1) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const currentIndex = sortedProducts.findIndex((p) => p.id === product?.id);
+
+      if (event.key === "ArrowLeft") {
+        // Navigate to previous product
+        event.preventDefault();
+        const prevIndex = (currentIndex - 1 + sortedProducts.length) % sortedProducts.length;
+        onNavigateToProduct(sortedProducts[prevIndex]);
+      } else if (event.key === "ArrowRight") {
+        // Navigate to next product
+        event.preventDefault();
+        const nextIndex = (currentIndex + 1) % sortedProducts.length;
+        onNavigateToProduct(sortedProducts[nextIndex]);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, product?.id, sortedProducts, onNavigateToProduct]);
+
   if (!product) return null;
 
   const isUnlocked = unlockedProducts.some((p) => p.id === product.id);
