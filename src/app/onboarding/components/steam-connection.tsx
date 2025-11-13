@@ -43,14 +43,17 @@ export default function SteamConnection({
   const [steamProfile, setSteamProfile] = useState<SteamProfile | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const [userCountry, setUserCountry] = useState<Country | null>(null);
-  
+
   // Use TanStack Query to fetch countries
-  const { data: countries = [], isLoading: isLoadingCountries } = useCountries();
+  const { data: countries = [], isLoading: isLoadingCountries } =
+    useCountries();
 
   // Update user country when we have both countries list and steam profile
   useEffect(() => {
     if (countries.length > 0 && steamProfile?.loccountrycode) {
-      const country = countries.find(c => c.id === steamProfile.loccountrycode);
+      const country = countries.find(
+        (c) => c.id === steamProfile.loccountrycode
+      );
       if (country) {
         setUserCountry(country);
       }
@@ -66,14 +69,18 @@ export default function SteamConnection({
         if (response.ok) {
           const profile = await response.json();
           setSteamProfile(profile);
-          
+
           // If we have profile data and not already set, update it
-          if ((profile.loccountrycode && !steamUserInfo?.steamCountry) || 
-              (profile.personaname && !steamUserInfo?.steamUsername)) {
+          if (
+            (profile.loccountrycode && !steamUserInfo?.steamCountry) ||
+            (profile.personaname && !steamUserInfo?.steamUsername)
+          ) {
             onSteamInfoReceived({
               steamId: steamId,
-              steamUsername: profile.personaname || steamUserInfo?.steamUsername,
-              steamCountry: profile.loccountrycode || steamUserInfo?.steamCountry,
+              steamUsername:
+                profile.personaname || steamUserInfo?.steamUsername,
+              steamCountry:
+                profile.loccountrycode || steamUserInfo?.steamCountry,
             });
           }
         }
@@ -88,7 +95,12 @@ export default function SteamConnection({
     if (steamUserInfo?.steamId && !steamProfile) {
       loadSteamProfile(steamUserInfo.steamId);
     }
-  }, [steamUserInfo?.steamId, steamUserInfo?.steamCountry, steamProfile, onSteamInfoReceived]);
+  }, [
+    steamUserInfo?.steamId,
+    steamUserInfo?.steamCountry,
+    steamProfile,
+    onSteamInfoReceived,
+  ]);
 
   useEffect(() => {
     const handler = (event: MessageEvent) => {
@@ -101,7 +113,10 @@ export default function SteamConnection({
       const eventUrl = new URL(event.origin);
       const windowUrl = new URL(window.location.origin);
 
-      if (eventUrl.protocol !== windowUrl.protocol || eventUrl.hostname !== windowUrl.hostname) {
+      if (
+        eventUrl.protocol !== windowUrl.protocol ||
+        eventUrl.hostname !== windowUrl.hostname
+      ) {
         console.warn("[Steam Connection] Origin mismatch, ignoring message");
         return;
       }
@@ -116,8 +131,13 @@ export default function SteamConnection({
 
         // Send acknowledgment back to popup
         try {
-          event.source?.postMessage({ type: 'STEAM_CONNECT_ACK' }, event.origin);
-          console.log("[Steam Connection] Acknowledgment sent to popup");
+          if (event.source && "postMessage" in event.source) {
+            (event.source as Window).postMessage(
+              { type: "STEAM_CONNECT_ACK" },
+              event.origin
+            );
+            console.log("[Steam Connection] Acknowledgment sent to popup");
+          }
         } catch (e) {
           console.error("[Steam Connection] Failed to send acknowledgment:", e);
         }
@@ -129,16 +149,21 @@ export default function SteamConnection({
         });
       } else if (type === "STEAM_CONNECT_FAILURE") {
         console.error("[Steam Connection] Failure message received");
-        alert("Steam connection failed. Please try again or contact support if the issue persists.");
+        alert(
+          "Steam connection failed. Please try again or contact support if the issue persists."
+        );
       }
     };
 
     // Check localStorage for fallback data on component mount
     const checkLocalStorage = () => {
       try {
-        const storedData = localStorage.getItem('steam_auth_result');
+        const storedData = localStorage.getItem("steam_auth_result");
         if (storedData) {
-          console.log("[Steam Connection] Found data in localStorage:", storedData);
+          console.log(
+            "[Steam Connection] Found data in localStorage:",
+            storedData
+          );
           const data = JSON.parse(storedData);
           if (data.type === "STEAM_CONNECT_SUCCESS" && data.steamId) {
             console.log("[Steam Connection] Using localStorage fallback data");
@@ -148,7 +173,7 @@ export default function SteamConnection({
               steamCountry: data.steamCountry,
             });
             // Clear the stored data after using it
-            localStorage.removeItem('steam_auth_result');
+            localStorage.removeItem("steam_auth_result");
           }
         }
       } catch (e) {
@@ -187,8 +212,12 @@ export default function SteamConnection({
     );
 
     if (!popup) {
-      console.error("[Steam Connection] Failed to open popup - likely blocked by browser");
-      alert("Pop-up blocked! Please allow pop-ups for this site and try again.");
+      console.error(
+        "[Steam Connection] Failed to open popup - likely blocked by browser"
+      );
+      alert(
+        "Pop-up blocked! Please allow pop-ups for this site and try again."
+      );
     } else {
       console.log("[Steam Connection] Popup opened successfully");
     }
@@ -269,7 +298,9 @@ export default function SteamConnection({
                           <div className="flex items-center gap-2">
                             {userCountry ? (
                               <>
-                                <span className="text-lg">{userCountry.flag}</span>
+                                <span className="text-lg">
+                                  {userCountry.flag}
+                                </span>
                                 <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
                                   {userCountry.name}
                                 </span>
@@ -330,7 +361,8 @@ export default function SteamConnection({
                 Connect Your Steam Account
               </h3>
               <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                To purchase Steam game bundles, you need to connect your Steam account for verification purposes.
+                To purchase Steam game bundles, you need to connect your Steam
+                account for verification purposes.
               </p>
 
               <div className="space-y-3">
@@ -344,7 +376,9 @@ export default function SteamConnection({
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-                  <span>Receive better customer support for your purchases</span>
+                  <span>
+                    Receive better customer support for your purchases
+                  </span>
                 </div>
               </div>
             </div>
@@ -416,9 +450,10 @@ export default function SteamConnection({
 
           <div className="text-center">
             <p className="text-xs text-muted-foreground">
-              Steam integration is required to purchase Steam game bundles on Digiphile.
-              Your Steam avatar, handle or name won&apos;t be shared publicly.
-              We use your Steam account to verify your identity and enable bundle purchases.
+              Steam integration is required to purchase Steam game bundles on
+              Digiphile. Your Steam avatar, handle or name won&apos;t be shared
+              publicly. We use your Steam account to verify your identity and
+              enable bundle purchases.
             </p>
           </div>
         </>
@@ -427,7 +462,8 @@ export default function SteamConnection({
       {steamConnected && (
         <div className="text-center">
           <p className="text-xs text-green-600 dark:text-green-400 font-medium">
-            Steam account successfully connected. You can now purchase Steam game bundles.
+            Steam account successfully connected. You can now purchase Steam
+            game bundles.
           </p>
         </div>
       )}

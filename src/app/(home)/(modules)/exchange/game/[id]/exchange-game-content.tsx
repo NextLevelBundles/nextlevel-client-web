@@ -372,17 +372,16 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
 
             {/* Steam Game Key Badge and Button */}
             <div className="flex items-center justify-between pb-3 border-b">
-              <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border-blue-300">
+              <Badge
+                variant="secondary"
+                className="bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border-blue-300"
+              >
                 <Key className="h-3 w-3 mr-1" />
                 Steam Game Key
               </Badge>
-              <Button
-                variant="outline"
-                size="sm"
-                asChild
-              >
+              <Button variant="outline" size="sm" asChild>
                 <a
-                  href={`https://store.steampowered.com/app/${steamApp.steamAppid}`}
+                  href={`https://store.steampowered.com/app/${steamApp.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
