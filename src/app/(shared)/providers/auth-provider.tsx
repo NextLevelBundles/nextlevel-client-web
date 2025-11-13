@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  const loadUser = async (isRetry = false) => {
+  const loadUser = async (retryCount = 0, maxRetries = 3) => {
     try {
       const result = await AuthService.getCurrentUser();
       if (result.success && result.user) {
@@ -48,11 +48,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(false);
       } else {
         setUser(null);
-        // If this is the first attempt and no user found, retry after a short delay
+        // If this is not the last retry and no user found, retry after increasing delays
         // This handles the case where Amplify hasn't finished hydrating from localStorage
-        if (!isRetry) {
-          setTimeout(() => loadUser(true), 100);
+        // On mobile, this can take longer due to slower localStorage access
+        if (retryCount < maxRetries) {
+          const delay = 150 * (retryCount + 1); // 150ms, 300ms, 450ms
+          console.log(`AuthProvider: Retrying user load in ${delay}ms (attempt ${retryCount + 1}/${maxRetries})`);
+          setTimeout(() => loadUser(retryCount + 1, maxRetries), delay);
         } else {
+          console.log("AuthProvider: No user found after max retries");
           setIsLoading(false);
         }
       }
@@ -65,10 +69,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Don't retry on authentication errors - user is simply not logged in
       if (error instanceof Error && error.message.includes("User needs to be authenticated")) {
         setIsLoading(false);
-      } else if (!isRetry) {
-        // Retry once on other errors in case Amplify wasn't ready
-        setTimeout(() => loadUser(true), 100);
+      } else if (retryCount < maxRetries) {
+        // Retry on other errors in case Amplify wasn't ready
+        const delay = 150 * (retryCount + 1);
+        console.log(`AuthProvider: Retrying after error in ${delay}ms (attempt ${retryCount + 1}/${maxRetries})`);
+        setTimeout(() => loadUser(retryCount + 1, maxRetries), delay);
       } else {
+        console.log("AuthProvider: Failed to load user after max retries");
         setIsLoading(false);
       }
     }

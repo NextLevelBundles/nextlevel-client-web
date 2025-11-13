@@ -68,11 +68,14 @@ export default function ConfirmSignUpPage() {
           const autoSignInResult = await AuthService.handleAutoSignIn();
 
           if (autoSignInResult.success && autoSignInResult.isSignedIn) {
+            // Wait to ensure token is synced (important for mobile)
+            await new Promise(resolve => setTimeout(resolve, 300));
+
             // User is signed in via autoSignIn
             toast.success("Account confirmed! Signing you in...");
             setTimeout(() => {
-              router.push("/onboarding");
-              router.refresh();
+              // Use window.location for full reload to ensure consistent auth state
+              window.location.href = "/onboarding";
             }, 1000);
           } else {
             // AutoSignIn failed, redirect to sign in
@@ -85,11 +88,14 @@ export default function ConfirmSignUpPage() {
           // Sign up is complete, check if user is signed in
           const currentUser = await AuthService.getCurrentUser();
           if (currentUser.success && currentUser.user) {
+            // Wait to ensure token is synced (important for mobile)
+            await new Promise(resolve => setTimeout(resolve, 300));
+
             // User is signed in
             toast.success("Account confirmed! Signing you in...");
             setTimeout(() => {
-              router.push("/onboarding");
-              router.refresh();
+              // Use window.location for full reload to ensure consistent auth state
+              window.location.href = "/onboarding";
             }, 1000);
           } else {
             // User is not signed in, redirect to sign in

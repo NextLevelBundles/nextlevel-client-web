@@ -49,9 +49,10 @@ export class ClientApi {
 
     try {
       // Get tokens directly from Amplify
-      const session = await fetchAuthSession();
+      // Force refresh to ensure we have the latest token from localStorage
+      const session = await fetchAuthSession({ forceRefresh: false });
       const idToken = session.tokens?.idToken?.toString();
-      
+
       if (idToken) {
         headers["Authorization"] = `Bearer ${idToken}`;
       }

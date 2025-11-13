@@ -61,6 +61,10 @@ export default function SignInPage() {
       const result = await AuthService.signIn(email, password);
 
       if (result.success && result.isSignedIn) {
+        // Wait a bit to ensure token is synced to cookie
+        // This is especially important on mobile browsers where localStorage sync can be slower
+        await new Promise(resolve => setTimeout(resolve, 300));
+
         // Check if user has completed profile
         const hasProfile = await AuthService.hasCompletedProfile();
 
@@ -69,11 +73,11 @@ export default function SignInPage() {
           // Use window.location for full page reload to ensure auth state is updated
           window.location.href = callbackUrl;
         } else if (hasProfile) {
-          router.push("/customer");
-          router.refresh();
+          // Use window.location for full reload to ensure consistent auth state
+          window.location.href = "/customer";
         } else {
-          router.push("/onboarding");
-          router.refresh();
+          // Use window.location for full reload to ensure consistent auth state
+          window.location.href = "/onboarding";
         }
       } else if (result.nextStep?.signInStep === "CONFIRM_SIGN_UP") {
         // User needs to confirm their account

@@ -12,10 +12,12 @@ import SignUpButton from "./SignUpButton";
 import { CartDrawer } from "./cart/cart-drawer";
 import Logo from "@/app/(shared)/components/logo";
 import { UserCredits } from "@/app/(shared)/components/user-credits";
+import { useAuth } from "@/app/(shared)/providers/auth-provider";
 
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, isLoading: isAuthLoading } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -80,9 +82,9 @@ export function Navigation() {
           </div>
 
           <div className="hidden md:flex md:items-center md:gap-2">
-            <UserCredits variant="compact" />
+            {user && <UserCredits variant="compact" />}
             <ThemeToggle />
-            <CartDrawer />
+            {!isAuthLoading && <CartDrawer />}
             <UserProfile />
           </div>
 
@@ -150,11 +152,19 @@ export function Navigation() {
               </div>
               <div className="flex items-center justify-between pt-4 mt-4 border-t border-black/[0.06] dark:border-white/[0.06]">
                 <ThemeToggle />
-                <CartDrawer />
-                <div className="flex gap-2">
-                  <SignInButton />
-                  <SignUpButton />
-                </div>
+                {!isAuthLoading && <CartDrawer />}
+                {!isAuthLoading && !user && (
+                  <div className="flex gap-2">
+                    <SignInButton />
+                    <SignUpButton />
+                  </div>
+                )}
+                {isAuthLoading && (
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-16 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+                    <div className="h-8 w-16 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+                  </div>
+                )}
               </div>
             </div>
           </div>
