@@ -11,6 +11,7 @@ import { QueryClientProviderWrapper } from "./(shared)/providers/query-client";
 import AmplifyClientLoader from "./(shared)/components/amplify/load-amplify";
 import { TrackdeskScript } from "./(shared)/components/trackdesk/trackdesk-script";
 import { LinkIdCapture } from "./(shared)/components/trackdesk/linkId-capture";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 const funnelDisplay = localFont({
   src: "./../assets/fonts/Funnel_Display/FunnelDisplay-VariableFont_wght.ttf",
@@ -24,7 +25,8 @@ export const metadata: Metadata = {
   ],
   description:
     "Digiphile makes discovering content more collaborative. Our thoughtfully curated platform helps you find great new games, albums, films, and more. Explore exclusive promotions, engage with a knowledgeable community, and showcase your expertise as you discover new content together.",
-  keywords: "steam game collections, steam keys, charity gaming, indie games, game deals",
+  keywords:
+    "steam game collections, steam keys, charity gaming, indie games, game deals",
   openGraph: {
     title: "Digiphile Steam Gaming Collections",
     description:
@@ -53,12 +55,14 @@ export default function RootLayout({
             theme="system"
             toastOptions={{
               classNames: {
-                toast: "bg-background text-foreground border-border dark:bg-gray-900 dark:text-white dark:border-gray-700",
+                toast:
+                  "bg-background text-foreground border-border dark:bg-gray-900 dark:text-white dark:border-gray-700",
                 title: "text-foreground dark:text-white",
                 description: "text-muted-foreground dark:text-gray-300",
                 success:
                   "bg-green-50 text-green-900 border-green-200 dark:bg-green-900 dark:text-green-100 dark:border-green-700",
-                error: "bg-red-50 text-red-900 border-red-200 dark:bg-red-900 dark:text-red-100 dark:border-red-700",
+                error:
+                  "bg-red-50 text-red-900 border-red-200 dark:bg-red-900 dark:text-red-100 dark:border-red-700",
                 warning:
                   "bg-yellow-50 text-yellow-900 border-yellow-200 dark:bg-yellow-900 dark:text-yellow-100 dark:border-yellow-700",
                 info: "bg-blue-50 text-blue-900 border-blue-200 dark:bg-blue-900 dark:text-blue-100 dark:border-blue-700",
@@ -72,6 +76,8 @@ export default function RootLayout({
           </AuthProvider>
         </ThemeProvider>
       </body>
+
+      <GoogleAnalytics gaId="G-18BN8WBRPD" />
     </html>
   );
 }
