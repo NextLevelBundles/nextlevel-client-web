@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { Badge } from "@/shared/components/ui/badge";
@@ -13,6 +13,7 @@ import {
   ProductType,
   TierType,
   Tier,
+  BundleType,
 } from "@/app/(shared)/types/bundle";
 import {
   ExternalLink,
@@ -33,9 +34,17 @@ import {
   Gamepad2,
   Heart,
   Sparkles,
+  Repeat,
+  Coins,
 } from "lucide-react";
 import { Markdown } from "@/app/(shared)/components/ui/markdown";
 import { BundleBookFormatsResponse } from "@/lib/api/types/bundle";
+import { exchangeApi } from "@/lib/api";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/shared/components/ui/tooltip";
 
 interface ProductDetailModalProps {
   bundle: Bundle;
@@ -67,6 +76,9 @@ export function ProductDetailModal({
   const [showTrailerModal, setShowTrailerModal] = useState(false);
   const [showScreenshotModal, setShowScreenshotModal] = useState(false);
   const [modalScreenshotIndex, setModalScreenshotIndex] = useState(0);
+  const [tradeInValues, setTradeInValues] = useState<Record<number, number | null>>({});
+  const [tradeInValuesLoading, setTradeInValuesLoading] = useState(false);
+  const hasFetchedRef = useRef(false);
 
   // Sort products by tier order
   const sortedProducts = useMemo(() => {
@@ -113,6 +125,45 @@ export function ProductDetailModal({
     setIsPlaying(false);
     setSelectedImageIndex(0);
   }, [product?.id]);
+
+  // Fetch trade-in values when modal first opens for SteamGame bundles
+  useEffect(() => {
+    // Only run when modal opens and we haven't fetched yet
+    if (!isOpen || bundle.type !== BundleType.SteamGame || hasFetchedRef.current) {
+      return;
+    }
+
+    const fetchTradeInValues = async () => {
+      // Mark as fetched immediately to prevent duplicate calls
+      hasFetchedRef.current = true;
+
+      // Extract Steam App IDs from ALL products in the bundle
+      const steamAppIds = bundle.products
+        .filter((p) => p.steamGameMetadata?.steamAppId)
+        .map((p) => p.steamGameMetadata!.steamAppId)
+        .filter((id): id is number => id !== undefined);
+
+      if (steamAppIds.length === 0) {
+        return;
+      }
+
+      try {
+        setTradeInValuesLoading(true);
+        console.log("Fetching trade-in values for Steam App IDs:", steamAppIds);
+        const values = await exchangeApi.getTradeInValues(steamAppIds);
+        console.log("Received trade-in values:", values);
+        setTradeInValues(values);
+      } catch (error) {
+        console.error("Failed to fetch trade-in values:", error);
+        // Reset ref on error so user can retry
+        hasFetchedRef.current = false;
+      } finally {
+        setTradeInValuesLoading(false);
+      }
+    };
+
+    fetchTradeInValues();
+  }, [isOpen, bundle.type, bundle.id]);
 
   if (!product) return null;
 
@@ -385,7 +436,11 @@ export function ProductDetailModal({
 
               {/* Product-specific content */}
               {isGame ? (
-                <GameDetails product={product} />
+                <GameDetails
+                  product={product}
+                  tradeInValue={product.steamGameMetadata?.steamAppId ? tradeInValues[product.steamGameMetadata.steamAppId] : undefined}
+                  tradeInValuesLoading={tradeInValuesLoading}
+                />
               ) : isBook ? (
                 <BookDetails product={product} formats={getProductFormats()} />
               ) : (
@@ -612,7 +667,15 @@ export function ProductDetailModal({
 }
 
 // Game-specific details component
-function GameDetails({ product }: { product: Product }) {
+function GameDetails({
+  product,
+  tradeInValue,
+  tradeInValuesLoading,
+}: {
+  product: Product;
+  tradeInValue?: number | null;
+  tradeInValuesLoading?: boolean;
+}) {
   const metadata = product.steamGameMetadata;
   const Windows = AppWindow;
 
@@ -620,6 +683,46 @@ function GameDetails({ product }: { product: Product }) {
     <div className="space-y-3 lg:space-y-4">
       {/* Tags */}
       <div className="flex flex-wrap gap-2">
+        {/* Trade-in value badge - inline with other badges */}
+        {tradeInValuesLoading && (
+          <Badge variant="outline" className="border-blue-500/50 bg-blue-500/10">
+            <Repeat className="h-3 w-3 mr-1 animate-spin text-blue-600 dark:text-blue-400" />
+            Checking...
+          </Badge>
+        )}
+        {!tradeInValuesLoading && tradeInValue !== undefined && tradeInValue !== null && tradeInValue > 0 && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge variant="outline" className="border-blue-500/50 bg-blue-500/10 hover:bg-blue-500/20 transition-colors cursor-help">
+                <span className="text-xs mr-1.5">Exchange Trade-in Value</span>
+                <Coins className="h-3.5 w-3.5 mr-1 text-blue-500" />
+                <span className="font-semibold text-blue-500">{tradeInValue}</span>
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="max-w-xs">
+                You can trade in this game for {tradeInValue} credits in the Exchange.
+                Use credits to get other games from our Exchange catalog.
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        )}
+        {!tradeInValuesLoading && tradeInValue !== undefined && (tradeInValue === null || tradeInValue === 0) && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge variant="outline" className="border-gray-300 dark:border-gray-700 cursor-help">
+                <Repeat className="h-3 w-3 mr-1 text-gray-500 dark:text-gray-400" />
+                <span className="text-gray-600 dark:text-gray-400">Not available for trade-in</span>
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="max-w-xs">
+                This game is not currently available in our Exchange trade-in program.
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        )}
+
         {metadata?.protonDbTier && (
           <Badge variant="secondary">ProtonDB: {metadata.protonDbTier}</Badge>
         )}

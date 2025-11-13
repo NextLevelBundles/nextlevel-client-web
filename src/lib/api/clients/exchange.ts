@@ -43,4 +43,11 @@ export class ExchangeApi {
       `/customer/exchange/games`
     );
   }
+
+  async getTradeInValues(steamAppIds: number[]): Promise<Record<number, number | null>> {
+    const steamAppIdsParam = steamAppIds.join(',');
+    return await this.client.get<Record<number, number | null>>(
+      `/customer/exchange/trade-in-values?steamAppIds=${steamAppIdsParam}`
+    );
+  }
 }
