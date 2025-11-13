@@ -923,7 +923,7 @@ export default function CookiesPolicy() {
                   <p className="font-semibold">Email:</p>
                   <p>Cookie Inquiries: cookies@digiphile.co</p>
                   <p>Privacy Team: privacy@digiphile.co</p>
-                  <p>General Support: support@digiphile.co</p>
+                  <p>General Support: help@digiphile.co</p>
                 </div>
 
                 <div>
