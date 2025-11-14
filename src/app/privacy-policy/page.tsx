@@ -1,6 +1,31 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Footer } from "@/app/(home)/components/sections/footer";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy | Digiphile",
+  description:
+    "Read the Privacy Policy for Digiphile. Expert-curated, premium game and book collections from Humble Bundle vets.",
+  openGraph: {
+    title: "Privacy Policy | Digiphile",
+    description:
+      "Read the Privacy Policy for Digiphile. Expert-curated, premium game and book collections from Humble Bundle vets.",
+    images: [
+      {
+        url: "http://static.digiphile.co/digiphile-social.jpg",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Privacy Policy | Digiphile",
+    description:
+      "Read the Privacy Policy for Digiphile. Expert-curated, premium game and book collections from Humble Bundle vets.",
+    images: ["http://static.digiphile.co/digiphile-social.jpg"],
+  },
+};
 
 export default function PrivacyPolicy() {
   return (

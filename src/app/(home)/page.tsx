@@ -5,8 +5,33 @@ import { HowItWorks } from "@/home/components/sections/how-it-works";
 import { Newsletter } from "@/home/components/sections/newsletter";
 import { Footer } from "@/home/components/sections/footer";
 import { serverApiClient } from "@/lib/server-api";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Digiphile - Expert-Curated Game & Book Collections",
+  description:
+    "Expert-curated, premium game and book collections from Humble Bundle vets offering discovery options for digital media enthusiasts like the Games Exchange.",
+  openGraph: {
+    title: "Digiphile - Expert-Curated Game & Book Collections",
+    description:
+      "Expert-curated, premium game and book collections from Humble Bundle vets offering discovery options for digital media enthusiasts like the Games Exchange.",
+    images: [
+      {
+        url: "http://static.digiphile.co/digiphile-social.jpg",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Digiphile - Expert-Curated Game & Book Collections",
+    description:
+      "Expert-curated, premium game and book collections from Humble Bundle vets offering discovery options for digital media enthusiasts like the Games Exchange.",
+    images: ["http://static.digiphile.co/digiphile-social.jpg"],
+  },
+};
 
 export default async function Home() {
   const bundles = await serverApiClient.getBundles();

@@ -10,8 +10,27 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: "All Collections | Digiphile",
-  description: "Browse all available gaming collections on Digiphile. Discover curated Steam game collections that support indie developers and charities.",
+  description:
+    "Browse all available gaming collections on Digiphile. Discover curated Steam game collections that support indie developers and charities.",
   keywords: "steam game collections, gaming deals, indie games, charity gaming",
+  openGraph: {
+    title: "All Collections | Digiphile",
+    description:
+      "Browse all available gaming collections on Digiphile. Discover curated Steam game collections that support indie developers and charities.",
+    images: [
+      {
+        url: "http://static.digiphile.co/digiphile-social.jpg",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "All Collections | Digiphile",
+    description:
+      "Browse all available gaming collections on Digiphile. Discover curated Steam game collections that support indie developers and charities.",
+    images: ["http://static.digiphile.co/digiphile-social.jpg"],
+  },
 };
 
 export default async function BundlesPage() {

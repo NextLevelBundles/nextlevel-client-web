@@ -1,6 +1,31 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Footer } from "@/app/(home)/components/sections/footer";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Cookie Policy | Digiphile",
+  description:
+    "Learn about how Digiphile uses cookies and similar tracking technologies to provide and improve our services.",
+  openGraph: {
+    title: "Cookie Policy | Digiphile",
+    description:
+      "Learn about how Digiphile uses cookies and similar tracking technologies to provide and improve our services.",
+    images: [
+      {
+        url: "http://static.digiphile.co/digiphile-social.jpg",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Cookie Policy | Digiphile",
+    description:
+      "Learn about how Digiphile uses cookies and similar tracking technologies to provide and improve our services.",
+    images: ["http://static.digiphile.co/digiphile-social.jpg"],
+  },
+};
 
 export default function CookiesPolicy() {
   return (

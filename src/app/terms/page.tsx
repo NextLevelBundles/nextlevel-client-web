@@ -5,6 +5,31 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import fs from "fs";
 import path from "path";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Terms of Service | Digiphile",
+  description:
+    "Read the Terms of Service for Digiphile. Expert-curated, premium game and book collections from Humble Bundle vets.",
+  openGraph: {
+    title: "Terms of Service | Digiphile",
+    description:
+      "Read the Terms of Service for Digiphile. Expert-curated, premium game and book collections from Humble Bundle vets.",
+    images: [
+      {
+        url: "http://static.digiphile.co/digiphile-social.jpg",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Terms of Service | Digiphile",
+    description:
+      "Read the Terms of Service for Digiphile. Expert-curated, premium game and book collections from Humble Bundle vets.",
+    images: ["http://static.digiphile.co/digiphile-social.jpg"],
+  },
+};
 
 export default function TermsOfService() {
   // Read the markdown file from the assets folder

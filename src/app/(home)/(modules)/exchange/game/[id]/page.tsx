@@ -3,11 +3,58 @@ import { Footer } from "@/home/components/sections/footer";
 import { serverApiClient } from "@/lib/server-api";
 import { ExchangeGameContent } from "./exchange-game-content";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { id } = await params;
+
+  try {
+    const game = await serverApiClient.getExchangeGameDetails(id);
+
+    if (!game) {
+      return {
+        title: "Game Not Found | Digiphile Exchange",
+        description: "The exchange game you are looking for could not be found.",
+      };
+    }
+
+    return {
+      title: `${game.title} - Exchange | Digiphile`,
+      description: `Trade your credits for ${game.title}. ${game.shortDescription || "Available now on the Digiphile Exchange."}`,
+      openGraph: {
+        title: `${game.title} - Exchange | Digiphile`,
+        description: `Trade your credits for ${game.title}. ${game.shortDescription || "Available now on the Digiphile Exchange."}`,
+        images: [
+          {
+            url:
+              game.headerImage || "http://static.digiphile.co/digiphile-social.jpg",
+          },
+        ],
+        type: "website",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `${game.title} - Exchange | Digiphile`,
+        description: `Trade your credits for ${game.title}. ${game.shortDescription || "Available now on the Digiphile Exchange."}`,
+        images: [
+          game.headerImage || "http://static.digiphile.co/digiphile-social.jpg",
+        ],
+      },
+    };
+  } catch {
+    return {
+      title: "Game Not Found | Digiphile Exchange",
+      description: "The exchange game you are looking for could not be found.",
+    };
+  }
 }
 
 export default async function ExchangeGameDetailsPage({ params }: PageProps) {

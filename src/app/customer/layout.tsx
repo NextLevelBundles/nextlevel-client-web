@@ -3,6 +3,31 @@ import { MainNav } from "./components/main-nav";
 import { TopNav } from "./components/top-nav";
 import { getServerSession } from "@/lib/auth/server-auth";
 import Logo from "../(shared)/components/logo";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Customer Dashboard | Digiphile",
+  description:
+    "Manage your Digiphile account, view your game library, track purchases, and access your Steam keys.",
+  openGraph: {
+    title: "Customer Dashboard | Digiphile",
+    description:
+      "Manage your Digiphile account, view your game library, track purchases, and access your Steam keys.",
+    images: [
+      {
+        url: "http://static.digiphile.co/digiphile-social.jpg",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Customer Dashboard | Digiphile",
+    description:
+      "Manage your Digiphile account, view your game library, track purchases, and access your Steam keys.",
+    images: ["http://static.digiphile.co/digiphile-social.jpg"],
+  },
+};
 
 export default async function CustomerNavigation({
   children,
