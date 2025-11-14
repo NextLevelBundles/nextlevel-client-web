@@ -29,9 +29,6 @@ const filters = [
   { label: "All", value: "all" },
   { label: "Steam Game Collections", value: "games", icon: Gamepad2 },
   { label: "Book Collections", value: "books", icon: BookOpen },
-  { label: "Featured", value: "featured" },
-  { label: "Early Access", value: "early_acces" },
-  { label: "Limited Keys", value: "limited_keys" },
 ];
 
 const sortOptions = [
@@ -55,9 +52,6 @@ export function BundlesGrid({ bundles }: BundlesGridProps) {
       if (currentFilter === "games")
         return bundle.type === BundleType.SteamGame;
       if (currentFilter === "books") return bundle.type === BundleType.EBook;
-      if (currentFilter === "featured") return bundle.isFeatured;
-      if (currentFilter === "early_acces") return bundle.isEarlyAccess;
-      if (currentFilter === "limited_keys") return bundle.isLimitedKeys;
       return false;
     })
     .sort((a, b) => {
