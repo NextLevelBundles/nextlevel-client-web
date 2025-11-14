@@ -237,8 +237,8 @@ export default function SteamConnection({
       >
         {steamConnected ? (
           // Connected State
-          <div className="flex items-start gap-4">
-            <div className="p-3 rounded-xl bg-green-500/20 text-green-500">
+          <div className="flex flex-col sm:flex-row items-start gap-4">
+            <div className="p-3 rounded-xl bg-green-500/20 text-green-500 shrink-0">
               <svg
                 className="h-8 w-8"
                 fill="none"
@@ -253,7 +253,7 @@ export default function SteamConnection({
                 />
               </svg>
             </div>
-            <div className="flex-1">
+            <div className="flex-1 w-full">
               <h3 className="text-lg font-bold text-green-600 dark:text-green-400 mb-2">
                 Steam Account Connected!
               </h3>
@@ -268,17 +268,17 @@ export default function SteamConnection({
                     </div>
                   ) : steamProfile ? (
                     <div className="space-y-3">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-wrap">
                         <Image
                           src={steamProfile.avatarmedium}
                           alt={`${steamProfile.personaname} avatar`}
                           width={40}
                           height={40}
-                          className="rounded-lg border border-border/50"
+                          className="rounded-lg border border-border/50 shrink-0"
                         />
-                        <div className="flex flex-col">
+                        <div className="flex flex-col min-w-0 flex-1">
                           {steamProfile.realname && (
-                            <span className="font-medium text-foreground">
+                            <span className="font-medium text-foreground break-words">
                               {steamProfile.realname}
                             </span>
                           )}
@@ -286,7 +286,7 @@ export default function SteamConnection({
                             href={steamProfile.profileurl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-sm text-primary hover:text-primary/80 hover:underline transition-colors"
+                            className="text-sm text-primary hover:text-primary/80 hover:underline transition-colors break-all"
                           >
                             {steamProfile.personaname}
                           </a>
@@ -316,7 +316,7 @@ export default function SteamConnection({
                     </div>
                   ) : (
                     <div className="flex items-center gap-3">
-                      <span className="font-medium text-foreground">
+                      <span className="font-medium text-foreground break-all">
                         Steam ID: {steamUserInfo.steamId}
                       </span>
                     </div>
@@ -327,7 +327,7 @@ export default function SteamConnection({
                 Your Steam account is now linked to your Digiphile profile.
               </p>
             </div>
-            <div className="flex flex-col items-center gap-2">
+            <div className="hidden sm:flex flex-col items-center gap-2 shrink-0">
               <div className="p-2 rounded-lg bg-green-500/20">
                 <svg
                   className="h-6 w-6 text-green-500"
@@ -350,13 +350,13 @@ export default function SteamConnection({
           </div>
         ) : (
           // Not Connected State
-          <div className="flex items-start gap-4">
-            <div className="p-3 rounded-xl bg-primary/10 dark:bg-primary/20 text-primary group-hover:scale-110 transition-transform duration-300">
+          <div className="flex flex-col sm:flex-row items-start gap-4">
+            <div className="p-3 rounded-xl bg-primary/10 dark:bg-primary/20 text-primary group-hover:scale-110 transition-transform duration-300 shrink-0">
               <svg className="h-8 w-8" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.19 0 2.34-.21 3.41-.6.3-.11.49-.4.49-.72 0-.43-.35-.78-.78-.78-.15 0-.29.04-.42.11-.86.31-1.79.47-2.7.47-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8c0 .91-.16 1.84-.47 2.7-.07.13-.11.27-.11.42 0 .43.35.78.78.78.32 0 .61-.19.72-.49.39-1.07.6-2.22.6-3.41 0-5.52-4.48-10-10-10zm0 6c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z" />
               </svg>
             </div>
-            <div className="flex-1">
+            <div className="flex-1 w-full">
               <h3 className="text-lg font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
                 Connect Your Steam Account
               </h3>
@@ -382,7 +382,7 @@ export default function SteamConnection({
                 </div>
               </div>
             </div>
-            <div className="flex flex-col items-center gap-2">
+            <div className="hidden sm:flex flex-col items-center gap-2 shrink-0">
               <div className="p-2 rounded-lg bg-white/50 dark:bg-muted/50 group-hover:bg-white/70 dark:group-hover:bg-muted/70 transition-colors">
                 <svg
                   className="h-6 w-6 text-primary"

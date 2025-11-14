@@ -504,12 +504,23 @@ export function BundleDetail({
 
         {/* Mobile Sticky CTA Bar */}
         <MobileStickyCTA
+          bundleId={bundle.id}
+          baseTierId={currentTier?.id}
+          charityTierId={selectedCharityTierIds[0]}
+          tipAmount={tipAmount}
           totalAmount={totalAmount}
+          selectedUpsellTierIds={selectedUpsellTierIds}
           unlockedProductsCount={unlockedProducts.length}
-          onAddToCart={handleMobileAddToCart}
           onViewDetails={handleViewDetails}
-          isDisabled={isCtaDisabled}
           bundleTitle={bundle.title}
+          isBundleExpired={isBundleExpired}
+          hasAvailableBaseTiers={hasAvailableBaseTiers}
+          bundleUnavailabilityReason={bundleUnavailabilityReason}
+          disabled={isCtaDisabled}
+          bundleType={bundle.type}
+          bundleState={bundleState}
+          isPreviewMode={isPreviewMode}
+          className="pb-6"
         />
 
         {/* Mobile Purchase Sheet */}

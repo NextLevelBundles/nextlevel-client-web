@@ -16,47 +16,56 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/shared/components/ui/sheet";
+import {
   SettingsIcon,
   MessageCircleIcon,
-  SearchIcon,
   User,
+  MenuIcon,
 } from "lucide-react";
 import SignOutButton from "@/app/(home)/components/SignOutButton";
-import { Input } from "@/app/(shared)/components/ui/input";
 import { ThemeToggle } from "@/app/(shared)/components/theme-toggle";
 import { UserCredits } from "@/app/(shared)/components/user-credits";
+import Logo from "@/app/(shared)/components/logo";
+import { MainNav } from "./main-nav";
 
 interface TopNavProps {
   user?: { email?: string; name?: string } | null;
 }
 export function TopNav({ user }: TopNavProps) {
   return (
-    <div className="sticky top-0 z-50 w-full border-b bg-white dark:bg-[#1a1d2e]/80 backdrop-blur-xs shadow-xs transition-all">
+    <div className="fixed lg:sticky top-0 left-0 right-0 z-50 w-full border-b bg-white dark:bg-[#1a1d2e] shadow-md transition-all lg:left-auto lg:right-auto">
       <div className="flex h-14 md:h-16 items-center gap-4 px-4">
-        {/* Search Bar */}
-        <div className="flex-1 md:max-w-md">
-          <div className="relative">
-            <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search games, collections..."
-              className="w-full pl-9 focus:ring-2 ring-primary/20"
-            />
-          </div>
-        </div>
-
-        {/* Center Section */}
-        {/* <div className="hidden md:flex items-center">
-          <div className="flex h-16 items-center justify-between">
-            <div className="hidden md:flex md:items-center md:gap-8">
-              <a
-                href="/collections"
-                className="text-sm font-medium hover:text-primary transition-colors"
+        {/* Mobile Menu Button & Logo */}
+        <div className="flex lg:hidden items-center gap-3">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 hover:bg-primary/10 hover:text-primary transition-colors"
               >
-                Bundles
-              </a>
-            </div>
-          </div>
-        </div> */}
+                <MenuIcon className="h-6 w-6" />
+                <span className="sr-only">Open navigation menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-64 p-6 bg-white dark:bg-[#0f111a]">
+              <div className="mb-6">
+                <Link href="/" className="flex items-center gap-2">
+                  <Logo width={140} height={0} />
+                </Link>
+              </div>
+              <MainNav />
+            </SheetContent>
+          </Sheet>
+
+          <Link href="/" className="flex items-center">
+            <Logo width={120} height={0} />
+          </Link>
+        </div>
 
         {/* Right Section */}
         <div className="ml-auto flex items-center gap-2 md:gap-4">

@@ -110,17 +110,17 @@ export default function SteamAccountSettings() {
         <CardContent className="space-y-4">
           {steamConnected && customer?.steamId ? (
             <div className="space-y-4">
-              <div className="flex items-start justify-between">
-                <div className="space-y-2">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div className="space-y-2 flex-1">
                   <div className="flex items-center gap-2">
                     <CheckCircle className="h-5 w-5 text-green-500" />
                     <span className="font-medium">Steam Account Connected</span>
                   </div>
                   <div className="space-y-1 text-sm text-muted-foreground">
                     {customer.steamUsername && (
-                      <p>Username: {customer.steamUsername}</p>
+                      <p className="break-words">Username: {customer.steamUsername}</p>
                     )}
-                    <p>Steam ID: {customer.steamId}</p>
+                    <p className="break-all">Steam ID: {customer.steamId}</p>
                   </div>
                 </div>
                 <Button
@@ -128,6 +128,7 @@ export default function SteamAccountSettings() {
                   size="sm"
                   onClick={handleDisconnect}
                   disabled={isDisconnecting}
+                  className="w-full sm:w-auto"
                 >
                   {isDisconnecting ? (
                     <>

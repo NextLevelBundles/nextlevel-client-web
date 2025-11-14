@@ -1,10 +1,3 @@
-import { MenuIcon } from "lucide-react";
-import {
-  SheetTrigger,
-  SheetContent,
-  Sheet,
-} from "@/shared/components/ui/sheet";
-import { Button } from "@/shared/components/ui/button";
 import Link from "next/link";
 import { MainNav } from "./components/main-nav";
 import { TopNav } from "./components/top-nav";
@@ -37,25 +30,6 @@ export default async function CustomerNavigation({
           </div>
         </Link>
         <MainNav />
-      </div>
-
-      {/* Mobile header */}
-      <div className="fixed top-0 z-50 flex w-full items-center justify-between border-b bg-white dark:bg-[#1a1d2e]/80 backdrop-blur-xs shadow-xs p-4 lg:hidden">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="">
-            <Logo width={160} height={0} />
-          </div>
-        </Link>
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <MenuIcon className="h-6 w-6" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-64 p-6">
-            <MainNav />
-          </SheetContent>
-        </Sheet>
       </div>
 
       {/* Main content */}

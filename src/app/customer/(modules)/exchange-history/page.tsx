@@ -1,11 +1,27 @@
 "use client";
 
-
 import React, { useState, useMemo } from "react";
-import { ArrowUpRight, ArrowDownRight, TrendingUp, Activity, Search, Calendar, Filter } from "lucide-react";
-import { useExchangeHistory, useExchangeSummary } from "@/hooks/queries/use-exchange-history";
+import {
+  ArrowUpRight,
+  ArrowDownRight,
+  TrendingUp,
+  Activity,
+  Search,
+  Calendar,
+  Filter,
+} from "lucide-react";
+import {
+  useExchangeHistory,
+  useExchangeSummary,
+} from "@/hooks/queries/use-exchange-history";
 import { useIsMobile } from "@/hooks/use-media-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/(shared)/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/app/(shared)/components/ui/card";
 import { Badge } from "@/app/(shared)/components/ui/badge";
 import { Skeleton } from "@/app/(shared)/components/ui/skeleton";
 import {
@@ -25,13 +41,13 @@ function SummaryCard({
   description,
   icon: Icon,
   trend,
-  loading
+  loading,
 }: {
   title: string;
   value: string | number;
   description?: string;
   icon: React.ElementType;
-  trend?: 'up' | 'down' | 'neutral';
+  trend?: "up" | "down" | "neutral";
   loading?: boolean;
 }) {
   return (
@@ -48,8 +64,12 @@ function SummaryCard({
             <div className="text-2xl font-bold">{value}</div>
             {description && (
               <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                {trend === 'up' && <ArrowUpRight className="h-3 w-3 text-green-500" />}
-                {trend === 'down' && <ArrowDownRight className="h-3 w-3 text-red-500" />}
+                {trend === "up" && (
+                  <ArrowUpRight className="h-3 w-3 text-green-500" />
+                )}
+                {trend === "down" && (
+                  <ArrowDownRight className="h-3 w-3 text-red-500" />
+                )}
                 {description}
               </p>
             )}
@@ -60,13 +80,16 @@ function SummaryCard({
   );
 }
 
-
 function isEarnedType(type: number | string) {
   // Accepts both enum number and string values
-  return type === 0 || type === 'KeyForCredits';
+  return type === 0 || type === "KeyForCredits";
 }
 
-function TransactionCard({ transaction }: { transaction: ExchangeTransactionDto }) {
+function TransactionCard({
+  transaction,
+}: {
+  transaction: ExchangeTransactionDto;
+}) {
   // 0 = KeyForCredits (customer sends key, earns credits)
   // 1 = CreditsForKey (customer spends credits, gets key)
   const isEarned = isEarnedType(transaction.type);
@@ -83,10 +106,17 @@ function TransactionCard({ transaction }: { transaction: ExchangeTransactionDto 
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1">
-                <h4 className="font-semibold text-sm truncate">{transaction.productTitle}</h4>
-                <p className="text-xs text-muted-foreground">{transaction.publisherName}</p>
+                <h4 className="font-semibold text-sm truncate">
+                  {transaction.productTitle}
+                </h4>
+                <p className="text-xs text-muted-foreground">
+                  {transaction.publisherName}
+                </p>
               </div>
-              <Badge variant={isEarned ? "default" : "secondary"} className="shrink-0">
+              <Badge
+                variant={isEarned ? "default" : "secondary"}
+                className="shrink-0"
+              >
                 {isEarned ? "Earned" : "Spent"}
               </Badge>
             </div>
@@ -94,10 +124,13 @@ function TransactionCard({ transaction }: { transaction: ExchangeTransactionDto 
               <span className="text-xs text-muted-foreground">
                 {new Date(transaction.createdAt).toLocaleDateString()}
               </span>
-              <span className={`font-bold ${isEarned ? 'text-green-600' : 'text-red-600'}`}>
-                {isEarned ? '+' : '-'}{transaction.creditAmount} credits
+              <span
+                className={`font-bold ${isEarned ? "text-green-600" : "text-red-600"}`}
+              >
+                {isEarned ? "+" : "-"}
+                {transaction.creditAmount} credits
               </span>
-            </div>      
+            </div>
           </div>
         </div>
       </CardContent>
@@ -105,7 +138,11 @@ function TransactionCard({ transaction }: { transaction: ExchangeTransactionDto 
   );
 }
 
-function TransactionTableRow({ transaction }: { transaction: ExchangeTransactionDto }) {
+function TransactionTableRow({
+  transaction,
+}: {
+  transaction: ExchangeTransactionDto;
+}) {
   // 0 = KeyForCredits (customer sends key, earns credits)
   // 1 = CreditsForKey (customer spends credits, gets key)
   const isEarned = isEarnedType(transaction.type);
@@ -117,16 +154,22 @@ function TransactionTableRow({ transaction }: { transaction: ExchangeTransaction
           <img
             src={transaction.coverImage?.url}
             alt={transaction.productTitle}
-            className="w-10 h-10 rounded object-cover"
+            className="w-10 aspect-[2/3] rounded object-contain"
           />
           <div className="min-w-0">
-            <p className="font-medium text-sm truncate">{transaction.productTitle}</p>
-            <p className="text-xs text-muted-foreground">{transaction.publisherName}</p>
+            <p className="font-medium text-sm truncate">
+              {transaction.productTitle}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {transaction.publisherName}
+            </p>
           </div>
         </div>
       </td>
       <td className="px-4 py-3 whitespace-nowrap">
-        <span className="text-sm">{new Date(transaction.createdAt).toLocaleDateString()}</span>
+        <span className="text-sm">
+          {new Date(transaction.createdAt).toLocaleDateString()}
+        </span>
       </td>
       <td className="px-4 py-3">
         <Badge variant={isEarned ? "default" : "secondary"}>
@@ -134,8 +177,11 @@ function TransactionTableRow({ transaction }: { transaction: ExchangeTransaction
         </Badge>
       </td>
       <td className="px-4 py-3 text-right">
-        <span className={`font-semibold ${isEarned ? 'text-green-600' : 'text-red-600'}`}>
-          {isEarned ? '+' : '-'}{transaction.creditAmount}
+        <span
+          className={`font-semibold ${isEarned ? "text-green-600" : "text-red-600"}`}
+        >
+          {isEarned ? "+" : "-"}
+          {transaction.creditAmount}
         </span>
       </td>
     </tr>
@@ -206,7 +252,7 @@ export default function CustomerExchangeHistoryPage() {
     } else if (dateRange === "custom" && customStartDate) {
       return {
         StartDate: customStartDate + "T00:00:00Z",
-        ...(customEndDate && { EndDate: customEndDate + "T23:59:59Z" })
+        ...(customEndDate && { EndDate: customEndDate + "T23:59:59Z" }),
       };
     }
     return {};
@@ -243,7 +289,11 @@ export default function CustomerExchangeHistoryPage() {
       } else if (page >= totalPages - 2) {
         pages.push(1);
         pages.push(-1); // ellipsis
-        for (let i = Math.max(totalPages - (maxVisible - 2), 1); i <= totalPages; i++) {
+        for (
+          let i = Math.max(totalPages - (maxVisible - 2), 1);
+          i <= totalPages;
+          i++
+        ) {
           pages.push(i);
         }
       } else {
@@ -265,7 +315,9 @@ export default function CustomerExchangeHistoryPage() {
       {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold">Exchange History</h1>
-        <p className="text-muted-foreground mt-1">Track your credit exchanges and transactions</p>
+        <p className="text-muted-foreground mt-1">
+          Track your credit exchanges and transactions
+        </p>
       </div>
 
       {/* Summary Statistics */}
@@ -273,7 +325,11 @@ export default function CustomerExchangeHistoryPage() {
         <SummaryCard
           title="Current Balance"
           value={summaryData?.netCredits || 0}
-          description={summaryData && summaryData.netCredits > 0 ? "Available credits" : "No credits"}
+          description={
+            summaryData && summaryData.netCredits > 0
+              ? "Available credits"
+              : "No credits"
+          }
           icon={Activity}
           trend={summaryData && summaryData.netCredits > 0 ? "up" : "neutral"}
           loading={summaryLoading}
@@ -296,7 +352,10 @@ export default function CustomerExchangeHistoryPage() {
         />
         <SummaryCard
           title="Total Exchanges"
-          value={(summaryData?.totalKeysSentToExchange || 0) + (summaryData?.totalKeysReceivedFromExchange || 0)}
+          value={
+            (summaryData?.totalKeysSentToExchange || 0) +
+            (summaryData?.totalKeysReceivedFromExchange || 0)
+          }
           description="All time"
           icon={TrendingUp}
           loading={summaryLoading}
@@ -403,7 +462,9 @@ export default function CustomerExchangeHistoryPage() {
           {error ? (
             <div className="text-center py-8">
               <p className="text-red-600">Failed to load exchange history.</p>
-              <p className="text-sm text-muted-foreground mt-2">Please try again later.</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Please try again later.
+              </p>
             </div>
           ) : isLoading ? (
             <LoadingSkeleton isMobile={isMobile} />
@@ -412,13 +473,18 @@ export default function CustomerExchangeHistoryPage() {
               <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-lg font-medium">No transactions found</p>
               <p className="text-sm text-muted-foreground mt-2">
-                {searchTerm ? "Try adjusting your search or filters" : "Your exchange history will appear here"}
+                {searchTerm
+                  ? "Try adjusting your search or filters"
+                  : "Your exchange history will appear here"}
               </p>
             </div>
           ) : isMobile ? (
             <div className="space-y-3">
               {data.transactions.map((transaction) => (
-                <TransactionCard key={transaction.id} transaction={transaction} />
+                <TransactionCard
+                  key={transaction.id}
+                  transaction={transaction}
+                />
               ))}
             </div>
           ) : (
@@ -442,7 +508,10 @@ export default function CustomerExchangeHistoryPage() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {data.transactions.map((transaction) => (
-                    <TransactionTableRow key={transaction.id} transaction={transaction} />
+                    <TransactionTableRow
+                      key={transaction.id}
+                      transaction={transaction}
+                    />
                   ))}
                 </tbody>
               </table>
@@ -456,12 +525,16 @@ export default function CustomerExchangeHistoryPage() {
                 <PaginationContent>
                   <PaginationItem>
                     <PaginationPrevious
-                      onClick={() => setPage(p => Math.max(1, p - 1))}
-                      className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      className={
+                        page === 1
+                          ? "pointer-events-none opacity-50"
+                          : "cursor-pointer"
+                      }
                     />
                   </PaginationItem>
 
-                  {pageNumbers.map((pageNum, index) => (
+                  {pageNumbers.map((pageNum, index) =>
                     pageNum === -1 ? (
                       <PaginationItem key={`ellipsis-${index}`}>
                         <PaginationEllipsis />
@@ -477,12 +550,18 @@ export default function CustomerExchangeHistoryPage() {
                         </PaginationLink>
                       </PaginationItem>
                     )
-                  ))}
+                  )}
 
                   <PaginationItem>
                     <PaginationNext
-                      onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                      className={page === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      onClick={() =>
+                        setPage((p) => Math.min(totalPages, p + 1))
+                      }
+                      className={
+                        page === totalPages
+                          ? "pointer-events-none opacity-50"
+                          : "cursor-pointer"
+                      }
                     />
                   </PaginationItem>
                 </PaginationContent>

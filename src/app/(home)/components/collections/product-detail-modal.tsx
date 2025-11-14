@@ -496,10 +496,11 @@ export function ProductDetailModal({
         <div className="border-t bg-background p-3 lg:p-4 flex-shrink-0">
           <div className="flex items-center justify-between gap-2">
             {/* Previous/Next navigation */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <Button
                 variant="ghost"
                 size="icon"
+                className="h-9 w-9"
                 onClick={() => {
                   const prevIndex =
                     (currentIndex - 1 + sortedProducts.length) %
@@ -510,12 +511,13 @@ export function ProductDetailModal({
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <span className="text-sm text-muted-foreground">
-                {currentIndex + 1} / {sortedProducts.length}
+              <span className="text-xs lg:text-sm text-muted-foreground whitespace-nowrap font-mono">
+                {currentIndex + 1}/{sortedProducts.length}
               </span>
               <Button
                 variant="ghost"
                 size="icon"
+                className="h-9 w-9"
                 onClick={() => {
                   const nextIndex = (currentIndex + 1) % sortedProducts.length;
                   onNavigateToProduct(sortedProducts[nextIndex]);

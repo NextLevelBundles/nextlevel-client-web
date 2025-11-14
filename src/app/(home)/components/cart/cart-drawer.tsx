@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Trash2,
   ShoppingBag,
@@ -56,6 +56,9 @@ export function CartDrawer() {
   const [showCaptcha, setShowCaptcha] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [modalItem, setModalItem] = useState<any | null>(null);
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
+    {}
+  );
   const {
     cart,
     removeFromCart,
@@ -67,6 +70,13 @@ export function CartDrawer() {
     updateGiftSettings,
     // refreshCart,
   } = useCart();
+
+  const toggleItemExpanded = (itemId: string) => {
+    setExpandedItems((prev) => ({
+      ...prev,
+      [itemId]: !prev[itemId],
+    }));
+  };
 
   // Refresh cart when drawer opens to ensure fresh data
   const handleOpenChange = (open: boolean) => {
@@ -219,7 +229,7 @@ export function CartDrawer() {
       <SheetTrigger asChild>
         <CartButton />
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-lg">
+      <SheetContent className="w-full sm:max-w-lg" hideCloseButton={false}>
         <SheetHeader>
           <div className="flex items-center justify-between">
             <SheetTitle className="flex items-center gap-2">
@@ -270,139 +280,157 @@ export function CartDrawer() {
           </div>
         ) : (
           <div className="flex flex-col h-full">
-            <ScrollArea className="flex-1">
+            <ScrollArea className="flex-1 md:pb-0 pb-40">
               <div className="space-y-4 py-4">
-                {cart?.items.map((item) => (
-                  <div key={item.id} className="group relative">
-                    <div
-                      className={`p-4 rounded-lg border transition-colors ${
-                        item.isGift
-                          ? "border-primary/30 bg-primary/5 hover:border-primary/50"
-                          : "border-border hover:border-primary/50"
-                      }`}
-                    >
-                      {/* Gift indicator */}
-                      {item.isGift && (
-                        <div className="flex items-center gap-1 mb-2 text-xs text-primary">
-                          <Gift className="h-3 w-3" />
-                          <span className="font-medium">
-                            Gift{" "}
-                            {item.giftRecipientEmail
-                              ? `for ${item.giftRecipientEmail}`
-                              : ""}
-                          </span>
-                        </div>
-                      )}
+                {cart?.items.map((item) => {
+                  const isExpanded = expandedItems[item.id] || false;
 
-                      <div className="flex gap-4">
-                        <div className="relative w-16 h-24 rounded-lg overflow-hidden bg-muted">
-                          <Image
-                            fill
-                            sizes="64px"
-                            src={item.snapshotImageUrl ?? ""}
-                            alt={item.snapshotTitle ?? "Cart item image"}
-                            className="object-contain"
-                          />
-                          {/* Bundle type indicator */}
-                          <div
-                            className={`absolute bottom-1 left-1 p-1 rounded-full ${
-                              isBookBundle(item)
-                                ? "bg-amber-500"
-                                : "bg-blue-500"
-                            }`}
-                          >
-                            {isBookBundle(item) ? (
-                              <BookOpen className="h-3 w-3 text-white" />
-                            ) : (
-                              <Gamepad2 className="h-3 w-3 text-white" />
-                            )}
+                  return (
+                    <div key={item.id} className="group relative">
+                      <div
+                        className={`p-4 rounded-lg border transition-colors ${
+                          item.isGift
+                            ? "border-primary/30 bg-primary/5 hover:border-primary/50"
+                            : "border-border hover:border-primary/50"
+                        }`}
+                      >
+                        {/* Gift indicator */}
+                        {item.isGift && (
+                          <div className="flex items-center gap-1 mb-2 text-xs text-primary">
+                            <Gift className="h-3 w-3" />
+                            <span className="font-medium">
+                              Gift{" "}
+                              {item.giftRecipientEmail
+                                ? `for ${item.giftRecipientEmail}`
+                                : ""}
+                            </span>
                           </div>
-                          {item.isGift && (
-                            <div className="absolute top-1 right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                              <Gift className="h-3 w-3 text-white" />
-                            </div>
-                          )}
-                        </div>
+                        )}
 
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start gap-2 mb-1">
-                            <h4 className="font-semibold text-sm line-clamp-2">
-                              {item.snapshotTitle}
-                            </h4>
-                          </div>
-
-                          {/* Bundle type badge */}
-                          <div className="flex items-center gap-2 mb-2">
-                            <span
-                              className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
+                        <div className="flex gap-4">
+                          <div className="relative w-16 h-24 rounded-lg overflow-hidden bg-muted">
+                            <Image
+                              fill
+                              sizes="64px"
+                              src={item.snapshotImageUrl ?? ""}
+                              alt={item.snapshotTitle ?? "Cart item image"}
+                              className="object-contain"
+                            />
+                            {/* Bundle type indicator */}
+                            <div
+                              className={`absolute bottom-1 left-1 p-1 rounded-full ${
                                 isBookBundle(item)
-                                  ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400"
-                                  : "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400"
+                                  ? "bg-amber-500"
+                                  : "bg-blue-500"
                               }`}
                             >
                               {isBookBundle(item) ? (
-                                <>
-                                  <BookOpen className="h-3 w-3" /> Book
-                                  Collection
-                                </>
+                                <BookOpen className="h-3 w-3 text-white" />
                               ) : (
-                                <>
-                                  <Gamepad2 className="h-3 w-3" /> Steam Game
-                                  Collection
-                                </>
+                                <Gamepad2 className="h-3 w-3 text-white" />
                               )}
-                            </span>
+                            </div>
+                            {item.isGift && (
+                              <div className="absolute top-1 right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                                <Gift className="h-3 w-3 text-white" />
+                              </div>
+                            )}
                           </div>
 
-                          <div className="flex items-center justify-between mt-3">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-xs hover:bg-primary/10 hover:text-primary hover:border-primary/50 transition-colors"
-                              onClick={() => setModalItem(item)}
-                            >
-                              <Info className="h-3 w-3 mr-1" />
-                              View Summary
-                            </Button>
-
-                            <div className="text-right">
-                              <div className="font-semibold text-sm">
-                                ${item.totalAmount?.toFixed(2)}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <h4 className="font-semibold text-sm line-clamp-2 flex-1">
+                                {item.snapshotTitle}
+                              </h4>
+                              <div className="text-right shrink-0">
+                                <div className="font-semibold text-sm">
+                                  ${item.totalAmount?.toFixed(2)}
+                                </div>
                               </div>
+                            </div>
+
+                            <div className="flex items-center justify-between">
                               <span className="text-xs text-muted-foreground">
                                 {item.snapshotProducts.length}{" "}
-                                {isBookBundle(item) ? "books" : "Steam games"}
+                                {isBookBundle(item) ? "books" : "games"}
                               </span>
+
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-xs h-7 px-2 hover:bg-primary/10 hover:text-primary transition-colors"
+                                onClick={() => toggleItemExpanded(item.id)}
+                              >
+                                {isExpanded ? "Hide" : "Details"}
+                              </Button>
                             </div>
+
+                            {/* Collapsible details */}
+                            {isExpanded && (
+                              <div className="mt-3 pt-3 border-t border-border/50 space-y-3">
+                                {/* Bundle type badge */}
+                                <div className="flex items-center gap-2">
+                                  <span
+                                    className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
+                                      isBookBundle(item)
+                                        ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400"
+                                        : "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400"
+                                    }`}
+                                  >
+                                    {isBookBundle(item) ? (
+                                      <>
+                                        <BookOpen className="h-3 w-3" /> Book
+                                        Collection
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Gamepad2 className="h-3 w-3" /> Steam
+                                        Game Collection
+                                      </>
+                                    )}
+                                  </span>
+                                </div>
+
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-xs w-full hover:bg-primary/10 hover:text-primary hover:border-primary/50 transition-colors"
+                                  onClick={() => setModalItem(item)}
+                                >
+                                  <Info className="h-3 w-3 mr-1" />
+                                  View Full Summary
+                                </Button>
+
+                                {/* Gift form in expanded section */}
+                                <div className="pt-2">
+                                  <GiftForm
+                                    item={item}
+                                    onGiftUpdate={updateGiftSettings}
+                                    isUpdating={isLoading}
+                                  />
+                                </div>
+                              </div>
+                            )}
                           </div>
+
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="cursor-pointer h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => removeFromCart(item.id)}
+                            disabled={isLoading}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
-
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="cursor-pointer h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => removeFromCart(item.id)}
-                          disabled={isLoading}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-
-                      {/* Gift form */}
-                      <div className="mt-4 pt-3 border-t border-border/50">
-                        <GiftForm
-                          item={item}
-                          onGiftUpdate={updateGiftSettings}
-                          isUpdating={isLoading}
-                        />
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </ScrollArea>
 
-            <div className="border-t py-4 space-y-4">
+            <div className="md:relative md:border-t md:bg-transparent md:shadow-none fixed bottom-0 left-0 right-0 border-t py-4 px-6 md:px-0 space-y-2 bg-card/95 backdrop-blur-lg shadow-[0_-4px_12px_rgba(0,0,0,0.1)] dark:shadow-[0_-4px_12px_rgba(0,0,0,0.3)]">
               {cart?.reservationStatus === "Active" &&
                 cart.reservationExpiresAt &&
                 reservationTimeLeft !== "Expired" && (

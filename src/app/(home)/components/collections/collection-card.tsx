@@ -122,20 +122,18 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
                   Starting at
                 </p>
 
-                {/* bg-secondary/10 dark:bg-secondary/20 */}
-                <div className="mt-1 inline-flex items-center rounded-lg  px-3 py-1">
+                <div className="mt-1 flex items-baseline gap-2">
                   <p className="text-2xl font-bold bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">
                     ${bundle.minPrice}
                   </p>
                 </div>
               </div>
               <Button
-                variant="outline"
-                className="cursor-pointer relative z-10 transition-all hover:bg-primary hover:text-white border-primary/50 hover:border-primary hover:shadow-[0_0_20px_rgba(57,130,245,0.5)] hover:brightness-110 duration-300 group-hover:translate-y-[-1px]"
+                className="cursor-pointer relative z-10 transition-all bg-primary text-white hover:bg-primary/90 shadow-lg hover:shadow-xl hover:shadow-primary/30 duration-300 group-hover:translate-y-[-1px] group-hover:scale-105 font-semibold"
                 aria-label={`View ${bundle.title} collection details`}
               >
                 <span className="flex items-center gap-2">
-                  View Collection
+                  Get Bundle Now
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </span>
               </Button>

@@ -55,6 +55,7 @@ interface PurchaseSummaryProps {
   bundleUnavailabilityReason: "country" | "soldout" | null;
   bundleState: "preview" | "not-started" | "expired" | "active";
   isPreviewMode?: boolean;
+  isMobileSheet?: boolean;
 }
 
 export function PurchaseSummary({
@@ -77,6 +78,7 @@ export function PurchaseSummary({
   bundleUnavailabilityReason,
   bundleState,
   isPreviewMode = false,
+  isMobileSheet = false,
 }: PurchaseSummaryProps) {
   const [tipInputValue, setTipInputValue] = useState("");
   const { user } = useAuth();
@@ -182,9 +184,17 @@ export function PurchaseSummary({
   };
 
   return (
-    <div className="lg:sticky lg:top-20 lg:h-fit space-y-4 lg:w-[370px] w-full animate-fade-up">
-      <Card className="p-6 bg-white dark:bg-card/70 backdrop-blur-xs border border-gray-100 dark:border-border shadow-xs hover:shadow-md transition-all duration-300 rounded-xl">
-        <h3 className="text-xl font-bold mb-4">Collection Summary</h3>
+    <div className={cn(
+      "w-full",
+      !isMobileSheet && "lg:sticky lg:top-20 lg:h-fit lg:w-[370px] animate-fade-up space-y-4"
+    )}>
+      <Card className={cn(
+        "bg-white dark:bg-card/70 backdrop-blur-xs border border-gray-100 dark:border-border shadow-xs transition-all duration-300 rounded-xl",
+        !isMobileSheet && "p-6 hover:shadow-md",
+        isMobileSheet && "p-0 border-0 shadow-none bg-transparent"
+      )}>
+        <div className={cn(isMobileSheet ? "" : "")}>
+        {!isMobileSheet && <h3 className="text-xl font-bold mb-4">Collection Summary</h3>}
 
         {/* Step 1: Base Collection Selection */}
         <div className="mb-6">
@@ -578,7 +588,7 @@ export function PurchaseSummary({
         )}
 
         {/* Steam Key Country Allocation or Bundle Not Available */}
-        {isSteamBundle &&
+        {!isMobileSheet && isSteamBundle &&
           isAuthenticated &&
           customer?.country &&
           (bundleUnavailabilityReason ? (
@@ -618,8 +628,11 @@ export function PurchaseSummary({
               </div>
             </div>
           ))}
+        </div>
+        {isMobileSheet && <div className="h-4" />}
 
-        {/* Total */}
+        {/* Total - Hidden on mobile sheet (rendered separately in sticky footer) */}
+        {!isMobileSheet && (
         <div className="py-4 border-t border-gray-100 dark:border-border">
           <div className="flex justify-between text-lg font-bold mb-4">
             <span>Total</span>
@@ -690,6 +703,7 @@ export function PurchaseSummary({
             </>
           )}
         </div>
+        )}
       </Card>
 
       {/* Location Warning */}

@@ -88,48 +88,51 @@ export function Navigation() {
             <UserProfile />
           </div>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden hover:bg-primary/10 hover:text-primary transition-colors"
-            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-          >
-            {isMobileMenuOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
-          </Button>
+          {/* Mobile Navigation Icons - Always Visible */}
+          <div className="flex md:hidden items-center gap-2">
+            {!isAuthLoading && <CartDrawer />}
+            <UserProfile />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hover:bg-primary/10 hover:text-primary transition-colors"
+              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+            >
+              {isMobileMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </Button>
+          </div>
         </div>
 
         {isMobileMenuOpen && (
           <div
             className={cn(
-              "absolute top-full left-0 right-0 mt-2 mx-4 rounded-xl z-50",
-              "bg-white/80 dark:bg-card/80 backdrop-blur-xl backdrop-blur-fallback",
-              "border border-black/10 dark:border-white/10",
-              "shadow-[0_4px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)]",
-              "animate-in fade-in-0 slide-in-from-top-2 duration-200",
-              "before:absolute before:inset-[1px] before:rounded-[11px] before:border before:border-black/[0.03] dark:before:border-white/[0.03] before:pointer-events-none"
+              "absolute top-full left-0 right-0 z-50",
+              "bg-white dark:bg-card border-t border-border",
+              "shadow-[0_4px_20px_rgba(0,0,0,0.15)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.5)]",
+              "animate-in fade-in-0 slide-in-from-top-2 duration-200"
             )}
           >
             <div className="flex flex-col px-6 py-4">
-              <div className="flex flex-col space-y-4">
+              <div className="flex flex-col space-y-2">
                 <Link
                   href="/"
-                  className="text-sm font-medium text-foreground/90 hover:text-primary transition-colors"
+                  className="text-sm font-medium text-foreground/90 hover:text-primary transition-colors py-3 px-2 rounded-lg hover:bg-primary/5"
                 >
                   Home
                 </Link>
                 <Link
                   href="/collections"
-                  className="text-sm font-medium text-foreground/90 hover:text-primary transition-colors"
+                  className="text-sm font-medium text-foreground/90 hover:text-primary transition-colors py-3 px-2 rounded-lg hover:bg-primary/5"
                 >
                   Collections
                 </Link>
                 <Link
                   href="/exchange"
-                  className="text-sm font-medium text-foreground/90 hover:text-primary transition-colors"
+                  className="text-sm font-medium text-foreground/90 hover:text-primary transition-colors py-3 px-2 rounded-lg hover:bg-primary/5"
                 >
                   Exchange
                 </Link>
@@ -137,7 +140,7 @@ export function Navigation() {
                   href="https://sites.google.com/digiphile.co/help/construction"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm font-medium text-foreground/90 hover:text-primary transition-colors"
+                  className="text-sm font-medium text-foreground/90 hover:text-primary transition-colors py-3 px-2 rounded-lg hover:bg-primary/5"
                 >
                   Blog
                 </a>
@@ -145,26 +148,13 @@ export function Navigation() {
                   href="https://sites.google.com/digiphile.co/help"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm font-medium text-foreground/90 hover:text-primary transition-colors"
+                  className="text-sm font-medium text-foreground/90 hover:text-primary transition-colors py-3 px-2 rounded-lg hover:bg-primary/5"
                 >
                   Support
                 </a>
               </div>
-              <div className="flex items-center justify-between pt-4 mt-4 border-t border-black/[0.06] dark:border-white/[0.06]">
+              <div className="flex items-center justify-center pt-4 mt-4 border-t border-black/[0.06] dark:border-white/[0.06]">
                 <ThemeToggle />
-                {!isAuthLoading && <CartDrawer />}
-                {!isAuthLoading && !user && (
-                  <div className="flex gap-2">
-                    <SignInButton />
-                    <SignUpButton />
-                  </div>
-                )}
-                {isAuthLoading && (
-                  <div className="flex items-center gap-2">
-                    <div className="h-8 w-16 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
-                    <div className="h-8 w-16 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
-                  </div>
-                )}
               </div>
             </div>
           </div>
