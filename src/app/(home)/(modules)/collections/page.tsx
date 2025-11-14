@@ -17,6 +17,8 @@ export const metadata: Metadata = {
     title: "All Collections | Digiphile",
     description:
       "Browse all available gaming collections on Digiphile. Discover curated Steam game collections that support indie developers and charities.",
+    url: "https://digiphile.co/collections",
+    siteName: "Digiphile",
     images: [
       {
         url: "https://static.digiphile.co/digiphile-social.jpg",

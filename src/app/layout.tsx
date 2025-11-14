@@ -18,21 +18,34 @@ const funnelDisplay = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Digiphile | Steam Gaming Collections That Make a Difference",
+  title: "Digiphile - Expert-Curated Game & Book Collections",
   icons: [
     { rel: "icon", url: "/favicon/favicon.ico" },
     { rel: "apple-touch-icon", url: "/favicon/apple-touch-icon.png" },
   ],
   description:
-    "Digiphile makes discovering content more collaborative. Our thoughtfully curated platform helps you find great new games, albums, films, and more. Explore exclusive promotions, engage with a knowledgeable community, and showcase your expertise as you discover new content together.",
+    "Expert-curated, premium game and book collections from Humble Bundle vets offering discovery options for digital media enthusiasts like the Games Exchange.",
   keywords:
     "steam game collections, steam keys, charity gaming, indie games, game deals",
   openGraph: {
-    title: "Digiphile Steam Gaming Collections",
+    title: "Digiphile - Expert-Curated Game & Book Collections",
     description:
-      "Digiphile makes discovering content more collaborative. Our thoughtfully curated platform helps you find great new games, albums, films, and more. Explore exclusive promotions, engage with a knowledgeable community, and showcase your expertise as you discover new content together.",
+      "Expert-curated, premium game and book collections from Humble Bundle vets offering discovery options for digital media enthusiasts like the Games Exchange.",
     type: "website",
     url: "https://digiphile.co",
+    siteName: "Digiphile",
+    images: [
+      {
+        url: "https://static.digiphile.co/digiphile-social.jpg",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Digiphile - Expert-Curated Game & Book Collections",
+    description:
+      "Expert-curated, premium game and book collections from Humble Bundle vets offering discovery options for digital media enthusiasts like the Games Exchange.",
+    images: ["https://static.digiphile.co/digiphile-social.jpg"],
   },
 };
 

@@ -34,6 +34,8 @@ export async function generateMetadata({
       openGraph: {
         title: bundle.seo.title,
         description: bundle.seo.description,
+        url: `https://digiphile.co/collections/${slug}`,
+        siteName: "Digiphile",
         images: bundle.seo.image?.url
           ? [
               {
