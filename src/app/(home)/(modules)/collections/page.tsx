@@ -6,7 +6,8 @@ import { serverApiClient } from "@/lib/server-api";
 import { BundleListItem } from "@/app/(shared)/types/bundle";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
+// Use revalidation instead of force-dynamic to ensure metadata is in HTML
+export const revalidate = 60; // Revalidate every 60 seconds
 
 export const metadata: Metadata = {
   title: "All Collections | Digiphile",

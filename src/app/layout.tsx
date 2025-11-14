@@ -18,6 +18,7 @@ const funnelDisplay = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://digiphile.co"),
   title: "Digiphile - Expert-Curated Game & Book Collections",
   icons: [
     { rel: "icon", url: "/favicon/favicon.ico" },

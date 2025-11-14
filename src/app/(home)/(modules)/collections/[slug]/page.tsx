@@ -8,7 +8,8 @@ import { serverApiClient } from "@/lib/server-api";
 import React from "react";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
+// Use revalidation instead of force-dynamic to ensure metadata is in HTML
+export const revalidate = 60; // Revalidate every 60 seconds
 
 export async function generateMetadata({
   params,

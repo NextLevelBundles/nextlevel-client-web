@@ -5,7 +5,8 @@ import { ExchangeGameContent } from "./exchange-game-content";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
+// Use revalidation instead of force-dynamic to ensure metadata is in HTML
+export const revalidate = 60; // Revalidate every 60 seconds
 
 interface PageProps {
   params: Promise<{ id: string }>;

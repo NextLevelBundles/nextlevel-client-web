@@ -7,7 +7,8 @@ import { Footer } from "@/home/components/sections/footer";
 import { serverApiClient } from "@/lib/server-api";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
+// Use revalidation instead of force-dynamic to ensure metadata is in HTML
+// export const revalidate = 60; // Revalidate every 60 seconds
 
 export const metadata: Metadata = {
   title: "Digiphile - Expert-Curated Game & Book Collections",
