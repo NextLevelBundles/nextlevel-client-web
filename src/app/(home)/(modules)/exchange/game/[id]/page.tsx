@@ -22,20 +22,23 @@ export async function generateMetadata({
     if (!game) {
       return {
         title: "Game Not Found | Digiphile Exchange",
-        description: "The exchange game you are looking for could not be found.",
+        description:
+          "The exchange game you are looking for could not be found.",
       };
     }
 
     return {
       title: `${game.title} - Exchange | Digiphile`,
-      description: `Trade your credits for ${game.title}. ${game.shortDescription || "Available now on the Digiphile Exchange."}`,
+      description: `Trade your credits for ${game.title}. ${"Available now on the Digiphile Exchange."}`,
       openGraph: {
         title: `${game.title} - Exchange | Digiphile`,
-        description: `Trade your credits for ${game.title}. ${game.shortDescription || "Available now on the Digiphile Exchange."}`,
+        description: `Trade your credits for ${game.title}. ${"Available now on the Digiphile Exchange."}`,
         images: [
           {
             url:
-              game.headerImage || "http://static.digiphile.co/digiphile-social.jpg",
+              game.steamApp.headerImage ||
+              game.coverImage.url ||
+              "https://static.digiphile.co/digiphile-social.jpg",
           },
         ],
         type: "website",
@@ -43,9 +46,11 @@ export async function generateMetadata({
       twitter: {
         card: "summary_large_image",
         title: `${game.title} - Exchange | Digiphile`,
-        description: `Trade your credits for ${game.title}. ${game.shortDescription || "Available now on the Digiphile Exchange."}`,
+        description: `Trade your credits for ${game.title}. "Available now on the Digiphile Exchange."}`,
         images: [
-          game.headerImage || "http://static.digiphile.co/digiphile-social.jpg",
+          game.steamApp.headerImage ||
+            game.coverImage.url ||
+            "https://static.digiphile.co/digiphile-social.jpg",
         ],
       },
     };
@@ -85,7 +90,9 @@ export default async function ExchangeGameDetailsPage({ params }: PageProps) {
         <div className="min-h-screen bg-background pt-16 flex items-center justify-center">
           <div className="text-center space-y-4">
             <h2 className="text-2xl font-bold">Something went wrong</h2>
-            <p className="text-muted-foreground">Failed to load game details. Please try again later.</p>
+            <p className="text-muted-foreground">
+              Failed to load game details. Please try again later.
+            </p>
           </div>
         </div>
         <Footer />

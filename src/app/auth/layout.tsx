@@ -10,7 +10,7 @@ export const metadata: Metadata = {
       "Sign in to your Digiphile account to access your game library, manage purchases, and discover new curated bundles.",
     images: [
       {
-        url: "http://static.digiphile.co/digiphile-social.jpg",
+        url: "https://static.digiphile.co/digiphile-social.jpg",
       },
     ],
     type: "website",
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     title: "Sign In | Digiphile",
     description:
       "Sign in to your Digiphile account to access your game library, manage purchases, and discover new curated bundles.",
-    images: ["http://static.digiphile.co/digiphile-social.jpg"],
+    images: ["https://static.digiphile.co/digiphile-social.jpg"],
   },
 };
 

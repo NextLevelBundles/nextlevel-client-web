@@ -19,7 +19,7 @@ export const metadata: Metadata = {
       "Expert-curated, premium game and book collections from Humble Bundle vets offering discovery options for digital media enthusiasts like the Games Exchange.",
     images: [
       {
-        url: "http://static.digiphile.co/digiphile-social.jpg",
+        url: "https://static.digiphile.co/digiphile-social.jpg",
       },
     ],
     type: "website",
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     title: "Digiphile - Expert-Curated Game & Book Collections",
     description:
       "Expert-curated, premium game and book collections from Humble Bundle vets offering discovery options for digital media enthusiasts like the Games Exchange.",
-    images: ["http://static.digiphile.co/digiphile-social.jpg"],
+    images: ["https://static.digiphile.co/digiphile-social.jpg"],
   },
 };
 

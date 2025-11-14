@@ -13,7 +13,7 @@ export const metadata: Metadata = {
       "Read the Privacy Policy for Digiphile. Expert-curated, premium game and book collections from Humble Bundle vets.",
     images: [
       {
-        url: "http://static.digiphile.co/digiphile-social.jpg",
+        url: "https://static.digiphile.co/digiphile-social.jpg",
       },
     ],
     type: "website",
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     title: "Privacy Policy | Digiphile",
     description:
       "Read the Privacy Policy for Digiphile. Expert-curated, premium game and book collections from Humble Bundle vets.",
-    images: ["http://static.digiphile.co/digiphile-social.jpg"],
+    images: ["https://static.digiphile.co/digiphile-social.jpg"],
   },
 };
 

@@ -6,7 +6,7 @@ import { serverApiClient } from "@/lib/server-api";
 import { BundleListItem } from "@/app/(shared)/types/bundle";
 import type { Metadata } from "next";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "All Collections | Digiphile",
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
       "Browse all available gaming collections on Digiphile. Discover curated Steam game collections that support indie developers and charities.",
     images: [
       {
-        url: "http://static.digiphile.co/digiphile-social.jpg",
+        url: "https://static.digiphile.co/digiphile-social.jpg",
       },
     ],
     type: "website",
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     title: "All Collections | Digiphile",
     description:
       "Browse all available gaming collections on Digiphile. Discover curated Steam game collections that support indie developers and charities.",
-    images: ["http://static.digiphile.co/digiphile-social.jpg"],
+    images: ["https://static.digiphile.co/digiphile-social.jpg"],
   },
 };
 

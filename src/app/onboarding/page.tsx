@@ -14,7 +14,7 @@ export const metadata: Metadata = {
       "Complete your Digiphile profile to get started with your digital game library and exclusive bundles.",
     images: [
       {
-        url: "http://static.digiphile.co/digiphile-social.jpg",
+        url: "https://static.digiphile.co/digiphile-social.jpg",
       },
     ],
     type: "website",
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     title: "Complete Your Profile | Digiphile",
     description:
       "Complete your Digiphile profile to get started with your digital game library and exclusive bundles.",
-    images: ["http://static.digiphile.co/digiphile-social.jpg"],
+    images: ["https://static.digiphile.co/digiphile-social.jpg"],
   },
 };
 
@@ -37,7 +37,7 @@ export default async function Onboarding() {
 
   // Check if user already has a customerId (completed profile)
   // This is handled by middleware, but we can add a server-side check as well
-  const customerId = session.customClaims?.['custom:customerId'];
+  const customerId = session.customClaims?.["custom:customerId"];
   if (customerId) {
     redirect("/customer", RedirectType.replace);
   }

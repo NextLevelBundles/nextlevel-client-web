@@ -15,7 +15,7 @@ export const metadata: Metadata = {
       "Manage your Digiphile account, view your game library, track purchases, and access your Steam keys.",
     images: [
       {
-        url: "http://static.digiphile.co/digiphile-social.jpg",
+        url: "https://static.digiphile.co/digiphile-social.jpg",
       },
     ],
     type: "website",
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     title: "Customer Dashboard | Digiphile",
     description:
       "Manage your Digiphile account, view your game library, track purchases, and access your Steam keys.",
-    images: ["http://static.digiphile.co/digiphile-social.jpg"],
+    images: ["https://static.digiphile.co/digiphile-social.jpg"],
   },
 };
 
@@ -35,7 +35,7 @@ export default async function CustomerNavigation({
   children: React.ReactNode;
 }) {
   const session = await getServerSession();
-  
+
   // Session check happens in middleware, but we check for expired tokens here
   if (session && "expired" in session) {
     // This shouldn't happen as middleware should catch it, but just in case

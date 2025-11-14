@@ -17,7 +17,7 @@ export const metadata: Metadata = {
       "Read the Terms of Service for Digiphile. Expert-curated, premium game and book collections from Humble Bundle vets.",
     images: [
       {
-        url: "http://static.digiphile.co/digiphile-social.jpg",
+        url: "https://static.digiphile.co/digiphile-social.jpg",
       },
     ],
     type: "website",
@@ -27,13 +27,19 @@ export const metadata: Metadata = {
     title: "Terms of Service | Digiphile",
     description:
       "Read the Terms of Service for Digiphile. Expert-curated, premium game and book collections from Humble Bundle vets.",
-    images: ["http://static.digiphile.co/digiphile-social.jpg"],
+    images: ["https://static.digiphile.co/digiphile-social.jpg"],
   },
 };
 
 export default function TermsOfService() {
   // Read the markdown file from the assets folder
-  const markdownPath = path.join(process.cwd(), "src", "assets", "documents", "Terms of Service Digiphile 11-11-25.docx.md");
+  const markdownPath = path.join(
+    process.cwd(),
+    "src",
+    "assets",
+    "documents",
+    "Terms of Service Digiphile 11-11-25.docx.md"
+  );
   const markdownContent = fs.readFileSync(markdownPath, "utf-8");
 
   return (
@@ -55,18 +61,34 @@ export default function TermsOfService() {
                 <a
                   {...props}
                   className="text-primary hover:underline"
-                  target={props.href?.startsWith('http') ? '_blank' : undefined}
-                  rel={props.href?.startsWith('http') ? 'noopener noreferrer' : undefined}
+                  target={props.href?.startsWith("http") ? "_blank" : undefined}
+                  rel={
+                    props.href?.startsWith("http")
+                      ? "noopener noreferrer"
+                      : undefined
+                  }
                 />
               ),
-              h1: ({ node, ...props }) => <h1 className="text-4xl font-bold mb-4" {...props} />,
-              h2: ({ node, ...props }) => <h2 className="text-2xl font-semibold mb-4 mt-8" {...props} />,
-              h3: ({ node, ...props }) => <h3 className="text-xl font-semibold mb-2 mt-4" {...props} />,
+              h1: ({ node, ...props }) => (
+                <h1 className="text-4xl font-bold mb-4" {...props} />
+              ),
+              h2: ({ node, ...props }) => (
+                <h2 className="text-2xl font-semibold mb-4 mt-8" {...props} />
+              ),
+              h3: ({ node, ...props }) => (
+                <h3 className="text-xl font-semibold mb-2 mt-4" {...props} />
+              ),
               p: ({ node, ...props }) => <p className="mb-4" {...props} />,
-              ul: ({ node, ...props }) => <ul className="list-disc pl-6 mb-4 space-y-2" {...props} />,
-              ol: ({ node, ...props }) => <ol className="list-decimal pl-6 mb-4 space-y-2" {...props} />,
+              ul: ({ node, ...props }) => (
+                <ul className="list-disc pl-6 mb-4 space-y-2" {...props} />
+              ),
+              ol: ({ node, ...props }) => (
+                <ol className="list-decimal pl-6 mb-4 space-y-2" {...props} />
+              ),
               li: ({ node, ...props }) => <li className="mb-1" {...props} />,
-              strong: ({ node, ...props }) => <strong className="font-bold" {...props} />,
+              strong: ({ node, ...props }) => (
+                <strong className="font-bold" {...props} />
+              ),
               em: ({ node, ...props }) => <em className="italic" {...props} />,
             }}
           >
