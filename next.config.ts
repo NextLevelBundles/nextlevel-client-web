@@ -1,7 +1,8 @@
-import {withSentryConfig} from "@sentry/nextjs";
+import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  htmlLimitedBots: /.*/,
   reactStrictMode: true,
   eslint: {
     ignoreDuringBuilds: true,
