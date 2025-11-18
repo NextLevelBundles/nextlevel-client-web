@@ -50,6 +50,10 @@ import { toast } from "sonner";
 
 dayjs.extend(duration);
 
+// Bot verification configuration
+// Set to false to disable Cloudflare Turnstile captcha verification
+const ENABLE_BOT_VERIFICATION = false;
+
 export function CartDrawer() {
   const [isOpen, setIsOpen] = useState(false);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
@@ -145,10 +149,13 @@ export function CartDrawer() {
       return;
     }
 
-    // Show captcha if no token
-    if (!captchaToken) {
-      setShowCaptcha(true);
-      return;
+    // Check if bot verification is enabled
+    if (ENABLE_BOT_VERIFICATION) {
+      // Show captcha if no token
+      if (!captchaToken) {
+        setShowCaptcha(true);
+        return;
+      }
     }
 
     setIsCheckoutLoading(true);
@@ -160,7 +167,14 @@ export function CartDrawer() {
       const finalCid = trackdeskCid && linkId ? trackdeskCid : null;
       const finalLinkId = linkId && trackdeskCid ? linkId : null;
 
-      const response = await reserveCart(captchaToken, finalCid, finalLinkId);
+      // Use captcha token if bot verification is enabled, otherwise pass undefined
+      const tokenToUse = ENABLE_BOT_VERIFICATION ? captchaToken : undefined;
+      const response = await reserveCart(
+        tokenToUse ?? undefined,
+        finalCid,
+        finalLinkId
+      );
+
       // Redirect to Stripe checkout
       window.location.href = response.url;
     } catch (error) {
@@ -529,11 +543,14 @@ export function CartDrawer() {
         )}
       </SheetContent>
 
-      <TurnstileCaptcha
-        isOpen={showCaptcha}
-        onVerified={handleCaptchaVerified}
-        onClose={handleCaptchaClose}
-      />
+      {/* Only render captcha component if bot verification is enabled */}
+      {ENABLE_BOT_VERIFICATION && (
+        <TurnstileCaptcha
+          isOpen={showCaptcha}
+          onVerified={handleCaptchaVerified}
+          onClose={handleCaptchaClose}
+        />
+      )}
 
       {/* Cart Item Modal with Details and Revenue tabs */}
       <CartItemModal
