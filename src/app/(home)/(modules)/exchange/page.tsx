@@ -12,12 +12,21 @@ import { Card } from "@/shared/components/ui/card";
 import Link from "next/link";
 import { useUserCredits } from "@/hooks/queries/use-user-credits";
 import { useAuth } from "@/shared/providers/auth-provider";
+import { useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
 
 export default function ExchangePage() {
   const { user } = useAuth();
   const { data: exchangeData, isLoading, error } = useExchangeData();
   const { data: creditsData } = useUserCredits();
   const isAuthenticated = !!user;
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   if (error) {
     return (
@@ -138,11 +147,25 @@ export default function ExchangePage() {
         {/* Games Grid Section */}
         <section className="py-12 bg-background">
           <div className="container mx-auto px-4">
-            <div className="mb-8">
-              <h2 className="text-3xl font-bold">Browse the Exchange</h2>
-              <p className="text-muted-foreground mt-1">
-                Discover your next favorite game
-              </p>
+            <div className="mb-8 flex items-start justify-between">
+              <div>
+                <h2 className="text-3xl font-bold">Browse the Exchange</h2>
+                <p className="text-muted-foreground mt-1">
+                  Discover your next favorite game
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Sort by:</span>
+                <Select value={sortOrder} onValueChange={(value: "asc" | "desc") => setSortOrder(value)}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="desc">Most Credits First</SelectItem>
+                    <SelectItem value="asc">Least Credits First</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {isLoading ? (
@@ -174,7 +197,11 @@ export default function ExchangePage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {[...exchangeData.exchangeGames]
-                  .sort((a, b) => b.outputCredits - a.outputCredits)
+                  .sort((a, b) =>
+                    sortOrder === "desc"
+                      ? b.outputCredits - a.outputCredits
+                      : a.outputCredits - b.outputCredits
+                  )
                   .map((game) => (
                     <ExchangeGameCard key={game.id} game={game} />
                   ))}
