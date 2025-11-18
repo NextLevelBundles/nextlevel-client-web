@@ -80,29 +80,22 @@ export function useGenerateDownloadUrl() {
     mutationFn: ({ assignmentId, bookFileId }) =>
       bookApi.generateDownloadUrl(assignmentId, bookFileId),
     onSuccess: async (data, variables) => {
-      // Create a progress toast that we'll update
-      const progressToast = toast.loading(`Downloading ${variables.fileName}...`, {
-        description: 'Starting download...'
-      });
-
       try {
-        // Use our custom download function with progress tracking
+        // Use direct link download - browser handles everything natively
         await downloadFile(data.downloadUrl, variables.fileName);
 
-        // Dismiss progress toast and show success
-        toast.dismiss(progressToast);
-        toast.success(`Successfully downloaded ${variables.fileName}`, {
-          description: 'File saved to your Downloads folder'
+        // Show success notification
+        toast.success(`Download started: ${variables.fileName}`, {
+          description: 'Check your browser\'s download manager for progress'
         });
 
         // Invalidate queries to refresh download count
         queryClient.invalidateQueries({ queryKey: ["bookAssignments"] });
         queryClient.invalidateQueries({ queryKey: ["bookAssignment", variables.assignmentId] });
       } catch (error) {
-        toast.dismiss(progressToast);
         console.error('Download error:', error);
 
-        // Fallback to opening in new tab if blob download fails
+        // Fallback to opening in new tab if direct download fails
         toast.warning("Direct download failed, opening in new tab...");
         window.open(data.downloadUrl, '_blank');
       }
