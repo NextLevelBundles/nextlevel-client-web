@@ -46,10 +46,8 @@ const getCanonicalTiers = (tiers: Tier[]) => {
 
 export function BundleDetail({
   bundle,
-  isPreviewMode = false,
 }: {
   bundle: Bundle;
-  isPreviewMode?: boolean;
 }) {
   const { user } = useAuth();
   const { addToCart } = useCart();
@@ -61,32 +59,41 @@ export function BundleDetail({
   const startDate = useMemo(() => new Date(bundle.startsAt), [bundle.startsAt]);
   const endDate = useMemo(() => new Date(bundle.endsAt), [bundle.endsAt]);
 
+  // Calculate sale period dates with fallbacks
+  const saleStartDate = useMemo(
+    () => (bundle.sellFrom ? new Date(bundle.sellFrom) : startDate),
+    [bundle.sellFrom, startDate]
+  );
+  const saleEndDate = useMemo(
+    () => (bundle.sellTo ? new Date(bundle.sellTo) : endDate),
+    [bundle.sellTo, endDate]
+  );
+
   const isBundleActive = bundle.status === BundleStatus.Active;
 
-  // Determine if bundle should be visible:
-  // - In preview mode: Always show (regardless of status or timing)
-  // - Not in preview mode: Only show if Active status (regardless of timing)
-  const shouldShowBundle = isPreviewMode || isBundleActive;
+  // Determine if bundle should be visible - only show if Active status
+  const shouldShowBundle = isBundleActive;
 
   if (!shouldShowBundle) {
     return <BundleNotFound />;
   }
 
   // Determine bundle state for UI (calculate once on mount)
-  const bundleState: 'preview' | 'not-started' | 'expired' | 'active' = useMemo(() => {
+  const bundleState: 'not-started' | 'expired' | 'active' = useMemo(() => {
     const now = new Date();
     const isBundleNotYetStarted = now < startDate;
     const isBundleExpired = now > endDate;
 
-    // Even in preview mode, show timing-based states
-    return isBundleNotYetStarted
-      ? 'not-started'
-      : isBundleExpired
-      ? 'expired'
-      : isPreviewMode
-      ? 'preview'
-      : 'active';
-  }, [isPreviewMode, startDate, endDate]);
+    if (isBundleNotYetStarted) return 'not-started';
+    if (isBundleExpired) return 'expired';
+    return 'active';
+  }, [startDate, endDate]);
+
+  // Check if sale is currently active (independent of bundle state)
+  const isSaleActive = useMemo(() => {
+    const now = new Date();
+    return now >= saleStartDate && now <= saleEndDate;
+  }, [saleStartDate, saleEndDate]);
 
   // Check if bundle has expired (needed for PurchaseSummary)
   const isBundleExpired = bundleState === 'expired';
@@ -284,46 +291,40 @@ export function BundleDetail({
   };
 
   // Check if CTA should be disabled
-  // In preview mode, allow purchases even if bundle hasn't started
+  // Add to Cart is enabled only if sale is active (regardless of bundle state)
   const isCtaDisabled =
     !hasAvailableBaseTiers ||
-    isBundleExpired ||
-    (bundleState === "not-started" && !isPreviewMode) ||
+    !isSaleActive ||
     totalAmount === 0;
 
-  // Render status banner based on bundle state
+  // Render status banner based on sale status
   const renderStatusBanner = () => {
-    // Only show banner for expired state, not for not-started (timer is in hero)
-    if (bundleState === 'active' || bundleState === 'preview' || bundleState === 'not-started') return null;
+    // Only show banner if sale is not active
+    if (isSaleActive) return null;
 
     const bannerConfig = {
-      expired: {
-        icon: AlertCircle,
-        bgColor: 'bg-orange-50 dark:bg-orange-950/30',
-        borderColor: 'border-orange-200 dark:border-orange-800',
-        textColor: 'text-orange-700 dark:text-orange-300',
-        title: 'Collection Ended',
-        description: 'This collection has ended and is no longer available for purchase.',
-      },
+      icon: AlertCircle,
+      bgColor: 'bg-orange-50 dark:bg-orange-950/30',
+      borderColor: 'border-orange-200 dark:border-orange-800',
+      textColor: 'text-orange-700 dark:text-orange-300',
+      title: 'Sale Not Active',
+      description: 'This collection is not currently available for purchase.',
     };
 
-    const config = bannerConfig[bundleState];
-    if (!config) return null;
-
-    const Icon = config.icon;
+    const Icon = bannerConfig.icon;
 
     return (
       <Card
-        className={`p-4 ${config.bgColor} border ${config.borderColor} my-6`}
+        className={`p-4 ${bannerConfig.bgColor} border ${bannerConfig.borderColor} my-6`}
       >
         <div className="flex items-start gap-3">
-          <Icon className={`h-5 w-5 ${config.textColor} mt-0.5 flex-shrink-0`} />
+          <Icon className={`h-5 w-5 ${bannerConfig.textColor} mt-0.5 flex-shrink-0`} />
           <div className="flex-1">
-            <p className={`text-sm font-semibold ${config.textColor} mb-1`}>
-              {config.title}
+            <p className={`text-sm font-semibold ${bannerConfig.textColor} mb-1`}>
+              {bannerConfig.title}
             </p>
-            <p className={`text-xs ${config.textColor}`}>
-              {config.description}
+            <p className={`text-xs ${bannerConfig.textColor}`}>
+              {bannerConfig.description}
             </p>
           </div>
         </div>
@@ -495,7 +496,7 @@ export function BundleDetail({
                   hasAvailableBaseTiers={hasAvailableBaseTiers}
                   bundleUnavailabilityReason={bundleUnavailabilityReason}
                   bundleState={bundleState}
-                  isPreviewMode={isPreviewMode}
+                  isSaleActive={isSaleActive}
                 />
               </div>
             </div>
@@ -519,7 +520,7 @@ export function BundleDetail({
           disabled={isCtaDisabled}
           bundleType={bundle.type}
           bundleState={bundleState}
-          isPreviewMode={isPreviewMode}
+          isSaleActive={isSaleActive}
           className="pb-6"
         />
 
@@ -546,7 +547,7 @@ export function BundleDetail({
           hasAvailableBaseTiers={hasAvailableBaseTiers}
           bundleUnavailabilityReason={bundleUnavailabilityReason}
           bundleState={bundleState}
-          isPreviewMode={isPreviewMode}
+          isSaleActive={isSaleActive}
         />
       </div>
     </TooltipProvider>

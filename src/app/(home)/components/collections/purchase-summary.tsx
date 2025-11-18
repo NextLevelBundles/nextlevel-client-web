@@ -53,8 +53,8 @@ interface PurchaseSummaryProps {
   tierAvailability?: BundleTierAvailabilityResponse;
   hasAvailableBaseTiers: boolean;
   bundleUnavailabilityReason: "country" | "soldout" | null;
-  bundleState: "preview" | "not-started" | "expired" | "active";
-  isPreviewMode?: boolean;
+  bundleState: "not-started" | "expired" | "active";
+  isSaleActive: boolean;
   isMobileSheet?: boolean;
 }
 
@@ -77,7 +77,7 @@ export function PurchaseSummary({
   hasAvailableBaseTiers,
   bundleUnavailabilityReason,
   bundleState,
-  isPreviewMode = false,
+  isSaleActive,
   isMobileSheet = false,
 }: PurchaseSummaryProps) {
   const [tipInputValue, setTipInputValue] = useState("");
@@ -684,17 +684,9 @@ export function PurchaseSummary({
                 hasAvailableBaseTiers={hasAvailableBaseTiers}
                 bundleType={bundle.type}
                 bundleUnavailabilityReason={bundleUnavailabilityReason}
-                disabled={
-                  bundleState === "expired" ||
-                  (bundleState === "not-started" && !isPreviewMode)
-                }
+                disabled={!isSaleActive}
               />
-              {!(
-                bundleState === "expired" ||
-                (bundleState === "not-started" && !isPreviewMode) ||
-                !hasAvailableBaseTiers ||
-                bundleUnavailabilityReason
-              ) && (
+              {isSaleActive && hasAvailableBaseTiers && !bundleUnavailabilityReason && (
                 <p className="text-xs text-center text-muted-foreground mt-2">
                   * Sales tax may be calculated during checkout depending on
                   your location

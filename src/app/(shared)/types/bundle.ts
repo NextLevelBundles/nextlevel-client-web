@@ -26,6 +26,8 @@ export interface BundleListItem {
   type: BundleType;
   startsAt: string; // ISO date string
   endsAt: string;
+  sellFrom?: string | null; // ISO date string - when sales start
+  sellTo?: string | null; // ISO date string - when sales end
   status: string;
   createdAt: string;
   updatedAt: string;

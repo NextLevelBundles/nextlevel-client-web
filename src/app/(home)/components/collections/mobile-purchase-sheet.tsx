@@ -36,8 +36,8 @@ interface MobilePurchaseSheetProps {
   tierAvailability?: Record<string, number>;
   hasAvailableBaseTiers: boolean;
   bundleUnavailabilityReason: "country" | "soldout" | null;
-  bundleState: "preview" | "not-started" | "expired" | "active";
-  isPreviewMode?: boolean;
+  bundleState: "not-started" | "expired" | "active";
+  isSaleActive: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -52,7 +52,7 @@ export function MobilePurchaseSheet({
   hasAvailableBaseTiers,
   bundleUnavailabilityReason,
   bundleState,
-  isPreviewMode,
+  isSaleActive,
   selectedCharityTierIds,
   selectedUpsellTierIds,
   tipAmount,
@@ -86,7 +86,7 @@ export function MobilePurchaseSheet({
             hasAvailableBaseTiers={hasAvailableBaseTiers}
             bundleUnavailabilityReason={bundleUnavailabilityReason}
             bundleState={bundleState}
-            isPreviewMode={isPreviewMode}
+            isSaleActive={isSaleActive}
             selectedCharityTierIds={selectedCharityTierIds}
             selectedUpsellTierIds={selectedUpsellTierIds}
             tipAmount={tipAmount}
@@ -187,17 +187,9 @@ export function MobilePurchaseSheet({
                 hasAvailableBaseTiers={hasAvailableBaseTiers}
                 bundleType={bundle.type}
                 bundleUnavailabilityReason={bundleUnavailabilityReason}
-                disabled={
-                  bundleState === "expired" ||
-                  (bundleState === "not-started" && !isPreviewMode)
-                }
+                disabled={!isSaleActive}
               />
-              {!(
-                bundleState === "expired" ||
-                (bundleState === "not-started" && !isPreviewMode) ||
-                !hasAvailableBaseTiers ||
-                bundleUnavailabilityReason
-              ) && (
+              {isSaleActive && hasAvailableBaseTiers && !bundleUnavailabilityReason && (
                 <p className="text-xs text-center text-muted-foreground mt-2">
                   * Sales tax may be calculated during checkout depending on
                   your location

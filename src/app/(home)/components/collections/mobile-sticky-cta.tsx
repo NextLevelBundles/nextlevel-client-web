@@ -25,8 +25,8 @@ interface MobileStickyCTAProps {
   bundleUnavailabilityReason?: "country" | "soldout" | null;
   disabled?: boolean;
   bundleType: BundleType;
-  bundleState?: "preview" | "not-started" | "expired" | "active";
-  isPreviewMode?: boolean;
+  bundleState?: "not-started" | "expired" | "active";
+  isSaleActive?: boolean;
 }
 
 export function MobileStickyCTA({
@@ -46,7 +46,7 @@ export function MobileStickyCTA({
   disabled = false,
   bundleType,
   bundleState = "active",
-  isPreviewMode = false,
+  isSaleActive = true,
 }: MobileStickyCTAProps) {
   const { user } = useAuth();
   const isAuthenticated = !!user;
@@ -109,7 +109,7 @@ export function MobileStickyCTA({
                 hasAvailableBaseTiers={hasAvailableBaseTiers}
                 bundleType={bundleType}
                 bundleUnavailabilityReason={bundleUnavailabilityReason}
-                disabled={disabled || (bundleState === "expired") || (bundleState === "not-started" && !isPreviewMode)}
+                disabled={disabled || !isSaleActive}
                 className="w-full h-auto px-6 py-3 text-sm"
               >
                 Add to Cart
