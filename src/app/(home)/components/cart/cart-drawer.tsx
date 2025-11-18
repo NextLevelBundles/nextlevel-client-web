@@ -280,7 +280,7 @@ export function CartDrawer() {
           </div>
         ) : (
           <div className="flex flex-col h-full">
-            <ScrollArea className="flex-1 md:pb-0 pb-40">
+            <ScrollArea className="flex-1 md:pb-0 pb-40 overflow-auto">
               <div className="space-y-4 py-4">
                 {cart?.items.map((item) => {
                   const isExpanded = expandedItems[item.id] || false;
@@ -430,7 +430,7 @@ export function CartDrawer() {
               </div>
             </ScrollArea>
 
-            <div className="md:relative md:border-t md:bg-transparent md:shadow-none fixed bottom-0 left-0 right-0 border-t py-4 px-6 md:px-0 space-y-2 bg-card/95 backdrop-blur-lg shadow-[0_-4px_12px_rgba(0,0,0,0.1)] dark:shadow-[0_-4px_12px_rgba(0,0,0,0.3)]">
+            <div className="-m-6 relative md:bg-transparent border-t py-4 px-6 space-y-2 bg-card/95 backdrop-blur-lg shadow-[0_-4px_12px_rgba(0,0,0,0.1)] dark:shadow-[0_-4px_12px_rgba(0,0,0,0.3)]">
               {cart?.reservationStatus === "Active" &&
                 cart.reservationExpiresAt &&
                 reservationTimeLeft !== "Expired" && (
