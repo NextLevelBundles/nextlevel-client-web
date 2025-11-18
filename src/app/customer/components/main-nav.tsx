@@ -17,7 +17,7 @@ import {
 const navigation = [
   { name: "Dashboard", href: "/customer/dashboard", icon: GamepadIcon },
   { name: "Purchase History", href: "/customer/purchases", icon: ReceiptIcon },
-  { name: "Games Library", href: "/customer/keys", icon: Gamepad2 },
+  { name: "Games Library", href: "/customer/library/steam-keys", icon: Gamepad2 },
   { name: "Book Library", href: "/customer/library/books", icon: BookOpen },
   {
     name: "Exchange History",
@@ -38,7 +38,7 @@ export function MainNav() {
         const Icon = item.icon;
         const isActive =
           pathname === item.href ||
-          (item.href === "/customer/keys" &&
+          (item.href === "/customer/library/steam-keys" &&
             pathname === "/customer/library/games");
 
         return (

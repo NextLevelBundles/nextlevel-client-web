@@ -86,7 +86,7 @@ export default function SteamKeyGiftPage() {
       if (response.redirectUrl) {
         router.push(response.redirectUrl);
       } else {
-        router.push("/customer/keys");
+        router.push("/customer/library/steam-keys");
       }
     } catch (err) {
       console.error("Error accepting gift:", err);
