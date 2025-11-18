@@ -71,7 +71,28 @@ export function CartDrawer() {
     // refreshCart,
   } = useCart();
 
-  const toggleItemExpanded = (itemId: string) => {
+  // Auto-expand gift items when cart changes
+  useEffect(() => {
+    if (cart?.items) {
+      const giftItemsExpanded: Record<string, boolean> = {};
+      cart.items.forEach((item) => {
+        if (item.isGift) {
+          giftItemsExpanded[item.id] = true;
+        }
+      });
+      // Merge with existing expanded items, but prioritize gift items
+      setExpandedItems((prev) => ({
+        ...prev,
+        ...giftItemsExpanded,
+      }));
+    }
+  }, [cart?.items]);
+
+  const toggleItemExpanded = (itemId: string, isGift: boolean) => {
+    // Don't allow collapsing gift items
+    if (isGift && expandedItems[itemId]) {
+      return;
+    }
     setExpandedItems((prev) => ({
       ...prev,
       [itemId]: !prev[itemId],
@@ -355,14 +376,16 @@ export function CartDrawer() {
                                 {isBookBundle(item) ? "books" : "games"}
                               </span>
 
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-xs h-7 px-2 hover:bg-primary/10 hover:text-primary transition-colors"
-                                onClick={() => toggleItemExpanded(item.id)}
-                              >
-                                {isExpanded ? "Hide" : "Details"}
-                              </Button>
+                              {!item.isGift && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-xs h-7 px-2 hover:bg-primary/10 hover:text-primary transition-colors"
+                                  onClick={() => toggleItemExpanded(item.id, !!item.isGift)}
+                                >
+                                  {isExpanded ? "Hide" : "Details"}
+                                </Button>
+                              )}
                             </div>
 
                             {/* Collapsible details */}
