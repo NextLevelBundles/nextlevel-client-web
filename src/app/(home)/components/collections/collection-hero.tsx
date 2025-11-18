@@ -14,13 +14,61 @@ interface BundleHeroProps {
 export function BundleHero({ bundle }: BundleHeroProps) {
   const startDate = useMemo(() => new Date(bundle.startsAt), [bundle.startsAt]);
   const endDate = useMemo(() => new Date(bundle.endsAt), [bundle.endsAt]);
-  const now = new Date();
-  const hasStarted = now >= startDate;
 
-  // Use start date for countdown if not started, otherwise use end date
-  const { timeLeft, hasEnded } = useCountdownTimer(
-    hasStarted ? bundle?.endsAt : bundle?.startsAt
+  // Calculate sale period dates with fallbacks
+  const saleStartDate = useMemo(
+    () => (bundle.sellFrom ? new Date(bundle.sellFrom) : startDate),
+    [bundle.sellFrom, startDate]
   );
+  const saleEndDate = useMemo(
+    () => (bundle.sellTo ? new Date(bundle.sellTo) : endDate),
+    [bundle.sellTo, endDate]
+  );
+
+  const now = new Date();
+  const bundleHasStarted = now >= startDate;
+  const bundleHasEnded = now > endDate;
+  const saleHasStarted = now >= saleStartDate;
+  const saleHasEnded = now > saleEndDate;
+
+  // Determine which date to countdown to and what label to show
+  let countdownTarget: string;
+  let timerLabel: string;
+
+  if (bundleHasEnded) {
+    // Bundle has ended
+    countdownTarget = bundle.endsAt;
+    timerLabel = "Collection Ended";
+  } else if (!bundleHasStarted) {
+    // Bundle hasn't started yet
+    if (bundle.sellFrom || bundle.sellTo) {
+      // Sale period is defined
+      if (saleHasStarted && !saleHasEnded) {
+        // Sale has started but bundle hasn't - exclusive access is active
+        // Countdown to when bundle starts (when exclusive access ends)
+        countdownTarget = bundle.startsAt;
+        timerLabel = "Exclusive Access Ends in";
+      } else if (!saleHasStarted) {
+        // Sale hasn't started yet - countdown to sale start
+        countdownTarget = bundle.sellFrom || bundle.startsAt;
+        timerLabel = "Exclusive Access Starts in";
+      } else {
+        // Sale has ended but bundle hasn't started - countdown to bundle start
+        countdownTarget = bundle.startsAt;
+        timerLabel = "Starts in";
+      }
+    } else {
+      // No sale period defined - countdown to bundle start
+      countdownTarget = bundle.startsAt;
+      timerLabel = "Starts in";
+    }
+  } else {
+    // Bundle has started - countdown to bundle end
+    countdownTarget = bundle.endsAt;
+    timerLabel = "Ends in";
+  }
+
+  const { timeLeft, hasEnded } = useCountdownTimer(countdownTarget);
 
   // Count only products from base tiers
   const baseTierIds =
@@ -103,13 +151,7 @@ export function BundleHero({ bundle }: BundleHeroProps) {
               <div className="px-6 py-4">
                 <div className="flex items-center gap-2 text-white/80 text-sm uppercase tracking-wide mb-1">
                   <Timer className="h-4 w-4" />
-                  <span>
-                    {hasEnded
-                      ? "Collection Ended"
-                      : hasStarted
-                        ? "Ends in"
-                        : "Starts in"}
-                  </span>
+                  <span>{timerLabel}</span>
                 </div>
                 <div className="text-2xl font-mono font-bold text-white">
                   {timeLeft}
