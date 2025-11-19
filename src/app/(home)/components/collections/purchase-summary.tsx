@@ -136,10 +136,10 @@ export function PurchaseSummary({
   let developerSupportAmount = 0;
   let tipAmountForDisplay = 0;
 
-  // Base tier distribution (75/20/5)
-  publisherAmount = baseAmount * 0.75;
-  platformAmount = baseAmount * 0.2;
-  charityAmountForDisplay = baseAmount * 0.05;
+  // Base tier distribution using bundle-specific splits
+  publisherAmount = baseAmount * (bundle.publisherSplit / 100);
+  platformAmount = baseAmount * (bundle.platformSplit / 100);
+  charityAmountForDisplay = baseAmount * (bundle.charitySplit / 100);
 
   // Charity tier - 100% to charity
   charityAmountForDisplay += totalCharityAmount;

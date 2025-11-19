@@ -20,16 +20,16 @@ export function CartItemRevenueModal({
   isOpen,
   onClose,
 }: CartItemRevenueModalProps) {
-  // Calculate revenue distribution
+  // Calculate revenue distribution using bundle-specific splits
   let publisherAmount = 0;
   let platformAmount = 0;
   let charityAmount = 0;
   let developerSupportAmount = 0;
 
-  // Base tier distribution (75/20/5)
-  publisherAmount = item.baseAmount * 0.75;
-  platformAmount = item.baseAmount * 0.2;
-  charityAmount = item.baseAmount * 0.05;
+  // Base tier distribution using bundle-specific splits
+  publisherAmount = item.baseAmount * (item.snapshotPublisherSplit / 100);
+  platformAmount = item.baseAmount * (item.snapshotPlatformSplit / 100);
+  charityAmount = item.baseAmount * (item.snapshotCharitySplit / 100);
 
   // Charity tier - 100% to charity
   charityAmount += item.charityAmount;

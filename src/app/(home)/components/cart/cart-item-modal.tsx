@@ -36,10 +36,10 @@ interface CartItemModalProps {
 export function CartItemModal({ item, isOpen, onClose }: CartItemModalProps) {
   if (!item) return null;
 
-  // Calculate revenue distribution
-  let publisherAmount = item.baseAmount * 0.75;
-  let platformAmount = item.baseAmount * 0.2;
-  let charityAmount = item.baseAmount * 0.05;
+  // Calculate revenue distribution using bundle-specific splits
+  let publisherAmount = item.baseAmount * (item.snapshotPublisherSplit / 100);
+  let platformAmount = item.baseAmount * (item.snapshotPlatformSplit / 100);
+  let charityAmount = item.baseAmount * (item.snapshotCharitySplit / 100);
   charityAmount += item.charityAmount;
 
   // Tip distribution based on excess distribution type
@@ -50,6 +50,8 @@ export function CartItemModal({ item, isOpen, onClose }: CartItemModalProps) {
       charityAmount += item.tipAmount;
     }
   }
+
+  console.log(item);
 
   const developerSupportAmount = item.upsellAmount;
   const totalAmount = item.totalAmount;
@@ -270,20 +272,25 @@ export function CartItemModal({ item, isOpen, onClose }: CartItemModalProps) {
                 </div>
 
                 {/* Tip Information - Prominent Section */}
-                {item.tipAmount > 0 && (
-                  <div className="mt-6 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
-                    <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">
-                      Your ${item.tipAmount.toFixed(2)} tip for{" "}
-                      {item.snapshotExcessDistributionType === "Publishers"
-                        ? "Publishers"
-                        : "Charity"}{" "}
-                      goes 100% to{" "}
-                      {item.snapshotExcessDistributionType === "Publishers"
-                        ? "Publishers"
-                        : "Charity"}
-                    </p>
-                  </div>
-                )}
+                {item.tipAmount > 0 &&
+                  item.snapshotExcessDistributionType === "Publishers" && (
+                    <div className="mt-6 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
+                      <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+                        Your ${item.tipAmount.toFixed(2)} tip goes 100% to
+                        Publishers
+                      </p>
+                    </div>
+                  )}
+
+                {item.tipAmount > 0 &&
+                  item.snapshotExcessDistributionType === "Charity" && (
+                    <div className="mt-6 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
+                      <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+                        Your ${item.tipAmount.toFixed(2)} extra donation for
+                        goes 100% to Charity
+                      </p>
+                    </div>
+                  )}
 
                 {/* Breakdown details */}
                 <div className="mt-6 pt-4 border-t space-y-2 text-xs text-muted-foreground">

@@ -31,6 +31,9 @@ export interface BundleListItem {
   status: string;
   createdAt: string;
   updatedAt: string;
+  platformSplit: number;
+  publisherSplit: number;
+  charitySplit: number;
   seo?: {
     title: string;
     description: string;

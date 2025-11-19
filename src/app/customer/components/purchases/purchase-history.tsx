@@ -372,15 +372,6 @@ export function PurchaseHistory() {
                         {getSortIcon("Price")}
                       </div>
                     </TableHead>
-                    <TableHead
-                      className="cursor-pointer select-none hover:bg-muted/50 transition-colors"
-                      onClick={() => handleHeaderClick("CharityAmount")}
-                    >
-                      <div className="flex items-center gap-2">
-                        Charity
-                        {getSortIcon("CharityAmount")}
-                      </div>
-                    </TableHead>
                     <TableHead className="text-center">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -413,12 +404,6 @@ export function PurchaseHistory() {
                           : "items"}
                       </TableCell>
                       <TableCell>${purchase.totalAmount.toFixed(2)}</TableCell>
-                      <TableCell>
-                        $
-                        {(
-                          purchase.charityAmount || purchase.baseAmount * 0.05
-                        ).toFixed(2)}
-                      </TableCell>
                       <TableCell className="text-center">
                         <BundleProductsPopup purchase={purchase} />
                       </TableCell>
