@@ -10,7 +10,11 @@ import { GiftDetailsCard } from "@/app/(public)/components/gift-details-card";
 import { GiftAuthPrompt } from "@/app/(public)/components/gift-auth-prompt";
 import { GiftProductsList } from "@/app/(public)/components/gift-products-list";
 import { giftAcceptanceRateLimiter } from "@/lib/utils/rate-limiter";
-import { useCartItemGift, useAcceptCartItemGift, useCustomer } from "@/hooks/queries";
+import {
+  useCartItemGift,
+  useAcceptCartItemGift,
+  useCustomer,
+} from "@/hooks/queries";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -86,7 +90,11 @@ export default function CartItemGiftPage() {
       if (response.redirectUrl) {
         router.push(response.redirectUrl);
       } else {
-        router.push("/customer/library/steam-keys");
+        if (gift.snapshotPlatform == "Ebook") {
+          router.push("/customer/library/books");
+        } else {
+          router.push("/customer/library/steam-keys");
+        }
       }
     } catch (err) {
       console.error("Error accepting gift:", err);
@@ -105,7 +113,8 @@ export default function CartItemGiftPage() {
     return true;
   };
 
-  const isSelfGift = gift && user && gift.giftedByCustomerId === user.customerId;
+  const isSelfGift =
+    gift && user && gift.giftedByCustomerId === user.customerId;
 
   const isGiftPending = gift && !gift.giftAccepted;
   const isGiftAccepted = gift && gift.giftAccepted === true;
@@ -133,7 +142,8 @@ export default function CartItemGiftPage() {
               Gift Not Available
             </h3>
             <p className="text-sm text-muted-foreground">
-              {error || "This gift could not be found. Please check your link and try again."}
+              {error ||
+                "This gift could not be found. Please check your link and try again."}
             </p>
           </div>
         </div>
@@ -185,7 +195,8 @@ export default function CartItemGiftPage() {
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  You cannot accept your own gift. This gift was sent by you and needs to be accepted by the recipient.
+                  You cannot accept your own gift. This gift was sent by you and
+                  needs to be accepted by the recipient.
                 </AlertDescription>
               </Alert>
             ) : needsSteamConnection ? (

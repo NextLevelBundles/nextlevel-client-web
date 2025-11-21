@@ -10,6 +10,7 @@ import {
   ChevronDown,
   ChevronUp,
   Package,
+  BookIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
@@ -46,16 +47,28 @@ export function GiftProductsList({
                 <h3 className="text-base font-semibold">
                   What&apos;s included
                 </h3>
-                <p className="text-sm text-muted-foreground">
-                  {products.length} {products.length === 1 ? "game" : "games"}{" "}
-                  in this bundle
-                </p>
+                {platform == "Ebook" ? (
+                  <p className="text-sm text-muted-foreground">
+                    {products.length} {products.length === 1 ? "book" : "books"}{" "}
+                    in this collection
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    {products.length} Steam{" "}
+                    {products.length === 1 ? "game" : "games"} in this
+                    collection
+                  </p>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-2">
               {platform && (
                 <Badge variant="outline" className="gap-1">
-                  <SteamIcon className="h-3 w-3" />
+                  {platform == "Ebook" ? (
+                    <BookIcon className="h-3 w-3" />
+                  ) : (
+                    <SteamIcon className="h-3 w-3" />
+                  )}
                   {platform}
                 </Badge>
               )}
