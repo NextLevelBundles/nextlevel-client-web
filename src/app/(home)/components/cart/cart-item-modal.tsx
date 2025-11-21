@@ -51,8 +51,6 @@ export function CartItemModal({ item, isOpen, onClose }: CartItemModalProps) {
     }
   }
 
-  console.log(item);
-
   const developerSupportAmount = item.upsellAmount;
   const totalAmount = item.totalAmount;
 
