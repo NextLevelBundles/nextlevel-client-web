@@ -1,7 +1,7 @@
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { useQuery, keepPreviousData, useQueryClient } from '@tanstack/react-query';
 import { ExchangeHistoryApi } from '@/lib/api/clients/exchange-history';
 import { apiClient } from '@/lib/api/client-api';
-import type { ExchangeHistoryParams, ExchangeHistoryResponse } from '@/lib/api/types/exchange-history';
+import type { ExchangeHistoryParams, ExchangeHistoryResponse, ExchangeHistorySummary } from '@/lib/api/types/exchange-history';
 
 export function useExchangeHistory(params: ExchangeHistoryParams) {
   const exchangeHistoryApi = new ExchangeHistoryApi(apiClient);
@@ -24,14 +24,26 @@ export function useExchangeHistory(params: ExchangeHistoryParams) {
 }
 
 export function useExchangeSummary() {
-  const exchangeHistoryApi = new ExchangeHistoryApi(apiClient);
+  const queryClient = useQueryClient();
 
-  return useQuery({
+  return useQuery<ExchangeHistorySummary>({
     queryKey: ['exchange-summary'],
     queryFn: async () => {
+      // Try to get summary from any existing exchange-history query
+      const existingData = queryClient.getQueriesData<ExchangeHistoryResponse>({
+        queryKey: ['exchange-history'],
+      });
+
+      // If we have cached data with a summary, return it
+      if (existingData.length > 0 && existingData[0][1]?.summary) {
+        return existingData[0][1].summary;
+      }
+
+      // Otherwise, fetch with minimal page size
+      const exchangeHistoryApi = new ExchangeHistoryApi(apiClient);
       const response = await exchangeHistoryApi.getExchangeHistory({
         Page: 1,
-        PageSize: 1, // We only need the summary
+        PageSize: 1,
       });
       return response.summary;
     },

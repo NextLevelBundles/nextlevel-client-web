@@ -10,10 +10,7 @@ import {
   Calendar,
   Filter,
 } from "lucide-react";
-import {
-  useExchangeHistory,
-  useExchangeSummary,
-} from "@/hooks/queries/use-exchange-history";
+import { useExchangeHistory } from "@/hooks/queries/use-exchange-history";
 import { useIsMobile } from "@/hooks/use-media-query";
 import {
   Card,
@@ -80,38 +77,33 @@ function SummaryCard({
   );
 }
 
-function isEarnedType(type: number | string) {
-  // Accepts both enum number and string values
-  return type === 0 || type === "KeyForCredits";
-}
-
 function TransactionCard({
   transaction,
 }: {
   transaction: ExchangeTransactionDto;
 }) {
-  // 0 = KeyForCredits (customer sends key, earns credits)
-  // 1 = CreditsForKey (customer spends credits, gets key)
-  const isEarned = isEarnedType(transaction.type);
+  // KeyForCredits = customer sends key, earns credits
+  // CreditsForKey = customer spends credits, gets key
+  const isEarned = transaction.type === "KeyForCredits";
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card
+      className="hover:shadow-md transition-shadow cursor-pointer"
+      onClick={() => window.open(`https://www.digiphile.co/exchange/game/${transaction.exchangeGameId}`, '_blank')}
+    >
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           <img
             src={transaction.coverImage?.url}
-            alt={transaction.productTitle}
+            alt={transaction.title}
             className="w-16 h-16 rounded-lg object-cover"
           />
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1">
                 <h4 className="font-semibold text-sm truncate">
-                  {transaction.productTitle}
+                  {transaction.title}
                 </h4>
-                <p className="text-xs text-muted-foreground">
-                  {transaction.publisherName}
-                </p>
               </div>
               <Badge
                 variant={isEarned ? "default" : "secondary"}
@@ -143,25 +135,25 @@ function TransactionTableRow({
 }: {
   transaction: ExchangeTransactionDto;
 }) {
-  // 0 = KeyForCredits (customer sends key, earns credits)
-  // 1 = CreditsForKey (customer spends credits, gets key)
-  const isEarned = isEarnedType(transaction.type);
+  // KeyForCredits = customer sends key, earns credits
+  // CreditsForKey = customer spends credits, gets key
+  const isEarned = transaction.type === "KeyForCredits";
 
   return (
-    <tr className="hover:bg-muted/50 transition-colors">
+    <tr
+      className="hover:bg-muted/50 transition-colors cursor-pointer"
+      onClick={() => window.open(`https://www.digiphile.co/exchange/game/${transaction.exchangeGameId}`, '_blank')}
+    >
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
           <img
             src={transaction.coverImage?.url}
-            alt={transaction.productTitle}
+            alt={transaction.title}
             className="w-10 aspect-[2/3] rounded object-contain"
           />
           <div className="min-w-0">
             <p className="font-medium text-sm truncate">
-              {transaction.productTitle}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {transaction.publisherName}
+              {transaction.title}
             </p>
           </div>
         </div>
@@ -258,15 +250,16 @@ export default function CustomerExchangeHistoryPage() {
     return {};
   }, [dateRange, customStartDate, customEndDate]);
 
-  const { data: summaryData, isLoading: summaryLoading } = useExchangeSummary();
-
   const { data, isLoading, error } = useExchangeHistory({
     SearchTerm: searchTerm,
-    Type: type ? Number(type) : undefined,
+    Type: type,
     ...dateParams,
     Page: page,
     PageSize: pageSize,
   });
+
+  const summaryData = data?.summary;
+  const summaryLoading = isLoading;
 
   const totalPages = data?.totalPages || 1;
 
@@ -397,8 +390,8 @@ export default function CustomerExchangeHistoryPage() {
               }}
             >
               <option value="">All Types</option>
-              <option value="0">Earned Credits (Sent Keys)</option>
-              <option value="1">Spent Credits (Received Keys)</option>
+              <option value="KeyForCredits">Earned Credits (Sent Keys)</option>
+              <option value="CreditsForKey">Spent Credits (Received Keys)</option>
             </select>
 
             {/* Date Range */}
