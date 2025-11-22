@@ -28,17 +28,19 @@ export async function generateMetadata({
       };
     }
 
+    const gameTitle = game.title || game.steamApp?.name || "Game";
+
     return {
-      title: `${game.title} - Exchange | Digiphile`,
-      description: `Trade your credits for ${game.title}. ${"Available now on the Digiphile Exchange."}`,
+      title: `${gameTitle} - Exchange | Digiphile`,
+      description: `Trade your credits for ${gameTitle}. Available now on the Digiphile Exchange.`,
       openGraph: {
-        title: `${game.title} - Exchange | Digiphile`,
-        description: `Trade your credits for ${game.title}. ${"Available now on the Digiphile Exchange."}`,
+        title: `${gameTitle} - Exchange | Digiphile`,
+        description: `Trade your credits for ${gameTitle}. Available now on the Digiphile Exchange.`,
         images: [
           {
             url:
-              game.steamApp.headerImage ||
-              game.coverImage.url ||
+              game.steamApp?.headerImage ||
+              game.coverImage?.url ||
               "https://static.digiphile.co/digiphile-social.jpg",
           },
         ],
@@ -46,11 +48,11 @@ export async function generateMetadata({
       },
       twitter: {
         card: "summary_large_image",
-        title: `${game.title} - Exchange | Digiphile`,
-        description: `Trade your credits for ${game.title}. "Available now on the Digiphile Exchange."}`,
+        title: `${gameTitle} - Exchange | Digiphile`,
+        description: `Trade your credits for ${gameTitle}. Available now on the Digiphile Exchange.`,
         images: [
-          game.steamApp.headerImage ||
-            game.coverImage.url ||
+          game.steamApp?.headerImage ||
+            game.coverImage?.url ||
             "https://static.digiphile.co/digiphile-social.jpg",
         ],
       },
