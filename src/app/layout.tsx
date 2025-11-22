@@ -3,6 +3,7 @@ import "@fontsource/orbitron/700.css";
 import "@fontsource/rajdhani/600.css";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import Script from "next/script";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "./(shared)/components/theme-provider";
 import { AuthProvider } from "./(shared)/providers/auth-provider";
@@ -58,6 +59,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={funnelDisplay.className}>
+        <Script
+          id="Cookiebot"
+          src="https://consent.cookiebot.com/uc.js"
+          data-cbid="d305e18c-0ae8-4ce6-a40a-05a55fa30712"
+          data-blockingmode="auto"
+          strategy="beforeInteractive"
+          type="text/javascript"
+          async={true}
+        />
         <AmplifyClientLoader />
         <TrackdeskScript />
         <LinkIdCapture />
