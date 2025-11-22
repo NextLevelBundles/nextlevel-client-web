@@ -21,6 +21,7 @@ import { CartItemModal } from "./cart-item-modal";
 import { useCart } from "@/app/(shared)/contexts/cart/cart-provider";
 import { isBookBundle } from "@/app/(shared)/utils/cart";
 import { getTrackdeskCid, getLinkId } from "@/app/(shared)/lib/trackdesk";
+import { useCartDrawer } from "./cart-drawer-context";
 import {
   Sheet,
   SheetContent,
@@ -55,7 +56,7 @@ dayjs.extend(duration);
 const ENABLE_BOT_VERIFICATION = false;
 
 export function CartDrawer() {
-  const [isOpen, setIsOpen] = useState(false);
+  const { isOpen, setIsOpen } = useCartDrawer();
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
   const [showCaptcha, setShowCaptcha] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);

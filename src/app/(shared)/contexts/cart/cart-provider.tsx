@@ -120,7 +120,7 @@ export default function CartProvider({
     try {
       const updatedCart = await cartApi.addToCart(item);
       dispatch({ type: "SET_CART", payload: updatedCart });
-      toast.success("Item added to cart!");
+      // Success toast removed - handled by component UI
     } catch (error) {
       dispatch({ type: "SET_ERROR", payload: "Failed to add item to cart" });
       // Error toast is handled by the global ClientApi error handler

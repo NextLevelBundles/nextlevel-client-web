@@ -1,5 +1,6 @@
 import { getServerSession } from "@/lib/auth/server-auth";
 import CartProvider from "../(shared)/contexts/cart/cart-provider";
+import { CartDrawerProvider } from "./components/cart/cart-drawer-context";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -41,7 +42,9 @@ export default async function RootLayout({
       {/* <Navigation /> */}
 
       <div className="absolute inset-0 bg-mesh opacity-20 dark:opacity-10 pointer-events-none" />
-      <CartProvider initialCart={null}>{children}</CartProvider>
+      <CartProvider initialCart={null}>
+        <CartDrawerProvider>{children}</CartDrawerProvider>
+      </CartProvider>
     </main>
   );
 }
