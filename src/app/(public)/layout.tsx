@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PublicNavigation } from "./components/navigation";
 import CartProvider from "@/app/(shared)/contexts/cart/cart-provider";
+import { CartDrawerProvider } from "@/app/(home)/components/cart/cart-drawer-context";
 
 export default function PublicLayout({
   children,
@@ -9,12 +10,13 @@ export default function PublicLayout({
 }) {
   return (
     <CartProvider initialCart={null}>
-      <div className="min-h-screen bg-background flex flex-col">
-        {/* Header */}
-        <PublicNavigation />
+      <CartDrawerProvider>
+        <div className="min-h-screen bg-background flex flex-col">
+          {/* Header */}
+          <PublicNavigation />
 
-        {/* Main Content */}
-        <main className="flex-1 flex items-center">{children}</main>
+          {/* Main Content */}
+          <main className="flex-1 flex items-center">{children}</main>
 
         {/* Footer */}
         <footer className="mt-auto border-t bg-card/50 py-8">
@@ -46,7 +48,8 @@ export default function PublicLayout({
             </div>
           </div>
         </footer>
-      </div>
+        </div>
+      </CartDrawerProvider>
     </CartProvider>
   );
 }
