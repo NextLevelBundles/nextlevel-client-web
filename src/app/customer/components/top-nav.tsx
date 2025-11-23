@@ -31,6 +31,7 @@ import { ThemeToggle } from "@/app/(shared)/components/theme-toggle";
 import { UserCredits } from "@/app/(shared)/components/user-credits";
 import Logo from "@/app/(shared)/components/logo";
 import { MainNav } from "./main-nav";
+import { CartDrawer } from "@/app/(home)/components/cart/cart-drawer";
 
 interface TopNavProps {
   user?: { email?: string; name?: string } | null;
@@ -75,6 +76,9 @@ export function TopNav({ user }: TopNavProps) {
           </div>
 
           <div className="h-6 w-px bg-border hidden sm:block" />
+
+          {/* Cart Drawer */}
+          <CartDrawer />
 
           {/* Theme Toggle */}
           <ThemeToggle />
