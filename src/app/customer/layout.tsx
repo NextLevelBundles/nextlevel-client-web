@@ -4,6 +4,8 @@ import { TopNav } from "./components/top-nav";
 import { getServerSession } from "@/lib/auth/server-auth";
 import Logo from "../(shared)/components/logo";
 import type { Metadata } from "next";
+import CartProvider from "@/app/(shared)/contexts/cart/cart-provider";
+import { CartDrawerProvider } from "@/app/(home)/components/cart/cart-drawer-context";
 
 export const metadata: Metadata = {
   title: "Customer Dashboard | Digiphile",
@@ -43,25 +45,29 @@ export default async function CustomerNavigation({
   }
 
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar */}
-      <div className="fixed hidden h-screen w-64 flex-col gap-6 border-r bg-white dark:bg-[#0f111a] shadow-lg backdrop-blur-xs dark:bg-opacity-80 p-6 lg:flex overflow-y-auto">
-        <Link
-          href="/"
-          className="flex items-center gap-2 pl-3 hover:opacity-80 transition-all"
-        >
-          <div className="mb-3">
-            <Logo width={160} height={0} />
+    <CartProvider initialCart={null}>
+      <CartDrawerProvider>
+        <div className="flex min-h-screen">
+          {/* Sidebar */}
+          <div className="fixed hidden h-screen w-64 flex-col gap-6 border-r bg-white dark:bg-[#0f111a] shadow-lg backdrop-blur-xs dark:bg-opacity-80 p-6 lg:flex overflow-y-auto">
+            <Link
+              href="/"
+              className="flex items-center gap-2 pl-3 hover:opacity-80 transition-all"
+            >
+              <div className="mb-3">
+                <Logo width={160} height={0} />
+              </div>
+            </Link>
+            <MainNav />
           </div>
-        </Link>
-        <MainNav />
-      </div>
 
-      {/* Main content */}
-      <div className="flex-1 overflow-auto bg-gray-50 dark:bg-[#0f111a] lg:ml-64">
-        <TopNav user={session?.user} />
-        <div className="container mx-auto p-6 pt-20 lg:pt-6">{children}</div>
-      </div>
-    </div>
+          {/* Main content */}
+          <div className="flex-1 overflow-auto bg-gray-50 dark:bg-[#0f111a] lg:ml-64">
+            <TopNav user={session?.user} />
+            <div className="container mx-auto p-6 pt-20 lg:pt-6">{children}</div>
+          </div>
+        </div>
+      </CartDrawerProvider>
+    </CartProvider>
   );
 }
