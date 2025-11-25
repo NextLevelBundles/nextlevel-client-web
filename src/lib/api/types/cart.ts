@@ -1,6 +1,17 @@
+// Cart item status enum matching backend
+export enum CartItemStatus {
+  AddedToCart = "AddedToCart",
+  Reserved = "Reserved",
+  Expired = "Expired",
+  Failed = "Failed",
+  Completed = "Completed",
+  Refunded = "Refunded",
+}
+
 export interface CartItem {
   id: string;
   type: "Listing";
+  status?: CartItemStatus;
   createdAt?: string;
   completedAt?: string | null;
   cartId?: string;
