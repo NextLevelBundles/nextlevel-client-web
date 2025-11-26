@@ -3,6 +3,7 @@ import {
   signUp,
   signOut,
   confirmSignUp,
+  confirmSignIn,
   resendSignUpCode,
   resetPassword,
   confirmResetPassword,
@@ -11,6 +12,10 @@ import {
   fetchAuthSession,
   fetchUserAttributes,
   autoSignIn,
+  fetchMFAPreference,
+  updateMFAPreference,
+  setUpTOTP,
+  verifyTOTPSetup,
   type SignInInput,
   type SignUpInput,
   type ConfirmSignUpInput,
@@ -283,6 +288,88 @@ export class AuthService {
       return !!session.tokens?.idToken;
     } catch {
       return false;
+    }
+  }
+
+  // MFA Methods
+  static async confirmSignInWithMFA(code: string) {
+    try {
+      const { isSignedIn, nextStep } = await confirmSignIn({
+        challengeResponse: code,
+      });
+
+      if (isSignedIn) {
+        await this.syncIdToken();
+      }
+
+      return { success: true, isSignedIn, nextStep };
+    } catch (error) {
+      console.error("Confirm sign in with MFA error:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "MFA verification failed",
+      };
+    }
+  }
+
+  static async getMFAPreference() {
+    try {
+      const { enabled, preferred } = await fetchMFAPreference();
+      return { success: true, enabled, preferred };
+    } catch (error) {
+      console.error("Get MFA preference error:", error);
+      return {
+        success: false,
+        enabled: undefined,
+        preferred: undefined,
+        error: error instanceof Error ? error.message : "Failed to get MFA preference",
+      };
+    }
+  }
+
+  static async setMFAPreference(
+    emailMFA: "ENABLED" | "DISABLED" | "PREFERRED" | "NOT_PREFERRED" | undefined,
+    totpMFA: "ENABLED" | "DISABLED" | "PREFERRED" | "NOT_PREFERRED" | undefined
+  ) {
+    try {
+      await updateMFAPreference({
+        email: emailMFA,
+        totp: totpMFA,
+      });
+      return { success: true };
+    } catch (error) {
+      console.error("Set MFA preference error:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to update MFA preference",
+      };
+    }
+  }
+
+  static async setupTOTP() {
+    try {
+      const totpSetupDetails = await setUpTOTP();
+      const sharedSecret = totpSetupDetails.sharedSecret;
+      return { success: true, sharedSecret, totpSetupDetails };
+    } catch (error) {
+      console.error("Setup TOTP error:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to setup TOTP",
+      };
+    }
+  }
+
+  static async verifyTOTP(code: string) {
+    try {
+      await verifyTOTPSetup({ code });
+      return { success: true };
+    } catch (error) {
+      console.error("Verify TOTP error:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to verify TOTP code",
+      };
     }
   }
 }
