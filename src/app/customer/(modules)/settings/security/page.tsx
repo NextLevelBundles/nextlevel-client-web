@@ -11,8 +11,6 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
-import { Badge } from "@/shared/components/ui/badge";
-import { Switch } from "@/shared/components/ui/switch";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import {
@@ -25,40 +23,113 @@ import {
   DialogTrigger,
 } from "@/shared/components/ui/dialog";
 import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@/shared/components/ui/alert";
-import {
   KeyIcon,
   EyeIcon,
   EyeOffIcon,
   ShieldCheckIcon,
-  ShieldIcon,
-  ClockIcon,
-  LaptopIcon,
-  SmartphoneIcon,
-  MonitorIcon,
-  CheckIcon,
+  Loader2Icon,
 } from "lucide-react";
+import { AuthService } from "@/lib/auth/auth-service";
+
+interface PasswordFormErrors {
+  currentPassword?: string;
+  newPassword?: string;
+  confirmPassword?: string;
+}
 
 export default function SecurityPage() {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
-  const [is2FAEnabled] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [errors, setErrors] = useState<PasswordFormErrors>({});
 
-  const handlePasswordUpdate = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Implement password update logic
-    toast.success("Password updated successfully!");
-    setIsPasswordDialogOpen(false);
+  const resetForm = () => {
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setShowCurrentPassword(false);
+    setShowNewPassword(false);
+    setShowConfirmPassword(false);
+    setErrors({});
   };
 
-  const handle2FAToggle = () => {
-    // TODO: Implement 2FA toggle logic
-    toast.info("Two-factor authentication coming soon!");
+  const validateForm = (): boolean => {
+    const newErrors: PasswordFormErrors = {};
+
+    if (!currentPassword) {
+      newErrors.currentPassword = "Current password is required";
+    }
+
+    if (!newPassword) {
+      newErrors.newPassword = "New password is required";
+    } else if (newPassword.length < 8) {
+      newErrors.newPassword = "Password must be at least 8 characters";
+    } else if (!/[A-Z]/.test(newPassword)) {
+      newErrors.newPassword = "Password must contain an uppercase letter";
+    } else if (!/[a-z]/.test(newPassword)) {
+      newErrors.newPassword = "Password must contain a lowercase letter";
+    } else if (!/[0-9]/.test(newPassword)) {
+      newErrors.newPassword = "Password must contain a number";
+    } else if (!/[^A-Za-z0-9]/.test(newPassword)) {
+      newErrors.newPassword = "Password must contain a special character";
+    }
+
+    if (!confirmPassword) {
+      newErrors.confirmPassword = "Please confirm your new password";
+    } else if (newPassword !== confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handlePasswordUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsUpdating(true);
+
+    try {
+      const result = await AuthService.updatePassword(
+        currentPassword,
+        newPassword
+      );
+
+      if (result.success) {
+        toast.success("Password updated successfully!");
+        setIsPasswordDialogOpen(false);
+        resetForm();
+      } else {
+        toast.error(result.error || "Failed to update password");
+      }
+    } catch (error) {
+      console.error("Password update error:", error);
+      toast.error("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDialogChange = (open: boolean) => {
+    setIsPasswordDialogOpen(open);
+    if (!open) {
+      resetForm();
+    }
+  };
+
+  const clearFieldError = (field: keyof PasswordFormErrors) => {
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
   };
 
   return (
@@ -78,10 +149,7 @@ export default function SecurityPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Dialog
-              open={isPasswordDialogOpen}
-              onOpenChange={setIsPasswordDialogOpen}
-            >
+            <Dialog open={isPasswordDialogOpen} onOpenChange={handleDialogChange}>
               <DialogTrigger asChild>
                 <motion.div
                   whileHover={{ scale: 1.02 }}
@@ -108,7 +176,13 @@ export default function SecurityPage() {
                       <Input
                         id="current"
                         type={showCurrentPassword ? "text" : "password"}
-                        className="pr-10"
+                        value={currentPassword}
+                        onChange={(e) => {
+                          setCurrentPassword(e.target.value);
+                          clearFieldError("currentPassword");
+                        }}
+                        className={`pr-10 ${errors.currentPassword ? "border-red-500" : ""}`}
+                        disabled={isUpdating}
                       />
                       <Button
                         type="button"
@@ -126,6 +200,9 @@ export default function SecurityPage() {
                         )}
                       </Button>
                     </div>
+                    {errors.currentPassword && (
+                      <p className="text-sm text-red-500">{errors.currentPassword}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="new">New Password</Label>
@@ -133,7 +210,13 @@ export default function SecurityPage() {
                       <Input
                         id="new"
                         type={showNewPassword ? "text" : "password"}
-                        className="pr-10"
+                        value={newPassword}
+                        onChange={(e) => {
+                          setNewPassword(e.target.value);
+                          clearFieldError("newPassword");
+                        }}
+                        className={`pr-10 ${errors.newPassword ? "border-red-500" : ""}`}
+                        disabled={isUpdating}
                       />
                       <Button
                         type="button"
@@ -149,6 +232,12 @@ export default function SecurityPage() {
                         )}
                       </Button>
                     </div>
+                    {errors.newPassword && (
+                      <p className="text-sm text-red-500">{errors.newPassword}</p>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      Must be at least 8 characters with uppercase, lowercase, number, and special character.
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="confirm">Confirm New Password</Label>
@@ -156,7 +245,13 @@ export default function SecurityPage() {
                       <Input
                         id="confirm"
                         type={showConfirmPassword ? "text" : "password"}
-                        className="pr-10"
+                        value={confirmPassword}
+                        onChange={(e) => {
+                          setConfirmPassword(e.target.value);
+                          clearFieldError("confirmPassword");
+                        }}
+                        className={`pr-10 ${errors.confirmPassword ? "border-red-500" : ""}`}
+                        disabled={isUpdating}
                       />
                       <Button
                         type="button"
@@ -174,11 +269,18 @@ export default function SecurityPage() {
                         )}
                       </Button>
                     </div>
+                    {errors.confirmPassword && (
+                      <p className="text-sm text-red-500">{errors.confirmPassword}</p>
+                    )}
                   </div>
                   <DialogFooter>
-                    <Button type="submit" className="gap-2">
-                      <ShieldCheckIcon className="h-4 w-4" />
-                      Update Password
+                    <Button type="submit" className="gap-2" disabled={isUpdating}>
+                      {isUpdating ? (
+                        <Loader2Icon className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <ShieldCheckIcon className="h-4 w-4" />
+                      )}
+                      {isUpdating ? "Updating..." : "Update Password"}
                     </Button>
                   </DialogFooter>
                 </form>
@@ -187,7 +289,7 @@ export default function SecurityPage() {
           </CardContent>
         </Card>
 
-        {/* 2FA Section */}
+        {/* 2FA Section - Coming Soon
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -222,9 +324,10 @@ export default function SecurityPage() {
             </Alert>
           </CardContent>
         </Card>
+        */}
       </div>
 
-      {/* Login Activity Section */}
+      {/* Login Activity Section - Coming Soon
       <Card className="bg-linear-to-br from-card to-card/95 dark:from-[#1a1d2e] dark:to-[#1a1d2e]/95">
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -244,7 +347,6 @@ export default function SecurityPage() {
             Monitor your account&apos;s recent login activity
           </CardDescription>
           <div className="space-y-4">
-            {/* Sample Login Activity Preview */}
             <div className="divide-y rounded-lg border bg-card/30 dark:bg-card/20">
               <div className="flex items-center gap-4 p-4 text-muted-foreground/60 hover:bg-muted/5 dark:hover:bg-[#1d2233]/60">
                 <LaptopIcon className="h-5 w-5" />
@@ -285,6 +387,7 @@ export default function SecurityPage() {
           </div>
         </CardContent>
       </Card>
+      */}
     </div>
   );
 }
