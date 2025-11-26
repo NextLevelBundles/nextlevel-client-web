@@ -53,7 +53,7 @@ dayjs.extend(duration);
 
 // Bot verification configuration
 // Set to false to disable Cloudflare Turnstile captcha verification
-const ENABLE_BOT_VERIFICATION = false;
+const ENABLE_BOT_VERIFICATION = true;
 
 export function CartDrawer() {
   const { isOpen, setIsOpen } = useCartDrawer();
@@ -368,7 +368,7 @@ export function CartDrawer() {
                             <div
                               className={`absolute bottom-1 left-1 p-0.5 sm:p-1 rounded-full ${
                                 isBookBundle(item)
-                                  ? "bg-amber-500"
+                                  ? "bg-slate-600"
                                   : "bg-blue-500"
                               }`}
                             >
@@ -427,7 +427,7 @@ export function CartDrawer() {
                               <span
                                 className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
                                   isBookBundle(item)
-                                    ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400"
+                                    ? "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
                                     : "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400"
                                 }`}
                               >
