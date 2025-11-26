@@ -348,12 +348,13 @@ export function PurchaseSummary({
             ExcessDistributionType.Publishers ? (
               <>
                 <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  3. Support the Devs
+                  3. Support the{" "}
+                  {bundle.type == "SteamGame" ? "Devs" : "Publishers"}
                 </h4>
                 <p className="text-xs text-muted-foreground mb-3">
                   100% of your tip goes directly to{" "}
                   <span className="font-semibold text-blue-600 dark:text-blue-400">
-                    Developers
+                    {bundle.type == "SteamGame" ? "Developers" : "Publishers"}
                   </span>
                 </p>
               </>

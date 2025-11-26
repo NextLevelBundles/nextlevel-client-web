@@ -29,7 +29,6 @@ import {
   User,
   FileText,
   Globe,
-  Hash,
   Package,
   Gamepad2,
   Heart,
@@ -246,27 +245,28 @@ export function ProductDetailModal({
           className={cn(
             "border-b px-4 py-2 flex-shrink-0",
             isUnlocked
-              ? "bg-primary/5 border-primary/10"
-              : "bg-destructive/10 border-destructive/20"
+              ? "bg-primary/5 dark:bg-primary/10 border-primary/10 dark:border-primary/20"
+              : "bg-destructive/10 dark:bg-destructive/20 border-destructive/20 dark:border-destructive/40"
           )}
         >
           <div className="flex items-center justify-center gap-2 text-sm">
             {isUnlocked ? (
               <>
                 <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                <span className="font-medium text-muted-foreground">
-                  Product included in your tier
+                <span className="font-medium text-muted-foreground dark:text-primary/90">
+                  {isBook ? "Book" : "Steam game"} included in your tier
                 </span>
               </>
             ) : (
               <>
-                <Lock className="h-4 w-4 text-destructive" />
-                <span className="font-medium text-destructive">
-                  This product is locked - Unlocks at $
-                  {
-                    bundle.tiers.find((t) => t.id === product.bundleTierId)
-                      ?.price
-                  }
+                <Lock className="h-4 w-4 text-destructive dark:text-red-400" />
+                <span className="font-medium text-destructive dark:text-red-400">
+                  This {isBook ? "book" : "Steam game"} is locked - Unlocks at{" "}
+                  {currentTierInfo?.isCharity
+                    ? "Charity Tier"
+                    : currentTierInfo?.isUpsell
+                      ? currentTierInfo.tier.name
+                      : `$${bundle.tiers.find((t) => t.id === product.bundleTierId)?.price}`}
                 </span>
               </>
             )}
@@ -338,21 +338,15 @@ export function ProductDetailModal({
                         Linux
                       </Badge>
                     )}
-                  {isBook && (
-                    <Badge variant="outline">
-                      <BookOpen className="h-3 w-3 mr-1" />
-                      eBook
-                    </Badge>
-                  )}
                   {isGame ? (
                     <Badge variant="default">
                       <Gamepad2 className="h-3 w-3 mr-1" />
                       Steam Game
                     </Badge>
                   ) : isBook ? (
-                    <Badge variant="secondary">
+                    <Badge variant="outline" className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700">
                       <BookOpen className="h-3 w-3 mr-1" />
-                      Book
+                      eBook
                     </Badge>
                   ) : null}
                 </div>
@@ -371,29 +365,29 @@ export function ProductDetailModal({
                   <>
                     <div
                       className={cn(
-                        "inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full",
+                        "inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full",
                         currentTierInfo.isCharity
-                          ? "bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300"
+                          ? "bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-700"
                           : currentTierInfo.isUpsell
-                            ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
-                            : "bg-muted/50 text-muted-foreground"
+                            ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-700"
+                            : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700"
                       )}
                     >
                       {currentTierInfo.isCharity ? (
-                        <Heart className="h-3 w-3 fill-current" />
+                        <>
+                          <Heart className="h-3 w-3 fill-current" />
+                          Charity Tier
+                        </>
                       ) : currentTierInfo.isUpsell ? (
-                        <Sparkles className="h-3 w-3" />
+                        <>
+                          <Sparkles className="h-3 w-3" />
+                          Extra Items Tier
+                        </>
                       ) : (
-                        <Lock className="h-3 w-3" />
+                        <>
+                          Tier ${currentTierInfo.price}
+                        </>
                       )}
-                      {currentTierInfo.isCharity
-                        ? "Charity Tier"
-                        : currentTierInfo.isUpsell
-                          ? "Extra Items Tier"
-                          : `Base Tier`}
-                    </div>
-                    <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 px-2.5 py-1 rounded-full">
-                      Unlocks at ${currentTierInfo.price}
                     </div>
                   </>
                 )}
@@ -851,6 +845,38 @@ function GameDetails({
   );
 }
 
+// Helper function to convert language codes to full names
+function getLanguageName(code: string): string {
+  const languageMap: Record<string, string> = {
+    'en': 'English',
+    'fr': 'French',
+    'es': 'Spanish',
+    'de': 'German',
+    'it': 'Italian',
+    'pt': 'Portuguese',
+    'ru': 'Russian',
+    'ja': 'Japanese',
+    'zh': 'Chinese',
+    'ko': 'Korean',
+    'ar': 'Arabic',
+    'hi': 'Hindi',
+    'nl': 'Dutch',
+    'pl': 'Polish',
+    'tr': 'Turkish',
+    'sv': 'Swedish',
+    'no': 'Norwegian',
+    'da': 'Danish',
+    'fi': 'Finnish',
+    'cs': 'Czech',
+    'el': 'Greek',
+    'he': 'Hebrew',
+    'th': 'Thai',
+    'vi': 'Vietnamese',
+    'id': 'Indonesian',
+  };
+  return languageMap[code.toLowerCase()] || code;
+}
+
 // Book-specific details component
 function BookDetails({
   product,
@@ -905,18 +931,7 @@ function BookDetails({
               Language
             </h4>
             <p className="text-xs lg:text-sm text-muted-foreground">
-              {metadata.language}
-            </p>
-          </div>
-        )}
-        {metadata?.isbn && (
-          <div>
-            <h4 className="text-xs lg:text-sm font-medium mb-0.5 lg:mb-1 flex items-center gap-1">
-              <Hash className="h-3 w-3" />
-              ISBN
-            </h4>
-            <p className="text-xs lg:text-sm text-muted-foreground">
-              {metadata.isbn}
+              {getLanguageName(metadata.language)}
             </p>
           </div>
         )}
@@ -927,7 +942,11 @@ function BookDetails({
               Publication Date
             </h4>
             <p className="text-xs lg:text-sm text-muted-foreground">
-              {metadata.publicationDate}
+              {new Date(metadata.publicationDate).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
             </p>
           </div>
         )}
@@ -959,9 +978,13 @@ function BookDetails({
               </h4>
               <div className="flex gap-1.5 lg:gap-2">
                 {displayFormats.map((format) => (
-                  <Badge key={format} variant="secondary">
+                  <span
+                    key={format}
+                    className="inline-flex items-center gap-0.5 text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded"
+                  >
+                    <FileText className="h-3 w-3" />
                     {format.toUpperCase()}
-                  </Badge>
+                  </span>
                 ))}
               </div>
             </div>

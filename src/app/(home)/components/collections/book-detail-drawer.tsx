@@ -161,7 +161,6 @@ export function BookDetailDrawer({
                           <Badge
                             key={format}
                             variant="secondary"
-                            className="bg-amber-50 text-amber-700 dark:bg-amber-500/20 dark:text-amber-500"
                           >
                             {format}
                           </Badge>
@@ -194,7 +193,7 @@ export function BookDetailDrawer({
               </div>
 
               {product.curatorComment && (
-                <div className="p-4 bg-amber-50/50 dark:bg-amber-500/10 rounded-lg border border-amber-200 dark:border-amber-500/20">
+                <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
                   <h4 className="font-semibold mb-2 flex items-center gap-2">
                     <BookOpen className="h-4 w-4" />
                     Curator's Corner
