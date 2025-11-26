@@ -11,6 +11,8 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
+import { Switch } from "@/shared/components/ui/switch";
+import { Badge } from "@/shared/components/ui/badge";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import {
@@ -33,9 +35,12 @@ import {
   ShieldCheckIcon,
   Loader2Icon,
   SmartphoneIcon,
+  MailIcon,
   CopyIcon,
   CheckIcon,
   AlertCircleIcon,
+  FingerprintIcon,
+  TrashIcon,
 } from "lucide-react";
 import { AuthService } from "@/lib/auth/auth-service";
 
@@ -73,9 +78,25 @@ export default function SecurityPage() {
   const [isVerifyingTOTP, setIsVerifyingTOTP] = useState(false);
   const [copiedSecret, setCopiedSecret] = useState(false);
 
-  // Fetch MFA preferences on mount
+  // Email MFA state
+  const [isTogglingEmailMFA, setIsTogglingEmailMFA] = useState(false);
+
+  // Passkey state
+  interface PasskeyCredential {
+    credentialId: string;
+    friendlyCredentialName: string;
+    relyingPartyId: string;
+    createdAt: Date;
+  }
+  const [passkeys, setPasskeys] = useState<PasskeyCredential[]>([]);
+  const [isLoadingPasskeys, setIsLoadingPasskeys] = useState(true);
+  const [isRegisteringPasskey, setIsRegisteringPasskey] = useState(false);
+  const [deletingPasskeyId, setDeletingPasskeyId] = useState<string | null>(null);
+
+  // Fetch MFA preferences and passkeys on mount
   useEffect(() => {
     fetchMFAPreferences();
+    fetchPasskeys();
   }, []);
 
   const fetchMFAPreferences = async () => {
@@ -93,6 +114,57 @@ export default function SecurityPage() {
       console.error("Failed to fetch MFA preferences:", error);
     } finally {
       setIsLoadingMFA(false);
+    }
+  };
+
+  // Passkey functions
+  const fetchPasskeys = async () => {
+    setIsLoadingPasskeys(true);
+    try {
+      const result = await AuthService.listPasskeys();
+      if (result.success && result.credentials) {
+        setPasskeys(result.credentials as PasskeyCredential[]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch passkeys:", error);
+    } finally {
+      setIsLoadingPasskeys(false);
+    }
+  };
+
+  const handleRegisterPasskey = async () => {
+    setIsRegisteringPasskey(true);
+    try {
+      const result = await AuthService.registerPasskey();
+      if (result.success) {
+        toast.success("Passkey registered successfully!");
+        await fetchPasskeys();
+      } else {
+        toast.error(result.error || "Failed to register passkey");
+      }
+    } catch (error) {
+      console.error("Register passkey error:", error);
+      toast.error("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsRegisteringPasskey(false);
+    }
+  };
+
+  const handleDeletePasskey = async (credentialId: string) => {
+    setDeletingPasskeyId(credentialId);
+    try {
+      const result = await AuthService.deletePasskey(credentialId);
+      if (result.success) {
+        toast.success("Passkey deleted successfully!");
+        await fetchPasskeys();
+      } else {
+        toast.error(result.error || "Failed to delete passkey");
+      }
+    } catch (error) {
+      console.error("Delete passkey error:", error);
+      toast.error("An unexpected error occurred. Please try again.");
+    } finally {
+      setDeletingPasskeyId(null);
     }
   };
 
@@ -279,7 +351,6 @@ export default function SecurityPage() {
     }
   };
 
-  /* Email MFA functions - Commented out until SES is configured
   const handleToggleEmailMFA = async (enabled: boolean) => {
     setIsTogglingEmailMFA(true);
     try {
@@ -300,9 +371,9 @@ export default function SecurityPage() {
       setIsTogglingEmailMFA(false);
     }
   };
-  */
 
   const isTOTPEnabled = enabledMFAMethods.includes("TOTP");
+  const isEmailMFAEnabled = enabledMFAMethods.includes("EMAIL");
 
   return (
     <div className="grid gap-6">
@@ -481,7 +552,7 @@ export default function SecurityPage() {
             </div>
           ) : (
             <>
-              {/* Email OTP - Commented out until SES is configured
+              {/* Email OTP */}
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex items-center gap-4">
                   <div className="rounded-full bg-blue-500/10 p-2">
@@ -505,7 +576,6 @@ export default function SecurityPage() {
                   disabled={isTogglingEmailMFA}
                 />
               </div>
-              */}
 
               {/* Authenticator App (TOTP) */}
               <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -550,13 +620,116 @@ export default function SecurityPage() {
               </div>
 
               {/* Info Alert */}
-              {isTOTPEnabled && (
+              {(isTOTPEnabled || isEmailMFAEnabled) && (
                 <Alert>
                   <ShieldCheckIcon className="h-4 w-4" />
                   <AlertDescription>
-                    Two-factor authentication is enabled. You&apos;ll need to enter a verification code from your authenticator app when signing in.
+                    Two-factor authentication is enabled. You&apos;ll need to enter a verification code when signing in.
+                    {isTOTPEnabled && isEmailMFAEnabled && " You can choose between your enabled methods."}
                   </AlertDescription>
                 </Alert>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Passkeys Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <div className="rounded-full bg-primary/10 p-2">
+              <FingerprintIcon className="h-5 w-5 text-primary" />
+            </div>
+            Passkeys
+          </CardTitle>
+          <CardDescription>
+            Sign in securely using biometrics, hardware keys, or your device&apos;s screen lock.
+            Passkeys are more secure than passwords and can&apos;t be phished.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {isLoadingPasskeys ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2Icon className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <>
+              {/* Registered Passkeys List */}
+              {passkeys.length > 0 && (
+                <div className="space-y-3">
+                  {passkeys.map((passkey) => (
+                    <div
+                      key={passkey.credentialId}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="rounded-full bg-purple-500/10 p-2">
+                          <FingerprintIcon className="h-5 w-5 text-purple-500" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium">
+                            {passkey.friendlyCredentialName || "Passkey"}
+                          </h4>
+                          <p className="text-sm text-muted-foreground">
+                            Added {new Date(passkey.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeletePasskey(passkey.credentialId)}
+                        disabled={deletingPasskeyId === passkey.credentialId}
+                        className="text-muted-foreground hover:text-destructive"
+                      >
+                        {deletingPasskeyId === passkey.credentialId ? (
+                          <Loader2Icon className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <TrashIcon className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Add Passkey Button */}
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="inline-block"
+              >
+                <Button
+                  onClick={handleRegisterPasskey}
+                  disabled={isRegisteringPasskey}
+                  variant={passkeys.length > 0 ? "outline" : "default"}
+                  className="gap-2"
+                >
+                  {isRegisteringPasskey ? (
+                    <Loader2Icon className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <FingerprintIcon className="h-4 w-4" />
+                  )}
+                  {isRegisteringPasskey ? "Registering..." : "Add Passkey"}
+                </Button>
+              </motion.div>
+
+              {/* Info Alert */}
+              {passkeys.length > 0 && (
+                <Alert>
+                  <FingerprintIcon className="h-4 w-4" />
+                  <AlertDescription>
+                    You can use your passkey to sign in without entering your password.
+                    Just enter your email and use your device&apos;s biometrics or screen lock.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {passkeys.length === 0 && (
+                <p className="text-sm text-muted-foreground">
+                  No passkeys registered yet. Add a passkey to enable passwordless sign-in.
+                </p>
               )}
             </>
           )}

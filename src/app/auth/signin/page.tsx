@@ -8,7 +8,7 @@ import { Button } from "@/app/(shared)/components/ui/button";
 import { Input } from "@/app/(shared)/components/ui/input";
 import { Label } from "@/app/(shared)/components/ui/label";
 import { Alert, AlertDescription } from "@/app/(shared)/components/ui/alert";
-import { Loader2, AlertCircle, Mail, Lock, Eye, EyeOff, ShieldCheck } from "lucide-react";
+import { Loader2, AlertCircle, Mail, Lock, Eye, EyeOff, ShieldCheck, Fingerprint } from "lucide-react";
 import { AuthLayout } from "../components/auth-layout";
 
 type SignInStep = "CREDENTIALS" | "MFA_EMAIL" | "MFA_TOTP" | "MFA_SELECTION";
@@ -32,6 +32,9 @@ export default function SignInPage() {
   const [signInStep, setSignInStep] = useState<SignInStep>("CREDENTIALS");
   const [mfaCode, setMfaCode] = useState("");
   const [availableMfaMethods, setAvailableMfaMethods] = useState<string[]>([]);
+
+  // Passkey state
+  const [isPasskeyLoading, setIsPasskeyLoading] = useState(false);
 
   const isFormValid = email.length > 0 && password.length > 0;
 
@@ -154,6 +157,36 @@ export default function SignInPage() {
     setSignInStep("CREDENTIALS");
     setMfaCode("");
     setError(null);
+  };
+
+  const handlePasskeySignIn = async () => {
+    setError(null);
+
+    // Validate email first
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setFieldErrors({ email: "Please enter a valid email address" });
+      return;
+    }
+
+    setIsPasskeyLoading(true);
+
+    try {
+      const result = await AuthService.signInWithPasskey(email);
+
+      if (result.success && result.isSignedIn) {
+        await handleSignInSuccess();
+      } else if (result.nextStep?.signInStep === "CONFIRM_SIGN_IN_WITH_TOTP_CODE") {
+        // User has TOTP MFA enabled as well
+        setSignInStep("MFA_TOTP");
+      } else {
+        setError(result.error || "Passkey sign in failed. Please try again or use your password.");
+      }
+    } catch (err) {
+      console.error("Passkey sign in error:", err);
+      setError("Passkey sign in failed. Make sure you have a passkey registered for this account.");
+    } finally {
+      setIsPasskeyLoading(false);
+    }
   };
 
   // MFA Selection Screen
@@ -387,10 +420,10 @@ export default function SignInPage() {
           )}
         </div>
 
-        <div className="pt-4">
+        <div className="pt-4 space-y-3">
           <Button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || isPasskeyLoading}
             className="w-full h-11"
             size="lg"
           >
@@ -401,6 +434,38 @@ export default function SignInPage() {
               </>
             ) : (
               "Sign in"
+            )}
+          </Button>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                or
+              </span>
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handlePasskeySignIn}
+            disabled={isLoading || isPasskeyLoading}
+            className="w-full h-11 gap-2"
+            size="lg"
+          >
+            {isPasskeyLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Authenticating...
+              </>
+            ) : (
+              <>
+                <Fingerprint className="h-4 w-4" />
+                Sign in with Passkey
+              </>
             )}
           </Button>
         </div>

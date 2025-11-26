@@ -16,6 +16,9 @@ import {
   updateMFAPreference,
   setUpTOTP,
   verifyTOTPSetup,
+  associateWebAuthnCredential,
+  listWebAuthnCredentials,
+  deleteWebAuthnCredential,
   type SignInInput,
   type SignUpInput,
   type ConfirmSignUpInput,
@@ -369,6 +372,72 @@ export class AuthService {
       return {
         success: false,
         error: error instanceof Error ? error.message : "Failed to verify TOTP code",
+      };
+    }
+  }
+
+  // WebAuthn/Passkey Methods
+
+  static async signInWithPasskey(email: string) {
+    try {
+      const { isSignedIn, nextStep } = await signIn({
+        username: email,
+        options: {
+          authFlowType: "USER_AUTH",
+          preferredChallenge: "WEB_AUTHN",
+        },
+      });
+
+      if (isSignedIn) {
+        await this.syncIdToken();
+      }
+
+      return { success: true, isSignedIn, nextStep };
+    } catch (error) {
+      console.error("Sign in with passkey error:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Passkey sign in failed",
+      };
+    }
+  }
+
+  static async registerPasskey() {
+    try {
+      await associateWebAuthnCredential();
+      return { success: true };
+    } catch (error) {
+      console.error("Register passkey error:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to register passkey",
+      };
+    }
+  }
+
+  static async listPasskeys() {
+    try {
+      const result = await listWebAuthnCredentials();
+      return { success: true, credentials: result.credentials };
+    } catch (error) {
+      console.error("List passkeys error:", error);
+      return {
+        success: false,
+        credentials: [],
+        error: error instanceof Error ? error.message : "Failed to list passkeys",
+      };
+    }
+  }
+
+  static async deletePasskey(credentialId: string) {
+    try {
+      await deleteWebAuthnCredential({ credentialId });
+      return { success: true };
+    } catch (error) {
+      console.error("Delete passkey error:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to delete passkey",
       };
     }
   }
