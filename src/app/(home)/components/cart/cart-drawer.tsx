@@ -53,7 +53,7 @@ dayjs.extend(duration);
 
 // Bot verification configuration
 // Set to false to disable Cloudflare Turnstile captcha verification
-const ENABLE_BOT_VERIFICATION = false;
+const ENABLE_BOT_VERIFICATION = true;
 
 export function CartDrawer() {
   const { isOpen, setIsOpen } = useCartDrawer();
