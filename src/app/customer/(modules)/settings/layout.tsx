@@ -68,7 +68,7 @@ export default function SettingsLayout({
                   Notifications
                 </div>
               </TabsTrigger>
-            </Link>
+            </Link> */}
             <Link href="/customer/settings/security" className="flex">
               <TabsTrigger
                 value="security"
@@ -76,10 +76,10 @@ export default function SettingsLayout({
               >
                 <div className="flex items-center gap-2">
                   <ShieldIcon className="h-4 w-4" />
-                  Security & Support
+                  Security
                 </div>
               </TabsTrigger>
-            </Link> */}
+            </Link>
             <Link href="/customer/settings/steam" className="flex">
               <TabsTrigger
                 value="steam"

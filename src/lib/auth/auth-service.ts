@@ -6,6 +6,7 @@ import {
   resendSignUpCode,
   resetPassword,
   confirmResetPassword,
+  updatePassword,
   getCurrentUser,
   fetchAuthSession,
   fetchUserAttributes,
@@ -16,6 +17,7 @@ import {
   type ResendSignUpCodeInput,
   type ResetPasswordInput,
   type ConfirmResetPasswordInput,
+  type UpdatePasswordInput,
 } from "aws-amplify/auth";
 import Cookies from "js-cookie";
 
@@ -174,6 +176,26 @@ export class AuthService {
           error instanceof Error
             ? error.message
             : "Password reset confirmation failed",
+      };
+    }
+  }
+
+  static async updatePassword(oldPassword: string, newPassword: string) {
+    try {
+      await updatePassword({
+        oldPassword,
+        newPassword,
+      } as UpdatePasswordInput);
+
+      return { success: true };
+    } catch (error) {
+      console.error("Update password error:", error);
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Password update failed",
       };
     }
   }
