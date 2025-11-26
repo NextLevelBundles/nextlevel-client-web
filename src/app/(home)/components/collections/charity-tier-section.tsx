@@ -47,15 +47,16 @@ export function CharityTierSection({
   const isBookBundle = bundleType === BundleType.EBook;
 
   // Add hard-coded artwork to charity tier products
-  const charitySupportArtwork = {
-    id: "charity-artwork-rotis",
-    title: "Exclusive Charity Artwork",
-    price: 0,
-    coverImage: { url: rotisArtwork.src },
-  };
+  // const charitySupportArtwork = {
+  //   id: "charity-artwork-rotis",
+  //   title: "Exclusive Charity Artwork",
+  //   price: 0,
+  //   coverImage: { url: rotisArtwork.src },
+  // };
 
   // Combine actual products with the artwork
-  const allCharityItems = [...tierProducts, charitySupportArtwork];
+  // const allCharityItems = [...tierProducts, charitySupportArtwork];
+  const allCharityItems = tierProducts;
 
   if (tierProducts.length === 0) return null;
 
@@ -105,8 +106,7 @@ export function CharityTierSection({
                     : "books"
                   : tierProducts.length === 1
                     ? "Steam key"
-                    : "Steam keys"}{" "}
-                + exclusive artwork
+                    : "Steam keys"}
               </p>
             </div>
           </div>
