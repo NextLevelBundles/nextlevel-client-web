@@ -41,58 +41,9 @@ import {
 } from "lucide-react";
 import { usePurchases } from "@/hooks/queries/usePurchases";
 import { PurchaseQueryParams, GiftFilterType } from "@/lib/api/types/purchase";
-import { CartItemStatus } from "@/lib/api/types/cart";
 import { BundleProductsPopup } from "./collection-products-popup";
 import { GiftIndicator } from "../gift-indicator";
 import { FilterDropdown } from "../filter-dropdown";
-
-// Helper function to get status badge styling
-function getStatusBadge(status?: CartItemStatus) {
-  switch (status) {
-    case CartItemStatus.Completed:
-      return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400">
-          Completed
-        </span>
-      );
-    case CartItemStatus.Refunded:
-      return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-50 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400">
-          Refunded
-        </span>
-      );
-    case CartItemStatus.Failed:
-      return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400">
-          Failed
-        </span>
-      );
-    case CartItemStatus.Expired:
-      return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400">
-          Expired
-        </span>
-      );
-    case CartItemStatus.Reserved:
-      return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400">
-          Reserved
-        </span>
-      );
-    case CartItemStatus.AddedToCart:
-      return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-50 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400">
-          In Cart
-        </span>
-      );
-    default:
-      return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-50 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400">
-          -
-        </span>
-      );
-  }
-}
 
 const years = ["All Years", "2025", "2024"];
 
@@ -403,11 +354,6 @@ export function PurchaseHistory() {
                         {getSortIcon("Date")}
                       </div>
                     </TableHead>
-                    <TableHead>
-                      <div className="flex items-center gap-2">
-                        Status
-                      </div>
-                    </TableHead>
                     <TableHead
                       className="cursor-pointer select-none hover:bg-muted/50 transition-colors"
                       onClick={() => handleHeaderClick("Quantity")}
@@ -450,9 +396,6 @@ export function PurchaseHistory() {
                         {purchase.completedAt
                           ? new Date(purchase.completedAt).toLocaleDateString()
                           : "-"}
-                      </TableCell>
-                      <TableCell>
-                        {getStatusBadge(purchase.status)}
                       </TableCell>
                       <TableCell>
                         {purchase.snapshotProducts.length}{" "}
