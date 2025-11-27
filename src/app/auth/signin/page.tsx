@@ -120,6 +120,20 @@ export default function SignInPage() {
       const result = await AuthService.selectFirstFactor("PASSWORD_SRP");
 
       if (!result.success) {
+        // Session might be invalid, restart the flow
+        if (result.error?.includes("session") || result.error?.includes("Invalid session")) {
+          // Restart discovery
+          const rediscover = await AuthService.discoverAuthMethods(email);
+          if (rediscover.success) {
+            setAvailableChallenges(rediscover.availableChallenges);
+            // Try again
+            const retry = await AuthService.selectFirstFactor("PASSWORD_SRP");
+            if (retry.success && retry.nextStep?.signInStep === "CONFIRM_SIGN_IN_WITH_PASSWORD") {
+              setSignInStep("PASSWORD");
+              return;
+            }
+          }
+        }
         setError(result.error || "Failed to select password authentication.");
         return;
       }
@@ -148,10 +162,21 @@ export default function SignInPage() {
       if (result.success && result.isSignedIn) {
         await handleSignInSuccess();
       } else {
+        // If passkey failed, session is consumed. Need to restart for password option.
+        // Restart discovery so user can try password
+        const rediscover = await AuthService.discoverAuthMethods(email);
+        if (rediscover.success) {
+          setAvailableChallenges(rediscover.availableChallenges);
+        }
         setError(result.error || "Passkey authentication failed. Please try another method.");
       }
     } catch (err) {
       console.error("Select passkey error:", err);
+      // Restart discovery on error
+      const rediscover = await AuthService.discoverAuthMethods(email);
+      if (rediscover.success) {
+        setAvailableChallenges(rediscover.availableChallenges);
+      }
       setError("Passkey authentication failed. Please try another method.");
     } finally {
       setIsLoading(false);
