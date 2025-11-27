@@ -376,6 +376,133 @@ export class AuthService {
     }
   }
 
+  // Auth Methods Discovery (USER_AUTH flow)
+
+  /**
+   * Initiates USER_AUTH flow to discover available authentication methods.
+   * This starts a sign-in session that must be continued with confirmSignIn.
+   */
+  static async discoverAuthMethods(email: string) {
+    try {
+      // Clear any existing partial sign-in session to avoid "session can only be used once" errors
+      try {
+        await signOut();
+      } catch {
+        // Ignore signOut errors - user might not be in a sign-in flow
+      }
+
+      const { isSignedIn, nextStep } = await signIn({
+        username: email,
+        options: {
+          authFlowType: "USER_AUTH",
+        },
+      });
+
+      // Log the full response for debugging
+      console.log("discoverAuthMethods - isSignedIn:", isSignedIn);
+      console.log("discoverAuthMethods - nextStep:", JSON.stringify(nextStep, null, 2));
+
+      // If somehow signed in directly (shouldn't happen), handle it
+      if (isSignedIn) {
+        await this.syncIdToken();
+        return {
+          success: true,
+          isSignedIn: true,
+          availableChallenges: [] as string[],
+          nextStep
+        };
+      }
+
+      // Extract available challenges from the response
+      let availableChallenges: string[] = [];
+
+      // Log the nextStep structure to understand what Amplify returns
+      console.log("nextStep.signInStep:", nextStep?.signInStep);
+
+      if (nextStep && nextStep.signInStep === "CONTINUE_SIGN_IN_WITH_FIRST_FACTOR_SELECTION") {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const step = nextStep as any;
+
+        // availableChallenges is directly on nextStep
+        if (step.availableChallenges) {
+          availableChallenges = step.availableChallenges;
+          console.log("Extracted availableChallenges:", availableChallenges);
+        }
+      }
+
+      console.log("Final availableChallenges:", availableChallenges);
+
+      return {
+        success: true,
+        isSignedIn: false,
+        availableChallenges,
+        nextStep,
+        hasPasskey: availableChallenges.includes("WEB_AUTHN"),
+        hasPassword: availableChallenges.includes("PASSWORD") || availableChallenges.includes("PASSWORD_SRP"),
+        hasEmailOTP: availableChallenges.includes("EMAIL_OTP"),
+        hasSmsOTP: availableChallenges.includes("SMS_OTP"),
+      };
+    } catch (error) {
+      console.error("Discover auth methods error:", error);
+      return {
+        success: false,
+        isSignedIn: false,
+        availableChallenges: [] as string[],
+        hasPasskey: false,
+        hasPassword: false,
+        error: error instanceof Error ? error.message : "Failed to discover auth methods",
+      };
+    }
+  }
+
+  /**
+   * Selects a first factor (PASSWORD_SRP or WEB_AUTHN) to continue sign-in.
+   * Must be called after discoverAuthMethods.
+   */
+  static async selectFirstFactor(factor: "PASSWORD_SRP" | "WEB_AUTHN" | "EMAIL_OTP" | "SMS_OTP") {
+    try {
+      const { isSignedIn, nextStep } = await confirmSignIn({
+        challengeResponse: factor,
+      });
+
+      if (isSignedIn) {
+        await this.syncIdToken();
+      }
+
+      return { success: true, isSignedIn, nextStep };
+    } catch (error) {
+      console.error("Select first factor error:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to select authentication method",
+      };
+    }
+  }
+
+  /**
+   * Submits the password after selecting PASSWORD_SRP.
+   * The nextStep after selectFirstFactor("PASSWORD_SRP") should be CONFIRM_SIGN_IN_WITH_PASSWORD.
+   */
+  static async submitPasswordForUserAuth(password: string) {
+    try {
+      const { isSignedIn, nextStep } = await confirmSignIn({
+        challengeResponse: password,
+      });
+
+      if (isSignedIn) {
+        await this.syncIdToken();
+      }
+
+      return { success: true, isSignedIn, nextStep };
+    } catch (error) {
+      console.error("Submit password error:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Incorrect password",
+      };
+    }
+  }
+
   // WebAuthn/Passkey Methods
 
   static async signInWithPasskey(email: string) {
