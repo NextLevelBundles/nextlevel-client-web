@@ -461,9 +461,13 @@ export class AuthService {
    */
   static async selectFirstFactor(factor: "PASSWORD_SRP" | "WEB_AUTHN" | "EMAIL_OTP" | "SMS_OTP") {
     try {
+      console.log("selectFirstFactor - calling confirmSignIn with:", factor);
       const { isSignedIn, nextStep } = await confirmSignIn({
         challengeResponse: factor,
       });
+
+      console.log("selectFirstFactor - isSignedIn:", isSignedIn);
+      console.log("selectFirstFactor - nextStep:", JSON.stringify(nextStep, null, 2));
 
       if (isSignedIn) {
         await this.syncIdToken();

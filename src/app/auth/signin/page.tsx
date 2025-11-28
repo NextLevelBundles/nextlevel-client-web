@@ -101,7 +101,40 @@ export default function SignInPage() {
       console.log("Available challenges:", result.availableChallenges);
       setAvailableChallenges(result.availableChallenges);
 
-      // Move to auth options screen
+      const hasPasskey = result.availableChallenges.includes("WEB_AUTHN");
+      const hasPassword = result.availableChallenges.includes("PASSWORD") || result.availableChallenges.includes("PASSWORD_SRP");
+
+      // If only one option available, skip the choice screen
+      if (hasPassword && !hasPasskey) {
+        // Only password available - go directly to password selection
+        const selectResult = await AuthService.selectFirstFactor("PASSWORD_SRP");
+
+        if (selectResult.success) {
+          if (selectResult.isSignedIn) {
+            // User is already signed in (shouldn't happen but handle it)
+            await handleSignInSuccess();
+            return;
+          }
+          if (selectResult.nextStep?.signInStep === "CONFIRM_SIGN_IN_WITH_PASSWORD") {
+            setSignInStep("PASSWORD");
+            return;
+          }
+        }
+        // If something unexpected happened, show error
+        setError(selectResult.error || "Failed to initialize password sign-in. Please try again.");
+        return;
+      } else if (hasPasskey && !hasPassword) {
+        // Only passkey available - trigger passkey directly
+        const passkeyResult = await AuthService.selectFirstFactor("WEB_AUTHN");
+        if (passkeyResult.success && passkeyResult.isSignedIn) {
+          await handleSignInSuccess();
+          return;
+        }
+        // If passkey failed, restart and show options
+        setError(passkeyResult.error || "Passkey authentication failed.");
+      }
+
+      // Multiple options available - show choice screen
       setSignInStep("AUTH_OPTIONS");
     } catch (err) {
       console.error("Email submit error:", err);
