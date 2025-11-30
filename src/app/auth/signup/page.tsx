@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { AuthService } from "@/lib/auth/auth-service";
+import { AuthService, validatePassword } from "@/lib/auth/auth-service";
 import { Button } from "@/app/(shared)/components/ui/button";
 import { Input } from "@/app/(shared)/components/ui/input";
 import { Label } from "@/app/(shared)/components/ui/label";
@@ -63,17 +63,10 @@ export default function SignUpPage() {
     // Validate password
     if (password.length === 0) {
       errors.password = "Password is required";
-    } else if (password.length < 8) {
-      errors.password = "Password must be at least 8 characters long";
     } else {
-      const hasLowercase = /[a-z]/.test(password);
-      const hasUppercase = /[A-Z]/.test(password);
-      const hasNumber = /[0-9]/.test(password);
-      const hasSymbol = /[^a-zA-Z0-9]/.test(password);
-
-      if (!hasLowercase || !hasUppercase || !hasNumber || !hasSymbol) {
-        errors.password =
-          "Must contain uppercase, lowercase, number, and symbol";
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.isValid) {
+        errors.password = passwordValidation.errors[0];
       }
     }
 

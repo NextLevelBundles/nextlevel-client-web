@@ -31,6 +31,72 @@ import Cookies from "js-cookie";
 
 const ID_TOKEN_COOKIE = "id_token";
 
+// Password special characters as per Cognito requirements
+// ^ $ * . [ ] { } ( ) ? - " ! @ # % & / \ , > < ' : ; | _ ~ ` + =
+// Non-leading, non-trailing spaces are also treated as special characters
+const PASSWORD_SPECIAL_CHARS = /[\^$*.\[\]{}()?\-"!@#%&/\\,><':;|_~`+=]/;
+
+export interface PasswordValidationResult {
+  isValid: boolean;
+  errors: string[];
+  checks: {
+    hasMinLength: boolean;
+    hasNumber: boolean;
+    hasUppercase: boolean;
+    hasLowercase: boolean;
+    hasSpecialChar: boolean;
+  };
+}
+
+/**
+ * Validates a password against Cognito password policy requirements:
+ * - At least 8 characters
+ * - Contains at least 1 number
+ * - Contains at least 1 uppercase letter
+ * - Contains at least 1 lowercase letter
+ * - Contains at least 1 special character from: ^ $ * . [ ] { } ( ) ? - " ! @ # % & / \ , > < ' : ; | _ ~ ` + =
+ * - Non-leading, non-trailing spaces are also treated as special characters
+ */
+export function validatePassword(password: string): PasswordValidationResult {
+  const errors: string[] = [];
+
+  const hasMinLength = password.length >= 8;
+  const hasNumber = /[0-9]/.test(password);
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  // Check for special characters OR non-leading, non-trailing space
+  const hasSpecialChar = PASSWORD_SPECIAL_CHARS.test(password) ||
+    (password.includes(' ') && !password.startsWith(' ') && !password.endsWith(' '));
+
+  if (!hasMinLength) {
+    errors.push("Password must be at least 8 characters");
+  }
+  if (!hasNumber) {
+    errors.push("Password must contain at least 1 number");
+  }
+  if (!hasUppercase) {
+    errors.push("Password must contain at least 1 uppercase letter");
+  }
+  if (!hasLowercase) {
+    errors.push("Password must contain at least 1 lowercase letter");
+  }
+  if (!hasSpecialChar) {
+    errors.push("Password must contain at least 1 special character (^ $ * . [ ] { } ( ) ? - \" ! @ # % & / \\ , > < ' : ; | _ ~ ` + =)");
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    checks: {
+      hasMinLength,
+      hasNumber,
+      hasUppercase,
+      hasLowercase,
+      hasSpecialChar,
+    },
+  };
+}
+
 export class AuthService {
   static async signIn(email: string, password: string) {
     try {
@@ -307,7 +373,6 @@ export class AuthService {
 
       return { success: true, isSignedIn, nextStep };
     } catch (error) {
-      console.error("Confirm sign in with MFA error:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "MFA verification failed",
@@ -320,7 +385,6 @@ export class AuthService {
       const { enabled, preferred } = await fetchMFAPreference();
       return { success: true, enabled, preferred };
     } catch (error) {
-      console.error("Get MFA preference error:", error);
       return {
         success: false,
         enabled: undefined,
@@ -341,7 +405,6 @@ export class AuthService {
       });
       return { success: true };
     } catch (error) {
-      console.error("Set MFA preference error:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Failed to update MFA preference",
@@ -355,7 +418,6 @@ export class AuthService {
       const sharedSecret = totpSetupDetails.sharedSecret;
       return { success: true, sharedSecret, totpSetupDetails };
     } catch (error) {
-      console.error("Setup TOTP error:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Failed to setup TOTP",
@@ -368,7 +430,6 @@ export class AuthService {
       await verifyTOTPSetup({ code });
       return { success: true };
     } catch (error) {
-      console.error("Verify TOTP error:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Failed to verify TOTP code",
@@ -398,10 +459,6 @@ export class AuthService {
         },
       });
 
-      // Log the full response for debugging
-      console.log("discoverAuthMethods - isSignedIn:", isSignedIn);
-      console.log("discoverAuthMethods - nextStep:", JSON.stringify(nextStep, null, 2));
-
       // If somehow signed in directly (shouldn't happen), handle it
       if (isSignedIn) {
         await this.syncIdToken();
@@ -416,9 +473,6 @@ export class AuthService {
       // Extract available challenges from the response
       let availableChallenges: string[] = [];
 
-      // Log the nextStep structure to understand what Amplify returns
-      console.log("nextStep.signInStep:", nextStep?.signInStep);
-
       if (nextStep && nextStep.signInStep === "CONTINUE_SIGN_IN_WITH_FIRST_FACTOR_SELECTION") {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const step = nextStep as any;
@@ -426,11 +480,8 @@ export class AuthService {
         // availableChallenges is directly on nextStep
         if (step.availableChallenges) {
           availableChallenges = step.availableChallenges;
-          console.log("Extracted availableChallenges:", availableChallenges);
         }
       }
-
-      console.log("Final availableChallenges:", availableChallenges);
 
       return {
         success: true,
@@ -443,7 +494,6 @@ export class AuthService {
         hasSmsOTP: availableChallenges.includes("SMS_OTP"),
       };
     } catch (error) {
-      console.error("Discover auth methods error:", error);
       return {
         success: false,
         isSignedIn: false,
@@ -461,13 +511,10 @@ export class AuthService {
    */
   static async selectFirstFactor(factor: "PASSWORD_SRP" | "WEB_AUTHN" | "EMAIL_OTP" | "SMS_OTP") {
     try {
-      console.log("selectFirstFactor - calling confirmSignIn with:", factor);
+
       const { isSignedIn, nextStep } = await confirmSignIn({
         challengeResponse: factor,
       });
-
-      console.log("selectFirstFactor - isSignedIn:", isSignedIn);
-      console.log("selectFirstFactor - nextStep:", JSON.stringify(nextStep, null, 2));
 
       if (isSignedIn) {
         await this.syncIdToken();
@@ -475,7 +522,7 @@ export class AuthService {
 
       return { success: true, isSignedIn, nextStep };
     } catch (error) {
-      console.error("Select first factor error:", error);
+
       return {
         success: false,
         error: error instanceof Error ? error.message : "Failed to select authentication method",
@@ -499,7 +546,6 @@ export class AuthService {
 
       return { success: true, isSignedIn, nextStep };
     } catch (error) {
-      console.error("Submit password error:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Incorrect password",
@@ -525,7 +571,6 @@ export class AuthService {
 
       return { success: true, isSignedIn, nextStep };
     } catch (error) {
-      console.error("Sign in with passkey error:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Passkey sign in failed",
@@ -538,7 +583,6 @@ export class AuthService {
       await associateWebAuthnCredential();
       return { success: true };
     } catch (error) {
-      console.error("Register passkey error:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Failed to register passkey",
@@ -551,7 +595,6 @@ export class AuthService {
       const result = await listWebAuthnCredentials();
       return { success: true, credentials: result.credentials };
     } catch (error) {
-      console.error("List passkeys error:", error);
       return {
         success: false,
         credentials: [],
@@ -565,7 +608,6 @@ export class AuthService {
       await deleteWebAuthnCredential({ credentialId });
       return { success: true };
     } catch (error) {
-      console.error("Delete passkey error:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Failed to delete passkey",

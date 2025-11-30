@@ -42,7 +42,7 @@ import {
   FingerprintIcon,
   TrashIcon,
 } from "lucide-react";
-import { AuthService } from "@/lib/auth/auth-service";
+import { AuthService, validatePassword } from "@/lib/auth/auth-service";
 
 interface PasswordFormErrors {
   currentPassword?: string;
@@ -188,16 +188,11 @@ export default function SecurityPage() {
 
     if (!newPassword) {
       newErrors.newPassword = "New password is required";
-    } else if (newPassword.length < 8) {
-      newErrors.newPassword = "Password must be at least 8 characters";
-    } else if (!/[A-Z]/.test(newPassword)) {
-      newErrors.newPassword = "Password must contain an uppercase letter";
-    } else if (!/[a-z]/.test(newPassword)) {
-      newErrors.newPassword = "Password must contain a lowercase letter";
-    } else if (!/[0-9]/.test(newPassword)) {
-      newErrors.newPassword = "Password must contain a number";
-    } else if (!/[^A-Za-z0-9]/.test(newPassword)) {
-      newErrors.newPassword = "Password must contain a special character";
+    } else {
+      const passwordValidation = validatePassword(newPassword);
+      if (!passwordValidation.isValid) {
+        newErrors.newPassword = passwordValidation.errors[0];
+      }
     }
 
     if (!confirmPassword) {

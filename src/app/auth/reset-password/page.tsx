@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AuthService } from "@/lib/auth/auth-service";
+import { AuthService, validatePassword } from "@/lib/auth/auth-service";
 import { Button } from "@/app/(shared)/components/ui/button";
 import { Input } from "@/app/(shared)/components/ui/input";
 import { Label } from "@/app/(shared)/components/ui/label";
@@ -56,17 +56,10 @@ export default function ResetPasswordPage() {
     // Validate new password
     if (newPassword.length === 0) {
       errors.newPassword = "Password is required";
-    } else if (newPassword.length < 8) {
-      errors.newPassword = "Password must be at least 8 characters long";
     } else {
-      const hasLowercase = /[a-z]/.test(newPassword);
-      const hasUppercase = /[A-Z]/.test(newPassword);
-      const hasNumber = /[0-9]/.test(newPassword);
-      const hasSymbol = /[^a-zA-Z0-9]/.test(newPassword);
-
-      if (!hasLowercase || !hasUppercase || !hasNumber || !hasSymbol) {
-        errors.newPassword =
-          "Must contain uppercase, lowercase, number, and symbol";
+      const passwordValidation = validatePassword(newPassword);
+      if (!passwordValidation.isValid) {
+        errors.newPassword = passwordValidation.errors[0];
       }
     }
 
