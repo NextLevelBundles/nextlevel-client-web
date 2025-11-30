@@ -12,7 +12,6 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Switch } from "@/shared/components/ui/switch";
-import { Badge } from "@/shared/components/ui/badge";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import {
@@ -67,7 +66,6 @@ export default function SecurityPage() {
   // MFA state
   const [isLoadingMFA, setIsLoadingMFA] = useState(true);
   const [enabledMFAMethods, setEnabledMFAMethods] = useState<MFAType[]>([]);
-  const [preferredMFA, setPreferredMFA] = useState<MFAType | undefined>();
 
   // TOTP setup state
   const [isTOTPSetupOpen, setIsTOTPSetupOpen] = useState(false);
@@ -108,7 +106,6 @@ export default function SecurityPage() {
         if (result.enabled?.includes("TOTP")) enabled.push("TOTP");
         if (result.enabled?.includes("EMAIL")) enabled.push("EMAIL");
         setEnabledMFAMethods(enabled);
-        setPreferredMFA(result.preferred as MFAType | undefined);
       }
     } catch (error) {
       console.error("Failed to fetch MFA preferences:", error);
@@ -283,8 +280,8 @@ export default function SecurityPage() {
     try {
       const verifyResult = await AuthService.verifyTOTP(totpVerifyCode);
       if (verifyResult.success) {
-        // Enable TOTP as preferred MFA
-        const prefResult = await AuthService.setMFAPreference(undefined, "PREFERRED");
+        // Enable TOTP MFA
+        const prefResult = await AuthService.setMFAPreference(undefined, "ENABLED");
         if (prefResult.success) {
           toast.success("Authenticator app enabled successfully!");
           setIsTOTPSetupOpen(false);
@@ -308,7 +305,7 @@ export default function SecurityPage() {
     setIsSettingUpTOTP(true);
     try {
       const result = await AuthService.setMFAPreference(
-        enabledMFAMethods.includes("EMAIL") ? "PREFERRED" : undefined,
+        enabledMFAMethods.includes("EMAIL") ? "ENABLED" : undefined,
         "DISABLED"
       );
       if (result.success) {
@@ -354,7 +351,7 @@ export default function SecurityPage() {
     try {
       const result = await AuthService.setMFAPreference(
         enabled ? "ENABLED" : "DISABLED",
-        enabledMFAMethods.includes("TOTP") ? (enabled ? "NOT_PREFERRED" : "PREFERRED") : undefined
+        enabledMFAMethods.includes("TOTP") ? "ENABLED" : undefined
       );
       if (result.success) {
         toast.success(enabled ? "Email verification enabled" : "Email verification disabled");
@@ -557,12 +554,7 @@ export default function SecurityPage() {
                     <MailIcon className="h-5 w-5 text-blue-500" />
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-medium">Email Verification</h4>
-                      {isEmailMFAEnabled && preferredMFA === "EMAIL" && (
-                        <Badge variant="secondary" className="text-xs">Preferred</Badge>
-                      )}
-                    </div>
+                    <h4 className="font-medium">Email Verification</h4>
                     <p className="text-sm text-muted-foreground">
                       Receive a verification code via email when signing in
                     </p>
