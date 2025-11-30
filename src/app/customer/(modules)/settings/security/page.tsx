@@ -11,7 +11,6 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
-import { Switch } from "@/shared/components/ui/switch";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import {
@@ -34,7 +33,6 @@ import {
   ShieldCheckIcon,
   Loader2Icon,
   SmartphoneIcon,
-  MailIcon,
   CopyIcon,
   CheckIcon,
   AlertCircleIcon,
@@ -49,7 +47,7 @@ interface PasswordFormErrors {
   confirmPassword?: string;
 }
 
-type MFAType = "TOTP" | "EMAIL";
+type MFAType = "TOTP";
 
 export default function SecurityPage() {
   // Password state
@@ -76,9 +74,6 @@ export default function SecurityPage() {
   const [isVerifyingTOTP, setIsVerifyingTOTP] = useState(false);
   const [copiedSecret, setCopiedSecret] = useState(false);
 
-  // Email MFA state
-  const [isTogglingEmailMFA, setIsTogglingEmailMFA] = useState(false);
-
   // Passkey state
   interface PasskeyCredential {
     credentialId: string;
@@ -104,7 +99,6 @@ export default function SecurityPage() {
       if (result.success) {
         const enabled: MFAType[] = [];
         if (result.enabled?.includes("TOTP")) enabled.push("TOTP");
-        if (result.enabled?.includes("EMAIL")) enabled.push("EMAIL");
         setEnabledMFAMethods(enabled);
       }
     } catch (error) {
@@ -280,9 +274,9 @@ export default function SecurityPage() {
     try {
       const verifyResult = await AuthService.verifyTOTP(totpVerifyCode);
       if (verifyResult.success) {
-        // Enable TOTP MFA, preserve Email MFA if already enabled
+        // Enable TOTP MFA
         const prefResult = await AuthService.setMFAPreference(
-          enabledMFAMethods.includes("EMAIL") ? "ENABLED" : undefined,
+          undefined,
           "ENABLED"
         );
         if (prefResult.success) {
@@ -308,7 +302,7 @@ export default function SecurityPage() {
     setIsSettingUpTOTP(true);
     try {
       const result = await AuthService.setMFAPreference(
-        enabledMFAMethods.includes("EMAIL") ? "ENABLED" : undefined,
+        undefined,
         "DISABLED"
       );
       if (result.success) {
@@ -349,29 +343,7 @@ export default function SecurityPage() {
     }
   };
 
-  const handleToggleEmailMFA = async (enabled: boolean) => {
-    setIsTogglingEmailMFA(true);
-    try {
-      const result = await AuthService.setMFAPreference(
-        enabled ? "ENABLED" : "DISABLED",
-        enabledMFAMethods.includes("TOTP") ? "ENABLED" : undefined
-      );
-      if (result.success) {
-        toast.success(enabled ? "Email verification enabled" : "Email verification disabled");
-        await fetchMFAPreferences();
-      } else {
-        toast.error(result.error || `Failed to ${enabled ? "enable" : "disable"} email verification`);
-      }
-    } catch (error) {
-      console.error("Toggle email MFA error:", error);
-      toast.error("An unexpected error occurred. Please try again.");
-    } finally {
-      setIsTogglingEmailMFA(false);
-    }
-  };
-
   const isTOTPEnabled = enabledMFAMethods.includes("TOTP");
-  const isEmailMFAEnabled = enabledMFAMethods.includes("EMAIL");
 
   return (
     <div className="grid gap-6">
@@ -550,26 +522,6 @@ export default function SecurityPage() {
             </div>
           ) : (
             <>
-              {/* Email OTP */}
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-4">
-                  <div className="rounded-full bg-blue-500/10 p-2">
-                    <MailIcon className="h-5 w-5 text-blue-500" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium">Email Verification</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Receive a verification code via email when signing in
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  checked={isEmailMFAEnabled}
-                  onCheckedChange={handleToggleEmailMFA}
-                  disabled={isTogglingEmailMFA}
-                />
-              </div>
-
               {/* Authenticator App (TOTP) */}
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex items-center gap-4">
@@ -613,12 +565,11 @@ export default function SecurityPage() {
               </div>
 
               {/* Info Alert */}
-              {(isTOTPEnabled || isEmailMFAEnabled) && (
+              {isTOTPEnabled && (
                 <Alert>
                   <ShieldCheckIcon className="h-4 w-4" />
                   <AlertDescription>
-                    Two-factor authentication is enabled. You&apos;ll need to enter a verification code when signing in.
-                    {isTOTPEnabled && isEmailMFAEnabled && " You can choose between your enabled methods."}
+                    Two-factor authentication is enabled. You&apos;ll need to enter a verification code from your authenticator app when signing in.
                   </AlertDescription>
                 </Alert>
               )}
