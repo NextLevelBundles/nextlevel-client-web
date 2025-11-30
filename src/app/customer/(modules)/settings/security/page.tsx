@@ -280,8 +280,11 @@ export default function SecurityPage() {
     try {
       const verifyResult = await AuthService.verifyTOTP(totpVerifyCode);
       if (verifyResult.success) {
-        // Enable TOTP MFA
-        const prefResult = await AuthService.setMFAPreference(undefined, "ENABLED");
+        // Enable TOTP MFA, preserve Email MFA if already enabled
+        const prefResult = await AuthService.setMFAPreference(
+          enabledMFAMethods.includes("EMAIL") ? "ENABLED" : undefined,
+          "ENABLED"
+        );
         if (prefResult.success) {
           toast.success("Authenticator app enabled successfully!");
           setIsTOTPSetupOpen(false);
