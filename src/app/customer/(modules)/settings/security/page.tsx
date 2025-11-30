@@ -252,11 +252,14 @@ export default function SecurityPage() {
   const handleSetupTOTP = async () => {
     setIsSettingUpTOTP(true);
     try {
+      // Get user's email for the authenticator app display
+      const userResult = await AuthService.getCurrentUser();
+      const userEmail = userResult.attributes?.email;
+      
       const result = await AuthService.setupTOTP();
       if (result.success && result.totpSetupDetails) {
         setTotpSecret(result.sharedSecret || "");
-        // Generate QR URI for authenticator apps
-        const qrUri = result.totpSetupDetails.getSetupUri("Digiphile");
+        const qrUri = result.totpSetupDetails.getSetupUri("Digiphile", userEmail);
         setTotpQRUri(qrUri.toString());
         setIsTOTPSetupOpen(true);
       } else {
