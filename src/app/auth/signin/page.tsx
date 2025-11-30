@@ -98,7 +98,6 @@ export default function SignInPage() {
       }
 
       // Store available challenges
-      console.log("Available challenges:", result.availableChallenges);
       setAvailableChallenges(result.availableChallenges);
 
       const hasPasskey = result.availableChallenges.includes("WEB_AUTHN");
