@@ -19,6 +19,9 @@ import {
   associateWebAuthnCredential,
   listWebAuthnCredentials,
   deleteWebAuthnCredential,
+  rememberDevice,
+  forgetDevice,
+  fetchDevices,
   type SignInInput,
   type SignUpInput,
   type ConfirmSignUpInput,
@@ -26,6 +29,7 @@ import {
   type ResetPasswordInput,
   type ConfirmResetPasswordInput,
   type UpdatePasswordInput,
+  type FetchDevicesOutput,
 } from "aws-amplify/auth";
 import Cookies from "js-cookie";
 
@@ -112,6 +116,35 @@ export class AuthService {
       return { success: true, isSignedIn, nextStep };
     } catch (error) {
       console.error("Sign in error:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Sign in failed",
+      };
+    }
+  }
+
+  /**
+   * Sign in with USER_SRP_AUTH flow - required for device tracking to work.
+   * This flow properly returns NewDeviceMetadata which enables MFA suppression
+   * for remembered devices.
+   */
+  static async signInWithSRP(email: string, password: string) {
+    try {
+      const { isSignedIn, nextStep } = await signIn({
+        username: email,
+        password,
+        options: {
+          authFlowType: "USER_SRP_AUTH",
+        },
+      });
+
+      if (isSignedIn) {
+        await this.syncIdToken();
+      }
+
+      return { success: true, isSignedIn, nextStep };
+    } catch (error) {
+      console.error("Sign in with SRP error:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Sign in failed",
@@ -445,12 +478,9 @@ export class AuthService {
    */
   static async discoverAuthMethods(email: string) {
     try {
-      // Clear any existing partial sign-in session to avoid "session can only be used once" errors
-      try {
-        await signOut();
-      } catch {
-        // Ignore signOut errors - user might not be in a sign-in flow
-      }
+      // Note: We avoid calling signOut() here because it clears the device key
+      // from local storage, which breaks the "remember device" functionality.
+      // The USER_AUTH flow handles session management automatically.
 
       const { isSignedIn, nextStep } = await signIn({
         username: email,
@@ -611,6 +641,62 @@ export class AuthService {
       return {
         success: false,
         error: error instanceof Error ? error.message : "Failed to delete passkey",
+      };
+    }
+  }
+
+  // Device Remembering Methods
+
+  /**
+   * Remember the current device to skip MFA for 30 days.
+   * Should be called after successful MFA verification when user opts in.
+   */
+  static async rememberCurrentDevice() {
+    try {
+      await rememberDevice();
+      return { success: true };
+    } catch (error) {
+      console.error("Remember device error:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to remember device",
+      };
+    }
+  }
+
+  /**
+   * Forget the current device, requiring MFA on next login.
+   */
+  static async forgetCurrentDevice() {
+    try {
+      await forgetDevice();
+      return { success: true };
+    } catch (error) {
+      console.error("Forget device error:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to forget device",
+      };
+    }
+  }
+
+  /**
+   * Get list of all remembered devices for the current user.
+   */
+  static async listRememberedDevices(): Promise<{
+    success: boolean;
+    devices: FetchDevicesOutput;
+    error?: string;
+  }> {
+    try {
+      const devices = await fetchDevices();
+      return { success: true, devices };
+    } catch (error) {
+      console.error("List devices error:", error);
+      return {
+        success: false,
+        devices: [],
+        error: error instanceof Error ? error.message : "Failed to list devices",
       };
     }
   }
