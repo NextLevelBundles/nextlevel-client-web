@@ -8,7 +8,8 @@ import { Button } from "@/app/(shared)/components/ui/button";
 import { Input } from "@/app/(shared)/components/ui/input";
 import { Label } from "@/app/(shared)/components/ui/label";
 import { Alert, AlertDescription } from "@/app/(shared)/components/ui/alert";
-import { Loader2, AlertCircle, Mail, Lock, Eye, EyeOff, ShieldCheck, Fingerprint, ArrowLeft } from "lucide-react";
+import { Loader2, AlertCircle, Mail, Lock, Eye, EyeOff, ShieldCheck, Fingerprint, ArrowLeft, Smartphone } from "lucide-react";
+import { Checkbox } from "@/app/(shared)/components/ui/checkbox";
 import { AuthLayout } from "../components/auth-layout";
 
 type SignInStep =
@@ -42,6 +43,9 @@ export default function SignInPage() {
 
   // Available auth methods from USER_AUTH flow
   const [availableChallenges, setAvailableChallenges] = useState<string[]>([]);
+
+  // Remember device state
+  const [rememberDevice, setRememberDevice] = useState(false);
 
   const validateEmail = () => {
     if (email.length === 0) {
@@ -105,22 +109,9 @@ export default function SignInPage() {
 
       // If only one option available, skip the choice screen
       if (hasPassword && !hasPasskey) {
-        // Only password available - go directly to password selection
-        const selectResult = await AuthService.selectFirstFactor("PASSWORD_SRP");
-
-        if (selectResult.success) {
-          if (selectResult.isSignedIn) {
-            // User is already signed in (shouldn't happen but handle it)
-            await handleSignInSuccess();
-            return;
-          }
-          if (selectResult.nextStep?.signInStep === "CONFIRM_SIGN_IN_WITH_PASSWORD") {
-            setSignInStep("PASSWORD");
-            return;
-          }
-        }
-        // If something unexpected happened, show error
-        setError(selectResult.error || "Failed to initialize password sign-in. Please try again.");
+        // Only password available - go directly to password screen
+        // We'll use USER_SRP_AUTH when submitting the password for device tracking support
+        setSignInStep("PASSWORD");
         return;
       } else if (hasPasskey && !hasPassword) {
         // Only passkey available - trigger passkey directly
@@ -144,43 +135,9 @@ export default function SignInPage() {
   };
 
   // Handle selecting password authentication
+  // Simply transition to password screen - we'll use USER_SRP_AUTH when submitting
   const handleSelectPassword = async () => {
-    setError(null);
-    setIsLoading(true);
-
-    try {
-      const result = await AuthService.selectFirstFactor("PASSWORD_SRP");
-
-      if (!result.success) {
-        // Session might be invalid, restart the flow
-        if (result.error?.includes("session") || result.error?.includes("Invalid session")) {
-          // Restart discovery
-          const rediscover = await AuthService.discoverAuthMethods(email);
-          if (rediscover.success) {
-            setAvailableChallenges(rediscover.availableChallenges);
-            // Try again
-            const retry = await AuthService.selectFirstFactor("PASSWORD_SRP");
-            if (retry.success && retry.nextStep?.signInStep === "CONFIRM_SIGN_IN_WITH_PASSWORD") {
-              setSignInStep("PASSWORD");
-              return;
-            }
-          }
-        }
-        setError(result.error || "Failed to select password authentication.");
-        return;
-      }
-
-      if (result.nextStep?.signInStep === "CONFIRM_SIGN_IN_WITH_PASSWORD") {
-        setSignInStep("PASSWORD");
-      } else {
-        setError("Unexpected response. Please try again.");
-      }
-    } catch (err) {
-      console.error("Select password error:", err);
-      setError("An unexpected error occurred. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
+    setSignInStep("PASSWORD");
   };
 
   // Handle selecting passkey authentication
@@ -216,6 +173,7 @@ export default function SignInPage() {
   };
 
   // Handle password submission
+  // Uses USER_SRP_AUTH flow which properly supports device tracking for MFA suppression
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -228,7 +186,8 @@ export default function SignInPage() {
     setIsLoading(true);
 
     try {
-      const result = await AuthService.submitPasswordForUserAuth(password);
+      // Use SRP auth flow for proper device tracking support
+      const result = await AuthService.signInWithSRP(email, password);
 
       if (result.success && result.isSignedIn) {
         await handleSignInSuccess();
@@ -237,7 +196,8 @@ export default function SignInPage() {
       } else if (result.nextStep?.signInStep === "CONFIRM_SIGN_IN_WITH_TOTP_CODE") {
         setSignInStep("MFA_TOTP");
       } else if (result.nextStep?.signInStep === "CONTINUE_SIGN_IN_WITH_MFA_SELECTION") {
-        const methods = result.nextStep.allowedMFATypes || [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const methods = (result.nextStep as any).allowedMFATypes || [];
         setAvailableMfaMethods(methods);
         setSignInStep("MFA_SELECTION");
       } else {
@@ -267,6 +227,10 @@ export default function SignInPage() {
       const result = await AuthService.confirmSignInWithMFA(mfaCode);
 
       if (result.success && result.isSignedIn) {
+        // Remember device if user opted in
+        if (rememberDevice) {
+          await AuthService.rememberCurrentDevice();
+        }
         await handleSignInSuccess();
       } else {
         setError(result.error || "Invalid code. Please try again.");
@@ -696,6 +660,21 @@ export default function SignInPage() {
                 autoFocus
               />
             </div>
+          </div>
+
+          <div className="flex items-center space-x-3 pt-2">
+            <Checkbox
+              id="rememberDevice"
+              checked={rememberDevice}
+              onCheckedChange={(checked) => setRememberDevice(checked === true)}
+            />
+            <Label
+              htmlFor="rememberDevice"
+              className="text-sm text-muted-foreground cursor-pointer flex items-center gap-2"
+            >
+              <Smartphone className="h-4 w-4" />
+              Remember this device for 30 days
+            </Label>
           </div>
 
           <div className="pt-4">

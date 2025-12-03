@@ -38,6 +38,7 @@ import {
   AlertCircleIcon,
   FingerprintIcon,
   TrashIcon,
+  MonitorSmartphoneIcon,
 } from "lucide-react";
 import { AuthService, validatePassword } from "@/lib/auth/auth-service";
 
@@ -86,10 +87,22 @@ export default function SecurityPage() {
   const [isRegisteringPasskey, setIsRegisteringPasskey] = useState(false);
   const [deletingPasskeyId, setDeletingPasskeyId] = useState<string | null>(null);
 
-  // Fetch MFA preferences and passkeys on mount
+  // Remembered devices state
+  interface RememberedDevice {
+    id: string;
+    name?: string;
+    lastAuthenticatedDate?: Date;
+    createDate?: Date;
+  }
+  const [rememberedDevices, setRememberedDevices] = useState<RememberedDevice[]>([]);
+  const [isLoadingDevices, setIsLoadingDevices] = useState(true);
+  const [isForgettingDevice, setIsForgettingDevice] = useState(false);
+
+  // Fetch MFA preferences, passkeys, and devices on mount
   useEffect(() => {
     fetchMFAPreferences();
     fetchPasskeys();
+    fetchRememberedDevices();
   }, []);
 
   const fetchMFAPreferences = async () => {
@@ -156,6 +169,46 @@ export default function SecurityPage() {
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setDeletingPasskeyId(null);
+    }
+  };
+
+  // Remembered devices functions
+  const fetchRememberedDevices = async () => {
+    setIsLoadingDevices(true);
+    try {
+      const result = await AuthService.listRememberedDevices();
+      if (result.success && result.devices) {
+        // Map the devices to our interface
+        const devices = result.devices.map((device) => ({
+          id: device.id,
+          name: device.name,
+          lastAuthenticatedDate: device.lastAuthenticatedDate,
+          createDate: device.createDate,
+        }));
+        setRememberedDevices(devices);
+      }
+    } catch (error) {
+      console.error("Failed to fetch remembered devices:", error);
+    } finally {
+      setIsLoadingDevices(false);
+    }
+  };
+
+  const handleForgetCurrentDevice = async () => {
+    setIsForgettingDevice(true);
+    try {
+      const result = await AuthService.forgetCurrentDevice();
+      if (result.success) {
+        toast.success("This device has been forgotten. You'll need to verify again on next login.");
+        await fetchRememberedDevices();
+      } else {
+        toast.error(result.error || "Failed to forget device");
+      }
+    } catch (error) {
+      console.error("Forget device error:", error);
+      toast.error("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsForgettingDevice(false);
     }
   };
 
@@ -680,6 +733,100 @@ export default function SecurityPage() {
         </CardContent>
       </Card>
 
+      {/* Remembered Devices Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <div className="rounded-full bg-primary/10 p-2">
+              <MonitorSmartphoneIcon className="h-5 w-5 text-primary" />
+            </div>
+            Remembered Devices
+          </CardTitle>
+          <CardDescription>
+            Devices that are remembered won&apos;t require two-factor authentication for 30 days.
+            You can forget a device to require verification again.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {isLoadingDevices ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2Icon className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <>
+              {/* Remembered Devices List */}
+              {rememberedDevices.length > 0 ? (
+                <div className="space-y-3">
+                  {rememberedDevices.map((device) => (
+                    <div
+                      key={device.id}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="rounded-full bg-blue-500/10 p-2">
+                          <MonitorSmartphoneIcon className="h-5 w-5 text-blue-500" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium">
+                            {device.name || "Unknown Device"}
+                          </h4>
+                          <p className="text-sm text-muted-foreground">
+                            {device.lastAuthenticatedDate
+                              ? `Last used: ${new Date(device.lastAuthenticatedDate).toLocaleDateString()}`
+                              : device.createDate
+                                ? `Added: ${new Date(device.createDate).toLocaleDateString()}`
+                                : "Recently added"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground py-4">
+                  No devices are currently remembered. When you sign in with two-factor authentication,
+                  you can choose to remember the device for 30 days.
+                </p>
+              )}
+
+              {/* Forget Current Device Button */}
+              {rememberedDevices.length > 0 && (
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="inline-block"
+                >
+                  <Button
+                    onClick={handleForgetCurrentDevice}
+                    disabled={isForgettingDevice}
+                    variant="outline"
+                    className="gap-2"
+                  >
+                    {isForgettingDevice ? (
+                      <Loader2Icon className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <TrashIcon className="h-4 w-4" />
+                    )}
+                    {isForgettingDevice ? "Forgetting..." : "Forget This Device"}
+                  </Button>
+                </motion.div>
+              )}
+
+              {/* Info Alert */}
+              {rememberedDevices.length > 0 && (
+                <Alert>
+                  <MonitorSmartphoneIcon className="h-4 w-4" />
+                  <AlertDescription>
+                    Remembered devices skip two-factor authentication for 30 days.
+                    If you lose access to a device or suspect unauthorized access, forget the device immediately.
+                  </AlertDescription>
+                </Alert>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+
       {/* TOTP Setup Dialog */}
       <Dialog open={isTOTPSetupOpen} onOpenChange={handleTOTPDialogChange}>
         <DialogContent className="sm:max-w-[450px]">
@@ -746,6 +893,12 @@ export default function SecurityPage() {
                 onChange={(e) => {
                   const value = e.target.value.replace(/\D/g, "");
                   setTotpVerifyCode(value);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && totpVerifyCode.length === 6 && !isVerifyingTOTP) {
+                    e.preventDefault();
+                    handleVerifyTOTP();
+                  }
                 }}
                 placeholder="Enter 6-digit code"
                 className="text-center text-lg tracking-widest"
