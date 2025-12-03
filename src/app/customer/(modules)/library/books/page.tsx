@@ -735,12 +735,17 @@ export default function BooksLibraryPage() {
                           </DropdownMenu>
                         </>
                       ) : (
-                        <Badge
-                          variant="outline"
-                          className="text-muted-foreground"
+                        <div
+                          className={`inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium pointer-events-none ${
+                            book.status === "Refunded"
+                              ? "bg-orange-50 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400"
+                              : book.status === "Expired"
+                                ? "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400"
+                                : "bg-gray-50 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400"
+                          }`}
                         >
                           {book.status}
-                        </Badge>
+                        </div>
                       )}
                     </div>
                   </motion.div>
