@@ -30,7 +30,53 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/app/(shared)/components/ui/pagination";
-import type { ExchangeTransactionDto } from "@/lib/api/types/exchange-history";
+import type { ExchangeTransactionDto, ExchangeTransactionType } from "@/lib/api/types/exchange-history";
+
+// Helper function to get transaction type display info
+function getTransactionTypeInfo(type: ExchangeTransactionType): {
+  label: string;
+  description: string;
+  variant: "default" | "secondary" | "outline" | "destructive";
+  isPositive: boolean;
+} {
+  switch (type) {
+    case "KeyForCredits":
+      return {
+        label: "Earned Credits",
+        description: "Key sent to exchange",
+        variant: "default",
+        isPositive: true,
+      };
+    case "CreditsForKey":
+      return {
+        label: "Spent Credits",
+        description: "Key received from exchange",
+        variant: "secondary",
+        isPositive: false,
+      };
+    case "CreditAdjustmentAdd":
+      return {
+        label: "Credit Added",
+        description: "Adjustment by support",
+        variant: "default",
+        isPositive: true,
+      };
+    case "CreditAdjustmentDeduct":
+      return {
+        label: "Credit Deducted",
+        description: "Adjustment by support",
+        variant: "destructive",
+        isPositive: false,
+      };
+    default:
+      return {
+        label: type,
+        description: "",
+        variant: "outline",
+        isPositive: false,
+      };
+  }
+}
 
 function SummaryCard({
   title,
@@ -82,34 +128,42 @@ function TransactionCard({
 }: {
   transaction: ExchangeTransactionDto;
 }) {
-  // KeyForCredits = customer sends key, earns credits
-  // CreditsForKey = customer spends credits, gets key
-  const isEarned = transaction.type === "KeyForCredits";
+  const typeInfo = getTransactionTypeInfo(transaction.type);
+  const isAdjustment = transaction.type === "CreditAdjustmentAdd" || transaction.type === "CreditAdjustmentDeduct";
 
   return (
     <Card
-      className="hover:shadow-md transition-shadow cursor-pointer"
-      onClick={() => window.open(`https://www.digiphile.co/exchange/game/${transaction.exchangeGameId}`, '_blank')}
+      className={`hover:shadow-md transition-shadow ${transaction.exchangeGameId ? 'cursor-pointer' : ''}`}
+      onClick={() => transaction.exchangeGameId && window.open(`https://www.digiphile.co/exchange/game/${transaction.exchangeGameId}`, '_blank')}
     >
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
-          <img
-            src={transaction.coverImage?.url}
-            alt={transaction.title}
-            className="w-16 h-16 rounded-lg object-cover"
-          />
+          {transaction.coverImage?.url ? (
+            <img
+              src={transaction.coverImage.url}
+              alt={transaction.title || 'Transaction'}
+              className="w-16 h-16 rounded-lg object-cover"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center">
+              <Activity className="h-6 w-6 text-muted-foreground" />
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1">
                 <h4 className="font-semibold text-sm truncate">
-                  {transaction.title}
+                  {isAdjustment ? "Credit Adjustment" : transaction.title}
                 </h4>
+                <p className="text-xs text-muted-foreground">
+                  {transaction.reason || typeInfo.description}
+                </p>
               </div>
               <Badge
-                variant={isEarned ? "default" : "secondary"}
+                variant={typeInfo.variant}
                 className="shrink-0"
               >
-                {isEarned ? "Earned" : "Spent"}
+                {typeInfo.label}
               </Badge>
             </div>
             <div className="flex items-center justify-between mt-2">
@@ -117,9 +171,9 @@ function TransactionCard({
                 {new Date(transaction.createdAt).toLocaleDateString()}
               </span>
               <span
-                className={`font-bold ${isEarned ? "text-green-600" : "text-red-600"}`}
+                className={`font-bold ${typeInfo.isPositive ? "text-green-600" : "text-red-600"}`}
               >
-                {isEarned ? "+" : "-"}
+                {typeInfo.isPositive ? "+" : "-"}
                 {transaction.creditAmount} credits
               </span>
             </div>
@@ -135,26 +189,36 @@ function TransactionTableRow({
 }: {
   transaction: ExchangeTransactionDto;
 }) {
-  // KeyForCredits = customer sends key, earns credits
-  // CreditsForKey = customer spends credits, gets key
-  const isEarned = transaction.type === "KeyForCredits";
+  const typeInfo = getTransactionTypeInfo(transaction.type);
+  const isAdjustment = transaction.type === "CreditAdjustmentAdd" || transaction.type === "CreditAdjustmentDeduct";
 
   return (
     <tr
-      className="hover:bg-muted/50 transition-colors cursor-pointer"
-      onClick={() => window.open(`https://www.digiphile.co/exchange/game/${transaction.exchangeGameId}`, '_blank')}
+      className={`hover:bg-muted/50 transition-colors ${transaction.exchangeGameId ? 'cursor-pointer' : ''}`}
+      onClick={() => transaction.exchangeGameId && window.open(`https://www.digiphile.co/exchange/game/${transaction.exchangeGameId}`, '_blank')}
     >
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
-          <img
-            src={transaction.coverImage?.url}
-            alt={transaction.title}
-            className="w-10 aspect-[2/3] rounded object-contain"
-          />
+          {transaction.coverImage?.url ? (
+            <img
+              src={transaction.coverImage.url}
+              alt={transaction.title || 'Transaction'}
+              className="w-10 aspect-[2/3] rounded object-contain"
+            />
+          ) : (
+            <div className="w-10 aspect-[2/3] rounded bg-muted flex items-center justify-center">
+              <Activity className="h-4 w-4 text-muted-foreground" />
+            </div>
+          )}
           <div className="min-w-0">
             <p className="font-medium text-sm truncate">
-              {transaction.title}
+              {isAdjustment ? "Credit Adjustment" : transaction.title}
             </p>
+            {(transaction.reason || isAdjustment) && (
+              <p className="text-xs text-muted-foreground truncate">
+                {transaction.reason || typeInfo.description}
+              </p>
+            )}
           </div>
         </div>
       </td>
@@ -164,15 +228,15 @@ function TransactionTableRow({
         </span>
       </td>
       <td className="px-4 py-3">
-        <Badge variant={isEarned ? "default" : "secondary"}>
-          {isEarned ? "Earned Credits" : "Spent Credits"}
+        <Badge variant={typeInfo.variant}>
+          {typeInfo.label}
         </Badge>
       </td>
       <td className="px-4 py-3 text-right">
         <span
-          className={`font-semibold ${isEarned ? "text-green-600" : "text-red-600"}`}
+          className={`font-semibold ${typeInfo.isPositive ? "text-green-600" : "text-red-600"}`}
         >
-          {isEarned ? "+" : "-"}
+          {typeInfo.isPositive ? "+" : "-"}
           {transaction.creditAmount}
         </span>
       </td>
@@ -317,14 +381,14 @@ export default function CustomerExchangeHistoryPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <SummaryCard
           title="Current Balance"
-          value={summaryData?.netCredits || 0}
+          value={summaryData?.currentBalance || 0}
           description={
-            summaryData && summaryData.netCredits > 0
+            summaryData && summaryData.currentBalance > 0
               ? "Available credits"
               : "No credits"
           }
           icon={Activity}
-          trend={summaryData && summaryData.netCredits > 0 ? "up" : "neutral"}
+          trend={summaryData && summaryData.currentBalance > 0 ? "up" : "neutral"}
           loading={summaryLoading}
         />
         <SummaryCard
@@ -392,6 +456,8 @@ export default function CustomerExchangeHistoryPage() {
               <option value="">All Types</option>
               <option value="KeyForCredits">Earned Credits (Sent Keys)</option>
               <option value="CreditsForKey">Spent Credits (Received Keys)</option>
+              <option value="CreditAdjustmentAdd">Credit Added (Adjustment)</option>
+              <option value="CreditAdjustmentDeduct">Credit Deducted (Adjustment)</option>
             </select>
 
             {/* Date Range */}
@@ -486,7 +552,7 @@ export default function CustomerExchangeHistoryPage() {
                 <thead className="border-b">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                      Game
+                      Description
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Date

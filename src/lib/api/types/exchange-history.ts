@@ -1,7 +1,13 @@
 import MediaData from "@/app/(shared)/types/media";
 
+export type ExchangeTransactionType =
+  | "KeyForCredits"        // Customer sends key, earns credits
+  | "CreditsForKey"        // Customer spends credits, gets key
+  | "CreditAdjustmentAdd"  // Credits added by support
+  | "CreditAdjustmentDeduct"; // Credits deducted by support
+
 export interface ExchangeHistoryParams {
-  Type?: "KeyForCredits" | "CreditsForKey" | string; // KeyForCredits (earned), CreditsForKey (spent)
+  Type?: ExchangeTransactionType | string;
   StartDate?: string; // ISO date format
   EndDate?: string; // ISO date format
   SearchTerm?: string; // Search by game title or publisher
@@ -21,15 +27,16 @@ export interface ExchangeHistoryResponse {
 export interface ExchangeTransactionDto {
   id: string;
   customerId: string;
-  steamKeyId: string;
+  steamKeyId?: string;
   steamKeyAssignmentId?: string;
-  type: "KeyForCredits" | "CreditsForKey";
+  type: ExchangeTransactionType;
   creditAmount: number;
   createdAt: string; // ISO date string
-  exchangeGameId: string;
-  title: string;
+  exchangeGameId?: string;
+  title?: string;
   coverImage?: MediaData;
   steamAppId?: number;
+  reason?: string; // Reason for credit adjustments
 }
 
 export interface ExchangeHistorySummary {
@@ -38,4 +45,5 @@ export interface ExchangeHistorySummary {
   totalCreditsEarned: number;
   totalCreditsSpent: number;
   netCredits: number;
+  currentBalance: number; // Actual balance from Customer entity
 }
