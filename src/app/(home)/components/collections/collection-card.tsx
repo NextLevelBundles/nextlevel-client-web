@@ -145,7 +145,7 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
                 aria-label={`View ${bundle.title} collection details`}
               >
                 <span className="flex items-center gap-2">
-                  {hasEnded ? "View Past Collection" : "Get Collection Now"}
+                  {hasEnded ? "View Ended Collection" : "Get Collection Now"}
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </span>
               </Button>
