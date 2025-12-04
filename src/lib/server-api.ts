@@ -108,13 +108,13 @@ class ServerApiClient {
     }
   }
 
-  async getBundles(): Promise<BundleListItem[]> {
+  async getBundles(includeEnded: boolean): Promise<BundleListItem[]> {
     try {
       const headers = await this.getAuthHeaders();
       console.log("Fetching bundles with headers:", headers);
 
       const response = await this.fetchWithRetry(
-        `${API_BASE_URL}/customer/bundles`,
+        `${API_BASE_URL}/customer/bundles?includeEnded=${includeEnded}`,
         {
           method: "GET",
           headers,
@@ -251,7 +251,9 @@ class ServerApiClient {
     }
   }
 
-  async getExchangeGameDetails(id: string): Promise<ExchangeGameDetails | null> {
+  async getExchangeGameDetails(
+    id: string
+  ): Promise<ExchangeGameDetails | null> {
     try {
       const headers = await this.getAuthHeaders();
       const response = await this.fetchWithRetry(
@@ -273,7 +275,9 @@ class ServerApiClient {
         console.error(
           `Failed to fetch exchange game: ${response.status} ${response.statusText}`
         );
-        throw new Error(`Failed to fetch exchange game: ${response.statusText}`);
+        throw new Error(
+          `Failed to fetch exchange game: ${response.statusText}`
+        );
       }
 
       // Read response as text first to handle empty responses

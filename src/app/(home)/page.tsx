@@ -37,7 +37,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const bundles = await serverApiClient.getBundles();
+  const bundles = await serverApiClient.getBundles(false);
   const hasBundles = bundles && bundles.length > 0;
 
   return (

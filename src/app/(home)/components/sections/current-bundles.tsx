@@ -5,7 +5,7 @@ import Link from "next/link";
 import { serverApiClient } from "@/lib/server-api";
 
 export async function CurrentBundles() {
-  const bundles = await serverApiClient.getBundles();
+  const bundles = await serverApiClient.getBundles(false);
 
   // Don't render this section if there are no bundles
   if (!bundles || bundles.length === 0) {

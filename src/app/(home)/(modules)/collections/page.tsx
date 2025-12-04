@@ -41,7 +41,7 @@ export default async function BundlesPage() {
   let error = null;
 
   try {
-    bundles = await serverApiClient.getBundles();
+    bundles = await serverApiClient.getBundles(true);
   } catch (err: any) {
     console.error("Error fetching bundles:", err);
     error = err;
