@@ -404,7 +404,7 @@ export default function CustomerExchangeHistoryPage() {
               <>
                 <div className="text-2xl font-bold text-green-600">+{summaryData?.totalCreditsEarned || 0}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {summaryData?.totalKeysSentToExchange || 0} Games Traded-in
+                  {summaryData?.totalKeysSentToExchange || 0} {summaryData?.totalKeysSentToExchange === 1 ? 'Game' : 'Games'} Traded-in
                 </p>
               </>
             )}
@@ -423,7 +423,7 @@ export default function CustomerExchangeHistoryPage() {
               <>
                 <div className="text-2xl font-bold text-red-600">-{summaryData?.totalCreditsSpent || 0}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {summaryData?.totalKeysReceivedFromExchange || 0} Games Claimed
+                  {summaryData?.totalKeysReceivedFromExchange || 0} {summaryData?.totalKeysReceivedFromExchange === 1 ? 'Game' : 'Games'} Claimed
                 </p>
               </>
             )}
