@@ -404,7 +404,7 @@ export default function CustomerExchangeHistoryPage() {
               <>
                 <div className="text-2xl font-bold text-green-600">+{summaryData?.totalCreditsEarned || 0}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {summaryData?.totalKeysSentToExchange || 0} Games Exchanged
+                  {summaryData?.totalKeysSentToExchange || 0} Games Traded-in
                 </p>
               </>
             )}
