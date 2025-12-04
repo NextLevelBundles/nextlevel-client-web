@@ -18,6 +18,7 @@ import {
   ArrowDownAZ,
   ArrowUpAZ,
   X,
+  XCircle,
 } from "lucide-react";
 import { Badge } from "@/shared/components/ui/badge";
 import { BundleListItem, BundleType } from "@/app/(shared)/types/bundle";
@@ -29,6 +30,7 @@ const filters = [
   { label: "All", value: "all" },
   { label: "Steam Game Collections", value: "games", icon: Gamepad2 },
   { label: "Book Collections", value: "books", icon: BookOpen },
+  { label: "Ended Collections", value: "ended", icon: XCircle },
 ];
 
 const sortOptions = [
@@ -48,16 +50,33 @@ export function BundlesGrid({ bundles }: BundlesGridProps) {
 
   const filteredBundles = bundles
     .filter((bundle) => {
+      const now = new Date().getTime();
+      const endTime = new Date(bundle.endsAt).getTime();
+      const hasEnded = endTime <= now;
+
       if (currentFilter === "all") return true;
       if (currentFilter === "games")
         return bundle.type === BundleType.SteamGame;
       if (currentFilter === "books") return bundle.type === BundleType.EBook;
+      if (currentFilter === "ended") return hasEnded;
       return false;
     })
     .sort((a, b) => {
+      const now = new Date().getTime();
+      const aEnded = new Date(a.endsAt).getTime() <= now;
+      const bEnded = new Date(b.endsAt).getTime() <= now;
+
+      // For "ending-soon" sort, prioritize active bundles over ended ones
+      if (currentSort === "ending-soon") {
+        // If one has ended and the other hasn't, active comes first
+        if (aEnded !== bEnded) {
+          return aEnded ? 1 : -1;
+        }
+        // Otherwise, sort by end time
+        return new Date(a.endsAt).getTime() - new Date(b.endsAt).getTime();
+      }
+
       switch (currentSort) {
-        case "ending-soon":
-          return new Date(a.endsAt).getTime() - new Date(b.endsAt).getTime();
         case "price-asc":
           return a.minPrice - b.minPrice;
         case "price-desc":

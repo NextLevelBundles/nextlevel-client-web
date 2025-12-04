@@ -15,7 +15,7 @@ interface BundleCardProps {
 }
 
 export function BundleCard({ bundle, index }: BundleCardProps) {
-  const { timeLeft } = useCountdownTimer(bundle.endsAt);
+  const { timeLeft, hasEnded } = useCountdownTimer(bundle.endsAt);
 
   const cardRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -45,9 +45,11 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
         tabIndex={0}
         role="article"
         aria-label={`${bundle.title} collection`}
-        className={`group relative h-full overflow-visible rounded-3xl bg-white/80 dark:bg-card/70 backdrop-blur-xs transition-all duration-300 hover:translate-y-[-4px] hover:shadow-[0_8px_30px_rgba(57,130,245,0.2)] dark:hover:shadow-[0_8px_30px_rgba(57,130,245,0.3)] border border-white/20 dark:border-border hover:border-primary/50 cursor-pointer ring-1 ring-black/5 dark:ring-white/20 before:absolute before:inset-[1px] before:rounded-3xl before:border before:border-black/[0.03] dark:before:border-white/[0.03] before:pointer-events-none ${
-          isVisible ? "animate-fade-up opacity-100" : "opacity-0"
-        }`}
+        className={`group relative h-full overflow-visible rounded-3xl backdrop-blur-xs transition-all duration-300 cursor-pointer before:absolute before:inset-[1px] before:rounded-3xl before:border before:border-black/[0.03] dark:before:border-white/[0.03] before:pointer-events-none ${
+          hasEnded
+            ? "bg-gray-100/80 dark:bg-gray-800/50 opacity-75 hover:opacity-90 border border-gray-300/40 dark:border-gray-700/50 ring-1 ring-gray-400/10 dark:ring-gray-600/20"
+            : "bg-white/80 dark:bg-card/70 hover:translate-y-[-4px] hover:shadow-[0_8px_30px_rgba(57,130,245,0.2)] dark:hover:shadow-[0_8px_30px_rgba(57,130,245,0.3)] border border-white/20 dark:border-border hover:border-primary/50 ring-1 ring-black/5 dark:ring-white/20"
+        } ${isVisible ? "animate-fade-up opacity-100" : "opacity-0"}`}
         style={{ animationDelay: isVisible ? `${index * 150}ms` : "0ms" }}
       >
         <Card className="border-0 bg-transparent h-full">
@@ -111,7 +113,13 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
               {bundle.title}
             </h3>
 
-            <div className="mb-4 flex items-center gap-2 text-sm text-[#64748b] dark:text-muted-foreground group-hover:text-[#4b5563] dark:group-hover:text-muted-foreground/80 transition-colors">
+            <div
+              className={`mb-4 flex items-center gap-2 text-sm transition-colors ${
+                hasEnded
+                  ? "text-red-600 dark:text-red-400 font-semibold"
+                  : "text-[#64748b] dark:text-muted-foreground group-hover:text-[#4b5563] dark:group-hover:text-muted-foreground/80"
+              }`}
+            >
               <Timer className="h-4 w-4" />
               <span>{timeLeft}</span>
             </div>
@@ -129,11 +137,15 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
                 </div>
               </div>
               <Button
-                className="cursor-pointer relative z-10 transition-all bg-primary text-white hover:bg-primary/90 shadow-lg hover:shadow-xl hover:shadow-primary/30 duration-300 group-hover:translate-y-[-1px] group-hover:scale-105 font-semibold"
+                className={`cursor-pointer relative z-10 transition-all shadow-lg hover:shadow-xl duration-300 group-hover:translate-y-[-1px] group-hover:scale-105 font-semibold ${
+                  hasEnded
+                    ? "bg-gray-400 text-white hover:bg-gray-500 hover:shadow-gray-400/30"
+                    : "bg-primary text-white hover:bg-primary/90 hover:shadow-primary/30"
+                }`}
                 aria-label={`View ${bundle.title} collection details`}
               >
                 <span className="flex items-center gap-2">
-                  Get Collection Now
+                  {hasEnded ? "View Past Collection" : "Get Collection Now"}
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </span>
               </Button>
