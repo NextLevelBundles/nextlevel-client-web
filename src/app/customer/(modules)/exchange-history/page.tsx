@@ -378,7 +378,7 @@ export default function CustomerExchangeHistoryPage() {
       </div>
 
       {/* Summary Statistics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <SummaryCard
           title="Current Balance"
           value={summaryData?.currentBalance || 0}
@@ -391,32 +391,50 @@ export default function CustomerExchangeHistoryPage() {
           trend={summaryData && summaryData.currentBalance > 0 ? "up" : "neutral"}
           loading={summaryLoading}
         />
-        <SummaryCard
-          title="Total Earned"
-          value={summaryData?.totalCreditsEarned || 0}
-          description="From exchanges"
-          icon={ArrowUpRight}
-          trend="up"
-          loading={summaryLoading}
-        />
-        <SummaryCard
-          title="Total Spent"
-          value={summaryData?.totalCreditsSpent || 0}
-          description="On new games"
-          icon={ArrowDownRight}
-          trend="down"
-          loading={summaryLoading}
-        />
-        <SummaryCard
-          title="Total Exchanges"
-          value={
-            (summaryData?.totalKeysSentToExchange || 0) +
-            (summaryData?.totalKeysReceivedFromExchange || 0)
-          }
-          description="All time"
-          icon={TrendingUp}
-          loading={summaryLoading}
-        />
+        {/* Credits Earned / Spent - compact single card */}
+        <Card className="relative overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Credits Earned / Spent</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {summaryLoading ? (
+              <Skeleton className="h-7 w-24" />
+            ) : (
+              <>
+                <div className="flex items-center gap-3">
+                  <span className="text-green-600 font-bold text-2xl">+{summaryData?.totalCreditsEarned || 0}</span>
+                  <span className="text-muted-foreground">/</span>
+                  <span className="text-red-600 font-bold text-2xl">-{summaryData?.totalCreditsSpent || 0}</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {summaryData?.totalKeysSentToExchange || 0} keys sent / {summaryData?.totalKeysReceivedFromExchange || 0} keys received
+                </p>
+              </>
+            )}
+          </CardContent>
+        </Card>
+        {/* Support Adjustments - compact single card */}
+        <Card className="relative overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Support Adjustments</CardTitle>
+            <Activity className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {summaryLoading ? (
+              <Skeleton className="h-7 w-24" />
+            ) : (
+              <>
+                <div className="flex items-center gap-3">
+                  <span className="text-green-600 font-bold text-2xl">+{summaryData?.totalCreditsAddedBySupport || 0}</span>
+                  <span className="text-muted-foreground">/</span>
+                  <span className="text-red-600 font-bold text-2xl">-{summaryData?.totalCreditsDeductedBySupport || 0}</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Added / Deducted</p>
+              </>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Filters */}

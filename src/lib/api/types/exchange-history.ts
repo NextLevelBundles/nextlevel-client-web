@@ -44,6 +44,8 @@ export interface ExchangeHistorySummary {
   totalKeysReceivedFromExchange: number;
   totalCreditsEarned: number;
   totalCreditsSpent: number;
+  totalCreditsAddedBySupport: number;
+  totalCreditsDeductedBySupport: number;
   netCredits: number;
   currentBalance: number; // Actual balance from Customer entity
 }
