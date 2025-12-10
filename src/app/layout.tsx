@@ -71,7 +71,7 @@ export default function RootLayout({
         <AmplifyClientLoader />
         <TrackdeskScript />
         <LinkIdCapture />
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Toaster
             position="bottom-right"
             expand={true}
