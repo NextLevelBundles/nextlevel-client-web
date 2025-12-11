@@ -113,3 +113,10 @@ export interface SteamLibraryStatusResponse {
   lastSyncedAt: string;
   steamLibrarySyncStatus: string; // API returns string values like "SyncSucceeded", "NeverSynced", etc.
 }
+
+export interface BundleExchangeInfo {
+  productId: string;
+  productTitle: string;
+  exchangedCount: number;
+  totalGamesInBundle: number;
+}

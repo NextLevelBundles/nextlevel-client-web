@@ -68,10 +68,12 @@ import {
   SteamKeyAssignment,
   SteamKeyQueryParams,
   GiftKeyRequest,
+  BundleExchangeInfo,
 } from "@/lib/api/types/steam-key";
 import { GiftFilterType } from "@/lib/api/types/purchase";
 import { GiftKeyModal } from "@/customer/components/steam-keys/gift-key-modal";
 import { ExchangeApi } from "@/lib/api/clients/exchange";
+import { SteamKeyApi } from "@/lib/api/clients/steam-key";
 import { apiClient } from "@/lib/api/client-api";
 import { FilterDropdown } from "@/customer/components/filter-dropdown";
 import { SteamKeyGiftIndicator } from "@/customer/components/steam-keys/steam-key-gift-indicator";
@@ -465,15 +467,30 @@ export default function KeysPage() {
     }
   };
 
+  // Bundle exchange limit (hardcoded for now)
+  const BUNDLE_EXCHANGE_LIMIT = 3;
+
   // Dialog state for exchange confirmation
   const [exchangeDialog, setExchangeDialog] = useState<{
     isOpen: boolean;
     keyId: string | null;
+    gameName: string | null;
     isLoading: boolean;
-  }>({ isOpen: false, keyId: null, isLoading: false });
+    isFetchingBundleInfo: boolean;
+    bundleInfo: BundleExchangeInfo | null;
+  }>({ isOpen: false, keyId: null, gameName: null, isLoading: false, isFetchingBundleInfo: false, bundleInfo: null });
 
-  const handleSendToVault = (assignmentId: string) => {
-    setExchangeDialog({ isOpen: true, keyId: assignmentId, isLoading: false });
+  const handleSendToVault = async (assignmentId: string, gameName: string) => {
+    setExchangeDialog({ isOpen: true, keyId: assignmentId, gameName, isLoading: false, isFetchingBundleInfo: true, bundleInfo: null });
+
+    try {
+      const steamKeyApi = new SteamKeyApi(apiClient);
+      const bundleInfo = await steamKeyApi.getBundleExchangeInfo(assignmentId);
+      setExchangeDialog((prev) => ({ ...prev, isFetchingBundleInfo: false, bundleInfo }));
+    } catch {
+      // If fetching bundle info fails, continue without it
+      setExchangeDialog((prev) => ({ ...prev, isFetchingBundleInfo: false, bundleInfo: null }));
+    }
   };
 
   const handleExchangeConfirm = async () => {
@@ -498,7 +515,7 @@ export default function KeysPage() {
     } catch {
       toast.error("Exchange failed. Please try again.");
     } finally {
-      setExchangeDialog({ isOpen: false, keyId: null, isLoading: false });
+      setExchangeDialog({ isOpen: false, keyId: null, gameName: null, isLoading: false, isFetchingBundleInfo: false, bundleInfo: null });
     }
   };
 
@@ -1173,7 +1190,7 @@ export default function KeysPage() {
                                           key.alreadyOwnedOnSteam &&
                                           key.exchangeCredits &&
                                           key.exchangeCredits > 0 &&
-                                          handleSendToVault(key.id)
+                                          handleSendToVault(key.id, key.title)
                                         }
                                       >
                                         <ArchiveIcon className="h-4 w-4" />
@@ -1219,6 +1236,42 @@ export default function KeysPage() {
                                     undone.
                                   </DialogDescription>
                                 </DialogHeader>
+
+                                {/* Bundle Exchange Limit Info */}
+                                {exchangeDialog.isFetchingBundleInfo ? (
+                                  <div className="flex items-center justify-center py-4">
+                                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                                    <span className="ml-2 text-sm text-muted-foreground">Loading bundle info...</span>
+                                  </div>
+                                ) : exchangeDialog.bundleInfo ? (
+                                  <Alert className={exchangeDialog.bundleInfo.exchangedCount >= BUNDLE_EXCHANGE_LIMIT ? "border-destructive" : "border-blue-500"}>
+                                    <Info className={`h-4 w-4 ${exchangeDialog.bundleInfo.exchangedCount >= BUNDLE_EXCHANGE_LIMIT ? "text-destructive" : "text-blue-500"}`} />
+                                    <AlertDescription>
+                                      <div className="font-medium mb-1">
+                                        {exchangeDialog.bundleInfo.productTitle}
+                                      </div>
+                                      {exchangeDialog.gameName && (
+                                        <div className="text-muted-foreground text-sm mb-2">
+                                          Game: {exchangeDialog.gameName}
+                                        </div>
+                                      )}
+                                      {exchangeDialog.bundleInfo.exchangedCount >= BUNDLE_EXCHANGE_LIMIT ? (
+                                        <span className="text-destructive">
+                                          You have reached the maximum limit of {BUNDLE_EXCHANGE_LIMIT} games that can be exchanged from this bundle.
+                                        </span>
+                                      ) : (
+                                        <span>
+                                          You can exchange max {BUNDLE_EXCHANGE_LIMIT} games from this bundle.
+                                          <br />
+                                          You've used <strong>{exchangeDialog.bundleInfo.exchangedCount}/{BUNDLE_EXCHANGE_LIMIT}</strong>.
+                                          <br />
+                                          After this exchange, <strong>{BUNDLE_EXCHANGE_LIMIT - exchangeDialog.bundleInfo.exchangedCount - 1}</strong> will remain.
+                                        </span>
+                                      )}
+                                    </AlertDescription>
+                                  </Alert>
+                                ) : null}
+
                                 <DialogFooter>
                                   <Button
                                     variant="outline"
@@ -1226,7 +1279,10 @@ export default function KeysPage() {
                                       setExchangeDialog({
                                         isOpen: false,
                                         keyId: null,
+                                        gameName: null,
                                         isLoading: false,
+                                        isFetchingBundleInfo: false,
+                                        bundleInfo: null,
                                       })
                                     }
                                     disabled={exchangeDialog.isLoading}
@@ -1235,7 +1291,11 @@ export default function KeysPage() {
                                   </Button>
                                   <Button
                                     onClick={handleExchangeConfirm}
-                                    disabled={exchangeDialog.isLoading}
+                                    disabled={
+                                      exchangeDialog.isLoading ||
+                                      exchangeDialog.isFetchingBundleInfo ||
+                                      (exchangeDialog.bundleInfo !== null && exchangeDialog.bundleInfo.exchangedCount >= BUNDLE_EXCHANGE_LIMIT)
+                                    }
                                   >
                                     {exchangeDialog.isLoading ? (
                                       <>
