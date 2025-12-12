@@ -4,7 +4,9 @@ export type ExchangeTransactionType =
   | "KeyForCredits"        // Customer sends key, earns credits
   | "CreditsForKey"        // Customer spends credits, gets key
   | "CreditAdjustmentAdd"  // Credits added by support
-  | "CreditAdjustmentDeduct"; // Credits deducted by support
+  | "CreditAdjustmentDeduct" // Credits deducted by support
+  | "ReturnKeyForCredits"  // Key returned to exchange, credits refunded to customer
+  | "ReturnCreditsForKey"; // Key returned to customer, credits deducted
 
 export interface ExchangeHistoryParams {
   Type?: ExchangeTransactionType | string;
