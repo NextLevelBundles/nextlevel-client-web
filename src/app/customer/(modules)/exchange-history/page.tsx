@@ -68,6 +68,20 @@ function getTransactionTypeInfo(type: ExchangeTransactionType): {
         variant: "destructive",
         isPositive: false,
       };
+    case "ReturnKeyForCredits":
+      return {
+        label: "Key Returned",
+        description: "Key returned to exchange",
+        variant: "default",
+        isPositive: true,
+      };
+    case "ReturnCreditsForKey":
+      return {
+        label: "Exchange Reversed",
+        description: "Key returned to customer",
+        variant: "destructive",
+        isPositive: false,
+      };
     default:
       return {
         label: type,
@@ -129,7 +143,7 @@ function TransactionCard({
   transaction: ExchangeTransactionDto;
 }) {
   const typeInfo = getTransactionTypeInfo(transaction.type);
-  const isAdjustment = transaction.type === "CreditAdjustmentAdd" || transaction.type === "CreditAdjustmentDeduct";
+  const isCreditAdjustment = transaction.type === "CreditAdjustmentAdd" || transaction.type === "CreditAdjustmentDeduct";
 
   return (
     <Card
@@ -153,7 +167,7 @@ function TransactionCard({
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1">
                 <h4 className="font-semibold text-sm truncate">
-                  {isAdjustment ? "Credit Adjustment" : transaction.title}
+                  {isCreditAdjustment ? "Credit Adjustment" : transaction.title}
                 </h4>
                 <p className="text-xs text-muted-foreground">
                   {transaction.reason || typeInfo.description}
@@ -190,7 +204,7 @@ function TransactionTableRow({
   transaction: ExchangeTransactionDto;
 }) {
   const typeInfo = getTransactionTypeInfo(transaction.type);
-  const isAdjustment = transaction.type === "CreditAdjustmentAdd" || transaction.type === "CreditAdjustmentDeduct";
+  const isCreditAdjustment = transaction.type === "CreditAdjustmentAdd" || transaction.type === "CreditAdjustmentDeduct";
 
   return (
     <tr
@@ -212,9 +226,9 @@ function TransactionTableRow({
           )}
           <div className="min-w-0">
             <p className="font-medium text-sm truncate">
-              {isAdjustment ? "Credit Adjustment" : transaction.title}
+              {isCreditAdjustment ? "Credit Adjustment" : transaction.title}
             </p>
-            {(transaction.reason || isAdjustment) && (
+            {(transaction.reason || isCreditAdjustment) && (
               <p className="text-xs text-muted-foreground truncate">
                 {transaction.reason || typeInfo.description}
               </p>
@@ -402,7 +416,7 @@ export default function CustomerExchangeHistoryPage() {
               <Skeleton className="h-7 w-24" />
             ) : (
               <>
-                <div className="text-2xl font-bold text-green-600">+{summaryData?.totalCreditsEarned || 0}</div>
+                <div className="text-2xl font-bold text-green-600">{(summaryData?.totalCreditsEarned || 0) > 0 ? '+' : ''}{summaryData?.totalCreditsEarned || 0}</div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {summaryData?.totalKeysSentToExchange || 0} {summaryData?.totalKeysSentToExchange === 1 ? 'Game' : 'Games'} Traded-in
                 </p>
@@ -421,7 +435,7 @@ export default function CustomerExchangeHistoryPage() {
               <Skeleton className="h-7 w-24" />
             ) : (
               <>
-                <div className="text-2xl font-bold text-red-600">-{summaryData?.totalCreditsSpent || 0}</div>
+                <div className="text-2xl font-bold text-red-600">{(summaryData?.totalCreditsSpent || 0) > 0 ? '-' : ''}{summaryData?.totalCreditsSpent || 0}</div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {summaryData?.totalKeysReceivedFromExchange || 0} {summaryData?.totalKeysReceivedFromExchange === 1 ? 'Game' : 'Games'} Claimed
                 </p>
@@ -458,34 +472,34 @@ export default function CustomerExchangeHistoryPage() {
 
             {/* Type Filter */}
             <select
-              className="w-full px-3 py-2 border border-input rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-input rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-background text-foreground"
               value={type}
               onChange={(e) => {
                 setType(e.target.value);
                 setPage(1);
               }}
             >
-              <option value="">All Types</option>
-              <option value="KeyForCredits">Earned Credits (Sent Keys)</option>
-              <option value="CreditsForKey">Spent Credits (Received Keys)</option>
-              <option value="CreditAdjustmentAdd">Credit Added (Adjustment)</option>
-              <option value="CreditAdjustmentDeduct">Credit Deducted (Adjustment)</option>
+              <option value="" className="bg-background text-foreground">All Types</option>
+              <option value="KeyForCredits" className="bg-background text-foreground">Earned Credits (Sent Keys)</option>
+              <option value="CreditsForKey" className="bg-background text-foreground">Spent Credits (Received Keys)</option>
+              <option value="CreditAdjustmentAdd" className="bg-background text-foreground">Credit Added (Adjustment)</option>
+              <option value="CreditAdjustmentDeduct" className="bg-background text-foreground">Credit Deducted (Adjustment)</option>
             </select>
 
             {/* Date Range */}
             <select
-              className="w-full px-3 py-2 border border-input rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-input rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-background text-foreground"
               value={dateRange}
               onChange={(e) => {
                 setDateRange(e.target.value);
                 setPage(1);
               }}
             >
-              <option value="">All Time</option>
-              <option value="7days">Last 7 Days</option>
-              <option value="30days">Last 30 Days</option>
-              <option value="90days">Last 90 Days</option>
-              <option value="custom">Custom Range</option>
+              <option value="" className="bg-background text-foreground">All Time</option>
+              <option value="7days" className="bg-background text-foreground">Last 7 Days</option>
+              <option value="30days" className="bg-background text-foreground">Last 30 Days</option>
+              <option value="90days" className="bg-background text-foreground">Last 90 Days</option>
+              <option value="custom" className="bg-background text-foreground">Custom Range</option>
             </select>
 
             {/* Custom Date Range */}

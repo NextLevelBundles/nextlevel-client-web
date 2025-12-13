@@ -9,6 +9,7 @@ import {
   StatusCount,
   SyncSteamLibraryResponse,
   SteamLibraryStatusResponse,
+  BundleExchangeInfo,
 } from "../types/steam-key";
 
 export class SteamKeyApi {
@@ -75,5 +76,18 @@ export class SteamKeyApi {
     return await this.client.get<SteamLibraryStatusResponse>(
       "/customer/steam-library-status"
     );
+  }
+
+  async getBundleExchangeInfo(assignmentId: string): Promise<BundleExchangeInfo | null> {
+    const result = await this.client.get<BundleExchangeInfo>(
+      `/customer/steam-keys/${assignmentId}/bundle-exchange-info`
+    );
+
+    // API returns empty object for 204 No Content (key not from bundle purchase)
+    if (!result || !result.productId) {
+      return null;
+    }
+
+    return result;
   }
 }
