@@ -42,15 +42,15 @@ function getTransactionTypeInfo(type: ExchangeTransactionType): {
   switch (type) {
     case "KeyForCredits":
       return {
-        label: "Earned Credits",
-        description: "Key sent to exchange",
+        label: "Traded In",
+        description: "You sent a key to the exchange",
         variant: "default",
         isPositive: true,
       };
     case "CreditsForKey":
       return {
-        label: "Spent Credits",
-        description: "Key received from exchange",
+        label: "Claimed",
+        description: "You claimed a key from the exchange",
         variant: "secondary",
         isPositive: false,
       };
@@ -70,15 +70,15 @@ function getTransactionTypeInfo(type: ExchangeTransactionType): {
       };
     case "ReturnKeyForCredits":
       return {
-        label: "Key Returned",
-        description: "Key returned to exchange",
+        label: "Claim Refunded",
+        description: "You returned a claimed key",
         variant: "default",
         isPositive: true,
       };
     case "ReturnCreditsForKey":
       return {
-        label: "Exchange Reversed",
-        description: "Key returned to customer",
+        label: "Trade-in Retrieved",
+        description: "You retrieved your traded key",
         variant: "destructive",
         isPositive: false,
       };
@@ -480,10 +480,12 @@ export default function CustomerExchangeHistoryPage() {
               }}
             >
               <option value="" className="bg-background text-foreground">All Types</option>
-              <option value="KeyForCredits" className="bg-background text-foreground">Earned Credits (Sent Keys)</option>
-              <option value="CreditsForKey" className="bg-background text-foreground">Spent Credits (Received Keys)</option>
-              <option value="CreditAdjustmentAdd" className="bg-background text-foreground">Credit Added (Adjustment)</option>
-              <option value="CreditAdjustmentDeduct" className="bg-background text-foreground">Credit Deducted (Adjustment)</option>
+              <option value="KeyForCredits" className="bg-background text-foreground">Traded In</option>
+              <option value="CreditsForKey" className="bg-background text-foreground">Claimed</option>
+              <option value="ReturnKeyForCredits" className="bg-background text-foreground">Claim Refunded</option>
+              <option value="ReturnCreditsForKey" className="bg-background text-foreground">Trade-in Retrieved</option>
+              <option value="CreditAdjustmentAdd" className="bg-background text-foreground">Credit Added</option>
+              <option value="CreditAdjustmentDeduct" className="bg-background text-foreground">Credit Deducted</option>
             </select>
 
             {/* Date Range */}
