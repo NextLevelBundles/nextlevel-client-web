@@ -28,16 +28,16 @@ const badges = [
   {
     icon: Zap,
     name: "⚡ Power Buyer",
-    description: "Purchased 10+ bundles",
+    description: "Purchased 10+ collections",
     color: "bg-secondary/20 text-secondary",
-    criteria: "Purchase 10 or more bundles",
+    criteria: "Purchase 10 or more collections",
   },
   {
     icon: Flame,
     name: "🔥 Trendsetter",
-    description: "First to buy new bundles",
+    description: "First to buy new collections",
     color: "bg-primary/20 text-primary",
-    criteria: "Be among first 100 buyers of any bundle",
+    criteria: "Be among first 100 buyers of any collection",
   },
   {
     icon: Award,

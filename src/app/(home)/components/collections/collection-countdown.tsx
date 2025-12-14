@@ -40,7 +40,7 @@ export function BundleCountdown({ startDate }: BundleCountdownProps) {
   }, [startDate]);
 
   if (!countdown) {
-    return <span>This bundle has not started yet.</span>;
+    return <span>This collection has not started yet.</span>;
   }
 
   return (

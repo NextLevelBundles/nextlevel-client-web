@@ -7,11 +7,11 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Complete Your Profile | Digiphile",
   description:
-    "Complete your Digiphile profile to get started with your digital game library and exclusive bundles.",
+    "Complete your Digiphile profile to get started with your digital game library and exclusive collections.",
   openGraph: {
     title: "Complete Your Profile | Digiphile",
     description:
-      "Complete your Digiphile profile to get started with your digital game library and exclusive bundles.",
+      "Complete your Digiphile profile to get started with your digital game library and exclusive collections.",
     images: [
       {
         url: "https://static.digiphile.co/digiphile-social.jpg",
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Complete Your Profile | Digiphile",
     description:
-      "Complete your Digiphile profile to get started with your digital game library and exclusive bundles.",
+      "Complete your Digiphile profile to get started with your digital game library and exclusive collections.",
     images: ["https://static.digiphile.co/digiphile-social.jpg"],
   },
 };

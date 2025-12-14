@@ -420,7 +420,7 @@ export function OnboardingForm() {
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Your account has been created — now let’s set up your profile so you
-            can start exploring amazing bundles.
+            can start exploring amazing collections.
           </p>
         </div>
 

@@ -1241,7 +1241,7 @@ export default function KeysPage() {
                                 {exchangeDialog.isFetchingBundleInfo ? (
                                   <div className="flex items-center justify-center py-4">
                                     <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                                    <span className="ml-2 text-sm text-muted-foreground">Loading bundle info...</span>
+                                    <span className="ml-2 text-sm text-muted-foreground">Loading collection info...</span>
                                   </div>
                                 ) : exchangeDialog.bundleInfo ? (
                                   <Alert className={exchangeDialog.bundleInfo.exchangedCount >= BUNDLE_EXCHANGE_LIMIT ? "border-destructive" : "border-blue-500"}>
@@ -1257,11 +1257,11 @@ export default function KeysPage() {
                                       )}
                                       {exchangeDialog.bundleInfo.exchangedCount >= BUNDLE_EXCHANGE_LIMIT ? (
                                         <span className="text-destructive">
-                                          You have reached the maximum limit of {BUNDLE_EXCHANGE_LIMIT} games that can be exchanged from this bundle.
+                                          You have reached the maximum limit of {BUNDLE_EXCHANGE_LIMIT} games that can be exchanged from this collection.
                                         </span>
                                       ) : (
                                         <span>
-                                          You can exchange max {BUNDLE_EXCHANGE_LIMIT} games from this bundle.
+                                          You can exchange max {BUNDLE_EXCHANGE_LIMIT} games from this collection.
                                           <br />
                                           You've used <strong>{exchangeDialog.bundleInfo.exchangedCount}/{BUNDLE_EXCHANGE_LIMIT}</strong>.
                                           <br />

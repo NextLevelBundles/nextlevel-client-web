@@ -361,18 +361,18 @@ export default function SteamConnection({
                 Connect Your Steam Account
               </h3>
               <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                To purchase Steam game bundles, you need to connect your Steam
+                To purchase Steam game collections, you need to connect your Steam
                 account for verification purposes.
               </p>
 
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                  <span>Verify your identity to purchase Steam bundles</span>
+                  <span>Verify your identity to purchase Steam collections</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                  <span>Unlock access to Steam game bundle purchases</span>
+                  <span>Unlock access to Steam game collection purchases</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
@@ -450,10 +450,10 @@ export default function SteamConnection({
 
           <div className="text-center">
             <p className="text-xs text-muted-foreground">
-              Steam integration is required to purchase Steam game bundles on
+              Steam integration is required to purchase Steam game collections on
               Digiphile. Your Steam avatar, handle or name won&apos;t be shared
               publicly. We use your Steam account to verify your identity and
-              enable bundle purchases.
+              enable collection purchases.
             </p>
           </div>
         </>
@@ -463,7 +463,7 @@ export default function SteamConnection({
         <div className="text-center">
           <p className="text-xs text-green-600 dark:text-green-400 font-medium">
             Steam account successfully connected. You can now purchase Steam
-            game bundles.
+            game collections.
           </p>
         </div>
       )}

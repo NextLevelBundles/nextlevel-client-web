@@ -184,7 +184,7 @@ export default function GeneralSettingsPage() {
                   <AlertDescription>
                     Your country setting determines:
                     <ul className="mt-2 ml-4 list-disc text-xs space-y-1">
-                      <li>Steam key region allocation for game bundles</li>
+                      <li>Steam key region allocation for game collections</li>
                       <li>Content availability</li>
                       <li>Regional offers and promotions</li>
                     </ul>

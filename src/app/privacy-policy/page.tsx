@@ -279,7 +279,7 @@ export default function PrivacyPolicy() {
               <li>
                 Game developers and publishers (for key activation and support)
               </li>
-              <li>Charitable organizations (for charity bundles)</li>
+              <li>Charitable organizations (for charity collections)</li>
               <li>Co-marketing partners (with your consent)</li>
               <li>Platform providers (Steam, Epic Games) for integration</li>
             </ul>
