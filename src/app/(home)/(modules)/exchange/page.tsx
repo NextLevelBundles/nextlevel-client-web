@@ -56,41 +56,43 @@ export default function ExchangePage() {
         <section className="bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800">
           <div className="container mx-auto px-4">
             {/* Hero Content */}
-            <div className="py-10 flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">
-                  The Exchange
-                </h1>
-                <p className="text-lg md:text-xl font-medium text-gray-700 dark:text-white/90 mt-2">
-                  Trade in What You Own, Discover What You Don't
-                </p>
-                <p className="text-gray-600 dark:text-white/80 text-sm md:text-base mt-2">
-                  Already own a game on Steam from our collections? Trade it in
-                  for credits to get another game from the Exchange. (Steam
-                  verification required)
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="bg-white dark:bg-white/10 backdrop-blur-sm border border-gray-300 dark:border-white/20 rounded-lg px-4 py-2 flex items-center gap-2">
-                  <Coins className="w-4 h-4 text-gray-600 dark:text-white/80" />
-                  <span className="text-gray-600 dark:text-white/80 text-sm">
-                    Available Credits:
-                  </span>
-                  <span className="text-gray-900 dark:text-white font-semibold">
-                    {creditsData ?? 0}
-                  </span>
+            <div className="py-6 md:py-10">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div className="flex-1">
+                  <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 dark:text-white">
+                    The Exchange
+                  </h1>
+                  <p className="text-base md:text-lg lg:text-xl font-medium text-gray-700 dark:text-white/90 mt-2">
+                    Trade in What You Own, Discover What You Don't
+                  </p>
+                  <p className="text-gray-600 dark:text-white/80 text-xs md:text-sm lg:text-base mt-2">
+                    Already own a game on Steam from our collections? Trade it in
+                    for credits to get another game from the Exchange. (Steam
+                    verification required)
+                  </p>
                 </div>
-                {isAuthenticated && (
-                  <Button
-                    asChild
-                    size="sm"
-                    variant="outline"
-                    className="bg-white dark:bg-transparent text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-white/10 border-gray-300 dark:border-white/20"
-                  >
-                    <Link href="/customer/exchange-history">History</Link>
-                  </Button>
-                )}
+
+                <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                  <div className="bg-white dark:bg-white/10 backdrop-blur-sm border border-gray-300 dark:border-white/20 rounded-lg px-3 md:px-4 py-2 flex items-center gap-2">
+                    <Coins className="w-4 h-4 text-gray-600 dark:text-white/80 flex-shrink-0" />
+                    <span className="text-gray-600 dark:text-white/80 text-xs md:text-sm whitespace-nowrap">
+                      Available Credits:
+                    </span>
+                    <span className="text-gray-900 dark:text-white font-semibold text-sm md:text-base">
+                      {creditsData ?? 0}
+                    </span>
+                  </div>
+                  {isAuthenticated && (
+                    <Button
+                      asChild
+                      size="sm"
+                      variant="outline"
+                      className="bg-white dark:bg-transparent text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-white/10 border-gray-300 dark:border-white/20"
+                    >
+                      <Link href="/customer/exchange-history">History</Link>
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -145,19 +147,19 @@ export default function ExchangePage() {
         </section>
 
         {/* Games Grid Section */}
-        <section className="py-12 bg-background">
+        <section className="py-8 md:py-12 bg-background">
           <div className="container mx-auto px-4">
-            <div className="mb-8 flex items-start justify-between">
+            <div className="mb-6 md:mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div>
-                <h2 className="text-3xl font-bold">Browse the Exchange</h2>
-                <p className="text-muted-foreground mt-1">
+                <h2 className="text-2xl md:text-3xl font-bold">Browse the Exchange</h2>
+                <p className="text-muted-foreground mt-1 text-sm md:text-base">
                   Discover your next favorite game
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Sort by:</span>
+                <span className="text-xs md:text-sm text-muted-foreground whitespace-nowrap">Sort by:</span>
                 <Select value={sortOrder} onValueChange={(value: "asc" | "desc") => setSortOrder(value)}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -169,14 +171,14 @@ export default function ExchangePage() {
             </div>
 
             {isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {Array.from({ length: 8 }).map((_, i) => (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                {Array.from({ length: 12 }).map((_, i) => (
                   <Card key={i} className="overflow-hidden">
-                    <Skeleton className="aspect-video w-full" />
-                    <div className="p-4 space-y-3">
-                      <Skeleton className="h-6 w-3/4" />
-                      <Skeleton className="h-4 w-1/2" />
-                      <Skeleton className="h-10 w-full" />
+                    <Skeleton className="w-full" style={{ aspectRatio: "3/4" }} />
+                    <div className="p-3 space-y-2">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-3 w-1/2" />
+                      <Skeleton className="h-8 w-full" />
                     </div>
                   </Card>
                 ))}
@@ -195,7 +197,7 @@ export default function ExchangePage() {
                 </div>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {[...exchangeData.exchangeGames]
                   .sort((a, b) =>
                     sortOrder === "desc"
