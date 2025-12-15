@@ -13,8 +13,8 @@ interface ExchangeGameCardProps {
 
 export function ExchangeGameCard({ game }: ExchangeGameCardProps) {
   return (
-    <Link href={`/exchange/game/${game.id}`} className="block">
-      <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 bg-white dark:bg-gray-800/80 border border-gray-200/80 dark:border-gray-700/50 cursor-pointer">
+    <Link href={`/exchange/game/${game.id}`} className="block h-full">
+      <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 bg-white dark:bg-gray-800/80 border border-gray-200/80 dark:border-gray-700/50 cursor-pointer h-full flex flex-col">
         {/* 3:4 Cover Image - More compact */}
         <div className="relative w-full overflow-hidden bg-gradient-to-br from-purple-500/10 to-blue-500/10" style={{ aspectRatio: "3/4" }}>
           {game.coverImage?.url ? (
@@ -42,9 +42,9 @@ export function ExchangeGameCard({ game }: ExchangeGameCardProps) {
         </div>
 
         {/* Content - More compact */}
-        <div className="p-3 space-y-2">
+        <div className="p-3 space-y-2 flex flex-col flex-1">
           {/* Title */}
-          <h3 className="font-semibold text-sm line-clamp-2 group-hover:text-primary transition-colors">
+          <h3 className="font-semibold text-sm line-clamp-2 group-hover:text-primary transition-colors min-h-[2.5rem]">
             {game.title}
           </h3>
 
@@ -62,7 +62,7 @@ export function ExchangeGameCard({ game }: ExchangeGameCardProps) {
           </div>
 
           {/* View Details Text */}
-          <div className="flex items-center justify-center py-2 rounded-lg bg-primary/5 group-hover:bg-primary/10 transition-colors">
+          <div className="flex items-center justify-center py-2 rounded-lg bg-primary/5 group-hover:bg-primary/10 transition-colors mt-auto">
             <span className="text-xs font-medium text-primary">
               View Details
             </span>
