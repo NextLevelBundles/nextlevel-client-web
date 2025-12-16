@@ -15,8 +15,8 @@ export function ExchangeGameCard({ game }: ExchangeGameCardProps) {
   return (
     <Link href={`/exchange/game/${game.id}`} className="block h-full">
       <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 bg-white dark:bg-gray-800/80 border border-gray-200/80 dark:border-gray-700/50 cursor-pointer h-full flex flex-col">
-        {/* 3:4 Cover Image - More compact */}
-        <div className="relative w-full overflow-hidden bg-gradient-to-br from-purple-500/10 to-blue-500/10" style={{ aspectRatio: "3/4" }}>
+        {/* 2:3 Cover Image */}
+        <div className="relative w-full overflow-hidden bg-gradient-to-br from-purple-500/10 to-blue-500/10" style={{ aspectRatio: "2/3" }}>
           {game.coverImage?.url ? (
             <>
               <Image
