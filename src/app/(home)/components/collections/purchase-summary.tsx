@@ -16,6 +16,7 @@ import {
   AlertCircle,
   Clock,
 } from "lucide-react";
+import { CharityLeaderboard } from "./charity-leaderboard";
 import dayjs from "dayjs";
 import { cn } from "@/shared/utils/tailwind";
 import {
@@ -56,6 +57,7 @@ interface PurchaseSummaryProps {
   bundleState: "not-started" | "expired" | "active";
   isSaleActive: boolean;
   isMobileSheet?: boolean;
+  showCharityLeaderboard?: boolean;
 }
 
 export function PurchaseSummary({
@@ -79,6 +81,7 @@ export function PurchaseSummary({
   bundleState,
   isSaleActive,
   isMobileSheet = false,
+  showCharityLeaderboard = false,
 }: PurchaseSummaryProps) {
   const [tipInputValue, setTipInputValue] = useState("");
   const { user } = useAuth();
@@ -188,7 +191,7 @@ export function PurchaseSummary({
       className={cn(
         "w-full",
         !isMobileSheet &&
-          "lg:sticky lg:top-20 lg:h-fit lg:w-[370px] animate-fade-up space-y-4"
+          "lg:sticky lg:top-20 lg:h-fit animate-fade-up space-y-4"
       )}
     >
       <Card
@@ -715,6 +718,11 @@ export function PurchaseSummary({
           </div>
         )}
       </Card>
+
+      {/* Charity Leaderboard - only show on desktop, not in mobile sheet */}
+      {!isMobileSheet && showCharityLeaderboard && (
+        <CharityLeaderboard bundleId={bundle.id} />
+      )}
 
       {/* Location Warning */}
       {/* {isAuthenticated && !isLoadingLocation && locationData?.ipCountry && (

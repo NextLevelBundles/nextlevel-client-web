@@ -7,6 +7,7 @@ import { BundleProgress } from "./collection-progress";
 import { ProductGrid } from "./product-grid";
 import { CharityHighlight } from "./charity-highlight";
 import { PurchaseSummary } from "./purchase-summary";
+import { CharityLeaderboard } from "./charity-leaderboard";
 import { CuratorComments } from "./curator-comments";
 import { CharityTierSection } from "./charity-tier-section";
 import { UpsellTierSection } from "./upsell-tier-section";
@@ -30,11 +31,11 @@ import { useCart } from "@/app/(shared)/contexts/cart/cart-provider";
 
 // Configuration: Base tier display order
 // 'asc' = low to high (cheapest first), 'desc' = high to low (most expensive first)
-const BASE_TIER_DISPLAY_ORDER: 'asc' | 'desc' = 'desc';
+const BASE_TIER_DISPLAY_ORDER: "asc" | "desc" = "desc";
 
 // Helper function to sort base tiers by price
-const sortBaseTiers = (tiers: Tier[], order: 'asc' | 'desc') => {
-  return order === 'asc'
+const sortBaseTiers = (tiers: Tier[], order: "asc" | "desc") => {
+  return order === "asc"
     ? [...tiers].sort((a, b) => a.price - b.price)
     : [...tiers].sort((a, b) => b.price - a.price);
 };
@@ -44,11 +45,7 @@ const getCanonicalTiers = (tiers: Tier[]) => {
   return [...tiers].sort((a, b) => a.price - b.price);
 };
 
-export function BundleDetail({
-  bundle,
-}: {
-  bundle: Bundle;
-}) {
+export function BundleDetail({ bundle }: { bundle: Bundle }) {
   const { user } = useAuth();
   const { addToCart } = useCart();
   const isAuthenticated = !!user;
@@ -79,14 +76,14 @@ export function BundleDetail({
   }
 
   // Determine bundle state for UI (calculate once on mount)
-  const bundleState: 'not-started' | 'expired' | 'active' = useMemo(() => {
+  const bundleState: "not-started" | "expired" | "active" = useMemo(() => {
     const now = new Date();
     const isBundleNotYetStarted = now < startDate;
     const isBundleExpired = now > endDate;
 
-    if (isBundleNotYetStarted) return 'not-started';
-    if (isBundleExpired) return 'expired';
-    return 'active';
+    if (isBundleNotYetStarted) return "not-started";
+    if (isBundleExpired) return "expired";
+    return "active";
   }, [startDate, endDate]);
 
   // Check if sale is currently active (independent of bundle state)
@@ -96,7 +93,7 @@ export function BundleDetail({
   }, [saleStartDate, saleEndDate]);
 
   // Check if bundle has expired (needed for PurchaseSummary)
-  const isBundleExpired = bundleState === 'expired';
+  const isBundleExpired = bundleState === "expired";
 
   // Find base tier matching suggestedPrice
   const initialBaseAmount = useMemo(() => {
@@ -137,7 +134,8 @@ export function BundleDetail({
   // Separate tiers by type and sort by price (memoized to prevent infinite loops)
   // baseTiersCanonical: Always sorted low to high for business logic
   const baseTiersCanonical = useMemo(
-    () => getCanonicalTiers(tiers.filter((tier) => tier.type === TierType.Base)),
+    () =>
+      getCanonicalTiers(tiers.filter((tier) => tier.type === TierType.Base)),
     [tiers]
   );
 
@@ -192,7 +190,8 @@ export function BundleDetail({
   }, [isSteamBundle, tierAvailability, baseTiersCanonical]);
 
   // Check if bundle is running low on keys (less than 1000)
-  const isRunningLowOnKeys = minAvailableKeys !== null && minAvailableKeys < 1000;
+  const isRunningLowOnKeys =
+    minAvailableKeys !== null && minAvailableKeys < 1000;
 
   // Determine the reason for bundle unavailability (country vs sold out)
   const bundleUnavailabilityReason = useMemo(() => {
@@ -299,8 +298,12 @@ export function BundleDetail({
     addToCart({
       bundleId: bundle.id,
       baseTierId: currentTier.id,
-      ...(selectedCharityTierIds.length > 0 && { charityTierId: selectedCharityTierIds[0] }),
-      ...(selectedUpsellTierIds.length > 0 && { upsellTierIds: selectedUpsellTierIds }),
+      ...(selectedCharityTierIds.length > 0 && {
+        charityTierId: selectedCharityTierIds[0],
+      }),
+      ...(selectedUpsellTierIds.length > 0 && {
+        upsellTierIds: selectedUpsellTierIds,
+      }),
       ...(tipAmount > 0 && { tipAmount }),
     });
   };
@@ -313,9 +316,7 @@ export function BundleDetail({
   // Check if CTA should be disabled
   // Add to Cart is enabled only if sale is active (regardless of bundle state)
   const isCtaDisabled =
-    !hasAvailableBaseTiers ||
-    !isSaleActive ||
-    totalAmount === 0;
+    !hasAvailableBaseTiers || !isSaleActive || totalAmount === 0;
 
   // Render status banner based on sale status
   const renderStatusBanner = () => {
@@ -324,11 +325,11 @@ export function BundleDetail({
 
     const bannerConfig = {
       icon: AlertCircle,
-      bgColor: 'bg-orange-50 dark:bg-orange-950/30',
-      borderColor: 'border-orange-200 dark:border-orange-800',
-      textColor: 'text-orange-700 dark:text-orange-300',
-      title: 'Sale Not Active',
-      description: 'This collection is not currently available for purchase.',
+      bgColor: "bg-orange-50 dark:bg-orange-950/30",
+      borderColor: "border-orange-200 dark:border-orange-800",
+      textColor: "text-orange-700 dark:text-orange-300",
+      title: "Sale Not Active",
+      description: "This collection is not currently available for purchase.",
     };
 
     const Icon = bannerConfig.icon;
@@ -338,9 +339,13 @@ export function BundleDetail({
         className={`p-4 ${bannerConfig.bgColor} border ${bannerConfig.borderColor} my-6`}
       >
         <div className="flex items-start gap-3">
-          <Icon className={`h-5 w-5 ${bannerConfig.textColor} mt-0.5 flex-shrink-0`} />
+          <Icon
+            className={`h-5 w-5 ${bannerConfig.textColor} mt-0.5 flex-shrink-0`}
+          />
           <div className="flex-1">
-            <p className={`text-sm font-semibold ${bannerConfig.textColor} mb-1`}>
+            <p
+              className={`text-sm font-semibold ${bannerConfig.textColor} mb-1`}
+            >
               {bannerConfig.title}
             </p>
             <p className={`text-xs ${bannerConfig.textColor}`}>
@@ -357,9 +362,7 @@ export function BundleDetail({
     if (!isRunningLowOnKeys || !isSaleActive) return null;
 
     return (
-      <Card
-        className="relative overflow-hidden p-5 bg-gradient-to-r from-red-600 to-orange-600 dark:from-red-700 dark:to-orange-700 border-0 my-6 shadow-lg"
-      >
+      <Card className="relative overflow-hidden p-5 bg-gradient-to-r from-red-600 to-orange-600 dark:from-red-700 dark:to-orange-700 border-0 my-6 shadow-lg">
         {/* Animated background pulse effect */}
         <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-orange-500/20 animate-pulse" />
 
@@ -380,8 +383,13 @@ export function BundleDetail({
               </span>
             </div>
             <p className="text-sm text-white/95 font-medium">
-              Only <span className="font-bold text-white">{minAvailableKeys}</span> copies left! Once they're gone, this collection won't be available again.
-              <span className="block mt-1 font-semibold">Secure your copy now before it's too late!</span>
+              Only{" "}
+              <span className="font-bold text-white">{minAvailableKeys}</span>{" "}
+              copies left! Once they're gone, this collection won't be available
+              again.
+              <span className="block mt-1 font-semibold">
+                Secure your copy now before it's too late!
+              </span>
             </p>
           </div>
         </div>
@@ -463,7 +471,15 @@ export function BundleDetail({
                     hasAvailableBaseTiers={hasAvailableBaseTiers}
                     bundle={bundle}
                     allBundleProducts={allProducts}
-                    allUnlockedProducts={[...baseUnlockedProducts, ...allProducts.filter(p => selectedCharityTierIds.includes(p.bundleTierId || '')), ...allProducts.filter(p => selectedUpsellTierIds.includes(p.bundleTierId || ''))]}
+                    allUnlockedProducts={[
+                      ...baseUnlockedProducts,
+                      ...allProducts.filter((p) =>
+                        selectedCharityTierIds.includes(p.bundleTierId || "")
+                      ),
+                      ...allProducts.filter((p) =>
+                        selectedUpsellTierIds.includes(p.bundleTierId || "")
+                      ),
+                    ]}
                   />
                 );
               })}
@@ -499,14 +515,23 @@ export function BundleDetail({
                     }}
                     bundleType={bundle.type}
                     highestBaseTierPrice={
-                      baseTiersCanonical[baseTiersCanonical.length - 1]?.price || 0
+                      baseTiersCanonical[baseTiersCanonical.length - 1]
+                        ?.price || 0
                     }
                     isAvailable={isAvailable}
                     keysCount={keysCount}
                     hasAvailableBaseTiers={hasAvailableBaseTiers}
                     bundle={bundle}
                     allBundleProducts={allProducts}
-                    allUnlockedProducts={[...baseUnlockedProducts, ...allProducts.filter(p => selectedCharityTierIds.includes(p.bundleTierId || '')), ...allProducts.filter(p => selectedUpsellTierIds.includes(p.bundleTierId || ''))]}
+                    allUnlockedProducts={[
+                      ...baseUnlockedProducts,
+                      ...allProducts.filter((p) =>
+                        selectedCharityTierIds.includes(p.bundleTierId || "")
+                      ),
+                      ...allProducts.filter((p) =>
+                        selectedUpsellTierIds.includes(p.bundleTierId || "")
+                      ),
+                    ]}
                   />
                 );
               })}
@@ -521,7 +546,9 @@ export function BundleDetail({
                 <CharityHighlight
                   charities={bundle.charities.map((bc) => bc.charity)}
                   charityAmount={charityAmountForDisplay}
-                  totalRaisedForCharity={bundleStatistics?.totalRaisedForCharity}
+                  totalRaisedForCharity={
+                    bundleStatistics?.totalRaisedForCharity
+                  }
                 />
               )}
             </div>
@@ -532,31 +559,35 @@ export function BundleDetail({
                 <CuratorComments content={bundle.curatorComment} compact />
               )}
 
+              {/* Charity Leaderboard */}
+              <CharityLeaderboard bundleId={bundle.id} />
+
               {/* Desktop Purchase Summary */}
-              <div className="hidden lg:block">
-                <PurchaseSummary
-                  bundle={bundle}
-                  tiers={tiers}
-                  currentTier={currentTier}
-                  baseAmount={baseAmount}
-                  totalAmount={totalAmount}
-                  unlockedProductsValue={unlockedProductsValue}
-                  setBaseAmount={setBaseAmount}
-                  selectedCharityTierIds={selectedCharityTierIds}
-                  selectedUpsellTierIds={selectedUpsellTierIds}
-                  setSelectedCharityTierIds={setSelectedCharityTierIds}
-                  setSelectedUpsellTierIds={setSelectedUpsellTierIds}
-                  tipAmount={tipAmount}
-                  setTipAmount={setTipAmount}
-                  bookFormats={bookFormats}
-                  isBundleExpired={isBundleExpired}
-                  tierAvailability={tierAvailability}
-                  hasAvailableBaseTiers={hasAvailableBaseTiers}
-                  bundleUnavailabilityReason={bundleUnavailabilityReason}
-                  bundleState={bundleState}
-                  isSaleActive={isSaleActive}
-                />
-              </div>
+              {/* <div className="hidden lg:block sticky top-16"> */}
+              <PurchaseSummary
+                bundle={bundle}
+                tiers={tiers}
+                currentTier={currentTier}
+                baseAmount={baseAmount}
+                totalAmount={totalAmount}
+                unlockedProductsValue={unlockedProductsValue}
+                setBaseAmount={setBaseAmount}
+                selectedCharityTierIds={selectedCharityTierIds}
+                selectedUpsellTierIds={selectedUpsellTierIds}
+                setSelectedCharityTierIds={setSelectedCharityTierIds}
+                setSelectedUpsellTierIds={setSelectedUpsellTierIds}
+                tipAmount={tipAmount}
+                setTipAmount={setTipAmount}
+                bookFormats={bookFormats}
+                isBundleExpired={isBundleExpired}
+                tierAvailability={tierAvailability}
+                hasAvailableBaseTiers={hasAvailableBaseTiers}
+                bundleUnavailabilityReason={bundleUnavailabilityReason}
+                bundleState={bundleState}
+                isSaleActive={isSaleActive}
+                showCharityLeaderboard={false}
+              />
+              {/* </div> */}
             </div>
           </div>
         </div>

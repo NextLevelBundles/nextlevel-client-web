@@ -1,5 +1,5 @@
 import { ClientApi } from "../client-api";
-import { BundleBookFormatsResponse, BundleTierAvailabilityResponse, BundleStatisticsResponse, CustomerBundleDto } from "../types/bundle";
+import { BundleBookFormatsResponse, BundleTierAvailabilityResponse, BundleStatisticsResponse, CustomerBundleDto, CharityLeaderboardResponse } from "../types/bundle";
 
 export class BundleApi {
   constructor(private api: ClientApi) {}
@@ -67,5 +67,22 @@ export class BundleApi {
       console.error("Failed to fetch bundle statistics:", error);
       return null;
     }
+  }
+
+  /**
+   * Get charity leaderboard for a bundle
+   * @param bundleId The bundle ID
+   * @param page Page number (default 1)
+   * @param pageSize Number of items per page (default 50)
+   * @returns Charity leaderboard data
+   */
+  async getCharityLeaderboard(
+    bundleId: string,
+    page: number = 1,
+    pageSize: number = 50
+  ): Promise<CharityLeaderboardResponse> {
+    return this.api.get<CharityLeaderboardResponse>(
+      `/customer/bundles/${bundleId}/charity-leaderboard?page=${page}&pageSize=${pageSize}`
+    );
   }
 }

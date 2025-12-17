@@ -29,3 +29,19 @@ export interface BundleStatisticsResponse {
   bundleId: string;
   totalRaisedForCharity: number;
 }
+
+// Charity Leaderboard types
+export interface CharityLeaderboardEntry {
+  date: string;
+  customerName: string;
+  customerHandle: string;
+  donatedAmount: number;
+}
+
+export interface CharityLeaderboardResponse {
+  items: CharityLeaderboardEntry[];
+  total: number;
+  pageSize: number;
+  page: number;
+  totalPages: number;
+}
