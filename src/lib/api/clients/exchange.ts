@@ -2,6 +2,13 @@
 import { ClientApi } from "../client-api";
 import { ExchangeGame, ExchangeGameDetails } from "../types/exchange-game";
 
+export type TradeInStatus = "Available" | "Unavailable" | "Owned";
+
+export interface TradeInValueData {
+  credits: number;
+  status: TradeInStatus;
+}
+
 export class ExchangeApi {
   private client: ClientApi;
 
@@ -44,9 +51,9 @@ export class ExchangeApi {
     );
   }
 
-  async getTradeInValues(steamAppIds: number[]): Promise<Record<number, number | null>> {
+  async getTradeInValues(steamAppIds: number[]): Promise<Record<number, TradeInValueData>> {
     const steamAppIdsParam = steamAppIds.join(',');
-    return await this.client.get<Record<number, number | null>>(
+    return await this.client.get<Record<number, TradeInValueData>>(
       `/customer/exchange/trade-in-values?steamAppIds=${steamAppIdsParam}`
     );
   }

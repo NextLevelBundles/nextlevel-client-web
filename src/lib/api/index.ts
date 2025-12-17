@@ -10,6 +10,9 @@ import { CommonClient } from "./clients/common";
 import { BundleApi } from "./clients/bundle";
 import { ExchangeApi } from "./clients/exchange";
 
+// Export types
+export type { TradeInStatus, TradeInValueData } from "./clients/exchange";
+
 // Default instance
 const apiClient = new ClientApi();
 

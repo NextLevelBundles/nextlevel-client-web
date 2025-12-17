@@ -38,7 +38,7 @@ import {
 } from "lucide-react";
 import { Markdown } from "@/app/(shared)/components/ui/markdown";
 import { BundleBookFormatsResponse } from "@/lib/api/types/bundle";
-import { exchangeApi } from "@/lib/api";
+import { exchangeApi, TradeInValueData } from "@/lib/api";
 import {
   Tooltip,
   TooltipContent,
@@ -75,7 +75,9 @@ export function ProductDetailModal({
   const [showTrailerModal, setShowTrailerModal] = useState(false);
   const [showScreenshotModal, setShowScreenshotModal] = useState(false);
   const [modalScreenshotIndex, setModalScreenshotIndex] = useState(0);
-  const [tradeInValues, setTradeInValues] = useState<Record<number, number | null>>({});
+  const [tradeInValues, setTradeInValues] = useState<
+    Record<number, TradeInValueData>
+  >({});
   const [tradeInValuesLoading, setTradeInValuesLoading] = useState(false);
   const hasFetchedRef = useRef(false);
 
@@ -128,7 +130,11 @@ export function ProductDetailModal({
   // Fetch trade-in values when modal first opens for SteamGame bundles
   useEffect(() => {
     // Only run when modal opens and we haven't fetched yet
-    if (!isOpen || bundle.type !== BundleType.SteamGame || hasFetchedRef.current) {
+    if (
+      !isOpen ||
+      bundle.type !== BundleType.SteamGame ||
+      hasFetchedRef.current
+    ) {
       return;
     }
 
@@ -171,12 +177,15 @@ export function ProductDetailModal({
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      const currentIndex = sortedProducts.findIndex((p) => p.id === product?.id);
+      const currentIndex = sortedProducts.findIndex(
+        (p) => p.id === product?.id
+      );
 
       if (event.key === "ArrowLeft") {
         // Navigate to previous product
         event.preventDefault();
-        const prevIndex = (currentIndex - 1 + sortedProducts.length) % sortedProducts.length;
+        const prevIndex =
+          (currentIndex - 1 + sortedProducts.length) % sortedProducts.length;
         onNavigateToProduct(sortedProducts[prevIndex]);
       } else if (event.key === "ArrowRight") {
         // Navigate to next product
@@ -344,7 +353,10 @@ export function ProductDetailModal({
                       Steam Game
                     </Badge>
                   ) : isBook ? (
-                    <Badge variant="outline" className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700">
+                    <Badge
+                      variant="outline"
+                      className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700"
+                    >
                       <BookOpen className="h-3 w-3 mr-1" />
                       eBook
                     </Badge>
@@ -384,9 +396,7 @@ export function ProductDetailModal({
                           Extra Items Tier
                         </>
                       ) : (
-                        <>
-                          Tier ${currentTierInfo.price}
-                        </>
+                        <>Tier ${currentTierInfo.price}</>
                       )}
                     </div>
                   </>
@@ -458,7 +468,11 @@ export function ProductDetailModal({
               {isGame ? (
                 <GameDetails
                   product={product}
-                  tradeInValue={product.steamGameMetadata?.steamAppId ? tradeInValues[product.steamGameMetadata.steamAppId] : undefined}
+                  tradeInValue={
+                    product.steamGameMetadata?.steamAppId
+                      ? tradeInValues[product.steamGameMetadata.steamAppId]
+                      : undefined
+                  }
                   tradeInValuesLoading={tradeInValuesLoading}
                 />
               ) : isBook ? (
@@ -695,7 +709,7 @@ function GameDetails({
   tradeInValuesLoading,
 }: {
   product: Product;
-  tradeInValue?: number | null;
+  tradeInValue?: TradeInValueData;
   tradeInValuesLoading?: boolean;
 }) {
   const metadata = product.steamGameMetadata;
@@ -703,48 +717,83 @@ function GameDetails({
 
   return (
     <div className="space-y-3 lg:space-y-4">
+      {/* Trade-in status banner */}
+      {!tradeInValuesLoading && tradeInValue && (
+        <div className="rounded-lg border p-3 lg:p-4">
+          {tradeInValue.status === "Available" && tradeInValue.credits > 0 && (
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 mt-0.5">
+                <div className="rounded-full bg-blue-500/10 p-2">
+                  <Coins className="h-5 w-5 text-blue-500" />
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className="font-semibold text-sm text-blue-700 dark:text-blue-400">
+                    Exchange Trade-in Value: {tradeInValue.credits} Credits
+                  </h4>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  You can trade in this game for {tradeInValue.credits} credits
+                  in the Exchange. Use credits to get other games from our
+                  Exchange catalog.
+                </p>
+              </div>
+            </div>
+          )}
+          {tradeInValue.status === "Unavailable" && (
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 mt-0.5">
+                <div className="rounded-full bg-gray-100 dark:bg-gray-800 p-2">
+                  <Repeat className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-sm text-gray-700 dark:text-gray-400 mb-1">
+                  Not Available for Exchange
+                </h4>
+                <p className="text-xs text-muted-foreground">
+                  This game is not currently available for adding to the
+                  Exchange.
+                </p>
+              </div>
+            </div>
+          )}
+          {tradeInValue.status === "Owned" && (
+            <div className="flex items-start gap-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-4 rounded-lg border-green-200 dark:border-green-800">
+              <div className="flex-shrink-0 mt-0.5">
+                <div className="rounded-full bg-green-500/20 p-2">
+                  <Coins className="h-5 w-5 text-green-600 dark:text-green-400" />
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-bold text-sm text-green-700 dark:text-green-400 mb-1">
+                  Perfect for Exchange! Trade for {tradeInValue.credits} Credits
+                </h4>
+                <p className="text-xs text-green-700/90 dark:text-green-300/90 font-medium">
+                  You already own this game on Steam, so you can't redeem
+                  another key. However, you can trade it in for{" "}
+                  {tradeInValue.credits} credits to get other games from the
+                  Exchange!
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      {tradeInValuesLoading && (
+        <div className="rounded-lg border p-3 lg:p-4">
+          <div className="flex items-center gap-3">
+            <Repeat className="h-5 w-5 animate-spin text-blue-500" />
+            <span className="text-sm text-muted-foreground">
+              Checking exchange availability...
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Tags */}
       <div className="flex flex-wrap gap-2">
-        {/* Trade-in value badge - inline with other badges */}
-        {tradeInValuesLoading && (
-          <Badge variant="outline" className="border-blue-500/50 bg-blue-500/10">
-            <Repeat className="h-3 w-3 mr-1 animate-spin text-blue-600 dark:text-blue-400" />
-            Checking...
-          </Badge>
-        )}
-        {!tradeInValuesLoading && tradeInValue !== undefined && tradeInValue !== null && tradeInValue > 0 && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Badge variant="outline" className="border-blue-500/50 bg-blue-500/10 hover:bg-blue-500/20 transition-colors cursor-help">
-                <span className="text-xs mr-1.5">Exchange Trade-in Value</span>
-                <Coins className="h-3.5 w-3.5 mr-1 text-blue-500" />
-                <span className="font-semibold text-blue-500">{tradeInValue}</span>
-              </Badge>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p className="max-w-xs">
-                You can trade in this game for {tradeInValue} credits in the Exchange.
-                Use credits to get other games from our Exchange catalog.
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        )}
-        {!tradeInValuesLoading && tradeInValue !== undefined && (tradeInValue === null || tradeInValue === 0) && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Badge variant="outline" className="border-gray-300 dark:border-gray-700 cursor-help">
-                <Repeat className="h-3 w-3 mr-1 text-gray-500 dark:text-gray-400" />
-                <span className="text-gray-600 dark:text-gray-400">Not available for trade-in</span>
-              </Badge>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p className="max-w-xs">
-                This game is not currently available in our Exchange trade-in program.
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        )}
-
         {metadata?.protonDbTier && (
           <Badge variant="secondary">ProtonDB: {metadata.protonDbTier}</Badge>
         )}
@@ -848,31 +897,31 @@ function GameDetails({
 // Helper function to convert language codes to full names
 function getLanguageName(code: string): string {
   const languageMap: Record<string, string> = {
-    'en': 'English',
-    'fr': 'French',
-    'es': 'Spanish',
-    'de': 'German',
-    'it': 'Italian',
-    'pt': 'Portuguese',
-    'ru': 'Russian',
-    'ja': 'Japanese',
-    'zh': 'Chinese',
-    'ko': 'Korean',
-    'ar': 'Arabic',
-    'hi': 'Hindi',
-    'nl': 'Dutch',
-    'pl': 'Polish',
-    'tr': 'Turkish',
-    'sv': 'Swedish',
-    'no': 'Norwegian',
-    'da': 'Danish',
-    'fi': 'Finnish',
-    'cs': 'Czech',
-    'el': 'Greek',
-    'he': 'Hebrew',
-    'th': 'Thai',
-    'vi': 'Vietnamese',
-    'id': 'Indonesian',
+    en: "English",
+    fr: "French",
+    es: "Spanish",
+    de: "German",
+    it: "Italian",
+    pt: "Portuguese",
+    ru: "Russian",
+    ja: "Japanese",
+    zh: "Chinese",
+    ko: "Korean",
+    ar: "Arabic",
+    hi: "Hindi",
+    nl: "Dutch",
+    pl: "Polish",
+    tr: "Turkish",
+    sv: "Swedish",
+    no: "Norwegian",
+    da: "Danish",
+    fi: "Finnish",
+    cs: "Czech",
+    el: "Greek",
+    he: "Hebrew",
+    th: "Thai",
+    vi: "Vietnamese",
+    id: "Indonesian",
   };
   return languageMap[code.toLowerCase()] || code;
 }
@@ -942,10 +991,10 @@ function BookDetails({
               Publication Date
             </h4>
             <p className="text-xs lg:text-sm text-muted-foreground">
-              {new Date(metadata.publicationDate).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
+              {new Date(metadata.publicationDate).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
               })}
             </p>
           </div>
