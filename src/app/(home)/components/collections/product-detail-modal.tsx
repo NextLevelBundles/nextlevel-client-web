@@ -348,10 +348,36 @@ export function ProductDetailModal({
                       </Badge>
                     )}
                   {isGame ? (
-                    <Badge variant="default">
-                      <Gamepad2 className="h-3 w-3 mr-1" />
-                      Steam Game
-                    </Badge>
+                    <>
+                      <Badge variant="default">
+                        <Gamepad2 className="h-3 w-3 mr-1" />
+                        Steam Game
+                      </Badge>
+                      {bundle.type === BundleType.SteamGame &&
+                        product.steamGameMetadata?.steamAppId && (
+                          <a
+                            href={`https://www.protondb.com/app/${product.steamGameMetadata.steamAppId}?device=steamDeck`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex"
+                          >
+                            <Badge
+                              variant="outline"
+                              className="cursor-pointer hover:bg-primary/10 transition-colors"
+                            >
+                              <Image
+                                src="/images/proton-db-logo.svg"
+                                alt="ProtonDB"
+                                width={16}
+                                height={16}
+                                className="mr-1.5"
+                              />
+                              Steam Deck Status
+                              <ExternalLink className="h-3 w-3 ml-1.5" />
+                            </Badge>
+                          </a>
+                        )}
+                    </>
                   ) : isBook ? (
                     <Badge
                       variant="outline"
