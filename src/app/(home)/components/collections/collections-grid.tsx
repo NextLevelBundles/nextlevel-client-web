@@ -19,6 +19,7 @@ import {
   ArrowUpAZ,
   X,
   XCircle,
+  Radio,
 } from "lucide-react";
 import { Badge } from "@/shared/components/ui/badge";
 import { BundleListItem, BundleType } from "@/app/(shared)/types/bundle";
@@ -28,6 +29,7 @@ const ITEMS_PER_PAGE = 9;
 
 const filters = [
   { label: "All", value: "all" },
+  { label: "Live Collections", value: "live", icon: Radio },
   { label: "Steam Game Collections", value: "games", icon: Gamepad2 },
   { label: "Book Collections", value: "books", icon: BookOpen },
   { label: "Ended Collections", value: "ended", icon: XCircle },
@@ -51,10 +53,13 @@ export function BundlesGrid({ bundles }: BundlesGridProps) {
   const filteredBundles = bundles
     .filter((bundle) => {
       const now = new Date().getTime();
+      const startTime = new Date(bundle.startsAt).getTime();
       const endTime = new Date(bundle.endsAt).getTime();
       const hasEnded = endTime <= now;
+      const isLive = startTime <= now && endTime > now;
 
       if (currentFilter === "all") return true;
+      if (currentFilter === "live") return isLive;
       if (currentFilter === "games")
         return bundle.type === BundleType.SteamGame;
       if (currentFilter === "books") return bundle.type === BundleType.EBook;
