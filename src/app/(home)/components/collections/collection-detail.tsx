@@ -25,7 +25,7 @@ import { useBundleStatistics } from "@/hooks/queries/useBundleStatistics";
 import { BundleNotFound } from "./collection-not-found";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
 import { Card } from "@/shared/components/ui/card";
-import { AlertCircle, Eye } from "lucide-react";
+import { AlertCircle, Eye, Zap } from "lucide-react";
 import { useCart } from "@/app/(shared)/contexts/cart/cart-provider";
 
 // Configuration: Base tier display order
@@ -173,6 +173,26 @@ export function BundleDetail({
       return keysAvailable !== undefined && keysAvailable > 0;
     });
   }, [isAuthenticated, isSteamBundle, tierAvailability, baseTiersCanonical]);
+
+  // Calculate minimum available keys across base tiers
+  const minAvailableKeys = useMemo(() => {
+    if (!isSteamBundle || !tierAvailability) {
+      return null;
+    }
+
+    const baseKeyCounts = baseTiersCanonical
+      .map((tier) => tierAvailability[tier.id])
+      .filter((count) => count !== undefined);
+
+    if (baseKeyCounts.length === 0) {
+      return null;
+    }
+
+    return Math.min(...baseKeyCounts);
+  }, [isSteamBundle, tierAvailability, baseTiersCanonical]);
+
+  // Check if bundle is running low on keys (less than 1000)
+  const isRunningLowOnKeys = minAvailableKeys !== null && minAvailableKeys < 1000;
 
   // Determine the reason for bundle unavailability (country vs sold out)
   const bundleUnavailabilityReason = useMemo(() => {
@@ -332,12 +352,50 @@ export function BundleDetail({
     );
   };
 
+  // Render low stock banner
+  const renderLowStockBanner = () => {
+    if (!isRunningLowOnKeys || !isSaleActive) return null;
+
+    return (
+      <Card
+        className="relative overflow-hidden p-5 bg-gradient-to-r from-red-600 to-orange-600 dark:from-red-700 dark:to-orange-700 border-0 my-6 shadow-lg"
+      >
+        {/* Animated background pulse effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-orange-500/20 animate-pulse" />
+
+        <div className="relative flex items-start gap-4">
+          <div className="flex-shrink-0">
+            <div className="relative">
+              <Zap className="h-7 w-7 text-white animate-pulse" />
+              <div className="absolute -inset-1 bg-white/30 rounded-full blur-md animate-ping" />
+            </div>
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <p className="text-lg font-bold text-white tracking-tight">
+                🔥 ALMOST SOLD OUT!
+              </p>
+              <span className="px-2 py-0.5 bg-white/20 backdrop-blur-sm rounded-full text-xs font-semibold text-white animate-bounce">
+                HURRY
+              </span>
+            </div>
+            <p className="text-sm text-white/95 font-medium">
+              Only <span className="font-bold text-white">{minAvailableKeys}</span> copies left! Once they're gone, this collection won't be available again.
+              <span className="block mt-1 font-semibold">Secure your copy now before it's too late!</span>
+            </p>
+          </div>
+        </div>
+      </Card>
+    );
+  };
+
   return (
     <TooltipProvider>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 lg:pb-8">
         <BundleHero bundle={bundle} />
 
         {renderStatusBanner()}
+        {renderLowStockBanner()}
 
         <div className="mt-8">
           <div className="grid gap-8 lg:grid-cols-[1fr_350px]">
