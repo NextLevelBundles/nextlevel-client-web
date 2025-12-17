@@ -802,7 +802,7 @@ export function OnboardingForm() {
                               />
                             </div>
 
-                            {/* Show warning only if user changes from detected country */}
+                            {/* Country selection warning - always visible */}
                             {detectedCountryCode &&
                             formData.countryCode &&
                             formData.countryCode !== detectedCountryCode ? (
@@ -827,28 +827,27 @@ export function OnboardingForm() {
                                   )}
                                 </AlertDescription>
                               </Alert>
-                            ) : (
-                              <div className="p-3 rounded-lg bg-muted/50 border border-border">
-                                <p className="text-xs text-muted-foreground flex items-start gap-1">
-                                  <Info className="h-3 w-3 mt-0.5 shrink-0" />
-                                  <span>
-                                    {interestedInSteam ? (
-                                      <>
-                                        Your Steam keys will be allocated for
-                                        this region. You can change your country
-                                        once every 90 days.
-                                      </>
-                                    ) : (
-                                      <>
-                                        Content availability is optimized for
-                                        your region. You can change your country
-                                        once every 90 days.
-                                      </>
-                                    )}
-                                  </span>
-                                </p>
-                              </div>
-                            )}
+                            ) : null}
+
+                            {/* Always show region info */}
+                            <div className="flex items-center gap-3 p-4 rounded-lg border border-amber-200 dark:border-amber-900 bg-amber-50/50 dark:bg-amber-950/10">
+                              <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                              <p className="text-xs text-amber-900 dark:text-amber-100">
+                                {interestedInSteam ? (
+                                  <>
+                                    Your Steam keys will be allocated for this
+                                    region. You can change your country once
+                                    every 90 days.
+                                  </>
+                                ) : (
+                                  <>
+                                    Content availability is optimized for your
+                                    region. You can change your country once
+                                    every 90 days.
+                                  </>
+                                )}
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </div>
