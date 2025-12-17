@@ -14,7 +14,7 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Badge } from "@/shared/components/ui/badge";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   BookOpen,
   Download,
@@ -28,6 +28,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Filter,
+  CheckSquare,
+  Square,
+  Eye,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -53,9 +56,11 @@ import {
   useGenerateDownloadUrl,
   usePurchasedBundles,
   useBookGenres,
+  useBulkDownloadByIds,
 } from "@/hooks/queries/useBooks";
 import { BookAssignmentDto } from "@/lib/api/types/book";
 import { BulkDownloadModal } from "./bulk-download-modal";
+import { DownloadSelectedModal } from "./download-selected-modal";
 import confetti from "canvas-confetti";
 import { format } from "date-fns";
 
@@ -146,6 +151,10 @@ export default function BooksLibraryPage() {
     new Set()
   );
   const [showBulkDownloadModal, setShowBulkDownloadModal] = useState(false);
+  const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
+  const [selectedBookIds, setSelectedBookIds] = useState<Set<string>>(new Set());
+  const [showDownloadSelectedModal, setShowDownloadSelectedModal] = useState(false);
+  const [showSelectionView, setShowSelectionView] = useState(false);
 
   // Fetch available book genres
   const { data: availableGenres = [] } = useBookGenres();
@@ -239,6 +248,18 @@ export default function BooksLibraryPage() {
   const totalPages = Math.ceil(totalBooks / pageSize);
 
   const generateDownloadUrl = useGenerateDownloadUrl();
+
+  // Create map of book assignments for the modal
+  const bookAssignmentsMap = useMemo(() => {
+    const map = new Map<string, { title: string; coverImageUrl?: string }>();
+    bookAssignments.forEach(book => {
+      map.set(book.id, {
+        title: book.book?.title || book.bookTitle || book.productTitle,
+        coverImageUrl: book.productCoverImage?.url
+      });
+    });
+    return map;
+  }, [bookAssignments]);
 
   // Calculate user's progress
   const currentLevel = PROGRESS_LEVELS.reduce(
@@ -592,14 +613,60 @@ export default function BooksLibraryPage() {
               )}
             </CardTitle>
             {totalBooks > 0 && (
-              <Button
-                onClick={() => setShowBulkDownloadModal(true)}
-                variant="outline"
-                className="gap-2"
-              >
-                <Download className="h-4 w-4" />
-                Bulk Download
-              </Button>
+              <div className="flex items-center gap-2">
+                {/* Selection view badge */}
+                {isMultiSelectMode && selectedBookIds.size > 0 && (
+                  <Button
+                    onClick={() => setShowSelectionView(!showSelectionView)}
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <Eye className="h-4 w-4" />
+                    {selectedBookIds.size} Selected
+                  </Button>
+                )}
+
+                {/* Download button - changes based on selection */}
+                {!isMultiSelectMode && (
+                  <Button
+                    onClick={() => setShowBulkDownloadModal(true)}
+                    variant="outline"
+                    className="gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    {hasActiveFilters ? "Download Filtered" : "Download All"}
+                  </Button>
+                )}
+
+                {/* Download Selected button - appears in multi-select mode with selections */}
+                {isMultiSelectMode && selectedBookIds.size > 0 && (
+                  <Button
+                    onClick={() => setShowDownloadSelectedModal(true)}
+                    variant="default"
+                    className="gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download Selected ({selectedBookIds.size})
+                  </Button>
+                )}
+
+                {/* Multi-select toggle */}
+                <Button
+                  onClick={() => {
+                    setIsMultiSelectMode(!isMultiSelectMode);
+                    if (isMultiSelectMode) {
+                      setSelectedBookIds(new Set());
+                      setShowSelectionView(false);
+                    }
+                  }}
+                  variant="outline"
+                  className={`gap-2 ${isMultiSelectMode ? "border-red-500 text-red-500 hover:bg-red-50 hover:text-red-600 dark:border-red-500 dark:text-red-400 dark:hover:bg-red-950/20 dark:hover:text-red-300" : ""}`}
+                >
+                  {isMultiSelectMode ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />}
+                  {isMultiSelectMode ? "Exit Multi-Select" : "Multi-Select"}
+                </Button>
+              </div>
             )}
           </div>
         </CardHeader>
@@ -696,14 +763,60 @@ export default function BooksLibraryPage() {
                     (file) => file.status === "Active"
                   ) || [];
 
+                const isSelected = selectedBookIds.has(book.id);
+
                 return (
                   <motion.div
                     key={book.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="relative flex flex-col gap-4 rounded-lg border bg-card/30 p-4 sm:flex-row sm:items-center sm:justify-between transition-all duration-200 hover:bg-card/50 hover:shadow-lg hover:border-primary/20 dark:hover:bg-[#1d2233]/60 dark:hover:shadow-blue-500/5"
+                    layout
+                    className={`flex flex-col gap-4 rounded-lg border bg-card/30 p-4 sm:flex-row sm:items-center sm:justify-between transition-all duration-200 hover:bg-card/50 hover:shadow-lg hover:border-primary/20 dark:hover:bg-[#1d2233]/60 dark:hover:shadow-blue-500/5 ${isMultiSelectMode ? 'cursor-pointer' : ''} ${isSelected ? 'border-primary bg-primary/5' : ''}`}
+                    onClick={() => {
+                      if (isMultiSelectMode) {
+                        setSelectedBookIds(prev => {
+                          const newSet = new Set(prev);
+                          if (newSet.has(book.id)) {
+                            newSet.delete(book.id);
+                          } else {
+                            newSet.add(book.id);
+                          }
+                          return newSet;
+                        });
+                      }
+                    }}
                   >
                     <div className="flex gap-4 flex-1">
+                      {/* Multi-select checkbox */}
+                      <AnimatePresence>
+                        {isMultiSelectMode && (
+                          <motion.div
+                            initial={{ opacity: 0, width: 0, marginRight: 0 }}
+                            animate={{ opacity: 1, width: "auto", marginRight: 16 }}
+                            exit={{ opacity: 0, width: 0, marginRight: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="flex items-center"
+                          >
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={(checked) => {
+                                setSelectedBookIds(prev => {
+                                  const newSet = new Set(prev);
+                                  if (checked) {
+                                    newSet.add(book.id);
+                                  } else {
+                                    newSet.delete(book.id);
+                                  }
+                                  return newSet;
+                                });
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                              className="h-5 w-5 border-2 rounded data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                            />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
                       {/* Product Cover Image - 2:3 aspect ratio */}
                       <div className="flex-shrink-0">
                         <div className="h-20 aspect-[2/3]">
@@ -941,6 +1054,21 @@ export default function BooksLibraryPage() {
           genres: selectedGenres.length > 0 ? selectedGenres.join(",") : undefined,
         }}
         totalBooks={totalBooks}
+      />
+
+      {/* Download Selected Modal */}
+      <DownloadSelectedModal
+        isOpen={showDownloadSelectedModal}
+        onClose={() => setShowDownloadSelectedModal(false)}
+        selectedBookIds={Array.from(selectedBookIds)}
+        onRemoveBook={(bookId) => {
+          setSelectedBookIds(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(bookId);
+            return newSet;
+          });
+        }}
+        bookAssignmentsMap={bookAssignmentsMap}
       />
     </div>
   );

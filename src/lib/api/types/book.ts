@@ -88,6 +88,11 @@ export interface BulkDownloadParams extends BookAssignmentQueryParams {
   preferredFileType: string;
 }
 
+export interface BulkDownloadByIdsParams {
+  bookAssignmentIds: string[];
+  preferredFileType: string;
+}
+
 export interface BookAssignmentQueryParams {
   fromDate?: string; // Purchase date after
   toDate?: string; // Purchase date before

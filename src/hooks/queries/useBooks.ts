@@ -6,7 +6,8 @@ import {
   BookDownloadUrlResponse,
   PaginatedBookAssignmentsResponse,
   BulkDownloadParams,
-  BulkDownloadResponse
+  BulkDownloadResponse,
+  BulkDownloadByIdsParams
 } from "@/lib/api/types/book";
 import { CustomerBundleDto } from "@/lib/api/types/bundle";
 import { toast } from "sonner";
@@ -69,6 +70,45 @@ export function useBulkDownload() {
 
         toast.success("Bulk download completed!", {
           description: 'Your books have been saved as a ZIP file'
+        });
+
+        // Invalidate book assignments query to refresh download counts
+        queryClient.invalidateQueries({ queryKey: ["bookAssignments"] });
+      } catch (error) {
+        console.error('Bulk download error:', error);
+
+        // Fallback to opening in new tab if blob download fails
+        toast.warning("Direct download failed, opening in new tab...");
+        window.open(data.downloadUrl, '_blank');
+
+        // Still invalidate queries even on fallback since download URL was accessed
+        queryClient.invalidateQueries({ queryKey: ["bookAssignments"] });
+      }
+    },
+    onError: (error) => {
+      toast.error("Failed to generate bulk download. Please try again.");
+      console.error('Bulk download error:', error);
+    },
+  });
+}
+
+export function useBulkDownloadByIds() {
+  const queryClient = useQueryClient();
+  const { downloadFile } = useFileDownload();
+
+  return useMutation<
+    BulkDownloadResponse,
+    Error,
+    BulkDownloadByIdsParams
+  >({
+    mutationFn: (params) => bookApi.bulkDownloadByIds(params),
+    onSuccess: async (data) => {
+      try {
+        // Use the download URL to download the zip file
+        await downloadFile(data.downloadUrl, `books-selected-${Date.now()}.zip`);
+
+        toast.success("Bulk download completed!", {
+          description: 'Your selected books have been saved as a ZIP file'
         });
 
         // Invalidate book assignments query to refresh download counts

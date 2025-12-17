@@ -5,7 +5,8 @@ import {
   BookAssignmentQueryParams,
   PaginatedBookAssignmentsResponse,
   BulkDownloadParams,
-  BulkDownloadResponse
+  BulkDownloadResponse,
+  BulkDownloadByIdsParams
 } from "../types/book";
 
 export class BookClient {
@@ -93,5 +94,12 @@ export class BookClient {
 
     const endpoint = `/customer/book-assignments/bulk-download${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
     return this.api.post<BulkDownloadResponse>(endpoint);
+  }
+
+  async bulkDownloadByIds(params: BulkDownloadByIdsParams): Promise<BulkDownloadResponse> {
+    return this.api.post<BulkDownloadResponse>(
+      '/customer/book-assignments/bulk-download-by-ids',
+      params
+    );
   }
 }
