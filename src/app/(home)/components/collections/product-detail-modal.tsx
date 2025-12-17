@@ -768,7 +768,7 @@ function GameDetails({
               </div>
               <div className="flex-1 min-w-0">
                 <h4 className="font-bold text-sm text-green-700 dark:text-green-400 mb-1">
-                  Perfect for Exchange! Trade for {tradeInValue.credits} Credits
+                  Already Owned - Trade it for {tradeInValue.credits} Credits!
                 </h4>
                 <p className="text-xs text-green-700/90 dark:text-green-300/90 font-medium">
                   You already own this game on Steam, so you can't redeem
