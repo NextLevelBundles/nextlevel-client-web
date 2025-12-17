@@ -27,6 +27,7 @@ import {
   SparklesIcon,
   ChevronLeft,
   ChevronRight,
+  Filter,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -42,9 +43,16 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/shared/components/ui/popover";
+import { Checkbox } from "@/shared/components/ui/checkbox";
+import {
   useBookAssignments,
   useGenerateDownloadUrl,
-  useCustomerBundles,
+  usePurchasedBundles,
+  useBookGenres,
 } from "@/hooks/queries/useBooks";
 import { BookAssignmentDto } from "@/lib/api/types/book";
 import { BulkDownloadModal } from "./bulk-download-modal";
@@ -64,7 +72,7 @@ const PROGRESS_LEVELS = [
 // Gift ownership filter options
 const ownershipOptions = [
   { value: "All", label: "All Books" },
-  { value: "Owned", label: "My Books" },
+  { value: "Owned", label: "Bought Myself" },
   { value: "ReceivedByMe", label: "Received as gift" },
 ];
 
@@ -130,11 +138,17 @@ export default function BooksLibraryPage() {
   const [pageSize, setPageSize] = useState(
     parseInt(searchParams.get("pageSize") || "20")
   );
+  const [selectedGenres, setSelectedGenres] = useState<string[]>(
+    searchParams.get("genres") ? searchParams.get("genres")!.split(",") : []
+  );
 
   const [downloadingFiles, setDownloadingFiles] = useState<Set<string>>(
     new Set()
   );
   const [showBulkDownloadModal, setShowBulkDownloadModal] = useState(false);
+
+  // Fetch available book genres
+  const { data: availableGenres = [] } = useBookGenres();
 
   // Debounce search input
   useEffect(() => {
@@ -158,6 +172,7 @@ export default function BooksLibraryPage() {
       params.set("hasDownloadedBefore", hasDownloadedBefore);
     if (fromDate) params.set("fromDate", format(fromDate, "yyyy-MM-dd"));
     if (toDate) params.set("toDate", format(toDate, "yyyy-MM-dd"));
+    if (selectedGenres.length > 0) params.set("genres", selectedGenres.join(","));
     if (page > 1) params.set("page", page.toString());
     if (pageSize !== 20) params.set("pageSize", pageSize.toString());
 
@@ -173,12 +188,13 @@ export default function BooksLibraryPage() {
     hasDownloadedBefore,
     fromDate,
     toDate,
+    selectedGenres,
     page,
     pageSize,
   ]);
 
-  // Fetch customer bundles for filter dropdown
-  const { data: customerBundles = [] } = useCustomerBundles();
+  // Fetch purchased EBook bundles for filter dropdown
+  const { data: customerBundles = [] } = usePurchasedBundles();
 
   // Build query params for API
   const queryParams = useMemo(() => {
@@ -193,6 +209,7 @@ export default function BooksLibraryPage() {
           : undefined,
       fromDate: fromDate ? format(fromDate, "yyyy-MM-dd") : undefined,
       toDate: toDate ? format(toDate, "yyyy-MM-dd") : undefined,
+      genres: selectedGenres.length > 0 ? selectedGenres.join(",") : undefined,
       timezoneOffset,
       page,
       pageSize,
@@ -204,6 +221,7 @@ export default function BooksLibraryPage() {
     hasDownloadedBefore,
     fromDate,
     toDate,
+    selectedGenres,
     page,
     pageSize,
   ]);
@@ -228,14 +246,17 @@ export default function BooksLibraryPage() {
     PROGRESS_LEVELS[0]
   );
 
-  // Helper function to check if a book is newly assigned (within 30 days)
+  // Helper function to check if a book is newly assigned (within 7 days and no downloads)
   const isNewlyAssigned = (book: BookAssignmentDto): boolean => {
     if (!book.assignedAt) return false;
 
-    const assignedDate = dayjs(book.assignedAt);
-    const thirtyDaysAgo = dayjs().subtract(30, "day");
+    // Only show "New" if not downloaded yet
+    if (book.downloadCount > 0) return false;
 
-    return assignedDate.isAfter(thirtyDaysAgo);
+    const assignedDate = dayjs(book.assignedAt);
+    const sevenDaysAgo = dayjs().subtract(7, "day");
+
+    return assignedDate.isAfter(sevenDaysAgo);
   };
 
   const triggerConfetti = () => {
@@ -287,6 +308,7 @@ export default function BooksLibraryPage() {
     setHasDownloadedBefore("all");
     setFromDate(undefined);
     setToDate(undefined);
+    setSelectedGenres([]);
     setPage(1);
   };
 
@@ -296,7 +318,8 @@ export default function BooksLibraryPage() {
     bundleId ||
     hasDownloadedBefore !== "all" ||
     fromDate ||
-    toDate;
+    toDate ||
+    selectedGenres.length > 0;
 
   return (
     <div className="grid gap-6">
@@ -309,8 +332,8 @@ export default function BooksLibraryPage() {
           <h2 className="text-sm text-muted-foreground font-medium">Filters</h2>
         </CardHeader>
         <CardContent className="space-y-4 p-4">
-          {/* Search and Basic Filters */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Search and Status Filters */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {/* Search Filter */}
             <div>
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
@@ -325,32 +348,6 @@ export default function BooksLibraryPage() {
                   className="pl-9 bg-background"
                 />
               </div>
-            </div>
-
-            {/* Bundle Filter */}
-            <div>
-              <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                Collection
-              </label>
-              <Select
-                value={bundleId || "all"}
-                onValueChange={(value) => {
-                  setBundleId(value === "all" ? "" : value);
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All Collections" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Collections</SelectItem>
-                  {customerBundles.map((bundle) => (
-                    <SelectItem key={bundle.id} value={bundle.id}>
-                      {bundle.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
 
             {/* Download Status Filter */}
@@ -402,6 +399,120 @@ export default function BooksLibraryPage() {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {/* Collection and Genres Filters */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            {/* Collection Filter */}
+            <div>
+              <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                Collection
+              </label>
+              <Select
+                value={bundleId || "all"}
+                onValueChange={(value) => {
+                  setBundleId(value === "all" ? "" : value);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="All Collections" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Collections</SelectItem>
+                  {customerBundles.map((bundle) => (
+                    <SelectItem key={bundle.id} value={bundle.id}>
+                      {bundle.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Genres Filter */}
+            {availableGenres.length > 0 && (
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  Genres
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal"
+                    >
+                      <Filter className="mr-2 h-4 w-4" />
+                      {selectedGenres.length > 0
+                        ? `${selectedGenres.length} selected`
+                        : "All Genres"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[300px] p-0" align="start">
+                    <div className="max-h-[300px] overflow-y-auto p-4 space-y-2">
+                      {availableGenres.map((genre) => (
+                        <div key={genre} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`genre-${genre}`}
+                            checked={selectedGenres.includes(genre)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedGenres([...selectedGenres, genre]);
+                              } else {
+                                setSelectedGenres(
+                                  selectedGenres.filter((g) => g !== genre)
+                                );
+                              }
+                              setPage(1);
+                            }}
+                          />
+                          <label
+                            htmlFor={`genre-${genre}`}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                          >
+                            {genre}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                    {selectedGenres.length > 0 && (
+                      <div className="border-t p-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => {
+                            setSelectedGenres([]);
+                            setPage(1);
+                          }}
+                        >
+                          Clear Selection
+                        </Button>
+                      </div>
+                    )}
+                  </PopoverContent>
+                </Popover>
+                {selectedGenres.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {selectedGenres.map((genre) => (
+                      <Badge
+                        key={genre}
+                        variant="secondary"
+                        className="text-xs cursor-pointer"
+                        onClick={() => {
+                          setSelectedGenres(
+                            selectedGenres.filter((g) => g !== genre)
+                          );
+                          setPage(1);
+                        }}
+                      >
+                        {genre}
+                        <XIcon className="ml-1 h-3 w-3" />
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Date Filters */}
@@ -480,7 +591,7 @@ export default function BooksLibraryPage() {
                 </span>
               )}
             </CardTitle>
-            {hasActiveFilters && totalBooks > 0 && (
+            {totalBooks > 0 && (
               <Button
                 onClick={() => setShowBulkDownloadModal(true)}
                 variant="outline"
@@ -627,17 +738,22 @@ export default function BooksLibraryPage() {
                             </Badge>
                           )}
                           {book.isGift && (
-                            <Badge variant="secondary" className="gap-1">
+                            <Badge
+                              variant="outline"
+                              className="gap-1 bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/30 border-green-200 dark:border-green-800"
+                            >
                               <GiftIcon className="h-3 w-3" />
-                              Gift
+                              {book.giftedByCustomerName
+                                ? `From ${book.giftedByCustomerName}`
+                                : "Received Gift"}
                             </Badge>
                           )}
                         </div>
                         <div className="space-y-1">
                           <p className="text-sm text-muted-foreground">
-                            Added on{" "}
+                            Assigned on{" "}
                             {book.assignedAt
-                              ? new Date(book.assignedAt).toLocaleDateString()
+                              ? dayjs(book.assignedAt).format("MMM D, YYYY [at] h:mm A")
                               : "Unknown"}
                             {book.downloadCount > 0 ? (
                               <>
@@ -822,6 +938,7 @@ export default function BooksLibraryPage() {
               : undefined,
           fromDate: fromDate ? format(fromDate, "yyyy-MM-dd") : undefined,
           toDate: toDate ? format(toDate, "yyyy-MM-dd") : undefined,
+          genres: selectedGenres.length > 0 ? selectedGenres.join(",") : undefined,
         }}
         totalBooks={totalBooks}
       />

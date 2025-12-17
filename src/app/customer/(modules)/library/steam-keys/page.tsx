@@ -274,14 +274,14 @@ export default function KeysPage() {
   const nextLevel = PROGRESS_LEVELS[PROGRESS_LEVELS.indexOf(currentLevel) + 1];
   console.log(nextLevel);
 
-  // Helper function to check if a key is newly assigned (within 30 days)
+  // Helper function to check if a key is newly assigned (within 7 days and status is Assigned)
   const isNewlyAssigned = (key: SteamKeyAssignment): boolean => {
     if (key.status !== "Assigned" || !key.assignedAt) return false;
 
     const assignedDate = dayjs(key.assignedAt);
-    const thirtyDaysAgo = dayjs().subtract(30, "day");
+    const sevenDaysAgo = dayjs().subtract(7, "day");
 
-    return assignedDate.isAfter(thirtyDaysAgo);
+    return assignedDate.isAfter(sevenDaysAgo);
   };
 
   // Helper function to check if Steam library sync is needed

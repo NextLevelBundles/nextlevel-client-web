@@ -12,6 +12,14 @@ import { CustomerBundleDto } from "@/lib/api/types/bundle";
 import { toast } from "sonner";
 import { useFileDownload } from "@/hooks/useFileDownload";
 
+export function useBookGenres() {
+  return useQuery<string[]>({
+    queryKey: ["bookGenres"],
+    queryFn: () => bookApi.getBookGenres(),
+    staleTime: 300000, // 5 minutes - genres don't change often
+  });
+}
+
 export function useBookAssignments(params?: BookAssignmentQueryParams) {
   return useQuery<PaginatedBookAssignmentsResponse>({
     queryKey: ["bookAssignments", params],
@@ -36,7 +44,16 @@ export function useCustomerBundles() {
   });
 }
 
+export function usePurchasedBundles() {
+  return useQuery<CustomerBundleDto[]>({
+    queryKey: ["purchasedBundles"],
+    queryFn: () => bundleApi.getPurchasedBundles(),
+    staleTime: 60000, // 1 minute
+  });
+}
+
 export function useBulkDownload() {
+  const queryClient = useQueryClient();
   const { downloadFile } = useFileDownload();
 
   return useMutation<
@@ -53,12 +70,18 @@ export function useBulkDownload() {
         toast.success("Bulk download completed!", {
           description: 'Your books have been saved as a ZIP file'
         });
+
+        // Invalidate book assignments query to refresh download counts
+        queryClient.invalidateQueries({ queryKey: ["bookAssignments"] });
       } catch (error) {
         console.error('Bulk download error:', error);
 
         // Fallback to opening in new tab if blob download fails
         toast.warning("Direct download failed, opening in new tab...");
         window.open(data.downloadUrl, '_blank');
+
+        // Still invalidate queries even on fallback since download URL was accessed
+        queryClient.invalidateQueries({ queryKey: ["bookAssignments"] });
       }
     },
     onError: (error) => {

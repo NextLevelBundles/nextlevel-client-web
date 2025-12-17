@@ -63,6 +63,8 @@ export interface BookAssignmentDto {
   downloadCount: number;
   lastDownloadAt?: string;
   isGift: boolean;
+  giftedByCustomerEmail?: string | null;
+  giftedByCustomerName?: string | null;
 }
 
 export interface PaginatedBookAssignmentsResponse {
@@ -93,6 +95,7 @@ export interface BookAssignmentQueryParams {
   hasDownloadedBefore?: boolean; // Filter by download status
   giftFilter?: "All" | "ReceivedByMe" | "Owned";
   search?: string; // Search query
+  genres?: string; // Comma-separated list of genres
   page?: number;
   pageSize?: number;
 }

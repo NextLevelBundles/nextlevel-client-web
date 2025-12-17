@@ -11,6 +11,10 @@ import {
 export class BookClient {
   constructor(private api: ClientApi) {}
 
+  async getBookGenres(): Promise<string[]> {
+    return this.api.get<string[]>('/customer/book-assignments/genres');
+  }
+
   async getBookAssignments(params?: BookAssignmentQueryParams): Promise<PaginatedBookAssignmentsResponse> {
     const queryParams = new URLSearchParams();
 
@@ -31,6 +35,9 @@ export class BookClient {
     }
     if (params?.search) {
       queryParams.append('search', params.search);
+    }
+    if (params?.genres) {
+      queryParams.append('genres', params.genres);
     }
     if (params?.page !== undefined) {
       queryParams.append('page', params.page.toString());
@@ -77,6 +84,9 @@ export class BookClient {
     }
     if (params?.search) {
       queryParams.append('search', params.search);
+    }
+    if (params?.genres) {
+      queryParams.append('genres', params.genres);
     }
     // Always add preferredFileType
     queryParams.append('preferredFileType', params.preferredFileType);

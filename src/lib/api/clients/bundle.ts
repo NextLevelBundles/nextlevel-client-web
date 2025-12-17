@@ -44,6 +44,14 @@ export class BundleApi {
   }
 
   /**
+   * Get customer's purchased bundles from the new endpoint
+   * @returns List of purchased bundles with id, title, slug, and type
+   */
+  async getPurchasedBundles(): Promise<CustomerBundleDto[]> {
+    return this.api.get<CustomerBundleDto[]>(`/customer/bundles/purchased/ebooks`);
+  }
+
+  /**
    * Get bundle statistics including total raised for charity
    * @param bundleId The bundle ID
    * @returns Bundle statistics or null if request fails

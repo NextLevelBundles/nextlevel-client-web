@@ -14,6 +14,8 @@ export interface BundleBookFormatsResponse {
 export interface CustomerBundleDto {
   id: string;
   title: string;
+  slug: string;
+  type: "SteamGame" | "EBook";
   purchasedAt?: string;
 }
 
