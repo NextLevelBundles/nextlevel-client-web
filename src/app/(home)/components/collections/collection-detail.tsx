@@ -549,6 +549,7 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
                   totalRaisedForCharity={
                     bundleStatistics?.totalRaisedForCharity
                   }
+                  charityGoal={bundleStatistics?.charityGoal}
                 />
               )}
             </div>

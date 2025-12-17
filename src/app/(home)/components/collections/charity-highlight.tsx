@@ -9,12 +9,14 @@ interface CharityHighlightProps {
   charities: Charity[];
   charityAmount: number;
   totalRaisedForCharity?: number;
+  charityGoal?: number | null;
 }
 
 export function CharityHighlight({
   charities,
   charityAmount,
   totalRaisedForCharity,
+  charityGoal,
 }: CharityHighlightProps) {
   if (charities.length === 0) return null;
 
@@ -27,6 +29,11 @@ export function CharityHighlight({
     }).format(amount);
   };
 
+  const progressPercentage =
+    charityGoal && totalRaisedForCharity
+      ? Math.min((totalRaisedForCharity / charityGoal) * 100, 100)
+      : 0;
+
   return (
     <Card className="p-6 bg-white/80 dark:bg-card/70 backdrop-blur-xs">
       <div className="flex items-center justify-between mb-6">
@@ -38,12 +45,31 @@ export function CharityHighlight({
         </div>
         {totalRaisedForCharity !== undefined && totalRaisedForCharity > 0 && (
           <div className="text-right">
-            <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-              Total Raised
-            </div>
-            <div className="text-2xl font-bold font-mono bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">
-              {formatCurrency(totalRaisedForCharity)}
-            </div>
+            {charityGoal ? (
+              <>
+                <div className="text-2xl font-bold font-mono bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">
+                  {formatCurrency(totalRaisedForCharity)}
+                </div>
+                <div className="relative h-1.5 w-32 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mt-1">
+                  <div
+                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-red-500 to-pink-500 rounded-full transition-all duration-500"
+                    style={{ width: `${progressPercentage}%` }}
+                  />
+                </div>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  of {formatCurrency(charityGoal)}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                  Total Raised
+                </div>
+                <div className="text-2xl font-bold font-mono bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">
+                  {formatCurrency(totalRaisedForCharity)}
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>

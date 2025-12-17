@@ -28,6 +28,7 @@ export type BundleTierAvailabilityResponse = Record<string, number>;
 export interface BundleStatisticsResponse {
   bundleId: string;
   totalRaisedForCharity: number;
+  charityGoal: number | null;
 }
 
 // Charity Leaderboard types
