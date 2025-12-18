@@ -1059,7 +1059,7 @@ export default function KeysPage() {
                       </>
                     ) : (key.status as string) === "ReceivedFromExchange" ? (
                       <>
-                        {/* Only show Redeem on Steam button for keys received from exchange */}
+                        {/* Show Redeem on Steam button and Gift button for keys received from exchange */}
                         <motion.div
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
@@ -1072,6 +1072,26 @@ export default function KeysPage() {
                             Redeem on Steam
                           </Button>
                         </motion.div>
+
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <motion.div whileTap={{ scale: 0.95 }}>
+                                <Button
+                                  variant="outline"
+                                  className="gap-2"
+                                  onClick={() => handleGiftKey(key)}
+                                >
+                                  <GiftIcon className="h-4 w-4" />
+                                  Gift
+                                </Button>
+                              </motion.div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              Gift this game to someone
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </>
                     ) : key.status === "Assigned" ? (
                       <>
