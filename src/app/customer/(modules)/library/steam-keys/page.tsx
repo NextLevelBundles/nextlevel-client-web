@@ -1152,7 +1152,13 @@ export default function KeysPage() {
                           </>
                         )}
 
-                        {!key.isGift && (
+                        {/* Show Gift button for:
+                            1. Non-gifts (!key.isGift), OR
+                            2. Received gifts that have been accepted (key.isGift && giftedByCustomerId !== currentCustomerId && giftAccepted === true) */}
+                        {(!key.isGift ||
+                          (key.isGift &&
+                            key.giftedByCustomerId !== currentCustomerId &&
+                            key.giftAccepted === true)) && (
                           <>
                             <TooltipProvider>
                               <Tooltip>
@@ -1174,161 +1180,166 @@ export default function KeysPage() {
                               </Tooltip>
                             </TooltipProvider>
 
-                            <div className="flex items-center gap-2">
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <motion.div
-                                      whileTap={{
-                                        scale:
-                                          key.alreadyOwnedOnSteam &&
-                                          key.exchangeCredits &&
-                                          key.exchangeCredits > 0
-                                            ? 0.95
-                                            : 1,
-                                      }}
-                                    >
+                            {/* Add to Exchange - only for non-gifts */}
+                            {!key.isGift && (
+                              <>
+                                <div className="flex items-center gap-2">
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <motion.div
+                                          whileTap={{
+                                            scale:
+                                              key.alreadyOwnedOnSteam &&
+                                              key.exchangeCredits &&
+                                              key.exchangeCredits > 0
+                                                ? 0.95
+                                                : 1,
+                                          }}
+                                        >
+                                          <Button
+                                            variant="outline"
+                                            className={`gap-2 ${
+                                              !(
+                                                key.alreadyOwnedOnSteam &&
+                                                key.exchangeCredits &&
+                                                key.exchangeCredits > 0
+                                              )
+                                                ? "opacity-50 cursor-not-allowed"
+                                                : ""
+                                            }`}
+                                            disabled={
+                                              !(
+                                                key.alreadyOwnedOnSteam &&
+                                                key.exchangeCredits &&
+                                                key.exchangeCredits > 0
+                                              )
+                                            }
+                                            onClick={() =>
+                                              key.alreadyOwnedOnSteam &&
+                                              key.exchangeCredits &&
+                                              key.exchangeCredits > 0 &&
+                                              handleSendToVault(key.id, key.title)
+                                            }
+                                          >
+                                            <ArchiveIcon className="h-4 w-4" />
+                                            Add to Exchange
+                                          </Button>
+                                        </motion.div>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        {key.alreadyOwnedOnSteam &&
+                                        key.exchangeCredits &&
+                                        key.exchangeCredits > 0
+                                          ? "Exchange this key for credits"
+                                          : !key.alreadyOwnedOnSteam
+                                            ? "This game is not in your Steam library yet"
+                                            : "No exchange credits available for this game"}
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                  {key.alreadyOwnedOnSteam &&
+                                    key.exchangeCredits != null &&
+                                    key.exchangeCredits > 0 && (
+                                      <ExchangeCreditsDisplay
+                                        credits={key.exchangeCredits}
+                                      />
+                                    )}
+                                </div>
+                                {/* Exchange Confirmation Dialog */}
+                                <Dialog
+                                  open={exchangeDialog.isOpen}
+                                  onOpenChange={(open) =>
+                                    setExchangeDialog((prev) => ({
+                                      ...prev,
+                                      isOpen: open,
+                                    }))
+                                  }
+                                >
+                                  <DialogContent className="sm:max-w-md bg-card">
+                                    <DialogHeader>
+                                      <DialogTitle>Exchange Steam Key?</DialogTitle>
+                                      <DialogDescription>
+                                        Are you sure you want to exchange this Steam
+                                        key for credits? This action cannot be
+                                        undone.
+                                      </DialogDescription>
+                                    </DialogHeader>
+
+                                    {/* Bundle Exchange Limit Info */}
+                                    {exchangeDialog.isFetchingBundleInfo ? (
+                                      <div className="flex items-center justify-center py-4">
+                                        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                                        <span className="ml-2 text-sm text-muted-foreground">Loading collection info...</span>
+                                      </div>
+                                    ) : exchangeDialog.bundleInfo ? (
+                                      <Alert className={exchangeDialog.bundleInfo.exchangedCount >= BUNDLE_EXCHANGE_LIMIT ? "border-destructive" : "border-blue-500"}>
+                                        <Info className={`h-4 w-4 ${exchangeDialog.bundleInfo.exchangedCount >= BUNDLE_EXCHANGE_LIMIT ? "text-destructive" : "text-blue-500"}`} />
+                                        <AlertDescription>
+                                          <div className="font-medium mb-1">
+                                            {exchangeDialog.bundleInfo.productTitle}
+                                          </div>
+                                          {exchangeDialog.gameName && (
+                                            <div className="text-muted-foreground text-sm mb-2">
+                                              Game: {exchangeDialog.gameName}
+                                            </div>
+                                          )}
+                                          {exchangeDialog.bundleInfo.exchangedCount >= BUNDLE_EXCHANGE_LIMIT ? (
+                                            <span className="text-destructive">
+                                              You have reached the maximum limit of {BUNDLE_EXCHANGE_LIMIT} games that can be exchanged from this collection.
+                                            </span>
+                                          ) : (
+                                            <span>
+                                              You can exchange max {BUNDLE_EXCHANGE_LIMIT} games from this collection.
+                                              <br />
+                                              You've used <strong>{exchangeDialog.bundleInfo.exchangedCount}/{BUNDLE_EXCHANGE_LIMIT}</strong>.
+                                              <br />
+                                              After this exchange, <strong>{BUNDLE_EXCHANGE_LIMIT - exchangeDialog.bundleInfo.exchangedCount - 1}</strong> will remain.
+                                            </span>
+                                          )}
+                                        </AlertDescription>
+                                      </Alert>
+                                    ) : null}
+
+                                    <DialogFooter>
                                       <Button
                                         variant="outline"
-                                        className={`gap-2 ${
-                                          !(
-                                            key.alreadyOwnedOnSteam &&
-                                            key.exchangeCredits &&
-                                            key.exchangeCredits > 0
-                                          )
-                                            ? "opacity-50 cursor-not-allowed"
-                                            : ""
-                                        }`}
-                                        disabled={
-                                          !(
-                                            key.alreadyOwnedOnSteam &&
-                                            key.exchangeCredits &&
-                                            key.exchangeCredits > 0
-                                          )
-                                        }
                                         onClick={() =>
-                                          key.alreadyOwnedOnSteam &&
-                                          key.exchangeCredits &&
-                                          key.exchangeCredits > 0 &&
-                                          handleSendToVault(key.id, key.title)
+                                          setExchangeDialog({
+                                            isOpen: false,
+                                            keyId: null,
+                                            gameName: null,
+                                            isLoading: false,
+                                            isFetchingBundleInfo: false,
+                                            bundleInfo: null,
+                                          })
+                                        }
+                                        disabled={exchangeDialog.isLoading}
+                                      >
+                                        Cancel
+                                      </Button>
+                                      <Button
+                                        onClick={handleExchangeConfirm}
+                                        disabled={
+                                          exchangeDialog.isLoading ||
+                                          exchangeDialog.isFetchingBundleInfo ||
+                                          (exchangeDialog.bundleInfo !== null && exchangeDialog.bundleInfo.exchangedCount >= BUNDLE_EXCHANGE_LIMIT)
                                         }
                                       >
-                                        <ArchiveIcon className="h-4 w-4" />
-                                        Add to Exchange
+                                        {exchangeDialog.isLoading ? (
+                                          <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Processing...
+                                          </>
+                                        ) : (
+                                          "Continue"
+                                        )}
                                       </Button>
-                                    </motion.div>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    {key.alreadyOwnedOnSteam &&
-                                    key.exchangeCredits &&
-                                    key.exchangeCredits > 0
-                                      ? "Exchange this key for credits"
-                                      : !key.alreadyOwnedOnSteam
-                                        ? "This game is not in your Steam library yet"
-                                        : "No exchange credits available for this game"}
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                              {key.alreadyOwnedOnSteam &&
-                                key.exchangeCredits != null &&
-                                key.exchangeCredits > 0 && (
-                                  <ExchangeCreditsDisplay
-                                    credits={key.exchangeCredits}
-                                  />
-                                )}
-                            </div>
-                            {/* Exchange Confirmation Dialog */}
-                            <Dialog
-                              open={exchangeDialog.isOpen}
-                              onOpenChange={(open) =>
-                                setExchangeDialog((prev) => ({
-                                  ...prev,
-                                  isOpen: open,
-                                }))
-                              }
-                            >
-                              <DialogContent className="sm:max-w-md bg-card">
-                                <DialogHeader>
-                                  <DialogTitle>Exchange Steam Key?</DialogTitle>
-                                  <DialogDescription>
-                                    Are you sure you want to exchange this Steam
-                                    key for credits? This action cannot be
-                                    undone.
-                                  </DialogDescription>
-                                </DialogHeader>
-
-                                {/* Bundle Exchange Limit Info */}
-                                {exchangeDialog.isFetchingBundleInfo ? (
-                                  <div className="flex items-center justify-center py-4">
-                                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                                    <span className="ml-2 text-sm text-muted-foreground">Loading collection info...</span>
-                                  </div>
-                                ) : exchangeDialog.bundleInfo ? (
-                                  <Alert className={exchangeDialog.bundleInfo.exchangedCount >= BUNDLE_EXCHANGE_LIMIT ? "border-destructive" : "border-blue-500"}>
-                                    <Info className={`h-4 w-4 ${exchangeDialog.bundleInfo.exchangedCount >= BUNDLE_EXCHANGE_LIMIT ? "text-destructive" : "text-blue-500"}`} />
-                                    <AlertDescription>
-                                      <div className="font-medium mb-1">
-                                        {exchangeDialog.bundleInfo.productTitle}
-                                      </div>
-                                      {exchangeDialog.gameName && (
-                                        <div className="text-muted-foreground text-sm mb-2">
-                                          Game: {exchangeDialog.gameName}
-                                        </div>
-                                      )}
-                                      {exchangeDialog.bundleInfo.exchangedCount >= BUNDLE_EXCHANGE_LIMIT ? (
-                                        <span className="text-destructive">
-                                          You have reached the maximum limit of {BUNDLE_EXCHANGE_LIMIT} games that can be exchanged from this collection.
-                                        </span>
-                                      ) : (
-                                        <span>
-                                          You can exchange max {BUNDLE_EXCHANGE_LIMIT} games from this collection.
-                                          <br />
-                                          You've used <strong>{exchangeDialog.bundleInfo.exchangedCount}/{BUNDLE_EXCHANGE_LIMIT}</strong>.
-                                          <br />
-                                          After this exchange, <strong>{BUNDLE_EXCHANGE_LIMIT - exchangeDialog.bundleInfo.exchangedCount - 1}</strong> will remain.
-                                        </span>
-                                      )}
-                                    </AlertDescription>
-                                  </Alert>
-                                ) : null}
-
-                                <DialogFooter>
-                                  <Button
-                                    variant="outline"
-                                    onClick={() =>
-                                      setExchangeDialog({
-                                        isOpen: false,
-                                        keyId: null,
-                                        gameName: null,
-                                        isLoading: false,
-                                        isFetchingBundleInfo: false,
-                                        bundleInfo: null,
-                                      })
-                                    }
-                                    disabled={exchangeDialog.isLoading}
-                                  >
-                                    Cancel
-                                  </Button>
-                                  <Button
-                                    onClick={handleExchangeConfirm}
-                                    disabled={
-                                      exchangeDialog.isLoading ||
-                                      exchangeDialog.isFetchingBundleInfo ||
-                                      (exchangeDialog.bundleInfo !== null && exchangeDialog.bundleInfo.exchangedCount >= BUNDLE_EXCHANGE_LIMIT)
-                                    }
-                                  >
-                                    {exchangeDialog.isLoading ? (
-                                      <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Processing...
-                                      </>
-                                    ) : (
-                                      "Continue"
-                                    )}
-                                  </Button>
-                                </DialogFooter>
-                              </DialogContent>
-                            </Dialog>
+                                    </DialogFooter>
+                                  </DialogContent>
+                                </Dialog>
+                              </>
+                            )}
                           </>
                         )}
                       </>
