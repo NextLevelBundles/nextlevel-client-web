@@ -36,12 +36,12 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [showTrailerModal, setShowTrailerModal] = useState(false);
   const exchangeCreditsForKeyMutation = useExchangeCreditsForKey();
-  const { data: userCredits = 0 } = useUserCredits();
+  const { data: userCredits, isLoading: isLoadingCredits } = useUserCredits();
   const router = useRouter();
 
   const steamApp = game.steamApp;
   const isExchanging = exchangeCreditsForKeyMutation.isPending;
-  const canAfford = userCredits >= game.outputCredits;
+  const canAfford = userCredits !== undefined && userCredits >= game.outputCredits;
 
   const handleExchange = () => {
     if (!canAfford || isExchanging) return;
@@ -315,21 +315,32 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
               {/* Show user's current credits */}
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Your Credits</span>
-                <div className="flex items-center gap-1">
-                  <Coins className="h-3 w-3 text-muted-foreground" />
-                  <span
-                    className={
-                      userCredits >= game.outputCredits
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }
-                  >
-                    {userCredits}
-                  </span>
-                </div>
+                {isLoadingCredits || userCredits === undefined ? (
+                  <div className="flex items-center gap-1">
+                    <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                    <span className="text-muted-foreground">Loading...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1">
+                    <Coins className="h-3 w-3 text-muted-foreground" />
+                    <span
+                      className={
+                        userCredits >= game.outputCredits
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }
+                    >
+                      {userCredits}
+                    </span>
+                  </div>
+                )}
               </div>
 
-              {userCredits >= game.outputCredits ? (
+              {isLoadingCredits || userCredits === undefined ? (
+                <p className="text-xs text-muted-foreground">
+                  Checking your credit balance...
+                </p>
+              ) : userCredits >= game.outputCredits ? (
                 <p className="text-xs text-muted-foreground">
                   Spend {game.outputCredits} credits to claim this game and add
                   it to your library.
@@ -345,11 +356,16 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
             <Button
               className="w-full"
               size="lg"
-              disabled={!canAfford || isExchanging}
+              disabled={isLoadingCredits || userCredits === undefined || !canAfford || isExchanging}
               variant={canAfford ? "default" : "secondary"}
               onClick={handleExchange}
             >
-              {isExchanging ? (
+              {isLoadingCredits || userCredits === undefined ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Loading...
+                </>
+              ) : isExchanging ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Processing...
