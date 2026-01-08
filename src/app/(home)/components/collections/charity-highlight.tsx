@@ -31,8 +31,10 @@ export function CharityHighlight({
 
   const progressPercentage =
     charityGoal && totalRaisedForCharity
-      ? Math.min((totalRaisedForCharity / charityGoal) * 100, 100)
+      ? (totalRaisedForCharity / charityGoal) * 100
       : 0;
+
+  const progressBarPercentage = Math.min(progressPercentage, 100);
 
   const isGoalReached =
     charityGoal && totalRaisedForCharity
@@ -81,7 +83,7 @@ export function CharityHighlight({
                     <div className="relative h-1.5 w-32 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mt-1 ml-auto">
                       <div
                         className="absolute inset-y-0 left-0 bg-gradient-to-r from-red-500 to-pink-500 rounded-full transition-all duration-500"
-                        style={{ width: `${progressPercentage}%` }}
+                        style={{ width: `${progressBarPercentage}%` }}
                       />
                     </div>
                     <div className="text-xs text-muted-foreground mt-0.5">
