@@ -1,7 +1,7 @@
 "use client";
 
 import { Card } from "@/shared/components/ui/card";
-import { Heart, ExternalLink } from "lucide-react";
+import { Heart, ExternalLink, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import { Charity } from "@/app/(shared)/types/bundle";
 
@@ -34,6 +34,11 @@ export function CharityHighlight({
       ? Math.min((totalRaisedForCharity / charityGoal) * 100, 100)
       : 0;
 
+  const isGoalReached =
+    charityGoal && totalRaisedForCharity
+      ? totalRaisedForCharity >= charityGoal
+      : false;
+
   return (
     <Card className="p-6 bg-white/80 dark:bg-card/70 backdrop-blur-xs">
       <div className="flex items-center justify-between mb-6">
@@ -47,18 +52,43 @@ export function CharityHighlight({
           <div className="text-right">
             {charityGoal ? (
               <>
-                <div className="text-2xl font-bold font-mono bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">
-                  {formatCurrency(totalRaisedForCharity)}
-                </div>
-                <div className="relative h-1.5 w-32 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mt-1">
-                  <div
-                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-red-500 to-pink-500 rounded-full transition-all duration-500"
-                    style={{ width: `${progressPercentage}%` }}
-                  />
-                </div>
-                <div className="text-xs text-muted-foreground mt-0.5">
-                  of {formatCurrency(charityGoal)}
-                </div>
+                {isGoalReached ? (
+                  <>
+                    <div className="flex items-center justify-end gap-2 mb-1">
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                      <div className="text-xs font-semibold text-green-600 dark:text-green-400 uppercase tracking-wide">
+                        Goal Reached!
+                      </div>
+                    </div>
+                    <div className="text-2xl font-bold font-mono bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                      {Math.round(progressPercentage)}%
+                    </div>
+                    <div className="relative h-1.5 w-32 bg-green-200 dark:bg-green-900/30 rounded-full overflow-hidden mt-1 ml-auto">
+                      <div
+                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all duration-500"
+                        style={{ width: "100%" }}
+                      />
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      of {formatCurrency(charityGoal)} Goal
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold font-mono bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">
+                      {Math.round(progressPercentage)}%
+                    </div>
+                    <div className="relative h-1.5 w-32 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mt-1 ml-auto">
+                      <div
+                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-red-500 to-pink-500 rounded-full transition-all duration-500"
+                        style={{ width: `${progressPercentage}%` }}
+                      />
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      of {formatCurrency(charityGoal)} Goal
+                    </div>
+                  </>
+                )}
               </>
             ) : (
               <>

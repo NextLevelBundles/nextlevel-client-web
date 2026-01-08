@@ -372,7 +372,7 @@ export function ProductDetailModal({
                                 height={16}
                                 className="mr-1.5"
                               />
-                              Steam Deck Status
+                              Steam Deck Compatibility
                               <ExternalLink className="h-3 w-3 ml-1.5" />
                             </Badge>
                           </a>
