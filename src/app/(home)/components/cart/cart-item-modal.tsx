@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import { Badge } from "@/app/(shared)/components/ui/badge";
 import { Button } from "@/app/(shared)/components/ui/button";
 import {
@@ -15,7 +16,8 @@ import {
   TabsTrigger,
 } from "@/app/(shared)/components/ui/tabs";
 import { ScrollArea } from "@/app/(shared)/components/ui/scroll-area";
-import { CartItem } from "@/lib/api/types/cart";
+import { CartItem, CartItemStatus } from "@/lib/api/types/cart";
+import { Bundle, TierType } from "@/app/(shared)/types/bundle";
 import { isBookBundle } from "@/app/(shared)/utils/cart";
 import {
   ExternalLink,
@@ -23,17 +25,33 @@ import {
   BookOpen,
   Gamepad2,
   FileText,
+  ArrowUp,
+  AlertCircle,
+  Loader2,
+  CheckCircle2,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { UpgradePurchaseDialog } from "@/customer/components/purchases/upgrade-purchase-dialog";
+import { UpgradeInfoDialog } from "@/customer/components/purchases/upgrade-info-dialog";
+import { Alert, AlertDescription } from "@/app/(shared)/components/ui/alert";
 
 interface CartItemModalProps {
   item: CartItem | null;
   isOpen: boolean;
   onClose: () => void;
+  bundle?: Bundle;
 }
 
-export function CartItemModal({ item, isOpen, onClose }: CartItemModalProps) {
+export function CartItemModal({
+  item,
+  isOpen,
+  onClose,
+  bundle,
+}: CartItemModalProps) {
+  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
+  const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false);
+
   if (!item) return null;
 
   // Calculate revenue distribution using bundle-specific splits
@@ -53,6 +71,91 @@ export function CartItemModal({ item, isOpen, onClose }: CartItemModalProps) {
 
   const developerSupportAmount = item.upsellAmount;
   const totalAmount = item.totalAmount;
+
+  // Check upgrade eligibility
+  const upgradeEligibility = useMemo(() => {
+    // Only for completed purchases
+    if (item.status !== CartItemStatus.Completed) {
+      return { canUpgrade: false, reason: "Purchase not completed" };
+    }
+
+    // Must have bundle data
+    if (!bundle) {
+      return { canUpgrade: null, reason: "Loading..." }; // null = loading
+    }
+
+    // Check if this is a gifted purchase
+    const isGiftedPurchase = item.isGift === true;
+
+    // Check if sale is active
+    const now = new Date();
+    const saleStartDate = bundle.sellFrom
+      ? new Date(bundle.sellFrom)
+      : new Date(bundle.startsAt);
+    const saleEndDate = bundle.sellTo
+      ? new Date(bundle.sellTo)
+      : new Date(bundle.endsAt);
+    const isSaleActive = now >= saleStartDate && now <= saleEndDate;
+
+    if (!isSaleActive) {
+      return { canUpgrade: false, reason: "Sale period has ended" };
+    }
+
+    // Check if user has maxed out all tiers
+    const baseTiers = bundle.tiers
+      .filter((t) => t.type === TierType.Base)
+      .sort((a, b) => a.price - b.price);
+    const charityTiers = bundle.tiers.filter(
+      (t) => t.type === TierType.Charity
+    );
+    const upsellTiers = bundle.tiers.filter((t) => t.type === TierType.Upsell);
+
+    const purchasedBaseTierPrice = item.snapshotTierPrice || 0;
+    const highestBaseTierPrice =
+      baseTiers.length > 0 ? baseTiers[baseTiers.length - 1].price : 0;
+    const hasHighestBaseTier = purchasedBaseTierPrice >= highestBaseTierPrice;
+
+    const hasCharityTier = (item.charityAmount || 0) > 0;
+    const allCharityTiersPurchased =
+      charityTiers.length === 0 || hasCharityTier;
+
+    // Check if all upsell tiers are purchased
+    const purchasedProductIds = new Set(
+      item.snapshotProducts.map((p) => p.productId)
+    );
+    const allUpsellTiersPurchased = upsellTiers.every((tier) => {
+      const tierProducts = bundle.products.filter(
+        (p) => p.bundleTierId === tier.id
+      );
+      return tierProducts.every((p) => purchasedProductIds.has(p.id));
+    });
+
+    const hasMaxedOut =
+      hasHighestBaseTier &&
+      allCharityTiersPurchased &&
+      allUpsellTiersPurchased;
+
+    if (hasMaxedOut) {
+      return {
+        canUpgrade: false,
+        reason: "Congratulations! You own the complete collection with all available tiers",
+      };
+    }
+
+    return {
+      canUpgrade: true,
+      isGiftedPurchase,
+      reason: null,
+    };
+  }, [item, bundle]);
+
+  const handleUpgradeClick = () => {
+    if (upgradeEligibility.isGiftedPurchase) {
+      setIsInfoDialogOpen(true);
+    } else {
+      setIsUpgradeDialogOpen(true);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -334,7 +437,77 @@ export function CartItemModal({ item, isOpen, onClose }: CartItemModalProps) {
             </ScrollArea>
           </TabsContent>
         </Tabs>
+
+        {/* Upgrade Section */}
+        {item.status === CartItemStatus.Completed && (
+          <div className="mt-4 pt-4 border-t">
+            {upgradeEligibility.canUpgrade === null ? (
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Loading upgrade options...</span>
+              </div>
+            ) : upgradeEligibility.canUpgrade === false ? (
+              <Alert
+                variant="default"
+                className={
+                  upgradeEligibility.reason?.includes("complete collection")
+                    ? "border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950/30"
+                    : ""
+                }
+              >
+                {upgradeEligibility.reason?.includes("complete collection") ? (
+                  <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-500" />
+                ) : (
+                  <AlertCircle className="h-4 w-4" />
+                )}
+                <AlertDescription
+                  className={`text-sm ${
+                    upgradeEligibility.reason?.includes("complete collection")
+                      ? "text-green-700 dark:text-green-300 font-medium"
+                      : ""
+                  }`}
+                >
+                  {upgradeEligibility.reason}
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <div className="space-y-2">
+                <Button
+                  className={`w-full gap-2 ${upgradeEligibility.isGiftedPurchase ? "opacity-50" : ""}`}
+                  variant="outline"
+                  onClick={handleUpgradeClick}
+                >
+                  <ArrowUp className="h-4 w-4" />
+                  Upgrade This Purchase
+                </Button>
+                {upgradeEligibility.isGiftedPurchase && (
+                  <p className="text-xs text-center text-muted-foreground">
+                    Click to learn why upgrades aren't available for gifts
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </DialogContent>
+
+      {/* Upgrade dialogs */}
+      {bundle && upgradeEligibility.canUpgrade && (
+        <>
+          <UpgradeInfoDialog
+            isOpen={isInfoDialogOpen}
+            onClose={() => setIsInfoDialogOpen(false)}
+          />
+          {!upgradeEligibility.isGiftedPurchase && (
+            <UpgradePurchaseDialog
+              isOpen={isUpgradeDialogOpen}
+              onClose={() => setIsUpgradeDialogOpen(false)}
+              cartItem={item}
+              bundle={bundle}
+            />
+          )}
+        </>
+      )}
     </Dialog>
   );
 }

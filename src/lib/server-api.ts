@@ -208,6 +208,54 @@ class ServerApiClient {
     }
   }
 
+  async getBundleById(bundleId: string): Promise<Bundle | null> {
+    try {
+      const headers = await this.getAuthHeaders();
+      const response = await this.fetchWithRetry(
+        `${API_BASE_URL}/customer/bundles/${bundleId}`,
+        {
+          method: "GET",
+          headers,
+          cache: "no-store",
+        }
+      );
+
+      // Handle 404 specifically
+      if (response.status === 404) {
+        return null;
+      }
+
+      // Check other error statuses
+      if (!response.ok) {
+        console.error(
+          `Failed to fetch bundle: ${response.status} ${response.statusText}`
+        );
+        throw new Error(`Failed to fetch bundle: ${response.statusText}`);
+      }
+
+      // Read response as text first to handle empty responses
+      const text = await response.text();
+      if (!text || text.trim() === "") {
+        console.warn("Empty response from bundle API");
+        return null;
+      }
+
+      // Try to parse JSON
+      try {
+        return JSON.parse(text) as Bundle;
+      } catch (parseError) {
+        console.error(
+          "Failed to parse bundle response:",
+          text.substring(0, 100)
+        );
+        throw new Error("Invalid bundle response from server");
+      }
+    } catch (error) {
+      console.error("Error fetching bundle:", error);
+      throw error;
+    }
+  }
+
   async getFeaturedBundle(): Promise<Bundle | null> {
     try {
       const headers = await this.getAuthHeaders();
