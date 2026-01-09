@@ -41,6 +41,7 @@ interface CartItemModalProps {
   isOpen: boolean;
   onClose: () => void;
   bundle?: Bundle;
+  autoOpenUpgrade?: boolean;
 }
 
 export function CartItemModal({
@@ -48,8 +49,9 @@ export function CartItemModal({
   isOpen,
   onClose,
   bundle,
+  autoOpenUpgrade = false,
 }: CartItemModalProps) {
-  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
+  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(autoOpenUpgrade);
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false);
 
   if (!item) return null;

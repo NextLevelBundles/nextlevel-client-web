@@ -24,3 +24,18 @@ export interface UpgradeCompleteResponse {
   stripePaymentIntentId: string;
   completedAt: string;
 }
+
+export interface PaymentStatusResponse {
+  hasStripeCustomer: boolean;
+  hasStripePaymentMethod: boolean;
+}
+
+export interface StripeSetupSessionRequest {
+  successUrl: string;
+  cancelUrl: string;
+}
+
+export interface StripeSetupSessionResponse {
+  sessionId: string;
+  url?: string;
+}

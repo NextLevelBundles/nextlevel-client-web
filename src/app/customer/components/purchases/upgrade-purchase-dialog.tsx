@@ -15,9 +15,9 @@ import {
 } from "@/app/(shared)/components/ui/dialog";
 import { Button } from "@/app/(shared)/components/ui/button";
 import { Card, CardContent } from "@/app/(shared)/components/ui/card";
-import { Loader2, ArrowUp, Check } from "lucide-react";
+import { Loader2, ArrowUp, Check, CreditCard, ExternalLink } from "lucide-react";
 import { upgradeApi } from "@/lib/api";
-import { UpgradePreviewResponse } from "@/lib/api/types/upgrade";
+import { UpgradePreviewResponse, PaymentStatusResponse } from "@/lib/api/types/upgrade";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { Checkbox } from "@/app/(shared)/components/ui/checkbox";
@@ -42,6 +42,10 @@ export function UpgradePurchaseDialog({
   const [isCancelling, setIsCancelling] = useState(false);
   const [upgradePreview, setUpgradePreview] =
     useState<UpgradePreviewResponse | null>(null);
+  const [paymentStatus, setPaymentStatus] =
+    useState<PaymentStatusResponse | null>(null);
+  const [isLoadingPaymentStatus, setIsLoadingPaymentStatus] = useState(false);
+  const [isSettingUpPayment, setIsSettingUpPayment] = useState(false);
 
   // Get tiers from bundle
   const baseTiers = useMemo(
@@ -148,6 +152,26 @@ export function UpgradePurchaseDialog({
     selectedUpsellTierIds,
   ]);
 
+  // Fetch payment status when dialog opens
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const loadPaymentStatus = async () => {
+      setIsLoadingPaymentStatus(true);
+      try {
+        const status = await upgradeApi.getPaymentStatus();
+        setPaymentStatus(status);
+      } catch (error) {
+        console.error("Failed to load payment status:", error);
+        setPaymentStatus(null);
+      } finally {
+        setIsLoadingPaymentStatus(false);
+      }
+    };
+
+    loadPaymentStatus();
+  }, [isOpen]);
+
   const resetState = () => {
     // Reset all state to initial values
     setSelectedBaseTierId("");
@@ -157,6 +181,9 @@ export function UpgradePurchaseDialog({
     setIsLoadingPreview(false);
     setIsCompleting(false);
     setIsCancelling(false);
+    setPaymentStatus(null);
+    setIsLoadingPaymentStatus(false);
+    setIsSettingUpPayment(false);
   };
 
   const handleClose = async () => {
@@ -173,6 +200,27 @@ export function UpgradePurchaseDialog({
     }
     resetState();
     onClose();
+  };
+
+  const handleSetupPayment = async () => {
+    setIsSettingUpPayment(true);
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_AUTH_URL || process.env.AUTH_URL || window.location.origin;
+      const setupSession = await upgradeApi.getStripeSetupSession({
+        successUrl: `${baseUrl}/customer/purchases?upgrade=true&cartItemId=${cartItem.id}&payment=success`,
+        cancelUrl: `${baseUrl}/customer/purchases?upgrade=true&cartItemId=${cartItem.id}&payment=cancelled`,
+      });
+      if (setupSession.url) {
+        window.location.href = setupSession.url;
+      } else {
+        toast.error("Failed to get payment setup URL");
+      }
+    } catch (error) {
+      console.error("Failed to setup payment:", error);
+      toast.error("Failed to setup payment method");
+    } finally {
+      setIsSettingUpPayment(false);
+    }
   };
 
   const handleComplete = async () => {
@@ -238,16 +286,14 @@ export function UpgradePurchaseDialog({
       selectedUpsellTierIds.length > 0);
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => {}}>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
       <DialogPortal>
         {/* Higher z-index overlay for popup-on-popup effect */}
-        <DialogOverlay className="z-[150] bg-black/50" />
+        <DialogOverlay className="z-[150] bg-black/80" />
         <DialogContent
-          className="max-w-2xl max-h-[90vh] overflow-y-auto z-[200] [&>button]:hidden"
-          onPointerDownOutside={(e) => e.preventDefault()}
-          onEscapeKeyDown={(e) => e.preventDefault()}
+          className="max-w-2xl max-h-[90vh] overflow-hidden z-[200] flex flex-col"
         >
-          <DialogHeader>
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>Upgrade Purchase</DialogTitle>
             <DialogDescription>
               Upgrade your purchase of {cartItem.snapshotTitle} to unlock more
@@ -255,7 +301,7 @@ export function UpgradePurchaseDialog({
             </DialogDescription>
           </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 overflow-y-auto flex-1 pr-2">
           {/* Collection Tier Selection */}
           <div>
             <h3 className="text-lg font-semibold mb-3">Select Collection Tier</h3>
@@ -473,96 +519,99 @@ export function UpgradePurchaseDialog({
             </div>
           )}
 
-          {/* Upgrade Preview Summary - Fixed Height */}
-          <Card
-            className={`${
-              isLoadingPreview
-                ? "bg-muted/30"
-                : "bg-primary/5 border-primary"
-            } min-h-[280px]`}
-          >
-            <CardContent className="p-6">
-              {isLoadingPreview ? (
-                <div className="flex items-center justify-center min-h-[232px]">
-                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                  <span className="ml-2 text-sm">Calculating upgrade cost...</span>
+          {/* Upgrade Preview Summary */}
+          <div className={`rounded-lg border min-h-[280px] ${isLoadingPreview ? "bg-muted/30" : upgradePreview ? "bg-card" : "bg-muted/20"}`}>
+            {isLoadingPreview ? (
+              <div className="flex items-center justify-center h-[280px]">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                <span className="ml-2 text-sm text-muted-foreground">Calculating upgrade cost...</span>
+              </div>
+            ) : upgradePreview ? (
+              <div className="p-6 space-y-4 min-h-[280px]">
+                <div className="flex items-center gap-2 pb-3 border-b">
+                  <ArrowUp className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg font-semibold">Upgrade Summary</h3>
                 </div>
-              ) : upgradePreview ? (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <ArrowUp className="h-5 w-5 text-primary" />
-                    Upgrade Summary
-                  </h3>
 
-                  <div className="space-y-2 text-sm">
-                    {upgradePreview.baseTierUpgradeAmount > 0 && (
-                      <div className="flex justify-between">
-                        <span>Collection Tier Upgrade</span>
-                        <span className="font-semibold">
-                          ${upgradePreview.baseTierUpgradeAmount.toFixed(2)}
-                        </span>
-                      </div>
-                    )}
-                    {upgradePreview.charityTierAmount > 0 && (
-                      <div className="flex justify-between">
-                        <span>Charity Tier</span>
-                        <span className="font-semibold">
-                          ${upgradePreview.charityTierAmount.toFixed(2)}
-                        </span>
-                      </div>
-                    )}
-                    {upgradePreview.upsellAmount > 0 && (
-                      <div className="flex justify-between">
-                        <span>Bonus Tiers</span>
-                        <span className="font-semibold">
-                          ${upgradePreview.upsellAmount.toFixed(2)}
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex justify-between text-lg font-bold pt-2 border-t">
-                      <span>Total to Pay</span>
-                      <span className="text-primary">
-                        ${upgradePreview.totalAmount.toFixed(2)}
+                <div className="space-y-3">
+                  {upgradePreview.baseTierUpgradeAmount > 0 && (
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-sm text-muted-foreground">Collection Tier Upgrade</span>
+                      <span className="font-semibold">
+                        ${upgradePreview.baseTierUpgradeAmount.toFixed(2)}
                       </span>
                     </div>
-                  </div>
-
-                  {totalNewProducts > 0 && (
-                    <div className="pt-2 border-t">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Check className="h-4 w-4 text-green-600 dark:text-green-500" />
-                        <span>
-                          You'll unlock {totalNewProducts} new{" "}
-                          {totalNewProducts === 1
-                            ? (bundle.type === "EBook" ? "Book" : "Game")
-                            : (bundle.type === "EBook" ? "Books" : "Games")}
-                        </span>
-                      </div>
+                  )}
+                  {upgradePreview.charityTierAmount > 0 && (
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-sm text-muted-foreground">Charity Tier</span>
+                      <span className="font-semibold">
+                        ${upgradePreview.charityTierAmount.toFixed(2)}
+                      </span>
+                    </div>
+                  )}
+                  {upgradePreview.upsellAmount > 0 && (
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-sm text-muted-foreground">Bonus Tiers</span>
+                      <span className="font-semibold">
+                        ${upgradePreview.upsellAmount.toFixed(2)}
+                      </span>
                     </div>
                   )}
                 </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center min-h-[232px] text-center space-y-3">
-                  <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-                    <ArrowUp className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                  <div className="space-y-1">
-                    <h4 className="font-semibold text-base">Select Your Upgrade</h4>
-                    <p className="text-sm text-muted-foreground max-w-xs">
-                      Choose a collection tier above to see pricing details and unlock new content
-                    </p>
-                  </div>
+
+                <div className="flex justify-between items-center pt-4 border-t">
+                  <span className="text-base font-semibold">Total to Pay</span>
+                  <span className="text-2xl font-bold text-primary">
+                    ${upgradePreview.totalAmount.toFixed(2)}
+                  </span>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+
+                {totalNewProducts > 0 && (
+                  <div className="flex items-center gap-2 pt-3 border-t">
+                    <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                    <span className="text-sm text-muted-foreground">
+                      You'll unlock {totalNewProducts} new{" "}
+                      {totalNewProducts === 1
+                        ? (bundle.type === "EBook" ? "book" : "game")
+                        : (bundle.type === "EBook" ? "books" : "games")}
+                    </span>
+                  </div>
+                )}
+
+                {paymentStatus && !paymentStatus.hasStripePaymentMethod && (
+                  <div className="flex items-start gap-3 p-4 mt-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                    <CreditCard className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-amber-900 dark:text-amber-100 mb-1">
+                        Payment Method Required
+                      </p>
+                      <p className="text-xs text-amber-800 dark:text-amber-300">
+                        Add a payment method to complete this upgrade securely via Stripe.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-[280px] px-6 text-center">
+                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                  <ArrowUp className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h4 className="font-semibold text-base mb-2">Select Your Upgrade</h4>
+                <p className="text-sm text-muted-foreground max-w-sm">
+                  Choose a collection tier above to see pricing details and unlock new content
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
-        <DialogFooter className="gap-2">
+        <DialogFooter className="gap-2 flex-shrink-0 mt-4">
           <Button
             variant="outline"
             onClick={handleClose}
-            disabled={isCompleting || isCancelling}
+            disabled={isCompleting || isCancelling || isSettingUpPayment}
           >
             {isCancelling ? (
               <>
@@ -573,22 +622,41 @@ export function UpgradePurchaseDialog({
               "Cancel"
             )}
           </Button>
-          <Button
-            onClick={handleComplete}
-            disabled={!canComplete || isLoadingPreview || isCompleting || isCancelling}
-          >
-            {isCompleting ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              <>
-                <Check className="h-4 w-4 mr-2" />
-                Complete Upgrade
-              </>
-            )}
-          </Button>
+          {paymentStatus && !paymentStatus.hasStripePaymentMethod ? (
+            <Button
+              onClick={handleSetupPayment}
+              disabled={isSettingUpPayment || isLoadingPaymentStatus}
+            >
+              {isSettingUpPayment ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Opening...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  Setup Payment Method
+                </>
+              )}
+            </Button>
+          ) : (
+            <Button
+              onClick={handleComplete}
+              disabled={!canComplete || isLoadingPreview || isCompleting || isCancelling || isLoadingPaymentStatus}
+            >
+              {isCompleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <Check className="h-4 w-4 mr-2" />
+                  Complete Upgrade
+                </>
+              )}
+            </Button>
+          )}
         </DialogFooter>
         </DialogContent>
       </DialogPortal>

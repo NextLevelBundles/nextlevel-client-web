@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Card,
@@ -45,6 +46,7 @@ import { CartItemStatus } from "@/lib/api/types/cart";
 import { BundleProductsPopup } from "./collection-products-popup";
 import { GiftIndicator } from "../gift-indicator";
 import { FilterDropdown } from "../filter-dropdown";
+import { toast } from "sonner";
 
 // Helper function to get status badge styling
 function getStatusBadge(status?: CartItemStatus) {
@@ -106,6 +108,7 @@ const ownershipOptions = [
 export function PurchaseHistory() {
   const { user } = useAuth();
   const currentCustomerId = user?.id;
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [selectedYear, setSelectedYear] = useState("All Years");
@@ -113,6 +116,24 @@ export function PurchaseHistory() {
   const [sortDirection, setSortDirection] =
     useState<PurchaseQueryParams["sortDirection"]>("Descending");
   const [giftFilter, setGiftFilter] = useState<GiftFilterType>("All");
+
+  // Check for upgrade parameter in URL
+  const shouldAutoOpenUpgrade = searchParams.get("upgrade") === "true";
+  const targetCartItemId = searchParams.get("cartItemId");
+  const paymentStatus = searchParams.get("payment");
+  const hasShownToastRef = useRef(false);
+
+  // Show toast notification based on payment status (only once)
+  useEffect(() => {
+    if (!hasShownToastRef.current && paymentStatus) {
+      if (paymentStatus === "success") {
+        toast.success("Payment method added successfully! You can now complete your upgrade.");
+      } else if (paymentStatus === "cancelled") {
+        toast.info("Payment setup was cancelled. You can try again when ready.");
+      }
+      hasShownToastRef.current = true;
+    }
+  }, [paymentStatus]);
 
   // Debounce search query
   useEffect(() => {
@@ -430,42 +451,50 @@ export function PurchaseHistory() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {purchases.map((purchase, index) => (
-                    <motion.tr
-                      key={purchase.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="transition-colors hover:bg-muted/5"
-                    >
-                      <TableCell className="font-medium">
-                        <div className="space-y-1">
-                          <div>
-                            {purchase.snapshotTitle || "Unknown Collection"}
+                  {purchases.map((purchase, index) => {
+                    // Auto-open the specific purchase if upgrade param is present and cartItemId matches
+                    const shouldAutoOpen = shouldAutoOpenUpgrade && targetCartItemId === purchase.id;
+                    return (
+                      <motion.tr
+                        key={purchase.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="transition-colors hover:bg-muted/5"
+                      >
+                        <TableCell className="font-medium">
+                          <div className="space-y-1">
+                            <div>
+                              {purchase.snapshotTitle || "Unknown Collection"}
+                            </div>
+                            <GiftIndicator cartItem={purchase} />
                           </div>
-                          <GiftIndicator cartItem={purchase} />
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {purchase.completedAt
-                          ? new Date(purchase.completedAt).toLocaleDateString()
-                          : "-"}
-                      </TableCell>
-                      <TableCell>
-                        {getStatusBadge(purchase.status)}
-                      </TableCell>
-                      <TableCell>
-                        {purchase.snapshotProducts.length}{" "}
-                        {purchase.snapshotProducts.length === 1
-                          ? "item"
-                          : "items"}
-                      </TableCell>
-                      <TableCell>${purchase.totalAmount.toFixed(2)}</TableCell>
-                      <TableCell className="text-center">
-                        <BundleProductsPopup purchase={purchase} />
-                      </TableCell>
-                    </motion.tr>
-                  ))}
+                        </TableCell>
+                        <TableCell>
+                          {purchase.completedAt
+                            ? new Date(purchase.completedAt).toLocaleDateString()
+                            : "-"}
+                        </TableCell>
+                        <TableCell>
+                          {getStatusBadge(purchase.status)}
+                        </TableCell>
+                        <TableCell>
+                          {purchase.snapshotProducts.length}{" "}
+                          {purchase.snapshotProducts.length === 1
+                            ? "item"
+                            : "items"}
+                        </TableCell>
+                        <TableCell>${purchase.totalAmount.toFixed(2)}</TableCell>
+                        <TableCell className="text-center">
+                          <BundleProductsPopup
+                            purchase={purchase}
+                            autoOpen={shouldAutoOpen}
+                            autoOpenUpgrade={shouldAutoOpen}
+                          />
+                        </TableCell>
+                      </motion.tr>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>

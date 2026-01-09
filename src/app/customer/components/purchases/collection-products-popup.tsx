@@ -10,6 +10,8 @@ import { Bundle } from "@/app/(shared)/types/bundle";
 
 interface BundleProductsPopupProps {
   purchase: CartItem;
+  autoOpen?: boolean;
+  autoOpenUpgrade?: boolean;
 }
 
 // Fetch bundle via API
@@ -21,8 +23,8 @@ async function fetchBundleById(bundleId: string): Promise<Bundle> {
   return response.json();
 }
 
-export function BundleProductsPopup({ purchase }: BundleProductsPopupProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export function BundleProductsPopup({ purchase, autoOpen = false, autoOpenUpgrade = false }: BundleProductsPopupProps) {
+  const [isOpen, setIsOpen] = useState(autoOpen);
 
   // Fetch bundle data when modal opens
   const { data: bundle } = useQuery({
@@ -49,6 +51,7 @@ export function BundleProductsPopup({ purchase }: BundleProductsPopupProps) {
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         bundle={bundle}
+        autoOpenUpgrade={autoOpenUpgrade}
       />
     </>
   );

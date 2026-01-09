@@ -3,6 +3,9 @@ import {
   UpgradePreviewRequest,
   UpgradePreviewResponse,
   UpgradeCompleteResponse,
+  PaymentStatusResponse,
+  StripeSetupSessionRequest,
+  StripeSetupSessionResponse,
 } from "../types/upgrade";
 
 export class UpgradeApi {
@@ -31,6 +34,21 @@ export class UpgradeApi {
     return await this.client.post<UpgradeCompleteResponse>(
       `/customer/upgrade/${upgradeId}/complete`,
       {}
+    );
+  }
+
+  async getPaymentStatus(): Promise<PaymentStatusResponse> {
+    return await this.client.get<PaymentStatusResponse>(
+      "/customer/upgrade/payment-status"
+    );
+  }
+
+  async getStripeSetupSession(
+    request: StripeSetupSessionRequest
+  ): Promise<StripeSetupSessionResponse> {
+    return await this.client.post<StripeSetupSessionResponse>(
+      "/customer/stripe/setup-session",
+      request
     );
   }
 }
