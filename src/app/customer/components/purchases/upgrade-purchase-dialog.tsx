@@ -519,18 +519,6 @@ export function UpgradePurchaseDialog({
                         </span>
                       </div>
                     )}
-                    {upgradePreview.processingFee > 0 && (
-                      <>
-                        <div className="flex justify-between text-muted-foreground">
-                          <span>Subtotal</span>
-                          <span>${upgradePreview.subTotal.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between text-muted-foreground">
-                          <span>Processing Fee</span>
-                          <span>${upgradePreview.processingFee.toFixed(2)}</span>
-                        </div>
-                      </>
-                    )}
                     <div className="flex justify-between text-lg font-bold pt-2 border-t">
                       <span>Total to Pay</span>
                       <span className="text-primary">

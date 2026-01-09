@@ -14,8 +14,6 @@ export interface UpgradePreviewResponse {
   baseTierUpgradeAmount: number;
   charityTierAmount: number;
   upsellAmount: number;
-  subTotal: number;
-  processingFee: number;
   totalAmount: number;
 }
 
