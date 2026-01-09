@@ -134,7 +134,6 @@ export function AddToCartButton({
     disabled ||
     isLoading ||
     buttonState === "adding" ||
-    totalAmount <= 0 ||
     !baseTierId ||
     isLoadingSession ||
     isBundleExpired ||

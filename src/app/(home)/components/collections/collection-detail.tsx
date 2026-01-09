@@ -293,7 +293,7 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
 
   // Handle Add to Cart for mobile
   const handleMobileAddToCart = () => {
-    if (!currentTier || totalAmount === 0) return;
+    if (!currentTier) return;
 
     addToCart({
       bundleId: bundle.id,
@@ -316,7 +316,7 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
   // Check if CTA should be disabled
   // Add to Cart is enabled only if sale is active (regardless of bundle state)
   const isCtaDisabled =
-    !hasAvailableBaseTiers || !isSaleActive || totalAmount === 0;
+    !hasAvailableBaseTiers || !isSaleActive;
 
   // Render status banner based on sale status
   const renderStatusBanner = () => {
