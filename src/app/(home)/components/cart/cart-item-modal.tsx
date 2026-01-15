@@ -90,12 +90,8 @@ export function CartItemModal({
     // Check if this is a gifted purchase
     const isGiftedPurchase = item.isGift === true;
 
-    // Check if upgrade period is active using the shared utility function
-    if (!isUpgradePeriodActive(bundle)) {
-      return { canUpgrade: false, reason: "Upgrade period has ended" };
-    }
-
-    // Check if user has maxed out all tiers
+    // FIRST: Check if user has maxed out all tiers
+    // (This should be prioritized over upgrade period check)
     const baseTiers = bundle.tiers
       .filter((t) => t.type === TierType.Base)
       .sort((a, b) => a.price - b.price);
@@ -132,8 +128,14 @@ export function CartItemModal({
     if (hasMaxedOut) {
       return {
         canUpgrade: false,
-        reason: "Congratulations! You own the complete collection with all available tiers",
+        reason: "You own the complete collection with all available tiers",
       };
+    }
+
+    // SECOND: Check if upgrade period is active
+    // (Only check this if user hasn't maxed out)
+    if (!isUpgradePeriodActive(bundle)) {
+      return { canUpgrade: false, reason: "Upgrade period has ended" };
     }
 
     return {
