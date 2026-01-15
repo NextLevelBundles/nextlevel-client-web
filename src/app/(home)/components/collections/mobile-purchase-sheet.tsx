@@ -16,6 +16,7 @@ import { AddToCartButton } from "../cart/add-to-cart-button";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
 import { useCustomer } from "@/hooks/queries/useCustomer";
 import { useRouter } from "next/navigation";
+import { CartItem } from "@/lib/api/types/cart";
 
 interface MobilePurchaseSheetProps {
   bundle: Bundle;
@@ -40,6 +41,8 @@ interface MobilePurchaseSheetProps {
   isSaleActive: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  userPurchase?: CartItem | null;
+  isLoadingPurchase?: boolean;
 }
 
 export function MobilePurchaseSheet({
@@ -56,6 +59,8 @@ export function MobilePurchaseSheet({
   selectedCharityTierIds,
   selectedUpsellTierIds,
   tipAmount,
+  userPurchase,
+  isLoadingPurchase = false,
   ...purchaseSummaryProps
 }: MobilePurchaseSheetProps) {
   const { user } = useAuth();
@@ -91,6 +96,8 @@ export function MobilePurchaseSheet({
             selectedUpsellTierIds={selectedUpsellTierIds}
             tipAmount={tipAmount}
             isMobileSheet={true}
+            userPurchase={userPurchase}
+            isLoadingPurchase={isLoadingPurchase}
           />
         </div>
 

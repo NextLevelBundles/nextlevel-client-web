@@ -1,13 +1,17 @@
 "use client";
 
-import { ChevronUp, Stamp as Steam } from "lucide-react";
+import { ChevronUp, Stamp as Steam, ArrowUp } from "lucide-react";
 import { cn } from "@/shared/utils/tailwind";
 import { Button } from "@/shared/components/ui/button";
 import { AddToCartButton } from "../cart/add-to-cart-button";
-import { BundleType } from "@/app/(shared)/types/bundle";
+import { BundleType, Bundle } from "@/app/(shared)/types/bundle";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
 import { useCustomer } from "@/hooks/queries/useCustomer";
 import { useRouter } from "next/navigation";
+import { CartItem, CartItemStatus } from "@/lib/api/types/cart";
+import { useMemo, useState } from "react";
+import { UpgradePurchaseDialog } from "@/customer/components/purchases/upgrade-purchase-dialog";
+import { UpgradeInfoDialog } from "@/customer/components/purchases/upgrade-info-dialog";
 
 interface MobileStickyCTAProps {
   bundleId: string;
@@ -27,6 +31,8 @@ interface MobileStickyCTAProps {
   bundleType: BundleType;
   bundleState?: "not-started" | "expired" | "active";
   isSaleActive?: boolean;
+  userPurchase?: CartItem | null;
+  bundle?: Bundle;
 }
 
 export function MobileStickyCTA({
@@ -47,15 +53,46 @@ export function MobileStickyCTA({
   bundleType,
   bundleState = "active",
   isSaleActive = true,
+  userPurchase,
+  bundle,
 }: MobileStickyCTAProps) {
   const { user } = useAuth();
   const isAuthenticated = !!user;
   const router = useRouter();
   const { data: customer } = useCustomer();
+  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
+  const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false);
 
   const isSteamBundle = bundleType === BundleType.SteamGame;
   const isSteamConnected = customer && customer.steamId;
   const needsSteamConnection = isSteamBundle && isAuthenticated && !isSteamConnected;
+
+  // Check if user can upgrade (simplified check for mobile)
+  const canUpgrade = useMemo(() => {
+    if (!userPurchase || !bundle) return false;
+    if (userPurchase.status !== CartItemStatus.Completed) return false;
+    if (userPurchase.isGift === true) return false;
+
+    // Check if sale is active
+    const now = new Date();
+    const saleStartDate = bundle.sellFrom
+      ? new Date(bundle.sellFrom)
+      : new Date(bundle.startsAt);
+    const saleEndDate = bundle.sellTo
+      ? new Date(bundle.sellTo)
+      : new Date(bundle.endsAt);
+    const isSaleActive = now >= saleStartDate && now <= saleEndDate;
+
+    return isSaleActive;
+  }, [userPurchase, bundle]);
+
+  const handleUpgradeClick = () => {
+    if (userPurchase?.isGift === true) {
+      setIsInfoDialogOpen(true);
+    } else {
+      setIsUpgradeDialogOpen(true);
+    }
+  };
   return (
     <div
       className={cn(
@@ -86,7 +123,7 @@ export function MobileStickyCTA({
             </div>
           </button>
 
-          {/* Add to Cart Button or Connect Steam */}
+          {/* Add to Cart Button or Connect Steam or Upgrade */}
           <div className="flex-1 max-w-[200px]">
             {needsSteamConnection ? (
               <Button
@@ -96,6 +133,14 @@ export function MobileStickyCTA({
               >
                 <Steam className="mr-2 h-4 w-4" />
                 Connect Steam
+              </Button>
+            ) : canUpgrade ? (
+              <Button
+                className="w-full h-auto px-6 py-3 text-sm font-semibold"
+                onClick={handleUpgradeClick}
+              >
+                <ArrowUp className="mr-2 h-4 w-4" />
+                Upgrade
               </Button>
             ) : (
               <AddToCartButton
@@ -118,6 +163,26 @@ export function MobileStickyCTA({
           </div>
         </div>
       </div>
+
+      {/* Upgrade dialogs */}
+      {userPurchase && bundle && canUpgrade && (
+        <>
+          <UpgradeInfoDialog
+            isOpen={isInfoDialogOpen}
+            onClose={() => setIsInfoDialogOpen(false)}
+          />
+          {!userPurchase.isGift && (
+            <UpgradePurchaseDialog
+              isOpen={isUpgradeDialogOpen}
+              onClose={() => setIsUpgradeDialogOpen(false)}
+              cartItem={userPurchase}
+              bundle={bundle}
+              paymentSetupSuccessUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/collections/${bundle.slug}?upgrade=true&cartItemId=${userPurchase.id}&payment=success`}
+              paymentSetupCancelUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/collections/${bundle.slug}?upgrade=true&cartItemId=${userPurchase.id}&payment=cancelled`}
+            />
+          )}
+        </>
+      )}
     </div>
   );
 }

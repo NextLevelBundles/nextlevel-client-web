@@ -28,6 +28,8 @@ interface UpgradePurchaseDialogProps {
   onClose: () => void;
   cartItem: CartItem;
   bundle: Bundle;
+  paymentSetupSuccessUrl?: string;
+  paymentSetupCancelUrl?: string;
 }
 
 export function UpgradePurchaseDialog({
@@ -35,6 +37,8 @@ export function UpgradePurchaseDialog({
   onClose,
   cartItem,
   bundle,
+  paymentSetupSuccessUrl,
+  paymentSetupCancelUrl,
 }: UpgradePurchaseDialogProps) {
   const queryClient = useQueryClient();
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
@@ -206,9 +210,14 @@ export function UpgradePurchaseDialog({
     setIsSettingUpPayment(true);
     try {
       const baseUrl = process.env.NEXT_PUBLIC_AUTH_URL || process.env.AUTH_URL || window.location.origin;
+
+      // Use provided URLs or fallback to default purchase page URLs
+      const defaultSuccessUrl = `${baseUrl}/customer/purchases?upgrade=true&cartItemId=${cartItem.id}&payment=success`;
+      const defaultCancelUrl = `${baseUrl}/customer/purchases?upgrade=true&cartItemId=${cartItem.id}&payment=cancelled`;
+
       const setupSession = await upgradeApi.getStripeSetupSession({
-        successUrl: `${baseUrl}/customer/purchases?upgrade=true&cartItemId=${cartItem.id}&payment=success`,
-        cancelUrl: `${baseUrl}/customer/purchases?upgrade=true&cartItemId=${cartItem.id}&payment=cancelled`,
+        successUrl: paymentSetupSuccessUrl || defaultSuccessUrl,
+        cancelUrl: paymentSetupCancelUrl || defaultCancelUrl,
       });
       if (setupSession.url) {
         window.location.href = setupSession.url;
@@ -233,6 +242,9 @@ export function UpgradePurchaseDialog({
 
       // Invalidate purchases query to refresh the list
       queryClient.invalidateQueries({ queryKey: ["purchases"] });
+
+      // Invalidate bundle purchase query to refresh the bundle details page
+      queryClient.invalidateQueries({ queryKey: ["bundle-purchase", bundle.id] });
 
       resetState();
       onClose();
@@ -414,7 +426,7 @@ export function UpgradePurchaseDialog({
               <h3 className="text-lg font-semibold mb-3">
                 Add Charity Tier (Optional)
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-2 p-1">
                 {charityTiers.map((tier) => {
                   const tierProducts = bundle.products.filter(
                     (p) => p.bundleTierId === tier.id
@@ -430,7 +442,7 @@ export function UpgradePurchaseDialog({
                     <div key={tier.id} className="flex items-center space-x-2">
                       <Checkbox
                         id={`charity-${tier.id}`}
-                        checked={selectedCharityTierId === tier.id}
+                        checked={isPurchased || selectedCharityTierId === tier.id}
                         disabled={isPurchased}
                         onCheckedChange={(checked) => {
                           setSelectedCharityTierId(
@@ -467,7 +479,7 @@ export function UpgradePurchaseDialog({
               <h3 className="text-lg font-semibold mb-3">
                 Add Bonus Tiers (Optional)
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-2 p-1">
                 {upsellTiers.map((tier) => {
                   // Check if this tier was already purchased
                   const tierProducts = bundle.products.filter(
@@ -486,7 +498,7 @@ export function UpgradePurchaseDialog({
                     <div key={tier.id} className="flex items-center space-x-2">
                       <Checkbox
                         id={`upsell-${tier.id}`}
-                        checked={selectedUpsellTierIds.includes(tier.id)}
+                        checked={isPurchased || selectedUpsellTierIds.includes(tier.id)}
                         disabled={isPurchased}
                         onCheckedChange={(checked) => {
                           setSelectedUpsellTierIds((prev) =>

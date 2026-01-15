@@ -27,7 +27,8 @@ const userBadges = {
       id: "early-adopter",
       name: "Early Adopter",
       icon: "🕹️",
-      description: "You unlocked this by purchasing your very first collection!",
+      description:
+        "You unlocked this by purchasing your very first collection!",
       shortDescription: "Unlocked after purchasing your first collection.",
       earned: true,
       earnedDate: "2024-03-15",
@@ -145,7 +146,7 @@ function BadgeCard({
             <p>
               {badge.earned
                 ? badge.description
-                : `🔒 Locked — ${badge.shortDescription}`}
+                : `🔒 Locked - ${badge.shortDescription}`}
             </p>
           </TooltipContent>
         </Tooltip>
@@ -210,8 +211,8 @@ export default function BadgesPage() {
           <div>
             <h3 className="mb-1 font-semibold">Want to earn more badges?</h3>
             <p className="text-sm text-muted-foreground">
-              Support amazing causes through collection purchases to unlock special
-              achievements!
+              Support amazing causes through collection purchases to unlock
+              special achievements!
             </p>
           </div>
         </CardContent>

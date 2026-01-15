@@ -44,7 +44,7 @@ export function UpgradeInfoDialog({ isOpen, onClose }: UpgradeInfoDialogProps) {
                     The upgrade feature allows you to unlock higher tiers of a
                     collection you've already purchased. You can upgrade to a
                     better base tier, add charity tiers, or unlock bonus
-                    content—all without repurchasing the entire collection.
+                    content-all without repurchasing the entire collection.
                   </p>
                 </div>
               </div>

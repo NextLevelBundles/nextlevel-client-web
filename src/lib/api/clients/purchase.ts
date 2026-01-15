@@ -40,4 +40,10 @@ export class PurchaseApi {
   async getRecentPurchases(): Promise<CartItem[]> {
     return await this.client.get<CartItem[]>("/customer/purchases/recent");
   }
+
+  async getBundlePurchase(bundleId: string): Promise<CartItem | null> {
+    return await this.client.get<CartItem | null>(
+      `/customer/purchases/bundle/${bundleId}`
+    );
+  }
 }

@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import {
   Stamp as Steam,
-  Gift,
   DollarSign,
   Heart,
   BookOpen,
@@ -34,6 +33,10 @@ import { AddToCartButton } from "../cart/add-to-cart-button";
 import { useCustomer } from "@/hooks/queries/useCustomer";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
 import { useRouter } from "next/navigation";
+import { CartItem, CartItemStatus } from "@/lib/api/types/cart";
+import { UpgradePurchaseDialog } from "@/customer/components/purchases/upgrade-purchase-dialog";
+import { UpgradeInfoDialog } from "@/customer/components/purchases/upgrade-info-dialog";
+import { ArrowUp, CheckCircle2 } from "lucide-react";
 
 interface PurchaseSummaryProps {
   bundle: Bundle;
@@ -58,6 +61,9 @@ interface PurchaseSummaryProps {
   isSaleActive: boolean;
   isMobileSheet?: boolean;
   showCharityLeaderboard?: boolean;
+  userPurchase?: CartItem | null;
+  isLoadingPurchase?: boolean;
+  autoOpenUpgrade?: boolean;
 }
 
 export function PurchaseSummary({
@@ -82,8 +88,20 @@ export function PurchaseSummary({
   isSaleActive,
   isMobileSheet = false,
   showCharityLeaderboard = false,
+  userPurchase,
+  isLoadingPurchase = false,
+  autoOpenUpgrade = false,
 }: PurchaseSummaryProps) {
   const [tipInputValue, setTipInputValue] = useState("");
+  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
+  const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false);
+
+  // Auto-open upgrade dialog when redirected back from payment setup
+  useEffect(() => {
+    if (autoOpenUpgrade && userPurchase && !isLoadingPurchase) {
+      setIsUpgradeDialogOpen(true);
+    }
+  }, [autoOpenUpgrade, userPurchase, isLoadingPurchase]);
   const { user } = useAuth();
   const isAuthenticated = !!user;
   const router = useRouter();
@@ -186,6 +204,87 @@ export function PurchaseSummary({
     }
   };
 
+  // Check upgrade eligibility (reuse logic from cart-item-modal)
+  const upgradeEligibility = useMemo(() => {
+    // No purchase found
+    if (!userPurchase) {
+      return { canUpgrade: false, reason: null };
+    }
+
+    // Only for completed purchases
+    if (userPurchase.status !== CartItemStatus.Completed) {
+      return { canUpgrade: false, reason: "Purchase not completed" };
+    }
+
+    // Check if this is a gifted purchase
+    const isGiftedPurchase = userPurchase.isGift === true;
+
+    // Check if sale is active
+    const now = new Date();
+    const saleStartDate = bundle.sellFrom
+      ? new Date(bundle.sellFrom)
+      : new Date(bundle.startsAt);
+    const saleEndDate = bundle.sellTo
+      ? new Date(bundle.sellTo)
+      : new Date(bundle.endsAt);
+    const isSaleActive = now >= saleStartDate && now <= saleEndDate;
+
+    if (!isSaleActive) {
+      return { canUpgrade: false, reason: "Sale period has ended" };
+    }
+
+    // Check if user has maxed out all tiers
+    const baseTiersSorted = baseTiers.sort((a, b) => a.price - b.price);
+    const purchasedBaseTierPrice = userPurchase.snapshotTierPrice || 0;
+    const highestBaseTierPrice =
+      baseTiersSorted.length > 0
+        ? baseTiersSorted[baseTiersSorted.length - 1].price
+        : 0;
+    const hasHighestBaseTier = purchasedBaseTierPrice >= highestBaseTierPrice;
+
+    const hasCharityTier = (userPurchase.charityAmount || 0) > 0;
+    const allCharityTiersPurchased =
+      charityTiers.length === 0 || hasCharityTier;
+
+    // Check if all upsell tiers are purchased
+    const purchasedProductIds = new Set(
+      userPurchase.snapshotProducts.map((p) => p.productId)
+    );
+    const allUpsellTiersPurchased = upsellTiers.every((tier) => {
+      const tierProducts = bundle.products.filter(
+        (p) => p.bundleTierId === tier.id
+      );
+      return tierProducts.every((p) => purchasedProductIds.has(p.id));
+    });
+
+    const hasMaxedOut =
+      hasHighestBaseTier &&
+      allCharityTiersPurchased &&
+      allUpsellTiersPurchased;
+
+    if (hasMaxedOut) {
+      return {
+        canUpgrade: false,
+        reason:
+          "You own the complete collection with all available tiers",
+      };
+    }
+
+    return {
+      canUpgrade: true,
+      isGiftedPurchase,
+      reason: null,
+    };
+  }, [userPurchase, bundle, baseTiers, charityTiers, upsellTiers]);
+
+  const handleUpgradeClick = () => {
+    if (upgradeEligibility.isGiftedPurchase) {
+      setIsInfoDialogOpen(true);
+    } else {
+      setIsUpgradeDialogOpen(true);
+    }
+  };
+
   return (
     <div
       className={cn(
@@ -215,7 +314,7 @@ export function PurchaseSummary({
               {bundle.type === BundleType.EBook ? (
                 <BookOpen className="h-4 w-4 text-primary" />
               ) : (
-                <Gift className="h-4 w-4 text-primary" />
+                <Gamepad2 className="h-4 w-4 text-primary" />
               )}
               <span className="text-sm font-medium">
                 You&apos;re getting ${unlockedProductsValue.toFixed(2)} worth of{" "}
@@ -690,7 +789,78 @@ export function PurchaseSummary({
                   bundle
                 </p>
               </div>
+            ) : userPurchase && userPurchase.status === CartItemStatus.Completed && upgradeEligibility.canUpgrade ? (
+              // User owns the bundle (completed purchase) and can upgrade
+              <div className="space-y-3">
+                <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                    <p className="text-sm text-green-700 dark:text-green-300 font-medium">
+                      You own this collection!
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="secondary"
+                  className="w-full gap-2"
+                  onClick={handleUpgradeClick}
+                >
+                  <ArrowUp className="h-4 w-4" />
+                  Upgrade This Purchase
+                </Button>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">Or</span>
+                  </div>
+                </div>
+                <AddToCartButton
+                  bundleId={bundle.id}
+                  baseTierId={currentTier?.id}
+                  charityTierId={selectedCharityTierIds[0]}
+                  tipAmount={tipAmount}
+                  totalAmount={totalAmount}
+                  selectedUpsellTierIds={selectedUpsellTierIds}
+                  isBundleExpired={bundleState === "expired" || isBundleExpired}
+                  hasAvailableBaseTiers={hasAvailableBaseTiers}
+                  bundleType={bundle.type}
+                  bundleUnavailabilityReason={bundleUnavailabilityReason}
+                  disabled={!isSaleActive}
+                >
+                  Gift this collection
+                </AddToCartButton>
+              </div>
+            ) : userPurchase && userPurchase.status === CartItemStatus.Completed && !upgradeEligibility.canUpgrade && upgradeEligibility.reason ? (
+              // User owns the bundle (completed purchase) but cannot upgrade (maxed out or other reason)
+              <div className="space-y-3">
+                <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                    <p className="text-sm text-green-700 dark:text-green-300 font-medium">
+                      {upgradeEligibility.reason}
+                    </p>
+                  </div>
+                </div>
+                <AddToCartButton
+                  bundleId={bundle.id}
+                  baseTierId={currentTier?.id}
+                  charityTierId={selectedCharityTierIds[0]}
+                  tipAmount={tipAmount}
+                  totalAmount={totalAmount}
+                  selectedUpsellTierIds={selectedUpsellTierIds}
+                  isBundleExpired={bundleState === "expired" || isBundleExpired}
+                  hasAvailableBaseTiers={hasAvailableBaseTiers}
+                  bundleType={bundle.type}
+                  bundleUnavailabilityReason={bundleUnavailabilityReason}
+                  disabled={!isSaleActive}
+                >
+                  Gift this collection
+                </AddToCartButton>
+              </div>
             ) : (
+              // User doesn't own the bundle or not authenticated
               <>
                 <AddToCartButton
                   bundleId={bundle.id}
@@ -740,6 +910,26 @@ export function PurchaseSummary({
           </div>
         </Card>
       )} */}
+
+      {/* Upgrade dialogs */}
+      {userPurchase && upgradeEligibility.canUpgrade && (
+        <>
+          <UpgradeInfoDialog
+            isOpen={isInfoDialogOpen}
+            onClose={() => setIsInfoDialogOpen(false)}
+          />
+          {!upgradeEligibility.isGiftedPurchase && (
+            <UpgradePurchaseDialog
+              isOpen={isUpgradeDialogOpen}
+              onClose={() => setIsUpgradeDialogOpen(false)}
+              cartItem={userPurchase}
+              bundle={bundle}
+              paymentSetupSuccessUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/collections/${bundle.slug}?upgrade=true&cartItemId=${userPurchase.id}&payment=success`}
+              paymentSetupCancelUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/collections/${bundle.slug}?upgrade=true&cartItemId=${userPurchase.id}&payment=cancelled`}
+            />
+          )}
+        </>
+      )}
     </div>
   );
 }

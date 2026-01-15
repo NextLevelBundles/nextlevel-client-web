@@ -52,7 +52,7 @@ export function HowItWorks() {
               How We're Different
             </h2>
             <p className="text-muted-foreground">
-              Built by gamers, for gamers—with integrity at our core
+              Built by gamers, for gamers-with integrity at our core
             </p>
           </div>
 

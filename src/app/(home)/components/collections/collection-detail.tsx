@@ -23,11 +23,13 @@ import {
 import { useBundleBookFormats } from "@/hooks/queries/useBundleBookFormats";
 import { useBundleTierAvailability } from "@/hooks/queries/useBundleTierAvailability";
 import { useBundleStatistics } from "@/hooks/queries/useBundleStatistics";
+import { useBundlePurchase } from "@/hooks/queries/useBundlePurchase";
 import { BundleNotFound } from "./collection-not-found";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
 import { Card } from "@/shared/components/ui/card";
 import { AlertCircle, Eye, TrendingDown } from "lucide-react";
 import { useCart } from "@/app/(shared)/contexts/cart/cart-provider";
+import { useSearchParams } from "next/navigation";
 
 // Configuration: Base tier display order
 // 'asc' = low to high (cheapest first), 'desc' = high to low (most expensive first)
@@ -51,6 +53,11 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
   const isAuthenticated = !!user;
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const purchaseSummaryRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
+
+  // Check if we should auto-open the upgrade dialog (from payment setup redirect)
+  const shouldAutoOpenUpgrade = searchParams.get('upgrade') === 'true' &&
+                                 searchParams.get('payment') === 'success';
 
   // Check bundle timing and status (memoized to prevent recalculation)
   const startDate = useMemo(() => new Date(bundle.startsAt), [bundle.startsAt]);
@@ -130,6 +137,12 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
 
   // Fetch bundle statistics (total raised for charity)
   const { data: bundleStatistics } = useBundleStatistics(bundle.id);
+
+  // Fetch user's purchase of this bundle (only if authenticated)
+  const { data: userPurchase, isLoading: isLoadingPurchase } = useBundlePurchase(
+    bundle.id,
+    isAuthenticated
+  );
 
   // Separate tiers by type and sort by price (memoized to prevent infinite loops)
   // baseTiersCanonical: Always sorted low to high for business logic
@@ -577,6 +590,9 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
                 bundleState={bundleState}
                 isSaleActive={isSaleActive}
                 showCharityLeaderboard={false}
+                userPurchase={userPurchase}
+                isLoadingPurchase={isLoadingPurchase}
+                autoOpenUpgrade={shouldAutoOpenUpgrade}
               />
               {/* </div> */}
             </div>
@@ -602,6 +618,8 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
           bundleState={bundleState}
           isSaleActive={isSaleActive}
           className="pb-6"
+          userPurchase={userPurchase}
+          bundle={bundle}
         />
 
         {/* Mobile Purchase Sheet */}
@@ -628,6 +646,8 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
           bundleUnavailabilityReason={bundleUnavailabilityReason}
           bundleState={bundleState}
           isSaleActive={isSaleActive}
+          userPurchase={userPurchase}
+          isLoadingPurchase={isLoadingPurchase}
         />
       </div>
     </TooltipProvider>

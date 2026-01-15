@@ -165,7 +165,10 @@ export function OnboardingForm() {
 
     console.log("[Onboarding Form] Steam connection state updated");
     console.log("[Onboarding Form] steamConnected:", true);
-    console.log("[Onboarding Form] Form data updated with Steam ID:", data.steamId);
+    console.log(
+      "[Onboarding Form] Form data updated with Steam ID:",
+      data.steamId
+    );
   };
 
   const handleHandleChange = (value: string) => {
@@ -394,8 +397,9 @@ export function OnboardingForm() {
               Your account has been successfully created and your profile is
               ready.
               <br />
-              Start discovering incredible game and book collections, support meaningful
-              causes, and enjoy exclusive deals tailored just for you.
+              Start discovering incredible game and book collections, support
+              meaningful causes, and enjoy exclusive deals tailored just for
+              you.
             </p>
             <Button
               size="lg"
@@ -419,7 +423,7 @@ export function OnboardingForm() {
             Welcome to Digiphile!
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Your account has been created — now let’s set up your profile so you
+            Your account has been created - now let’s set up your profile so you
             can start exploring amazing collections.
           </p>
         </div>
@@ -718,8 +722,8 @@ export function OnboardingForm() {
                                 Book Collections Only
                               </h4>
                               <p className="text-xs text-muted-foreground">
-                                I'm only interested in eBook collections. No Steam
-                                account needed.
+                                I'm only interested in eBook collections. No
+                                Steam account needed.
                               </p>
                             </div>
                           </div>
