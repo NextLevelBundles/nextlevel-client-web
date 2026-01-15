@@ -28,6 +28,8 @@ export interface BundleListItem {
   endsAt: string;
   sellFrom?: string | null; // ISO date string - when sales start
   sellTo?: string | null; // ISO date string - when sales end
+  upgradeFrom?: string | null; // ISO date string - when upgrades can start
+  upgradeTo?: string | null; // ISO date string - when upgrades end
   status: string;
   createdAt: string;
   updatedAt: string;

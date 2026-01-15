@@ -19,6 +19,7 @@ import { ScrollArea } from "@/app/(shared)/components/ui/scroll-area";
 import { CartItem, CartItemStatus } from "@/lib/api/types/cart";
 import { Bundle, TierType } from "@/app/(shared)/types/bundle";
 import { isBookBundle } from "@/app/(shared)/utils/cart";
+import { isUpgradePeriodActive } from "@/app/(shared)/utils/bundle";
 import {
   ExternalLink,
   Heart,
@@ -89,18 +90,9 @@ export function CartItemModal({
     // Check if this is a gifted purchase
     const isGiftedPurchase = item.isGift === true;
 
-    // Check if sale is active
-    const now = new Date();
-    const saleStartDate = bundle.sellFrom
-      ? new Date(bundle.sellFrom)
-      : new Date(bundle.startsAt);
-    const saleEndDate = bundle.sellTo
-      ? new Date(bundle.sellTo)
-      : new Date(bundle.endsAt);
-    const isSaleActive = now >= saleStartDate && now <= saleEndDate;
-
-    if (!isSaleActive) {
-      return { canUpgrade: false, reason: "Sale period has ended" };
+    // Check if upgrade period is active using the shared utility function
+    if (!isUpgradePeriodActive(bundle)) {
+      return { canUpgrade: false, reason: "Upgrade period has ended" };
     }
 
     // Check if user has maxed out all tiers

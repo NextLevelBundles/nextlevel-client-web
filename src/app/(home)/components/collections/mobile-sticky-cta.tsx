@@ -12,6 +12,7 @@ import { CartItem, CartItemStatus } from "@/lib/api/types/cart";
 import { useMemo, useState } from "react";
 import { UpgradePurchaseDialog } from "@/customer/components/purchases/upgrade-purchase-dialog";
 import { UpgradeInfoDialog } from "@/customer/components/purchases/upgrade-info-dialog";
+import { isUpgradePeriodActive } from "@/app/(shared)/utils/bundle";
 
 interface MobileStickyCTAProps {
   bundleId: string;
@@ -73,17 +74,8 @@ export function MobileStickyCTA({
     if (userPurchase.status !== CartItemStatus.Completed) return false;
     if (userPurchase.isGift === true) return false;
 
-    // Check if sale is active
-    const now = new Date();
-    const saleStartDate = bundle.sellFrom
-      ? new Date(bundle.sellFrom)
-      : new Date(bundle.startsAt);
-    const saleEndDate = bundle.sellTo
-      ? new Date(bundle.sellTo)
-      : new Date(bundle.endsAt);
-    const isSaleActive = now >= saleStartDate && now <= saleEndDate;
-
-    return isSaleActive;
+    // Check if upgrade period is active using the shared utility function
+    return isUpgradePeriodActive(bundle);
   }, [userPurchase, bundle]);
 
   const handleUpgradeClick = () => {
