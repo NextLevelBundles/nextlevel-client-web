@@ -25,9 +25,23 @@ export interface UpgradeCompleteResponse {
   completedAt: string;
 }
 
+export interface PaymentMethod {
+  id: string;
+  type: string;
+  brand: string;
+  last4: string;
+  expMonth: number;
+  expYear: number;
+  isDefault: boolean;
+  email: string;
+  displayName: string;
+  bankName: string;
+}
+
 export interface PaymentStatusResponse {
   hasStripeCustomer: boolean;
   hasStripePaymentMethod: boolean;
+  paymentMethod?: PaymentMethod;
 }
 
 export interface StripeSetupSessionRequest {
