@@ -39,6 +39,7 @@ import {
   Loader2,
   Gift,
   Send,
+  TrendingUp,
 } from "lucide-react";
 import { usePurchases } from "@/hooks/queries/usePurchases";
 import { PurchaseQueryParams, GiftFilterType } from "@/lib/api/types/purchase";
@@ -47,6 +48,58 @@ import { BundleProductsPopup } from "./collection-products-popup";
 import { GiftIndicator } from "../gift-indicator";
 import { FilterDropdown } from "../filter-dropdown";
 import { toast } from "sonner";
+
+// Helper function to format time remaining
+function getTimeRemaining(upgradeTo: string): string {
+  const now = new Date();
+  const endDate = new Date(upgradeTo);
+  const diffMs = endDate.getTime() - now.getTime();
+
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+
+  if (diffDays > 1) {
+    return `${diffDays} days left`;
+  } else if (diffDays === 1) {
+    return "1 day left";
+  } else if (diffHours > 1) {
+    return `${diffHours} hours left`;
+  } else if (diffHours === 1) {
+    return "1 hour left";
+  } else if (diffMinutes > 1) {
+    return `${diffMinutes} minutes left`;
+  } else {
+    return "Less than 1 minute left";
+  }
+}
+
+// Helper function to check if upgrade is available
+function isUpgradeAvailable(purchase: any): boolean {
+  // Gifts cannot be upgraded
+  if (purchase.isGift) {
+    return false;
+  }
+
+  if (!purchase.upgradeFrom || !purchase.upgradeTo || !purchase.bundleUpgradeStatus) {
+    return false;
+  }
+
+  const now = new Date();
+  const upgradeFrom = new Date(purchase.upgradeFrom);
+  const upgradeTo = new Date(purchase.upgradeTo);
+
+  // Check if we're within the upgrade period
+  const isWithinPeriod = now >= upgradeFrom && now <= upgradeTo;
+
+  // Check if there are any upgrades available
+  const hasUpgradesAvailable =
+    purchase.bundleUpgradeStatus.remainingBaseTiers > 0 ||
+    purchase.bundleUpgradeStatus.remainingCharityTiers > 0 ||
+    purchase.bundleUpgradeStatus.remainingUpsellTiers > 0;
+
+  return isWithinPeriod && hasUpgradesAvailable;
+}
 
 // Helper function to get status badge styling
 function getStatusBadge(status?: CartItemStatus) {
@@ -97,6 +150,79 @@ function getStatusBadge(status?: CartItemStatus) {
 }
 
 const years = ["All Years", "2025", "2024"];
+
+// Purchase Row Component
+function PurchaseRow({
+  purchase,
+  index,
+  shouldAutoOpen,
+}: {
+  purchase: any;
+  index: number;
+  shouldAutoOpen: boolean;
+}) {
+  const [isModalOpen, setIsModalOpen] = useState(shouldAutoOpen);
+  const upgradeAvailable = isUpgradeAvailable(purchase);
+
+  return (
+    <>
+      <motion.tr
+        key={purchase.id}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.1 }}
+        className={`cursor-pointer transition-all group ${
+          upgradeAvailable
+            ? "hover:bg-gradient-to-r hover:from-primary/5 hover:to-primary/10 hover:shadow-sm"
+            : "hover:bg-muted/30"
+        }`}
+        onClick={() => setIsModalOpen(true)}
+      >
+        <TableCell className="font-medium">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className={upgradeAvailable ? "group-hover:text-primary transition-colors" : ""}>
+                {purchase.snapshotTitle || "Unknown Collection"}
+              </span>
+              {upgradeAvailable && (
+                <div className="flex items-center gap-1">
+                  <TrendingUp className="h-4 w-4 text-secondary animate-pulse" />
+                  <span className="text-xs font-semibold text-secondary bg-secondary/10 px-2 py-0.5 rounded-full">
+                    Upgrade Available · {getTimeRemaining(purchase.upgradeTo)}
+                  </span>
+                </div>
+              )}
+            </div>
+            <GiftIndicator cartItem={purchase} />
+          </div>
+        </TableCell>
+        <TableCell>
+          {purchase.completedAt
+            ? new Date(purchase.completedAt).toLocaleDateString()
+            : "-"}
+        </TableCell>
+        <TableCell>
+          {getStatusBadge(purchase.status)}
+        </TableCell>
+        <TableCell>
+          {purchase.snapshotProducts.length}{" "}
+          {purchase.snapshotProducts.length === 1
+            ? "item"
+            : "items"}
+        </TableCell>
+        <TableCell>
+          <span>${purchase.totalAmount.toFixed(2)}</span>
+        </TableCell>
+      </motion.tr>
+      <BundleProductsPopup
+        purchase={purchase}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        autoOpenUpgrade={shouldAutoOpen}
+      />
+    </>
+  );
+}
 
 // Gift ownership filter options
 const ownershipOptions = [
@@ -447,7 +573,6 @@ export function PurchaseHistory() {
                         {getSortIcon("Price")}
                       </div>
                     </TableHead>
-                    <TableHead className="text-center">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -455,44 +580,12 @@ export function PurchaseHistory() {
                     // Auto-open the specific purchase if upgrade param is present and cartItemId matches
                     const shouldAutoOpen = shouldAutoOpenUpgrade && targetCartItemId === purchase.id;
                     return (
-                      <motion.tr
+                      <PurchaseRow
                         key={purchase.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="transition-colors hover:bg-muted/5"
-                      >
-                        <TableCell className="font-medium">
-                          <div className="space-y-1">
-                            <div>
-                              {purchase.snapshotTitle || "Unknown Collection"}
-                            </div>
-                            <GiftIndicator cartItem={purchase} />
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {purchase.completedAt
-                            ? new Date(purchase.completedAt).toLocaleDateString()
-                            : "-"}
-                        </TableCell>
-                        <TableCell>
-                          {getStatusBadge(purchase.status)}
-                        </TableCell>
-                        <TableCell>
-                          {purchase.snapshotProducts.length}{" "}
-                          {purchase.snapshotProducts.length === 1
-                            ? "item"
-                            : "items"}
-                        </TableCell>
-                        <TableCell>${purchase.totalAmount.toFixed(2)}</TableCell>
-                        <TableCell className="text-center">
-                          <BundleProductsPopup
-                            purchase={purchase}
-                            autoOpen={shouldAutoOpen}
-                            autoOpenUpgrade={shouldAutoOpen}
-                          />
-                        </TableCell>
-                      </motion.tr>
+                        purchase={purchase}
+                        index={index}
+                        shouldAutoOpen={shouldAutoOpen}
+                      />
                     );
                   })}
                 </TableBody>

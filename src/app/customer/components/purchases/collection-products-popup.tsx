@@ -1,16 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/app/(shared)/components/ui/button";
+import { useState, useEffect } from "react";
 import { CartItem } from "@/lib/api/types/cart";
-import { EyeIcon } from "lucide-react";
 import { CartItemModal } from "@/app/(home)/components/cart/cart-item-modal";
 import { useQuery } from "@tanstack/react-query";
 import { Bundle } from "@/app/(shared)/types/bundle";
 
 interface BundleProductsPopupProps {
   purchase: CartItem;
-  autoOpen?: boolean;
+  isOpen: boolean;
+  onClose: () => void;
   autoOpenUpgrade?: boolean;
 }
 
@@ -23,9 +22,7 @@ async function fetchBundleById(bundleId: string): Promise<Bundle> {
   return response.json();
 }
 
-export function BundleProductsPopup({ purchase, autoOpen = false, autoOpenUpgrade = false }: BundleProductsPopupProps) {
-  const [isOpen, setIsOpen] = useState(autoOpen);
-
+export function BundleProductsPopup({ purchase, isOpen, onClose, autoOpenUpgrade = false }: BundleProductsPopupProps) {
   // Fetch bundle data when modal opens
   const { data: bundle } = useQuery({
     queryKey: ["bundle", purchase.bundleId],
@@ -35,24 +32,12 @@ export function BundleProductsPopup({ purchase, autoOpen = false, autoOpenUpgrad
   });
 
   return (
-    <>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="gap-2"
-        onClick={() => setIsOpen(true)}
-      >
-        <EyeIcon className="h-4 w-4" />
-        View Purchase
-      </Button>
-
-      <CartItemModal
-        item={purchase}
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        bundle={bundle}
-        autoOpenUpgrade={autoOpenUpgrade}
-      />
-    </>
+    <CartItemModal
+      item={purchase}
+      isOpen={isOpen}
+      onClose={onClose}
+      bundle={bundle}
+      autoOpenUpgrade={autoOpenUpgrade}
+    />
   );
 }

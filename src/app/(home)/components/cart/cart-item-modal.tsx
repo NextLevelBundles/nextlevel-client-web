@@ -37,6 +37,31 @@ import { UpgradePurchaseDialog } from "@/customer/components/purchases/upgrade-p
 import { UpgradeInfoDialog } from "@/customer/components/purchases/upgrade-info-dialog";
 import { Alert, AlertDescription } from "@/app/(shared)/components/ui/alert";
 
+// Helper function to format time remaining
+function getTimeRemaining(upgradeTo: string): string {
+  const now = new Date();
+  const endDate = new Date(upgradeTo);
+  const diffMs = endDate.getTime() - now.getTime();
+
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+
+  if (diffDays > 1) {
+    return `${diffDays} days left`;
+  } else if (diffDays === 1) {
+    return "1 day left";
+  } else if (diffHours > 1) {
+    return `${diffHours} hours left`;
+  } else if (diffHours === 1) {
+    return "1 hour left";
+  } else if (diffMinutes > 1) {
+    return `${diffMinutes} minutes left`;
+  } else {
+    return "Less than 1 minute left";
+  }
+}
+
 interface CartItemModalProps {
   item: CartItem | null;
   isOpen: boolean;
@@ -188,6 +213,22 @@ export function CartItemModal({
             </div>
           </DialogTitle>
         </DialogHeader>
+
+        {/* Upgrade Available Banner */}
+        {item.status === CartItemStatus.Completed &&
+          upgradeEligibility.canUpgrade &&
+          !upgradeEligibility.isGiftedPurchase &&
+          item.upgradeTo && (
+            <Alert className="mt-4 border-secondary/50 bg-secondary/5">
+              <ArrowUp className="h-4 w-4 text-secondary" />
+              <AlertDescription className="text-sm">
+                <span className="font-semibold text-secondary">
+                  Upgrade available
+                </span>{" "}
+                · {getTimeRemaining(item.upgradeTo)} to upgrade this purchase
+              </AlertDescription>
+            </Alert>
+          )}
 
         <Tabs defaultValue="details" className="w-full mt-4">
           <TabsList className="grid w-full grid-cols-2">
@@ -475,6 +516,11 @@ export function CartItemModal({
                 >
                   <ArrowUp className="h-4 w-4" />
                   Upgrade This Purchase
+                  {item.upgradeTo && !upgradeEligibility.isGiftedPurchase && (
+                    <span className="ml-1 text-xs text-muted-foreground">
+                      ({getTimeRemaining(item.upgradeTo)})
+                    </span>
+                  )}
                 </Button>
                 {upgradeEligibility.isGiftedPurchase && (
                   <p className="text-xs text-center text-muted-foreground">

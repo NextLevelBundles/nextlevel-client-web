@@ -33,6 +33,9 @@ export interface CartItem {
   snapshotPlatformSplit: number;
   snapshotPublisherSplit: number;
   snapshotCharitySplit: number;
+  upgradeFrom: string | null; // ISO date string - when upgrades can start
+  upgradeTo: string | null; // ISO date string - when upgrades end
+  bundleUpgradeStatus: BundleUpgradeStatus;
   snapshotProducts: {
     productId: string;
     title: string;
@@ -70,6 +73,14 @@ export interface CartItem {
   giftAccepted?: boolean | null;
   giftAcceptedAt?: string | null;
   giftExpiresAt?: string | null;
+}
+
+export interface BundleUpgradeStatus {
+  allTiersSelected: true;
+  remainingProducts: 0;
+  remainingBaseTiers: 0;
+  remainingCharityTiers: 0;
+  remainingUpsellTiers: 0;
 }
 
 export interface Cart {
