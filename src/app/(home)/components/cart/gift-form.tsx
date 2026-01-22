@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Gift, AlertCircle } from "lucide-react";
+import { Gift, AlertCircle, Mail, Link2 } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/app/(shared)/components/ui/button";
 import { Input } from "@/app/(shared)/components/ui/input";
 import { Label } from "@/app/(shared)/components/ui/label";
 import { Textarea } from "@/app/(shared)/components/ui/textarea";
 import { Switch } from "@/app/(shared)/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/app/(shared)/components/ui/radio-group";
 import {
   Collapsible,
   CollapsibleContent,
@@ -42,6 +44,10 @@ export function GiftForm({ item, onGiftUpdate, isUpdating }: GiftFormProps) {
   const [giftMessage, setGiftMessage] = useState(item.giftMessage || "");
   const [isOpen, setIsOpen] = useState(item.isGift || item.canOnlyBeGifted);
   const [emailError, setEmailError] = useState("");
+  // Default to "link" if no email is set, otherwise "email"
+  const [deliveryMethod, setDeliveryMethod] = useState<"email" | "link">(
+    item.giftRecipientEmail ? "email" : "link"
+  );
 
   // Track if this is the initial render
   const isInitialMount = useRef(true);
@@ -65,7 +71,7 @@ export function GiftForm({ item, onGiftUpdate, isUpdating }: GiftFormProps) {
         clearTimeout(updateTimeoutRef.current);
         updateTimeoutRef.current = null;
       }
-      
+
       // Reset state for the new item
       setIsGift(item.isGift);
       setRecipientEmail(item.giftRecipientEmail || "");
@@ -73,6 +79,7 @@ export function GiftForm({ item, onGiftUpdate, isUpdating }: GiftFormProps) {
       setGiftMessage(item.giftMessage || "");
       setIsOpen(item.isGift || item.canOnlyBeGifted);
       setEmailError("");
+      setDeliveryMethod(item.giftRecipientEmail ? "email" : "link");
 
       // Update tracking refs
       lastItemId.current = item.id;
@@ -90,6 +97,34 @@ export function GiftForm({ item, onGiftUpdate, isUpdating }: GiftFormProps) {
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
+  };
+
+  // Handle delivery method change
+  const handleDeliveryMethodChange = async (method: "email" | "link") => {
+    setDeliveryMethod(method);
+
+    if (method === "link") {
+      // Clear email fields when switching to link
+      setRecipientEmail("");
+      setRecipientName("");
+      setGiftMessage("");
+      setEmailError("");
+
+      // Update immediately
+      lastSentValues.current = {
+        isGift: true,
+        recipientEmail: "",
+        recipientName: "",
+        giftMessage: "",
+      };
+
+      await onGiftUpdate(item.id, {
+        isGift: true,
+        giftRecipientEmail: undefined,
+        giftRecipientName: undefined,
+        giftMessage: undefined,
+      });
+    }
   };
 
   // Handle gift toggle
@@ -144,6 +179,9 @@ export function GiftForm({ item, onGiftUpdate, isUpdating }: GiftFormProps) {
 
     if (!isGift) return;
 
+    // Skip if delivery method is link (no validation needed)
+    if (deliveryMethod === "link") return;
+
     // Clear any existing timeout
     if (updateTimeoutRef.current) {
       clearTimeout(updateTimeoutRef.current);
@@ -162,13 +200,13 @@ export function GiftForm({ item, onGiftUpdate, isUpdating }: GiftFormProps) {
         return; // No changes to send
       }
 
-      // Validate required fields
-      if (isGift && !recipientEmail) {
+      // Validate required fields only for email delivery
+      if (deliveryMethod === "email" && !recipientEmail) {
         setEmailError("Recipient email is required for gifts");
         return;
       }
 
-      if (isGift && !validateEmail(recipientEmail)) {
+      if (deliveryMethod === "email" && !validateEmail(recipientEmail)) {
         setEmailError("Please enter a valid email address");
         return;
       }
@@ -207,6 +245,7 @@ export function GiftForm({ item, onGiftUpdate, isUpdating }: GiftFormProps) {
     giftMessage,
     item.id,
     onGiftUpdate,
+    deliveryMethod,
   ]);
 
   // Cleanup on unmount
@@ -264,60 +303,114 @@ export function GiftForm({ item, onGiftUpdate, isUpdating }: GiftFormProps) {
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-3 pt-2">
-          <div className="space-y-2">
-            <Label htmlFor={`recipient-email-${item.id}`} className="text-xs">
-              Recipient Email *
-            </Label>
-            <Input
-              id={`recipient-email-${item.id}`}
-              type="email"
-              placeholder="recipient@example.com"
-              value={recipientEmail}
-              onChange={(e) => setRecipientEmail(e.target.value)}
-              disabled={isUpdating}
-              className="h-8 text-xs"
-            />
-            {emailError && (
-              <p className="text-xs text-destructive">{emailError}</p>
+            {/* Delivery method selection */}
+            <div className="space-y-2">
+              <Label className="text-xs">Delivery Method</Label>
+              <RadioGroup
+                value={deliveryMethod}
+                onValueChange={(value) => handleDeliveryMethodChange(value as "email" | "link")}
+                disabled={isUpdating}
+                className="gap-2"
+              >
+                <div className="flex items-center space-x-2 p-2 rounded-md border hover:bg-accent/50 cursor-pointer">
+                  <RadioGroupItem value="email" id={`email-${item.id}`} />
+                  <Label
+                    htmlFor={`email-${item.id}`}
+                    className="text-xs font-normal cursor-pointer flex-1 flex items-center gap-2"
+                  >
+                    <Mail className="h-3.5 w-3.5" />
+                    Send via Email
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 p-2 rounded-md border hover:bg-accent/50 cursor-pointer">
+                  <RadioGroupItem value="link" id={`link-${item.id}`} />
+                  <Label
+                    htmlFor={`link-${item.id}`}
+                    className="text-xs font-normal cursor-pointer flex-1 flex items-center gap-2"
+                  >
+                    <Link2 className="h-3.5 w-3.5" />
+                    Get Direct Link
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* Email fields - only show when email delivery is selected */}
+            {deliveryMethod === "email" && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor={`recipient-email-${item.id}`} className="text-xs">
+                    Recipient Email *
+                  </Label>
+                  <Input
+                    id={`recipient-email-${item.id}`}
+                    type="email"
+                    placeholder="recipient@example.com"
+                    value={recipientEmail}
+                    onChange={(e) => setRecipientEmail(e.target.value)}
+                    disabled={isUpdating}
+                    className="h-8 text-xs"
+                  />
+                  {emailError && (
+                    <p className="text-xs text-destructive">{emailError}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor={`recipient-name-${item.id}`} className="text-xs">
+                    Recipient Name (optional)
+                  </Label>
+                  <Input
+                    id={`recipient-name-${item.id}`}
+                    placeholder="John Doe"
+                    value={recipientName}
+                    onChange={(e) => setRecipientName(e.target.value)}
+                    disabled={isUpdating}
+                    className="h-8 text-xs"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor={`gift-message-${item.id}`} className="text-xs">
+                    Gift Message (optional)
+                  </Label>
+                  <Textarea
+                    id={`gift-message-${item.id}`}
+                    placeholder="Happy birthday! Enjoy these games..."
+                    value={giftMessage}
+                    onChange={(e) => {
+                      if (e.target.value.length <= GIFT_MESSAGE_LIMIT) {
+                        setGiftMessage(e.target.value);
+                      }
+                    }}
+                    disabled={isUpdating}
+                    className="text-xs min-h-[60px] resize-none"
+                  />
+                  <p className="text-xs text-muted-foreground text-right">
+                    {giftMessage.length}/{GIFT_MESSAGE_LIMIT}
+                  </p>
+                </div>
+              </>
             )}
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor={`recipient-name-${item.id}`} className="text-xs">
-              Recipient Name (optional)
-            </Label>
-            <Input
-              id={`recipient-name-${item.id}`}
-              placeholder="John Doe"
-              value={recipientName}
-              onChange={(e) => setRecipientName(e.target.value)}
-              disabled={isUpdating}
-              className="h-8 text-xs"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor={`gift-message-${item.id}`} className="text-xs">
-              Gift Message (optional)
-            </Label>
-            <Textarea
-              id={`gift-message-${item.id}`}
-              placeholder="Happy birthday! Enjoy these games..."
-              value={giftMessage}
-              onChange={(e) => {
-                if (e.target.value.length <= GIFT_MESSAGE_LIMIT) {
-                  setGiftMessage(e.target.value);
-                }
-              }}
-              disabled={isUpdating}
-              className="text-xs min-h-[60px] resize-none"
-            />
-            <p className="text-xs text-muted-foreground text-right">
-              {giftMessage.length}/{GIFT_MESSAGE_LIMIT}
-            </p>
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
+            {/* Link info - show when link delivery is selected */}
+            {deliveryMethod === "link" && (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="text-xs">
+                  After purchase, find the gift link in{" "}
+                  <Link
+                    href="/customer/purchases"
+                    className="underline hover:text-primary font-medium"
+                  >
+                    Dashboard → Purchase History
+                  </Link>
+                  {" "}→ Click on the Gift label.
+                </AlertDescription>
+              </Alert>
+            )}
+          </CollapsibleContent>
+        </Collapsible>
       )}
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { Gift, Send, Loader2, Mail, CheckCircle, Clock } from "lucide-react";
+import { Gift, Send, Loader2, Mail, CheckCircle, Clock, Copy, Link2 } from "lucide-react";
 import { Badge } from "@/app/(shared)/components/ui/badge";
 import {
   Dialog,
@@ -26,9 +26,10 @@ export function GiftIndicator({ cartItem }: GiftIndicatorProps) {
 
   const Icon = Send;
 
-  // For outgoing gifts, show recipient
+  // For outgoing gifts, show recipient or "by link"
   const recipient = cartItem.giftRecipientName ?? cartItem.giftRecipientEmail;
-  const label = `Gifted to ${recipient}`;
+  const label = recipient ? `Gifted to ${recipient}` : "Gifted by link";
+  const isLinkGift = !recipient;
 
   // Badge styling based on acceptance status
   const badgeClassName =
@@ -42,13 +43,15 @@ export function GiftIndicator({ cartItem }: GiftIndicatorProps) {
       <GiftDetailsDialog cartItem={cartItem}>
         <Badge
           className={`inline-flex items-center gap-1 cursor-pointer transition-colors w-fit ${badgeClassName}`}
+          onClick={(e) => e.stopPropagation()}
         >
           <Icon className="h-3 w-3" />
           <span className="text-xs">{label}</span>
-          {cartItem.giftAccepted === true && (
+          {isLinkGift && <Link2 className="h-3 w-3" />}
+          {!isLinkGift && cartItem.giftAccepted === true && (
             <CheckCircle className="h-3 w-3" />
           )}
-          {cartItem.giftAccepted === false && <Clock className="h-3 w-3" />}
+          {!isLinkGift && cartItem.giftAccepted !== true && <Clock className="h-3 w-3" />}
         </Badge>
       </GiftDetailsDialog>
     </>
@@ -85,10 +88,26 @@ function GiftDetailsDialog({ cartItem, children }: GiftDetailsDialogProps) {
     }
   };
 
+  const handleCopyGiftLink = async () => {
+    const giftLink = `${process.env.NEXT_PUBLIC_APP_BASE_URL}/gifts/collections/${cartItem.id}`;
+
+    try {
+      await navigator.clipboard.writeText(giftLink);
+      toast.success("Gift link copied!", {
+        description: "The gift link has been copied to your clipboard",
+      });
+    } catch (err) {
+      console.error("Error copying gift link:", err);
+      toast.error("Failed to copy link", {
+        description: "Please try again",
+      });
+    }
+  };
+
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md" onClick={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Gift className="h-5 w-5 text-primary" />
@@ -102,44 +121,46 @@ function GiftDetailsDialog({ cartItem, children }: GiftDetailsDialogProps) {
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Gift recipient info */}
-          <div className="space-y-2">
-            <div className="flex items-start gap-2">
-              <span className="text-sm font-medium text-muted-foreground">
-                To:
-              </span>
-              <span className="text-sm">
-                {cartItem.giftRecipientName || cartItem.giftRecipientEmail}
-              </span>
-            </div>
+          {/* Gift recipient info - only show for email gifts */}
+          {(cartItem.giftRecipientEmail || cartItem.giftRecipientName) && (
+            <div className="space-y-2">
+              <div className="flex items-start gap-2">
+                <span className="text-sm font-medium text-muted-foreground">
+                  To:
+                </span>
+                <span className="text-sm">
+                  {cartItem.giftRecipientName || cartItem.giftRecipientEmail}
+                </span>
+              </div>
 
-            {/* Status */}
-            <div className="flex items-start gap-2">
-              <span className="text-sm font-medium text-muted-foreground">
-                Status:
-              </span>
-              <div className="flex flex-col gap-1">
-                {cartItem.giftAccepted === true ? (
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <span className="text-sm text-green-600 font-medium">
-                      Accepted
-                      {cartItem.giftAcceptedAt
-                        ? ` on ${dayjs(cartItem.giftAcceptedAt).format("MMM D, YYYY [at] h:mm A")}`
-                        : ""}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-amber-600" />
-                    <span className="text-sm text-amber-600 font-medium">
-                      Pending acceptance
-                    </span>
-                  </div>
-                )}
+              {/* Status */}
+              <div className="flex items-start gap-2">
+                <span className="text-sm font-medium text-muted-foreground">
+                  Status:
+                </span>
+                <div className="flex flex-col gap-1">
+                  {cartItem.giftAccepted === true ? (
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <span className="text-sm text-green-600 font-medium">
+                        Accepted
+                        {cartItem.giftAcceptedAt
+                          ? ` on ${dayjs(cartItem.giftAcceptedAt).format("MMM D, YYYY [at] h:mm A")}`
+                          : ""}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-amber-600" />
+                      <span className="text-sm text-amber-600 font-medium">
+                        Pending acceptance
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Gift message */}
           {cartItem.giftMessage && (
@@ -155,10 +176,31 @@ function GiftDetailsDialog({ cartItem, children }: GiftDetailsDialogProps) {
             </div>
           )}
 
+          {/* Gift Link - Always show */}
+          <div>
+            <p className="text-sm font-medium text-muted-foreground mb-2">
+              Gift Link:
+            </p>
+            <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+              <code className="text-xs flex-1 break-all select-all">
+                {`${process.env.NEXT_PUBLIC_APP_BASE_URL}/gifts/collections/${cartItem.id}`}
+              </code>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCopyGiftLink}
+                className="gap-1 shrink-0"
+              >
+                <Copy className="h-4 w-4" />
+                Copy
+              </Button>
+            </div>
+          </div>
+
           {/* Action buttons */}
           <div className="flex justify-end gap-2 mt-4">
-            {/* Resend button for pending outgoing gifts */}
-            {!cartItem.giftAccepted && (
+            {/* Resend button for pending outgoing gifts with email */}
+            {!cartItem.giftAccepted && cartItem.giftRecipientEmail && (
               <Button
                 variant="outline"
                 onClick={handleResendEmail}

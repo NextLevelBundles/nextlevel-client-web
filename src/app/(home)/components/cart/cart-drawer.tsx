@@ -124,13 +124,8 @@ export function CartDrawer() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     for (const item of cart.items) {
-      if (item.isGift) {
-        if (!item.giftRecipientEmail) {
-          return {
-            isValid: false,
-            error: `Gift recipient email is required for "${item.snapshotTitle}"`,
-          };
-        }
+      if (item.isGift && item.giftRecipientEmail) {
+        // Only validate email if one is provided (email delivery method)
         if (!emailRegex.test(item.giftRecipientEmail)) {
           return {
             isValid: false,
@@ -138,6 +133,7 @@ export function CartDrawer() {
           };
         }
       }
+      // If item.isGift is true but no email, it's link delivery - no validation needed
     }
 
     return { isValid: true, error: null };
