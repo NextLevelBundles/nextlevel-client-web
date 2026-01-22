@@ -81,7 +81,11 @@ function isUpgradeAvailable(purchase: any): boolean {
     return false;
   }
 
-  if (!purchase.upgradeFrom || !purchase.upgradeTo || !purchase.bundleUpgradeStatus) {
+  if (
+    !purchase.upgradeFrom ||
+    !purchase.upgradeTo ||
+    !purchase.bundleUpgradeStatus
+  ) {
     return false;
   }
 
@@ -171,19 +175,13 @@ function PurchaseRow({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.1 }}
-        className={`cursor-pointer transition-all group ${
-          upgradeAvailable
-            ? "hover:bg-gradient-to-r hover:from-primary/5 hover:to-primary/10 hover:shadow-sm"
-            : "hover:bg-muted/30"
-        }`}
+        className="transition-all cursor-pointer group hover:bg-primary/10 dark:hover:bg-slate-700/40"
         onClick={() => setIsModalOpen(true)}
       >
-        <TableCell className="font-medium">
+        <TableCell className="font-medium cursor-pointer">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className={upgradeAvailable ? "group-hover:text-primary transition-colors" : ""}>
-                {purchase.snapshotTitle || "Unknown Collection"}
-              </span>
+              <span>{purchase.snapshotTitle || "Unknown Collection"}</span>
               {upgradeAvailable && (
                 <div className="flex items-center gap-1">
                   <TrendingUp className="h-4 w-4 text-secondary animate-pulse" />
@@ -196,21 +194,19 @@ function PurchaseRow({
             <GiftIndicator cartItem={purchase} />
           </div>
         </TableCell>
-        <TableCell>
+        <TableCell className="cursor-pointer">
           {purchase.completedAt
             ? new Date(purchase.completedAt).toLocaleDateString()
             : "-"}
         </TableCell>
-        <TableCell>
+        <TableCell className="cursor-pointer">
           {getStatusBadge(purchase.status)}
         </TableCell>
-        <TableCell>
+        <TableCell className="cursor-pointer">
           {purchase.snapshotProducts.length}{" "}
-          {purchase.snapshotProducts.length === 1
-            ? "item"
-            : "items"}
+          {purchase.snapshotProducts.length === 1 ? "item" : "items"}
         </TableCell>
-        <TableCell>
+        <TableCell className="cursor-pointer">
           <span>${purchase.totalAmount.toFixed(2)}</span>
         </TableCell>
       </motion.tr>
@@ -253,9 +249,13 @@ export function PurchaseHistory() {
   useEffect(() => {
     if (!hasShownToastRef.current && paymentStatus) {
       if (paymentStatus === "success") {
-        toast.success("Payment method added successfully! You can now complete your upgrade.");
+        toast.success(
+          "Payment method added successfully! You can now complete your upgrade.",
+        );
       } else if (paymentStatus === "cancelled") {
-        toast.info("Payment setup was cancelled. You can try again when ready.");
+        toast.info(
+          "Payment setup was cancelled. You can try again when ready.",
+        );
       }
       hasShownToastRef.current = true;
     }
@@ -300,7 +300,7 @@ export function PurchaseHistory() {
   // Toggle sort direction
   const toggleSortDirection = () => {
     setSortDirection((prev) =>
-      prev === "Ascending" ? "Descending" : "Ascending"
+      prev === "Ascending" ? "Descending" : "Ascending",
     );
   };
 
@@ -551,9 +551,7 @@ export function PurchaseHistory() {
                       </div>
                     </TableHead>
                     <TableHead>
-                      <div className="flex items-center gap-2">
-                        Status
-                      </div>
+                      <div className="flex items-center gap-2">Status</div>
                     </TableHead>
                     <TableHead
                       className="cursor-pointer select-none hover:bg-muted/50 transition-colors"
@@ -578,7 +576,8 @@ export function PurchaseHistory() {
                 <TableBody>
                   {purchases.map((purchase, index) => {
                     // Auto-open the specific purchase if upgrade param is present and cartItemId matches
-                    const shouldAutoOpen = shouldAutoOpenUpgrade && targetCartItemId === purchase.id;
+                    const shouldAutoOpen =
+                      shouldAutoOpenUpgrade && targetCartItemId === purchase.id;
                     return (
                       <PurchaseRow
                         key={purchase.id}

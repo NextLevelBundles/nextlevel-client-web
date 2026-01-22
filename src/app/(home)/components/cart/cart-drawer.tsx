@@ -13,13 +13,14 @@ import {
   BookOpen,
   Gamepad2,
   Info,
+  TrendingUp,
 } from "lucide-react";
 import { CartButton } from "./cart-button";
 import { GiftForm } from "./gift-form";
 import { TurnstileCaptcha } from "./turnstile-captcha";
 import { CartItemModal } from "./cart-item-modal";
 import { useCart } from "@/app/(shared)/contexts/cart/cart-provider";
-import { isBookBundle } from "@/app/(shared)/utils/cart";
+import { isBookBundle, isUpgradeAvailable, getTimeRemaining } from "@/app/(shared)/utils/cart";
 import { getTrackdeskCid, getLinkId } from "@/app/(shared)/lib/trackdesk";
 import { useCartDrawer } from "./cart-drawer-context";
 import {
@@ -350,6 +351,16 @@ export function CartDrawer() {
                               {item.giftRecipientEmail
                                 ? `for ${item.giftRecipientEmail}`
                                 : ""}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Upgrade Available indicator */}
+                        {isUpgradeAvailable(item) && item.upgradeTo && (
+                          <div className="flex items-center gap-1 mb-2 pr-8">
+                            <TrendingUp className="h-3.5 w-3.5 text-secondary animate-pulse" />
+                            <span className="text-xs font-semibold text-secondary bg-secondary/10 px-2 py-0.5 rounded-full">
+                              Upgrade Available · {getTimeRemaining(item.upgradeTo)}
                             </span>
                           </div>
                         )}

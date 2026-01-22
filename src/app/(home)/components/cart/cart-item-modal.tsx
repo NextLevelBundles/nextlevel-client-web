@@ -80,28 +80,11 @@ export function CartItemModal({
   const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(autoOpenUpgrade);
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false);
 
-  if (!item) return null;
-
-  // Calculate revenue distribution using bundle-specific splits
-  let publisherAmount = item.baseAmount * (item.snapshotPublisherSplit / 100);
-  let platformAmount = item.baseAmount * (item.snapshotPlatformSplit / 100);
-  let charityAmount = item.baseAmount * (item.snapshotCharitySplit / 100);
-  charityAmount += item.charityAmount;
-
-  // Tip distribution based on excess distribution type
-  if (item.tipAmount > 0) {
-    if (item.snapshotExcessDistributionType === "Publishers") {
-      publisherAmount += item.tipAmount;
-    } else {
-      charityAmount += item.tipAmount;
-    }
-  }
-
-  const developerSupportAmount = item.upsellAmount;
-  const totalAmount = item.totalAmount;
-
-  // Check upgrade eligibility
+  // Check upgrade eligibility - must be before early return to follow Rules of Hooks
   const upgradeEligibility = useMemo(() => {
+    if (!item) return { canUpgrade: false, reason: "No item" };
+
+
     // Only for completed purchases
     if (item.status !== CartItemStatus.Completed) {
       return { canUpgrade: false, reason: "Purchase not completed" };
@@ -177,6 +160,27 @@ export function CartItemModal({
       setIsUpgradeDialogOpen(true);
     }
   };
+
+  // Early return after all hooks
+  if (!item) return null;
+
+  // Calculate revenue distribution using bundle-specific splits
+  let publisherAmount = item.baseAmount * (item.snapshotPublisherSplit / 100);
+  let platformAmount = item.baseAmount * (item.snapshotPlatformSplit / 100);
+  let charityAmount = item.baseAmount * (item.snapshotCharitySplit / 100);
+  charityAmount += item.charityAmount;
+
+  // Tip distribution based on excess distribution type
+  if (item.tipAmount > 0) {
+    if (item.snapshotExcessDistributionType === "Publishers") {
+      publisherAmount += item.tipAmount;
+    } else {
+      charityAmount += item.tipAmount;
+    }
+  }
+
+  const developerSupportAmount = item.upsellAmount;
+  const totalAmount = item.totalAmount;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
