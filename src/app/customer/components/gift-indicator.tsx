@@ -28,7 +28,7 @@ export function GiftIndicator({ cartItem }: GiftIndicatorProps) {
 
   // For outgoing gifts, show recipient
   const recipient = cartItem.giftRecipientName ?? cartItem.giftRecipientEmail;
-  const label = `To ${recipient}`;
+  const label = `Gifted to ${recipient}`;
 
   // Badge styling based on acceptance status
   const badgeClassName =
