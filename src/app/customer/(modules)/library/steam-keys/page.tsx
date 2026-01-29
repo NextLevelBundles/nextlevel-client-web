@@ -67,6 +67,7 @@ import {
 import {
   SteamKeyAssignment,
   SteamKeyQueryParams,
+  SteamKeyStatus,
   GiftKeyRequest,
   BundleExchangeInfo,
 } from "@/lib/api/types/steam-key";
@@ -106,6 +107,7 @@ const getStatusDisplayName = (status: string): string => {
     Expired: "Expired",
     Refunded: "Refunded",
     Revoked: "Revoked",
+    GiftAccepted: "Gift Accepted",
   };
 
   return statusMap[status] || status;
@@ -191,7 +193,7 @@ export default function KeysPage() {
   const queryParams: SteamKeyQueryParams = {
     ...(debouncedSearchQuery && { searchQuery: debouncedSearchQuery }),
     ...(statusFilter !== "All" && {
-      status: statusFilter as "Assigned" | "Revealed" | "Expired" | "Refunded",
+      status: statusFilter as SteamKeyStatus,
     }),
     giftFilter,
   };
@@ -264,7 +266,7 @@ export default function KeysPage() {
 
   // Calculate user's progress
   const revealedKeys = steamKeys.filter(
-    (key) => key.status === "Revealed"
+    (key) => key.status === SteamKeyStatus.Revealed
   ).length;
   const currentLevel = PROGRESS_LEVELS.reduce(
     (acc, level) => (revealedKeys >= level.required ? level : acc),
@@ -276,12 +278,18 @@ export default function KeysPage() {
 
   // Helper function to check if a key is newly assigned (within 7 days and status is Assigned)
   const isNewlyAssigned = (key: SteamKeyAssignment): boolean => {
-    if (key.status !== "Assigned" || !key.assignedAt) return false;
+    if (key.status !== SteamKeyStatus.Assigned || !key.assignedAt) return false;
 
     const assignedDate = dayjs(key.assignedAt);
     const sevenDaysAgo = dayjs().subtract(7, "day");
 
     return assignedDate.isAfter(sevenDaysAgo);
+  };
+
+  // Helper function to check if gift is expired
+  const isGiftExpired = (key: SteamKeyAssignment): boolean => {
+    // Gift is expired if it was not accepted (giftAccepted == false)
+    return key.giftAccepted === false;
   };
 
   // Helper function to check if Steam library sync is needed
@@ -964,7 +972,7 @@ export default function KeysPage() {
                                 "MMM D, YYYY [at] h:mm A"
                               )
                             : "Unknown"}
-                          {key.status === "Assigned" && key.expiresAt && (
+                          {key.status === SteamKeyStatus.Assigned && key.expiresAt && (
                             <>
                               {" "}
                               <br /> Expires on{" "}
@@ -979,11 +987,12 @@ export default function KeysPage() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
-                    {/* Resend button for gifted keys that haven't been accepted */}
+                    {/* Resend button for gifted keys that haven't been accepted (but NOT expired) */}
                     {key.isGift &&
                       key.giftedByCustomerId === currentCustomerId &&
                       !key.giftAcceptedAt &&
-                      !key.isPurchaseGift && (
+                      !key.isPurchaseGift &&
+                      !isGiftExpired(key) && (
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -1019,7 +1028,7 @@ export default function KeysPage() {
                         </TooltipProvider>
                       )}
 
-                    {key.status === "Revealed" ? (
+                    {key.status === SteamKeyStatus.Revealed ? (
                       <>
                         <TooltipProvider>
                           <Tooltip>
@@ -1057,7 +1066,7 @@ export default function KeysPage() {
                           </Tooltip>
                         </TooltipProvider>
                       </>
-                    ) : (key.status as string) === "ReceivedFromExchange" ? (
+                    ) : key.status === SteamKeyStatus.ReceivedFromExchange ? (
                       <>
                         {/* Show Redeem on Steam button and Gift button for keys received from exchange */}
                         <motion.div
@@ -1093,15 +1102,20 @@ export default function KeysPage() {
                           </Tooltip>
                         </TooltipProvider>
                       </>
-                    ) : key.status === "Assigned" ? (
+                    ) : key.status === SteamKeyStatus.Assigned ? (
                       <>
                         {/* Only show buttons if:
                             1. Key is not a gift, OR
-                            2. Key is a received gift (giftedByCustomerId !== currentCustomerId) that has been accepted */}
+                            2. Key is a received gift (giftedByCustomerId !== currentCustomerId) that has been accepted, OR
+                            3. Key is a gift sent by current user (gifter) that expired without being accepted (gift returned to gifter's library) */}
                         {(!key.isGift ||
                           (key.isGift &&
                             key.giftedByCustomerId !== currentCustomerId &&
-                            key.giftAccepted === true)) && (
+                            key.giftAccepted === true) ||
+                          (key.isGift &&
+                            key.giftedByCustomerId === currentCustomerId &&
+                            !key.giftAccepted &&
+                            isGiftExpired(key))) && (
                           <>
                             {/* Redeem on Steam button - disabled only if AlreadyOwnedOnSteam is true AND exchangeCredits > 0 */}
                             <motion.div
@@ -1154,11 +1168,16 @@ export default function KeysPage() {
 
                         {/* Show Gift button for:
                             1. Non-gifts (!key.isGift), OR
-                            2. Received gifts that have been accepted (key.isGift && giftedByCustomerId !== currentCustomerId && giftAccepted === true) */}
+                            2. Received gifts that have been accepted (key.isGift && giftedByCustomerId !== currentCustomerId && giftAccepted === true), OR
+                            3. Gifts sent by current user (gifter) that expired without being accepted (gift returned to gifter's library) */}
                         {(!key.isGift ||
                           (key.isGift &&
                             key.giftedByCustomerId !== currentCustomerId &&
-                            key.giftAccepted === true)) && (
+                            key.giftAccepted === true) ||
+                          (key.isGift &&
+                            key.giftedByCustomerId === currentCustomerId &&
+                            !key.giftAccepted &&
+                            isGiftExpired(key))) && (
                           <>
                             <TooltipProvider>
                               <Tooltip>
@@ -1180,8 +1199,12 @@ export default function KeysPage() {
                               </Tooltip>
                             </TooltipProvider>
 
-                            {/* Add to Exchange - only for non-gifts */}
-                            {!key.isGift && (
+                            {/* Add to Exchange - only for non-gifts OR expired gifts returned to gifter */}
+                            {(!key.isGift ||
+                              (key.isGift &&
+                                key.giftedByCustomerId === currentCustomerId &&
+                                !key.giftAccepted &&
+                                isGiftExpired(key))) && (
                               <>
                                 <div className="flex items-center gap-2">
                                   <TooltipProvider>
@@ -1343,7 +1366,7 @@ export default function KeysPage() {
                           </>
                         )}
                       </>
-                    ) : key.status === "Revoked" ? (
+                    ) : key.status === SteamKeyStatus.Revoked ? (
                       <Badge
                         variant="destructive"
                         className="gap-1 bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800"
@@ -1358,13 +1381,13 @@ export default function KeysPage() {
                     ) : (
                       <div
                         className={`inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium pointer-events-none ${
-                          (key.status as string) === "AddedToExchange"
+                          key.status === SteamKeyStatus.AddedToExchange
                             ? "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400"
-                            : (key.status as string) === "ReceivedFromExchange"
-                              ? "bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400"
-                              : key.status === "Expired"
+                            : key.status === SteamKeyStatus.GiftAccepted
+                              ? "bg-purple-50 text-purple-700 dark:bg-purple-950/30 dark:text-purple-400"
+                              : key.status === SteamKeyStatus.Expired
                                 ? "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400"
-                                : key.status === "Refunded"
+                                : key.status === SteamKeyStatus.Refunded
                                   ? "bg-orange-50 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400"
                                   : "bg-gray-50 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400"
                         }`}

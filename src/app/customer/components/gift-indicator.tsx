@@ -50,6 +50,8 @@ interface GiftIndicatorProps {
 
 // Helper function to check if gift is expired
 function isGiftExpired(cartItem: CartItem): boolean {
+  // Gift is expired if it was not accepted (giftAccepted == false/null)
+  // Note: For CartItems, we check both giftExpiresAt date AND acceptance status
   if (!cartItem.giftExpiresAt) return false;
   const now = new Date();
   const expiresAt = new Date(cartItem.giftExpiresAt);

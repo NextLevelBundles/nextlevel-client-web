@@ -26,6 +26,17 @@ export enum SteamLibrarySyncStatus {
   SyncFailed = 4
 }
 
+export enum SteamKeyStatus {
+  Assigned = "Assigned",
+  Revealed = "Revealed",
+  Expired = "Expired",
+  Refunded = "Refunded",
+  AddedToExchange = "AddedToExchange",
+  ReceivedFromExchange = "ReceivedFromExchange",
+  Revoked = "Revoked",
+  GiftAccepted = "GiftAccepted",
+}
+
 export interface SteamKeyAssignment {
   id: string;
   steamKeyId: string;
@@ -48,7 +59,7 @@ export interface SteamKeyAssignment {
     screenshotUrlsJson: string | null;
     steamAppId: number;
   };
-  status: "Assigned" | "Revealed" | "Expired" | "Refunded" | "Revoked";
+  status: SteamKeyStatus;
   assignedAt: string;
   expiresAt: string;
   revealedAt: string | null;
@@ -73,7 +84,7 @@ export interface SteamKeyAssignment {
 
 export interface SteamKeyQueryParams {
   searchQuery?: string;
-  status?: "Assigned" | "Revealed" | "Expired" | "Refunded" | "Revoked";
+  status?: SteamKeyStatus;
   giftFilter?: GiftFilterType;
 }
 

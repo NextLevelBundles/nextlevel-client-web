@@ -9,6 +9,7 @@ import {
   CheckCircle,
   Clock,
   AlertCircle,
+  XCircle,
 } from "lucide-react";
 import { Badge } from "@/app/(shared)/components/ui/badge";
 import {
@@ -46,6 +47,12 @@ interface SteamKeyGiftIndicatorProps {
   onGiftAccepted?: () => void;
 }
 
+// Helper function to check if gift is expired
+function isGiftExpired(steamKey: SteamKeyAssignment): boolean {
+  // Gift is expired if it was not accepted (giftAccepted == false)
+  return steamKey.giftAccepted === false;
+}
+
 export function SteamKeyGiftIndicator({
   steamKey,
   currentCustomerId,
@@ -64,10 +71,18 @@ export function SteamKeyGiftIndicator({
   const isReceiver = !isGifter;
   const Icon = isReceiver ? Gift : Send;
 
+  // Check if gift expired without being accepted
+  const isExpired = !steamKey.giftAccepted && isGiftExpired(steamKey);
+
   let label = "Gift";
   let badgeClassName = "";
 
-  if (isReceiver) {
+  if (isExpired) {
+    // Gift expired without being accepted
+    label = "Gift Expired";
+    badgeClassName =
+      "bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30 border-red-200 dark:border-red-800";
+  } else if (isReceiver) {
     // Current user received this gift - show "From [gifter name]"
     if (steamKey.giftedByCustomerName) {
       label = `From ${steamKey.giftedByCustomerName}`;
@@ -156,26 +171,63 @@ export function SteamKeyGiftIndicator({
           >
             <Icon className="h-3 w-3" />
             <span className="text-xs">{label}</span>
-            {steamKey.giftAccepted === true && (
+            {isExpired && <XCircle className="h-3 w-3" />}
+            {!isExpired && steamKey.giftAccepted === true && (
               <CheckCircle className="h-3 w-3" />
             )}
-            {steamKey.giftAccepted === false && <Clock className="h-3 w-3" />}
+            {!isExpired && steamKey.giftAccepted === false && <Clock className="h-3 w-3" />}
           </Badge>
         </DialogTrigger>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Gift className="h-5 w-5 text-primary" />
-              Steam Key Gift Details
+              {isExpired ? (
+                <>
+                  <XCircle className="h-5 w-5 text-destructive" />
+                  Expired Gift
+                </>
+              ) : (
+                <>
+                  <Gift className="h-5 w-5 text-primary" />
+                  Steam Key Gift Details
+                </>
+              )}
             </DialogTitle>
             <DialogDescription>
-              {isReceiver ? "Gift received" : "Gift sent"}
-              {steamKey.giftedAt &&
-                ` on ${dayjs(steamKey.giftedAt).format("MMM D, YYYY [at] h:mm A")}`}
+              {isExpired ? (
+                <>
+                  This gift was not accepted and has expired
+                  {steamKey.giftExpiresAt &&
+                    ` on ${dayjs(steamKey.giftExpiresAt).format("MMM D, YYYY [at] h:mm A")}`}
+                </>
+              ) : (
+                <>
+                  {isReceiver ? "Gift received" : "Gift sent"}
+                  {steamKey.giftedAt &&
+                    ` on ${dayjs(steamKey.giftedAt).format("MMM D, YYYY [at] h:mm A")}`}
+                </>
+              )}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
+            {isExpired && (
+              <div className="rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 p-4">
+                <div className="flex items-start gap-3">
+                  <XCircle className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5 shrink-0" />
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-red-900 dark:text-red-100">
+                      Gift Not Claimed
+                    </p>
+                    <p className="text-sm text-red-700 dark:text-red-300">
+                      {isGifter
+                        ? "The recipient did not claim this gift before it expired. The game key has been returned to your library and is now available for you to use."
+                        : "You did not claim this gift before it expired. The game key has been returned to the gifter's library."}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
             {/* Product info */}
             <div className="flex items-start gap-2">
               <span className="text-sm font-medium text-muted-foreground">
@@ -189,80 +241,86 @@ export function SteamKeyGiftIndicator({
               {isReceiver && steamKey.giftedByCustomerName && (
                 <div className="flex items-start gap-2">
                   <span className="text-sm font-medium text-muted-foreground">
-                    From:
+                    {isExpired ? "Originally From:" : "From:"}
                   </span>
                   <span className="text-sm">
                     {steamKey.giftedByCustomerName}
                   </span>
                 </div>
               )}
-              {isGifter &&
-                (steamKey.giftRecipientName || steamKey.giftRecipientEmail) && (
-                  <div className="flex items-start gap-2">
-                    <span className="text-sm font-medium text-muted-foreground">
-                      To:
-                    </span>
-                    <span className="text-sm">
-                      {steamKey.giftRecipientName ||
-                        steamKey.giftRecipientEmail}
-                    </span>
-                  </div>
-                )}
+              {isGifter && (
+                <div className="flex items-start gap-2">
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {isExpired ? "Originally To:" : "To:"}
+                  </span>
+                  <span className="text-sm">
+                    {steamKey.giftRecipientName && steamKey.giftRecipientEmail
+                      ? `${steamKey.giftRecipientName} (${steamKey.giftRecipientEmail})`
+                      : steamKey.giftRecipientName || steamKey.giftRecipientEmail
+                        ? steamKey.giftRecipientName || steamKey.giftRecipientEmail
+                        : "Shared by link"}
+                  </span>
+                </div>
+              )}
 
-              {/* Status */}
-              <div className="flex items-start gap-2">
-                <span className="text-sm font-medium text-muted-foreground">
-                  Status:
-                </span>
-                <div className="flex flex-col gap-1">
-                  {steamKey.giftAccepted === true ? (
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span className="text-sm text-green-600 font-medium">
-                        Accepted
-                        {steamKey.giftAcceptedAt
-                          ? ` on ${dayjs(steamKey.giftAcceptedAt).format("MMM D, YYYY [at] h:mm A")}`
-                          : ""}
-                      </span>
-                    </div>
-                  ) : (
-                    <>
+              {/* Status - only show if not expired */}
+              {!isExpired && (
+                <div className="flex items-start gap-2">
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Status:
+                  </span>
+                  <div className="flex flex-col gap-1">
+                    {steamKey.giftAccepted === true ? (
                       <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-amber-600" />
-                        <span className="text-sm text-amber-600 font-medium">
-                          {isReceiver
-                            ? "Not accepted yet"
-                            : "Pending acceptance"}
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span className="text-sm text-green-600 font-medium">
+                          Accepted
+                          {steamKey.giftAcceptedAt
+                            ? ` on ${dayjs(steamKey.giftAcceptedAt).format("MMM D, YYYY [at] h:mm A")}`
+                            : ""}
                         </span>
                       </div>
-                      {/* Show expiration info for pending gifts */}
-                      {steamKey.giftExpiresAt && (
-                        <div className="flex items-start gap-2">
-                          <AlertCircle className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
-                          <span className="text-xs text-muted-foreground">
-                            {isGifter
-                              ? "Gift Expires on"
-                              : "You must accept by"}{" "}
-                            {dayjs(steamKey.giftExpiresAt).format(
-                              "MMM D, YYYY [at] h:mm A"
-                            )}{" "}
-                            ({dayjs(steamKey.giftExpiresAt).fromNow()})
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-amber-600" />
+                          <span className="text-sm text-amber-600 font-medium">
+                            {isReceiver
+                              ? "Not accepted yet"
+                              : "Pending acceptance"}
                           </span>
                         </div>
-                      )}
-                    </>
-                  )}
+                        {/* Show expiration info for pending gifts */}
+                        {steamKey.giftExpiresAt && (
+                          <div className="flex items-start gap-2">
+                            <AlertCircle className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
+                            <span className="text-xs text-muted-foreground">
+                              {isGifter
+                                ? "Gift Expires on"
+                                : "You must accept by"}{" "}
+                              {dayjs(steamKey.giftExpiresAt).format(
+                                "MMM D, YYYY [at] h:mm A"
+                              )}{" "}
+                              ({dayjs(steamKey.giftExpiresAt).fromNow()})
+                            </span>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Gift message */}
             {steamKey.giftMessage && (
               <div>
                 <p className="text-sm font-medium text-muted-foreground mb-2">
-                  {isReceiver && steamKey.giftedByCustomerName
-                    ? `${steamKey.giftedByCustomerName} said:`
-                    : "Message:"}
+                  {isExpired
+                    ? "Original Message:"
+                    : isReceiver && steamKey.giftedByCustomerName
+                      ? `${steamKey.giftedByCustomerName} said:`
+                      : "Message:"}
                 </p>
                 <div className="p-4 bg-muted rounded-lg">
                   <p className="text-sm whitespace-pre-wrap">
@@ -296,45 +354,47 @@ export function SteamKeyGiftIndicator({
                 </div>
               )}
 
-            {/* Action buttons */}
-            <div className="flex justify-end gap-2 mt-4">
-              {/* Resend button for pending outgoing gifts (when user is gifter) */}
-              {isGifter && steamKey.id && !steamKey.giftAccepted && (
-                <Button
-                  variant="outline"
-                  onClick={handleResendEmail}
-                  disabled={isResending}
-                  className="gap-2"
-                >
-                  {isResending ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Mail className="h-4 w-4" />
-                      Resend Steam Key Gift
-                    </>
-                  )}
-                </Button>
-              )}
-
-              {/* Accept button for pending received gifts (only if not part of purchase gift) */}
-              {isReceiver &&
-                steamKey.id &&
-                !steamKey.giftAccepted &&
-                !steamKey.isPurchaseGift && (
+            {/* Action buttons - only show for non-expired gifts */}
+            {!isExpired && (
+              <div className="flex justify-end gap-2 mt-4">
+                {/* Resend button for pending outgoing gifts (when user is gifter) */}
+                {isGifter && steamKey.id && !steamKey.giftAccepted && (
                   <Button
-                    onClick={() => setShowConfirmDialog(true)}
-                    disabled={isAccepting}
+                    variant="outline"
+                    onClick={handleResendEmail}
+                    disabled={isResending}
                     className="gap-2"
                   >
-                    <Check className="h-4 w-4" />
-                    Accept Gift
+                    {isResending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="h-4 w-4" />
+                        Resend Steam Key Gift
+                      </>
+                    )}
                   </Button>
                 )}
-            </div>
+
+                {/* Accept button for pending received gifts (only if not part of purchase gift) */}
+                {isReceiver &&
+                  steamKey.id &&
+                  !steamKey.giftAccepted &&
+                  !steamKey.isPurchaseGift && (
+                    <Button
+                      onClick={() => setShowConfirmDialog(true)}
+                      disabled={isAccepting}
+                      className="gap-2"
+                    >
+                      <Check className="h-4 w-4" />
+                      Accept Gift
+                    </Button>
+                  )}
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
