@@ -33,6 +33,7 @@ import {
   Info,
   Copy,
   Mail,
+  Clock,
 } from "lucide-react";
 import {
   Tooltip,
@@ -290,6 +291,21 @@ export default function KeysPage() {
   const isGiftExpired = (key: SteamKeyAssignment): boolean => {
     // Gift is expired if it was not accepted (giftAccepted == false)
     return key.giftAccepted === false;
+  };
+
+  // Helper function to check if key is expiring soon (less than 30 days)
+  const isExpiringSoon = (key: SteamKeyAssignment): { isExpiring: boolean; daysLeft: number } => {
+    if (key.status !== SteamKeyStatus.Assigned || !key.expiresAt) {
+      return { isExpiring: false, daysLeft: 0 };
+    }
+
+    const now = new Date();
+    const expiryDate = new Date(key.expiresAt);
+    const diffMs = expiryDate.getTime() - now.getTime();
+    const daysLeft = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    // Expiring if less than 30 days and key is not yet expired
+    return { isExpiring: daysLeft >= 0 && daysLeft < 30, daysLeft };
   };
 
   // Helper function to check if Steam library sync is needed
@@ -975,10 +991,24 @@ export default function KeysPage() {
                           {key.status === SteamKeyStatus.Assigned && key.expiresAt && (
                             <>
                               {" "}
-                              <br /> Expires on{" "}
-                              {dayjs(key.expiresAt).format(
-                                "MMM D, YYYY [at] h:mm A"
-                              )}
+                              <br />
+                              <span className="inline-flex items-center gap-2 flex-wrap">
+                                <span>
+                                  Expires on{" "}
+                                  {dayjs(key.expiresAt).format(
+                                    "MMM D, YYYY [at] h:mm A"
+                                  )}
+                                </span>
+                                {(() => {
+                                  const { isExpiring, daysLeft } = isExpiringSoon(key);
+                                  return isExpiring ? (
+                                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-950/40 px-2 py-0.5 rounded-full">
+                                      <Clock className="h-3 w-3 animate-pulse" />
+                                      Expiring Soon · {daysLeft} {daysLeft === 1 ? "day" : "days"} left
+                                    </span>
+                                  ) : null;
+                                })()}
+                              </span>
                             </>
                           )}
                         </p>

@@ -40,6 +40,7 @@ import {
   Gift,
   Send,
   TrendingUp,
+  Clock,
 } from "lucide-react";
 import { usePurchases } from "@/hooks/queries/usePurchases";
 import { PurchaseQueryParams, GiftFilterType } from "@/lib/api/types/purchase";
@@ -105,6 +106,21 @@ function isUpgradeAvailable(purchase: any): boolean {
   return isWithinPeriod && hasUpgradesAvailable;
 }
 
+// Helper function to check if purchase is expiring soon (less than 30 days)
+function isExpiringSoon(purchase: any): { isExpiring: boolean; daysLeft: number } {
+  if (!purchase.upgradeTo) {
+    return { isExpiring: false, daysLeft: 0 };
+  }
+
+  const now = new Date();
+  const expiryDate = new Date(purchase.upgradeTo);
+  const diffMs = expiryDate.getTime() - now.getTime();
+  const daysLeft = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  // Expiring if less than 30 days and purchase is not yet expired
+  return { isExpiring: daysLeft >= 0 && daysLeft < 30, daysLeft };
+}
+
 // Helper function to get status badge styling
 function getStatusBadge(status?: CartItemStatus) {
   switch (status) {
@@ -167,6 +183,12 @@ function PurchaseRow({
 }) {
   const [isModalOpen, setIsModalOpen] = useState(shouldAutoOpen);
   const upgradeAvailable = isUpgradeAvailable(purchase);
+  const { isExpiring, daysLeft } = isExpiringSoon(purchase);
+
+  // Only show expiring soon label for gift purchases where gift hasn't been accepted yet
+  const shouldShowExpiringLabel = isExpiring &&
+    purchase.isGift === true &&
+    purchase.giftAccepted !== true;
 
   return (
     <>
@@ -180,13 +202,21 @@ function PurchaseRow({
       >
         <TableCell className="font-medium cursor-pointer">
           <div className="space-y-1">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span>{purchase.snapshotTitle || "Unknown Collection"}</span>
               {upgradeAvailable && (
                 <div className="flex items-center gap-1">
                   <TrendingUp className="h-4 w-4 text-secondary animate-pulse" />
                   <span className="text-xs font-semibold text-secondary bg-secondary/10 px-2 py-0.5 rounded-full">
                     Upgrade Available · {getTimeRemaining(purchase.upgradeTo)}
+                  </span>
+                </div>
+              )}
+              {shouldShowExpiringLabel && !upgradeAvailable && (
+                <div className="flex items-center gap-1">
+                  <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400 animate-pulse" />
+                  <span className="text-xs font-semibold text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-950/40 px-2 py-0.5 rounded-full">
+                    Expiring Soon · {daysLeft} {daysLeft === 1 ? "day" : "days"} left
                   </span>
                 </div>
               )}
