@@ -8,13 +8,24 @@ import {
   Home,
   ShoppingBag,
   Share2,
-  Twitter,
   Facebook,
   Linkedin,
   Mail,
   Copy,
   Check,
 } from "lucide-react";
+
+// Custom X (formerly Twitter) icon
+const XIcon = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+    className={className}
+    fill="currentColor"
+  >
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+);
 import { Button } from "@/app/(shared)/components/ui/button";
 import { Card, CardContent } from "@/app/(shared)/components/ui/card";
 import { toast } from "sonner";
@@ -38,7 +49,7 @@ export default function PurchaseSuccessPage() {
 
   const shareUrl = `${process.env.NEXT_PUBLIC_APP_BASE_URL}`;
   const shareText =
-    "I just purchased an amazing bundle from NextLevel Bundle! Check it out and support charity while getting great games! 🎮✨";
+    "I just purchased an amazing collection from Digiphile! Check it out and support charity while getting great games! 🎮✨";
 
   const handleCopyLink = async () => {
     try {
@@ -55,10 +66,10 @@ export default function PurchaseSuccessPage() {
 
   const socialShareButtons = [
     {
-      name: "Twitter",
-      icon: Twitter,
+      name: "X",
+      icon: XIcon,
       href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
-      color: "bg-[#1DA1F2] hover:bg-[#1a8cd8]",
+      color: "bg-black hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200",
     },
     {
       name: "Facebook",
@@ -75,7 +86,7 @@ export default function PurchaseSuccessPage() {
     {
       name: "Email",
       icon: Mail,
-      href: `mailto:?subject=${encodeURIComponent("Check out NextLevel Bundle!")}&body=${encodeURIComponent(shareText + "\n\n" + shareUrl)}`,
+      href: `mailto:?subject=${encodeURIComponent("Check out Digiphile!")}&body=${encodeURIComponent(shareText + "\n\n" + shareUrl)}`,
       color: "bg-gray-600 hover:bg-gray-700",
     },
   ];
@@ -113,7 +124,7 @@ export default function PurchaseSuccessPage() {
                 Purchase Successful!
               </h1>
               <p className="text-lg text-muted-foreground">
-                Thank you for your purchase! Your order has been confirmed.
+                Thank you for your purchase! Your payment has been confirmed.
               </p>
               {orderId && (
                 <p className="text-sm text-muted-foreground">
@@ -136,8 +147,8 @@ export default function PurchaseSuccessPage() {
                   <h2 className="text-xl font-semibold">Spread the Word!</h2>
                 </div>
                 <p className="text-center text-sm text-muted-foreground">
-                  Help others discover great bundles while supporting charity.
-                  Share NextLevel Bundle with your friends!
+                  Help others discover great collections while supporting charity.
+                  Share Digiphile with your friends!
                 </p>
 
                 {/* Social Media Buttons */}
@@ -154,8 +165,8 @@ export default function PurchaseSuccessPage() {
                         variant="outline"
                         className={`w-full ${social.color} text-white border-0 hover:text-white`}
                       >
-                        <social.icon className="h-4 w-4 mr-2" />
-                        {social.name}
+                        <social.icon className={social.name === "X" ? "h-4 w-4" : "h-4 w-4 mr-2"} />
+                        {social.name !== "X" && social.name}
                       </Button>
                     </a>
                   ))}

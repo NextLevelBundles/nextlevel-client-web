@@ -15,7 +15,7 @@ import {
 } from "@/app/(shared)/components/ui/dialog";
 import { Button } from "@/app/(shared)/components/ui/button";
 import { Card, CardContent } from "@/app/(shared)/components/ui/card";
-import { Loader2, ArrowUp, Check, CreditCard, ExternalLink } from "lucide-react";
+import { Loader2, ArrowUp, Check, CreditCard, ExternalLink, Eye } from "lucide-react";
 import { upgradeApi } from "@/lib/api";
 import { UpgradePreviewResponse, PaymentStatusResponse } from "@/lib/api/types/upgrade";
 import { toast } from "sonner";
@@ -341,7 +341,7 @@ export function UpgradePurchaseDialog({
                 return (
                   <Card
                     key={tier.id}
-                    className={`transition-all ${
+                    className={`transition-all group ${
                       isSelected
                         ? "border-2 border-primary bg-primary/10 dark:bg-primary/20 shadow-md"
                         : isPurchased
@@ -389,15 +389,29 @@ export function UpgradePurchaseDialog({
                               </span>
                             )}
                           </div>
-                          <span
-                            className={`text-sm ${
-                              isDisabled
-                                ? "text-muted-foreground/70"
-                                : "text-muted-foreground"
-                            }`}
-                          >
-                            {itemCount} {itemLabel}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`text-sm ${
+                                isDisabled
+                                  ? "text-muted-foreground/70"
+                                  : "text-muted-foreground"
+                              }`}
+                            >
+                              {itemCount} {itemLabel}
+                            </span>
+                            {!isDisabled && (
+                              <a
+                                href={`/collections/${bundle.slug}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-primary hover:underline flex items-center gap-1"
+                              >
+                                View Collection
+                                <ExternalLink className="h-3 w-3" />
+                              </a>
+                            )}
+                          </div>
                         </div>
                         <div className="text-right">
                           <div
@@ -452,14 +466,28 @@ export function UpgradePurchaseDialog({
                       />
                       <Label
                         htmlFor={`charity-${tier.id}`}
-                        className={`flex items-center justify-between flex-1 ${!isPurchased ? "cursor-pointer" : "opacity-50"}`}
+                        className={`flex items-center justify-between flex-1 group ${!isPurchased ? "cursor-pointer" : "opacity-50"}`}
                       >
-                        <span>
-                          {tier.name} - {itemCount} {itemLabel}
-                          {isPurchased && (
-                            <span className="ml-2 text-xs bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400 px-2 py-0.5 rounded">
-                              Already Owned
-                            </span>
+                        <span className="flex items-center gap-2">
+                          <span>
+                            {tier.name} - {itemCount} {itemLabel}
+                            {isPurchased && (
+                              <span className="ml-2 text-xs bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400 px-2 py-0.5 rounded">
+                                Already Owned
+                              </span>
+                            )}
+                          </span>
+                          {!isPurchased && (
+                            <a
+                              href={`/collections/${bundle.slug}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-primary hover:underline flex items-center gap-1"
+                            >
+                              View Collection
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
                           )}
                         </span>
                         <span className="font-semibold">
@@ -510,14 +538,28 @@ export function UpgradePurchaseDialog({
                       />
                       <Label
                         htmlFor={`upsell-${tier.id}`}
-                        className={`flex items-center justify-between flex-1 ${!isPurchased ? "cursor-pointer" : "opacity-50"}`}
+                        className={`flex items-center justify-between flex-1 group ${!isPurchased ? "cursor-pointer" : "opacity-50"}`}
                       >
-                        <span>
-                          {tier.name} - {itemCount} {itemLabel}
-                          {isPurchased && (
-                            <span className="ml-2 text-xs bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400 px-2 py-0.5 rounded">
-                              Already Owned
-                            </span>
+                        <span className="flex items-center gap-2">
+                          <span>
+                            {tier.name} - {itemCount} {itemLabel}
+                            {isPurchased && (
+                              <span className="ml-2 text-xs bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400 px-2 py-0.5 rounded">
+                                Already Owned
+                              </span>
+                            )}
+                          </span>
+                          {!isPurchased && (
+                            <a
+                              href={`/collections/${bundle.slug}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-primary hover:underline flex items-center gap-1"
+                            >
+                              View Collection
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
                           )}
                         </span>
                         <span className="font-semibold">
