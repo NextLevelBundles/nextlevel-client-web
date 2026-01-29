@@ -31,6 +31,38 @@ export class GiftApi {
     );
   }
 
+  async changeGiftRecipient(
+    cartItemId: string,
+    newRecipientEmail: string,
+    newRecipientName?: string,
+    giftMessage?: string
+  ): Promise<{ message: string }> {
+    return await this.client.post<{ message: string }>(
+      `/customer/gifts/cart-items/${cartItemId}/change-recipient`,
+      {
+        newRecipientEmail,
+        newRecipientName,
+        giftMessage,
+      }
+    );
+  }
+
+  async requestRefundForGift(
+    cartItemId: string
+  ): Promise<{ message: string }> {
+    return await this.client.post<{ message: string }>(
+      `/customer/gifts/cart-items/${cartItemId}/refund`
+    );
+  }
+
+  async claimGift(
+    cartItemId: string
+  ): Promise<{ message: string }> {
+    return await this.client.post<{ message: string }>(
+      `/customer/gifts/cart-items/${cartItemId}/claim`
+    );
+  }
+
   // Steam Key Gifts
   // Anonoumous request
   async getSteamKeyGift(assignmentId: string): Promise<SteamKeyAssignment> {
