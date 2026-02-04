@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronUp, Stamp as Steam, ArrowUp } from "lucide-react";
+import { ChevronUp, Stamp as Steam, ArrowUp, RefreshCw } from "lucide-react";
 import { cn } from "@/shared/utils/tailwind";
 import { Button } from "@/shared/components/ui/button";
 import { AddToCartButton } from "../cart/add-to-cart-button";
@@ -13,6 +13,8 @@ import { useMemo, useState } from "react";
 import { UpgradePurchaseDialog } from "@/customer/components/purchases/upgrade-purchase-dialog";
 import { UpgradeInfoDialog } from "@/customer/components/purchases/upgrade-info-dialog";
 import { isUpgradePeriodActive } from "@/app/(shared)/utils/bundle";
+import { useQueryClient } from "@tanstack/react-query";
+import { userApi } from "@/lib/api";
 
 interface MobileStickyCTAProps {
   bundleId: string;
@@ -61,12 +63,45 @@ export function MobileStickyCTA({
   const isAuthenticated = !!user;
   const router = useRouter();
   const { data: customer } = useCustomer();
+  const queryClient = useQueryClient();
   const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false);
+  const [isSyncingSteamLevel, setIsSyncingSteamLevel] = useState(false);
 
   const isSteamBundle = bundleType === BundleType.SteamGame;
   const isSteamConnected = customer && customer.steamId;
   const needsSteamConnection = isSteamBundle && isAuthenticated && !isSteamConnected;
+
+  // Steam level validation
+  const getSteamLevelStatus = () => {
+    if (!customer?.steamLevel) return { isValid: false, reason: "unsync" as const };
+
+    const level = customer.steamLevel;
+
+    if (level === "unsync") return { isValid: false, reason: "unsync" as const };
+    if (level === "private") return { isValid: false, reason: "private" as const };
+    if (level === "error") return { isValid: false, reason: "error" as const };
+
+    const numericLevel = parseInt(level, 10);
+    if (isNaN(numericLevel) || numericLevel <= 0) {
+      return { isValid: false, reason: "zero" as const };
+    }
+
+    return { isValid: true, reason: null };
+  };
+
+  const steamLevelStatus = getSteamLevelStatus();
+  const needsSteamLevelSync = isSteamBundle && isAuthenticated && !!customer?.steamId && !steamLevelStatus.isValid;
+
+  const handleSyncSteamLevel = async () => {
+    setIsSyncingSteamLevel(true);
+    try {
+      await userApi.syncSteamLevel();
+      await queryClient.invalidateQueries({ queryKey: ["customer"] });
+    } finally {
+      setIsSyncingSteamLevel(false);
+    }
+  };
 
   // Check if user can upgrade (simplified check for mobile)
   const canUpgrade = useMemo(() => {
@@ -125,6 +160,25 @@ export function MobileStickyCTA({
               >
                 <Steam className="mr-2 h-4 w-4" />
                 Connect Steam
+              </Button>
+            ) : needsSteamLevelSync ? (
+              <Button
+                variant="outline"
+                className="w-full h-auto px-6 py-3 text-sm font-semibold"
+                onClick={handleSyncSteamLevel}
+                disabled={isSyncingSteamLevel}
+              >
+                {isSyncingSteamLevel ? (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                    Syncing...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Sync Steam Level
+                  </>
+                )}
               </Button>
             ) : canUpgrade ? (
               <Button
