@@ -1,5 +1,5 @@
 import { ClientApi } from "../client-api";
-import { Customer, BillingAddress } from "../types/user";
+import { Customer, BillingAddress, SteamLevelSyncResponse } from "../types/user";
 import { Country } from "../types/common";
 import { CustomerLocation } from "../types/location";
 
@@ -45,5 +45,9 @@ export class UserApi {
 
   async updateCountry(countryCode: string): Promise<Customer> {
     return await this.client.put<Customer, { countryCode: string }>("/customer/country", { countryCode });
+  }
+
+  async syncSteamLevel(): Promise<SteamLevelSyncResponse> {
+    return await this.client.post<SteamLevelSyncResponse, void>("/customer/sync-steam-level");
   }
 }
