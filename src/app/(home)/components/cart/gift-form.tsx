@@ -312,25 +312,25 @@ export function GiftForm({ item, onGiftUpdate, isUpdating }: GiftFormProps) {
                 disabled={isUpdating}
                 className="gap-2"
               >
-                <div className="flex items-center space-x-2 p-2 rounded-md border hover:bg-accent/50 cursor-pointer">
+                <div
+                  className="flex items-center space-x-2 p-2 rounded-md border hover:bg-accent/50 cursor-pointer"
+                  onClick={() => !isUpdating && handleDeliveryMethodChange("email")}
+                >
                   <RadioGroupItem value="email" id={`email-${item.id}`} />
-                  <Label
-                    htmlFor={`email-${item.id}`}
-                    className="text-xs font-normal cursor-pointer flex-1 flex items-center gap-2"
-                  >
+                  <span className="text-xs font-normal flex-1 flex items-center gap-2">
                     <Mail className="h-3.5 w-3.5" />
                     Send via Email
-                  </Label>
+                  </span>
                 </div>
-                <div className="flex items-center space-x-2 p-2 rounded-md border hover:bg-accent/50 cursor-pointer">
+                <div
+                  className="flex items-center space-x-2 p-2 rounded-md border hover:bg-accent/50 cursor-pointer"
+                  onClick={() => !isUpdating && handleDeliveryMethodChange("link")}
+                >
                   <RadioGroupItem value="link" id={`link-${item.id}`} />
-                  <Label
-                    htmlFor={`link-${item.id}`}
-                    className="text-xs font-normal cursor-pointer flex-1 flex items-center gap-2"
-                  >
+                  <span className="text-xs font-normal flex-1 flex items-center gap-2">
                     <Link2 className="h-3.5 w-3.5" />
                     Get Direct Link
-                  </Label>
+                  </span>
                 </div>
               </RadioGroup>
             </div>

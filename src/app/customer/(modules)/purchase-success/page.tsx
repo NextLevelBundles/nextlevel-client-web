@@ -9,10 +9,10 @@ import {
   ShoppingBag,
   Share2,
   Facebook,
-  Linkedin,
   Mail,
   Copy,
   Check,
+  MessageCircle,
 } from "lucide-react";
 
 // Custom X (formerly Twitter) icon
@@ -24,6 +24,18 @@ const XIcon = ({ className }: { className?: string }) => (
     fill="currentColor"
   >
     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+);
+
+// Bluesky icon
+const BlueskyIcon = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+    className={className}
+    fill="currentColor"
+  >
+    <path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.04.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.015.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z" />
   </svg>
 );
 import { Button } from "@/app/(shared)/components/ui/button";
@@ -49,7 +61,7 @@ export default function PurchaseSuccessPage() {
 
   const shareUrl = `${process.env.NEXT_PUBLIC_APP_BASE_URL}`;
   const shareText =
-    "I just purchased an amazing collection from Digiphile! Check it out and support charity while getting great games! 🎮✨";
+    "I just purchased an amazing collection from Digiphile! Check it out and support charity while getting great games!";
 
   const handleCopyLink = async () => {
     try {
@@ -69,7 +81,8 @@ export default function PurchaseSuccessPage() {
       name: "X",
       icon: XIcon,
       href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
-      color: "bg-black hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200",
+      color:
+        "bg-black hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200",
     },
     {
       name: "Facebook",
@@ -78,10 +91,10 @@ export default function PurchaseSuccessPage() {
       color: "bg-[#1877F2] hover:bg-[#1665d8]",
     },
     {
-      name: "LinkedIn",
-      icon: Linkedin,
-      href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
-      color: "bg-[#0A66C2] hover:bg-[#095196]",
+      name: "Bluesky",
+      icon: BlueskyIcon,
+      href: `https://bsky.app/intent/compose?text=${encodeURIComponent(shareText + " " + shareUrl)}`,
+      color: "bg-[#0085ff] hover:bg-[#0070d9]",
     },
     {
       name: "Email",
@@ -99,7 +112,7 @@ export default function PurchaseSuccessPage() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-2xl my-8"
       >
-        <Card className="border-2 border-green-200 dark:border-green-800 shadow-2xl">
+        <Card className="shadow-2xl">
           <CardContent className="pt-12 pb-8 px-6">
             {/* Success Icon */}
             <motion.div
@@ -147,8 +160,8 @@ export default function PurchaseSuccessPage() {
                   <h2 className="text-xl font-semibold">Spread the Word!</h2>
                 </div>
                 <p className="text-center text-sm text-muted-foreground">
-                  Help others discover great collections while supporting charity.
-                  Share Digiphile with your friends!
+                  Help others discover great collections while supporting
+                  charity. Share Digiphile with your friends!
                 </p>
 
                 {/* Social Media Buttons */}
@@ -165,7 +178,11 @@ export default function PurchaseSuccessPage() {
                         variant="outline"
                         className={`w-full ${social.color} text-white border-0 hover:text-white`}
                       >
-                        <social.icon className={social.name === "X" ? "h-4 w-4" : "h-4 w-4 mr-2"} />
+                        <social.icon
+                          className={
+                            social.name === "X" ? "h-4 w-4" : "h-4 w-4 mr-2"
+                          }
+                        />
                         {social.name !== "X" && social.name}
                       </Button>
                     </a>
@@ -191,6 +208,24 @@ export default function PurchaseSuccessPage() {
                       </>
                     )}
                   </Button>
+                </div>
+
+                {/* Reddit Section */}
+                <div className="pt-4 border-t border-primary/20">
+                  <a
+                    href="https://www.reddit.com/r/digiphile/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block"
+                  >
+                    <Button
+                      variant="outline"
+                      className="w-full bg-[#FF4500] hover:bg-[#ff5722] text-white border-0 hover:text-white"
+                    >
+                      <MessageCircle className="h-4 w-4 mr-2" />
+                      Join the conversation now!
+                    </Button>
+                  </a>
                 </div>
               </div>
             </motion.div>
@@ -224,8 +259,8 @@ export default function PurchaseSuccessPage() {
               className="mt-6 text-center"
             >
               <p className="text-xs text-muted-foreground">
-                A confirmation email has been sent to your registered email
-                address.
+                A purchase confirmation email has been sent to your registered
+                email address.
               </p>
             </motion.div>
           </CardContent>
