@@ -47,9 +47,9 @@ interface SteamKeyGiftIndicatorProps {
   onGiftAccepted?: () => void;
 }
 
-// Helper function to check if gift is expired
+// Helper function to check if gift was returned (not accepted in time)
 function isGiftExpired(steamKey: SteamKeyAssignment): boolean {
-  // Gift is expired if it was not accepted (giftAccepted == false)
+  // Gift is returned if it was not accepted (giftAccepted == false)
   return steamKey.giftAccepted === false;
 }
 
@@ -71,15 +71,15 @@ export function SteamKeyGiftIndicator({
   const isReceiver = !isGifter;
   const Icon = isReceiver ? Gift : Send;
 
-  // Check if gift expired without being accepted
+  // Check if gift was returned without being accepted
   const isExpired = !steamKey.giftAccepted && isGiftExpired(steamKey);
 
   let label = "Gift";
   let badgeClassName = "";
 
   if (isExpired) {
-    // Gift expired without being accepted
-    label = "Gift Expired";
+    // Gift returned without being accepted
+    label = "Gift Returned";
     badgeClassName =
       "bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30 border-red-200 dark:border-red-800";
   } else if (isReceiver) {
@@ -184,7 +184,7 @@ export function SteamKeyGiftIndicator({
               {isExpired ? (
                 <>
                   <XCircle className="h-5 w-5 text-destructive" />
-                  Expired Gift
+                  Gift Returned
                 </>
               ) : (
                 <>
@@ -196,7 +196,7 @@ export function SteamKeyGiftIndicator({
             <DialogDescription>
               {isExpired ? (
                 <>
-                  This gift was not accepted and has expired
+                  This gift was not accepted and has been returned
                   {steamKey.giftExpiresAt &&
                     ` on ${dayjs(steamKey.giftExpiresAt).format("MMM D, YYYY [at] h:mm A")}`}
                 </>
@@ -221,8 +221,8 @@ export function SteamKeyGiftIndicator({
                     </p>
                     <p className="text-sm text-red-700 dark:text-red-300">
                       {isGifter
-                        ? "The recipient did not claim this gift before it expired. The game key has been returned to your library and is now available for you to use."
-                        : "You did not claim this gift before it expired. The game key has been returned to the gifter's library."}
+                        ? "The recipient did not claim this gift in time. The game key has been returned to your library and is now available for you to use."
+                        : "You did not claim this gift in time. The game key has been returned to the gifter's library."}
                     </p>
                   </div>
                 </div>

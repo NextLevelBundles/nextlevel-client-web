@@ -48,9 +48,9 @@ interface GiftIndicatorProps {
   cartItem: CartItem | null;
 }
 
-// Helper function to check if gift is expired
+// Helper function to check if gift was returned (not accepted in time)
 function isGiftExpired(cartItem: CartItem): boolean {
-  // Gift is expired if it was not accepted (giftAccepted == false/null)
+  // Gift is returned if it was not accepted (giftAccepted == false/null)
   // Note: For CartItems, we check both giftExpiresAt date AND acceptance status
   if (!cartItem.giftExpiresAt) return false;
   const now = new Date();
@@ -67,7 +67,7 @@ export function GiftIndicator({ cartItem }: GiftIndicatorProps) {
   // For outgoing gifts, show recipient or "by link"
   const recipient = cartItem.giftRecipientName ?? cartItem.giftRecipientEmail;
   const label = isExpired
-    ? "Gift Expired"
+    ? "Gift Returned"
     : recipient
       ? `Gifted to ${recipient}`
       : "Gifted by link";
@@ -280,7 +280,7 @@ function GiftDetailsDialog({ cartItem, children }: GiftDetailsDialogProps) {
             {isExpired ? (
               <>
                 <XCircle className="h-5 w-5 text-destructive" />
-                Expired Gift - Choose an Action
+                Gift Returned - Choose an Action
               </>
             ) : (
               <>
@@ -292,7 +292,7 @@ function GiftDetailsDialog({ cartItem, children }: GiftDetailsDialogProps) {
           <DialogDescription>
             {isExpired ? (
               <>
-                This gift was not claimed by the recipient and has expired
+                This gift was not claimed by the recipient and has been returned
                 {cartItem.giftExpiresAt &&
                   ` on ${dayjs(cartItem.giftExpiresAt).format("MMM D, YYYY [at] h:mm A")}`}
               </>
@@ -356,7 +356,7 @@ function GiftDetailsDialog({ cartItem, children }: GiftDetailsDialogProps) {
                 </div>
               ) : canTakeAction ? (
                 <>
-                  {/* Expired gift with available actions */}
+                  {/* Returned gift with available actions */}
                   <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-4 space-y-3">
                     <p className="text-sm font-medium text-foreground">
                       What would you like to do?
@@ -393,7 +393,7 @@ function GiftDetailsDialog({ cartItem, children }: GiftDetailsDialogProps) {
                     </div>
                   </div>
 
-                  {/* Action buttons for expired gifts with Completed status */}
+                  {/* Action buttons for returned gifts with Completed status */}
                   <div className="flex flex-col gap-2 mt-4">
                     <Button
                       variant="outline"
@@ -444,7 +444,7 @@ function GiftDetailsDialog({ cartItem, children }: GiftDetailsDialogProps) {
                         No Actions Available
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        This gift is expired and no further actions can be taken
+                        This gift has been returned and no further actions can be taken
                         at this time.
                       </p>
                     </div>

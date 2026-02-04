@@ -19,7 +19,7 @@ interface GiftDetailsCardProps {
   giftMessage?: string;
   createdAt: string;
   expiresAt?: string;
-  status: "Pending" | "Accepted" | "Expired" | "Declined";
+  status: "Pending" | "Accepted" | "Returned" | "Declined";
   additionalInfo?: React.ReactNode;
 }
 
@@ -36,7 +36,7 @@ export function GiftDetailsCard({
   additionalInfo,
 }: GiftDetailsCardProps) {
   const isExpired =
-    status === "Expired" || (expiresAt && dayjs(expiresAt).isBefore(dayjs()));
+    status === "Returned" || (expiresAt && dayjs(expiresAt).isBefore(dayjs()));
   const daysUntilExpiry = expiresAt
     ? dayjs(expiresAt).diff(dayjs(), "day")
     : null;
@@ -96,7 +96,7 @@ export function GiftDetailsCard({
         {/* Status and Expiry */}
         <div className="flex items-center gap-4 mb-6">
           {isExpired ? (
-            <Badge variant="destructive">Expired</Badge>
+            <Badge variant="destructive">Returned</Badge>
           ) : status === "Accepted" ? (
             <Badge variant="secondary">Accepted</Badge>
           ) : (
@@ -121,11 +121,11 @@ export function GiftDetailsCard({
         {/* Additional Info */}
         {additionalInfo && <div className="mb-6">{additionalInfo}</div>}
 
-        {/* Expired Alert */}
+        {/* Returned Alert */}
         {isExpired && (
           <Alert variant="destructive">
             <AlertDescription>
-              This gift has expired and can no longer be accepted.
+              This gift has been returned and can no longer be accepted.
             </AlertDescription>
           </Alert>
         )}

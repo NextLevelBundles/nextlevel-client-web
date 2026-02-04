@@ -105,7 +105,7 @@ const getStatusDisplayName = (status: string): string => {
     ReceivedFromExchange: "Received",
     Assigned: "Available",
     Revealed: "Redeemed",
-    Expired: "Expired",
+    Expired: "Returned",
     Refunded: "Refunded",
     Revoked: "Revoked",
     GiftAccepted: "Gift Accepted",
@@ -287,9 +287,9 @@ export default function KeysPage() {
     return assignedDate.isAfter(sevenDaysAgo);
   };
 
-  // Helper function to check if gift is expired
+  // Helper function to check if gift was returned (not accepted in time)
   const isGiftExpired = (key: SteamKeyAssignment): boolean => {
-    // Gift is expired if it was not accepted (giftAccepted == false)
+    // Gift is returned if it was not accepted (giftAccepted == false)
     return key.giftAccepted === false;
   };
 
