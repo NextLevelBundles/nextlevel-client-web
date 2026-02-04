@@ -29,9 +29,16 @@ export interface Customer {
   steamUsername?: string;
   steamConnectedAt?: string;
   steamCountry?: string;
+  steamLevel?: string;
   countryCode: string;
   country?: Country;
   countryLastChangedAt?: string | null;
   billingAddress?: BillingAddress;
   contact: Contact;
+}
+
+export interface SteamLevelSyncResponse {
+  isSuccess: boolean;
+  steamLevel?: string;
+  errorMessage?: string;
 }

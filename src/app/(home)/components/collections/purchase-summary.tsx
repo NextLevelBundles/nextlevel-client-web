@@ -14,6 +14,8 @@ import {
   Download,
   AlertCircle,
   Clock,
+  RefreshCw,
+  ShieldAlert,
 } from "lucide-react";
 import { CharityLeaderboard } from "./charity-leaderboard";
 import dayjs from "dayjs";
@@ -38,6 +40,87 @@ import { UpgradePurchaseDialog } from "@/customer/components/purchases/upgrade-p
 import { UpgradeInfoDialog } from "@/customer/components/purchases/upgrade-info-dialog";
 import { ArrowUp, CheckCircle2 } from "lucide-react";
 import { isUpgradePeriodActive } from "@/app/(shared)/utils/bundle";
+import { useQueryClient } from "@tanstack/react-query";
+import { userApi } from "@/lib/api";
+
+// Steam Level Warning Component
+interface SteamLevelWarningProps {
+  steamLevelStatus: { isValid: boolean; reason: "unsync" | "private" | "error" | "zero" | null };
+  getSteamLevelWarningMessage: () => string;
+  handleSyncSteamLevel: () => Promise<void>;
+  isSyncingSteamLevel: boolean;
+}
+
+function SteamLevelWarning({
+  steamLevelStatus,
+  getSteamLevelWarningMessage,
+  handleSyncSteamLevel,
+  isSyncingSteamLevel,
+}: SteamLevelWarningProps) {
+  return (
+    <div className="mb-4 space-y-2">
+      <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+        <div className="flex items-start gap-2">
+          <ShieldAlert className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-amber-700 dark:text-amber-300 mb-1">
+              Steam Level Verification Required
+            </p>
+            <p className="text-xs text-amber-600 dark:text-amber-400">
+              {getSteamLevelWarningMessage()}
+              {steamLevelStatus.reason === "private" && (
+                <>
+                  {" "}
+                  <a
+                    href="https://help.steampowered.com/en/faqs/view/588C-C67D-0251-C276"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-amber-700 dark:text-amber-300 underline hover:no-underline"
+                  >
+                    Learn how to make your profile public
+                  </a>
+                  .
+                </>
+              )}
+              {steamLevelStatus.reason === "zero" && (
+                <>
+                  {" "}
+                  <a
+                    href="https://help.steampowered.com/en/faqs/view/1F74-BE45-3AAC-1B47"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-amber-700 dark:text-amber-300 underline hover:no-underline"
+                  >
+                    Learn how to increase your Steam level
+                  </a>
+                  .
+                </>
+              )}
+            </p>
+          </div>
+        </div>
+      </div>
+      <Button
+        variant="outline"
+        className="w-full"
+        onClick={handleSyncSteamLevel}
+        disabled={isSyncingSteamLevel}
+      >
+        {isSyncingSteamLevel ? (
+          <>
+            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+            Syncing...
+          </>
+        ) : (
+          <>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Sync Steam Level
+          </>
+        )}
+      </Button>
+    </div>
+  );
+}
 
 interface PurchaseSummaryProps {
   bundle: Bundle;
@@ -96,6 +179,8 @@ export function PurchaseSummary({
   const [tipInputValue, setTipInputValue] = useState("");
   const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false);
+  const [isSyncingSteamLevel, setIsSyncingSteamLevel] = useState(false);
+  const queryClient = useQueryClient();
 
   // Auto-open upgrade dialog when redirected back from payment setup
   useEffect(() => {
@@ -116,6 +201,62 @@ export function PurchaseSummary({
 
   // Check if this is a Steam bundle (need to determine early)
   const isSteamBundle = bundle.type === BundleType.SteamGame;
+
+  // Steam level validation helper
+  const getSteamLevelStatus = () => {
+    if (!customer?.steamLevel) return { isValid: false, reason: "unsync" as const };
+
+    const level = customer.steamLevel;
+
+    if (level === "unsync") {
+      return { isValid: false, reason: "unsync" as const };
+    }
+    if (level === "private") {
+      return { isValid: false, reason: "private" as const };
+    }
+    if (level === "error") {
+      return { isValid: false, reason: "error" as const };
+    }
+
+    const numericLevel = parseInt(level, 10);
+    if (isNaN(numericLevel) || numericLevel <= 0) {
+      return { isValid: false, reason: "zero" as const };
+    }
+
+    return { isValid: true, reason: null };
+  };
+
+  const steamLevelStatus = getSteamLevelStatus();
+  const needsSteamLevelSync = isSteamBundle && isAuthenticated && !!customer?.steamId && !steamLevelStatus.isValid;
+
+  // Handle Steam level sync
+  const handleSyncSteamLevel = async () => {
+    setIsSyncingSteamLevel(true);
+
+    try {
+      await userApi.syncSteamLevel();
+      // Always invalidate customer cache to refresh data with new steamLevel
+      await queryClient.invalidateQueries({ queryKey: ["customer"] });
+    } finally {
+      setIsSyncingSteamLevel(false);
+    }
+  };
+
+  // Get Steam level warning message
+  const getSteamLevelWarningMessage = () => {
+    switch (steamLevelStatus.reason) {
+      case "unsync":
+        return "Please sync your Steam profile to verify your account level.";
+      case "private":
+        return "Your Steam profile is private. Please set \"My profile\" to public in your Steam privacy settings.";
+      case "error":
+        return "Unable to verify your Steam level. Please try syncing again later.";
+      case "zero":
+        return "Your Steam level must be greater than 0 to purchase or gift this collection. Please increase your Steam level and try syncing again.";
+      default:
+        return "Please sync your Steam profile.";
+    }
+  };
 
   // Separate tiers by type
   const baseTiers = tiers.filter((tier) => tier.type === TierType.Base);
@@ -783,6 +924,13 @@ export function PurchaseSummary({
                   bundle
                 </p>
               </div>
+            ) : needsSteamLevelSync ? (
+              <SteamLevelWarning
+                steamLevelStatus={steamLevelStatus}
+                getSteamLevelWarningMessage={getSteamLevelWarningMessage}
+                handleSyncSteamLevel={handleSyncSteamLevel}
+                isSyncingSteamLevel={isSyncingSteamLevel}
+              />
             ) : userPurchase && userPurchase.status === CartItemStatus.Completed && upgradeEligibility.canUpgrade ? (
               // User owns the bundle (completed purchase) and can upgrade
               <div className="space-y-3">
