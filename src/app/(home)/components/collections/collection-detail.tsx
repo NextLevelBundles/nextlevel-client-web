@@ -407,7 +407,11 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
         <BundleHero bundle={bundle} />
 
         {bundle.curators && bundle.curators.length > 0 && (
-          <BundleCurators curators={bundle.curators} />
+          <BundleCurators
+            curators={bundle.curators}
+            curatorStatement={bundle.curatorStatement}
+            curatorVideoLink={bundle.curatorVideoLink}
+          />
         )}
 
         {renderStatusBanner()}

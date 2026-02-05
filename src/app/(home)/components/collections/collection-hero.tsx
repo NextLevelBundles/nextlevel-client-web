@@ -1,25 +1,17 @@
 "use client";
 
 import { Card } from "@/shared/components/ui/card";
-import { Timer, BookOpen, Gamepad2, Package, Video } from "lucide-react";
+import { Timer, BookOpen, Gamepad2, Package } from "lucide-react";
 import { Bundle, BundleType, TierType } from "@/app/(shared)/types/bundle";
 import { useCountdownTimer } from "@/app/(shared)/hooks/useCountdownTimer";
 import { BundleStaticDeck } from "./collection-static-deck";
-import { useMemo, useState } from "react";
-import { Button } from "@/shared/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/shared/components/ui/dialog";
+import { useMemo } from "react";
 
 interface BundleHeroProps {
   bundle: Bundle;
 }
 
 export function BundleHero({ bundle }: BundleHeroProps) {
-  const [videoDialogOpen, setVideoDialogOpen] = useState(false);
   const startDate = useMemo(() => new Date(bundle.startsAt), [bundle.startsAt]);
   const endDate = useMemo(() => new Date(bundle.endsAt), [bundle.endsAt]);
 
@@ -126,37 +118,6 @@ export function BundleHero({ bundle }: BundleHeroProps) {
         )}
       </div>
 
-      {/* Curator Video Button - top left */}
-      {bundle.curatorVideoLink && (
-        <>
-          <div className="absolute left-6 top-6 z-10">
-            <Button
-              onClick={() => setVideoDialogOpen(true)}
-              className="backdrop-blur-md bg-black/50 hover:bg-black/70 text-white shadow-lg border border-white/20"
-            >
-              <Video className="h-4 w-4 mr-2" />
-              <span>Curator Video</span>
-            </Button>
-          </div>
-
-          <Dialog open={videoDialogOpen} onOpenChange={setVideoDialogOpen}>
-            <DialogContent className="max-w-4xl p-0">
-              <DialogHeader className="sr-only">
-                <DialogTitle>Curator Video</DialogTitle>
-              </DialogHeader>
-              <div className="aspect-video w-full">
-                <iframe
-                  src={bundle.curatorVideoLink}
-                  className="w-full h-full rounded-lg"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
-            </DialogContent>
-          </Dialog>
-        </>
-      )}
-
       {/* Content overlay */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="text-center space-y-6 px-4 max-w-4xl">
@@ -187,13 +148,6 @@ export function BundleHero({ bundle }: BundleHeroProps) {
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-tight">
             {bundle.title}
           </h1>
-
-          {/* Curator Statement */}
-          {bundle.curatorStatement && (
-            <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto italic">
-              &ldquo;{bundle.curatorStatement}&rdquo;
-            </p>
-          )}
 
           {/* Info Cards Row */}
           <div className="flex flex-wrap justify-center gap-4 mt-8">
