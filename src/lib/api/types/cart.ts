@@ -35,6 +35,7 @@ export interface CartItem {
   snapshotCharitySplit: number;
   upgradeFrom: string | null; // ISO date string - when upgrades can start
   upgradeTo: string | null; // ISO date string - when upgrades end
+  expiresAt: string; // ISO date string - when the cart item expires
   bundleUpgradeStatus: BundleUpgradeStatus;
   snapshotProducts: {
     productId: string;

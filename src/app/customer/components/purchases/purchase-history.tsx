@@ -108,12 +108,12 @@ function isUpgradeAvailable(purchase: any): boolean {
 
 // Helper function to check if purchase is expiring soon (less than 30 days)
 function isExpiringSoon(purchase: any): { isExpiring: boolean; daysLeft: number } {
-  if (!purchase.upgradeTo) {
+  if (!purchase.expiresAt) {
     return { isExpiring: false, daysLeft: 0 };
   }
 
   const now = new Date();
-  const expiryDate = new Date(purchase.upgradeTo);
+  const expiryDate = new Date(purchase.expiresAt);
   const diffMs = expiryDate.getTime() - now.getTime();
   const daysLeft = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
