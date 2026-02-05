@@ -11,6 +11,14 @@ export enum BundleStatus {
   Paused = "Paused",
 }
 
+export interface BundleTypeTag {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Partial bundle data for list views
 export interface BundleListItem {
   id: string;
@@ -36,6 +44,10 @@ export interface BundleListItem {
   platformSplit: number;
   publisherSplit: number;
   charitySplit: number;
+  bundleTypeTagId?: string | null;
+  bundleTypeTag?: BundleTypeTag | null;
+  curatorVideoLink?: string | null;
+  curatorStatement?: string | null;
   seo?: {
     title: string;
     description: string;

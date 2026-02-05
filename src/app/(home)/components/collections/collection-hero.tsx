@@ -1,11 +1,12 @@
 "use client";
 
 import { Card } from "@/shared/components/ui/card";
-import { Timer, BookOpen, Gamepad2, Package } from "lucide-react";
+import { Timer, BookOpen, Gamepad2, Package, Video } from "lucide-react";
 import { Bundle, BundleType, TierType } from "@/app/(shared)/types/bundle";
 import { useCountdownTimer } from "@/app/(shared)/hooks/useCountdownTimer";
 import { BundleStaticDeck } from "./collection-static-deck";
 import { useMemo } from "react";
+import { Button } from "@/shared/components/ui/button";
 
 interface BundleHeroProps {
   bundle: Bundle;
@@ -96,6 +97,11 @@ export function BundleHero({ bundle }: BundleHeroProps) {
       </div>
       {/* Feature badges - top right */}
       <div className="absolute right-6 top-6 flex gap-2 z-10">
+        {bundle.bundleTypeTag && (
+          <div className="text-xs font-semibold rounded-full px-3 py-1 backdrop-blur-md bg-blue-500/60 text-white shadow-md border border-white/10">
+            {bundle.bundleTypeTag.name}
+          </div>
+        )}
         {bundle.isFeatured && (
           <div className="text-xs font-semibold rounded-full px-3 py-1 backdrop-blur-md bg-green-500/60 text-white shadow-md border border-white/10">
             Featured
@@ -112,6 +118,26 @@ export function BundleHero({ bundle }: BundleHeroProps) {
           </div>
         )}
       </div>
+
+      {/* Curator Video Button - top left */}
+      {bundle.curatorVideoLink && (
+        <div className="absolute left-6 top-6 z-10">
+          <Button
+            asChild
+            className="backdrop-blur-md bg-black/50 hover:bg-black/70 text-white shadow-lg border border-white/20"
+          >
+            <a
+              href={bundle.curatorVideoLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2"
+            >
+              <Video className="h-4 w-4" />
+              <span>Curator Video</span>
+            </a>
+          </Button>
+        </div>
+      )}
 
       {/* Content overlay */}
       <div className="absolute inset-0 flex items-center justify-center">
@@ -143,6 +169,13 @@ export function BundleHero({ bundle }: BundleHeroProps) {
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-tight">
             {bundle.title}
           </h1>
+
+          {/* Curator Statement */}
+          {bundle.curatorStatement && (
+            <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto italic">
+              &ldquo;{bundle.curatorStatement}&rdquo;
+            </p>
+          )}
 
           {/* Info Cards Row */}
           <div className="flex flex-wrap justify-center gap-4 mt-8">
