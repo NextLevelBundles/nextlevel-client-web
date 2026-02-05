@@ -34,6 +34,10 @@ import {
   Copy,
   Mail,
   Clock,
+  AlertCircle,
+  RotateCcw,
+  DollarSign,
+  Package,
 } from "lucide-react";
 import {
   Tooltip,
@@ -41,6 +45,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/shared/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/shared/components/ui/popover";
 import {
   Dialog,
   DialogContent,
@@ -97,6 +106,67 @@ const ownershipOptions = [
   { value: "GivenByMe", label: "Gifted" },
   { value: "ReceivedByMe", label: "Received as gift" },
 ];
+
+// Component for expiring label with hover popover
+function ExpiringLabel({ daysLeft }: { daysLeft: number }) {
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+
+  return (
+    <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+      <PopoverTrigger asChild>
+        <span
+          className="inline-flex items-center gap-1 text-xs font-semibold text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-950/40 px-2 py-0.5 rounded-full hover:bg-orange-200 dark:hover:bg-orange-950/60 transition-colors cursor-help"
+          onMouseEnter={() => setIsPopoverOpen(true)}
+          onMouseLeave={() => setIsPopoverOpen(false)}
+        >
+          <Clock className="h-3 w-3 animate-pulse" />
+          Expiring Soon · {daysLeft} {daysLeft === 1 ? "day" : "days"} left
+        </span>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-80"
+        onMouseEnter={() => setIsPopoverOpen(true)}
+        onMouseLeave={() => setIsPopoverOpen(false)}
+      >
+        <div className="space-y-3">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5 shrink-0" />
+            <div>
+              <h4 className="font-semibold text-sm mb-1">Steam Key Expiring Soon</h4>
+              <p className="text-sm text-muted-foreground">
+                This Steam key is approaching its expiration deadline. You must redeem and activate it before it expires.
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-lg bg-muted/50 p-3 space-y-2 text-xs">
+            <p className="font-medium text-foreground">What happens when a key expires?</p>
+            <p className="text-muted-foreground">
+              Once expired, the key gets added to the exchange and cannot be activated on Steam.
+            </p>
+            <div className="pt-2 border-t border-border mt-2">
+              <p className="font-medium text-foreground mb-1.5">To prevent expiration:</p>
+              <ul className="space-y-1 text-muted-foreground ml-1">
+                <li className="flex items-start gap-2">
+                  <KeyIcon className="h-3 w-3 mt-0.5 shrink-0" />
+                  <span><strong>Redeem the key:</strong> Click "Redeem Key" to see your activation code</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <ExternalLinkIcon className="h-3 w-3 mt-0.5 shrink-0" />
+                  <span><strong>Activate on Steam:</strong> Add the key to your Steam library immediately</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <GiftIcon className="h-3 w-3 mt-0.5 shrink-0" />
+                  <span><strong>Or gift it:</strong> Send the key to someone else before it expires</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 // Function to convert technical status names to user-friendly ones
 const getStatusDisplayName = (status: string): string => {
@@ -1002,10 +1072,7 @@ export default function KeysPage() {
                                 {(() => {
                                   const { isExpiring, daysLeft } = isExpiringSoon(key);
                                   return isExpiring ? (
-                                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-950/40 px-2 py-0.5 rounded-full">
-                                      <Clock className="h-3 w-3 animate-pulse" />
-                                      Expiring Soon · {daysLeft} {daysLeft === 1 ? "day" : "days"} left
-                                    </span>
+                                    <ExpiringLabel daysLeft={daysLeft} />
                                   ) : null;
                                 })()}
                               </span>

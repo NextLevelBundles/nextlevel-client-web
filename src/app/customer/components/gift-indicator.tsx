@@ -36,6 +36,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogOverlay,
+  AlertDialogPortal,
 } from "@/app/(shared)/components/ui/alert-dialog";
 import { toast } from "sonner";
 import dayjs from "dayjs";
@@ -649,7 +651,11 @@ function GiftDetailsDialog({ cartItem, children }: GiftDetailsDialogProps) {
 
       {/* Resend Gift Dialog */}
       <AlertDialog open={resendDialogOpen} onOpenChange={setResendDialogOpen}>
-        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+        <AlertDialogContent
+          onClick={(e) => e.stopPropagation()}
+          onPointerDownOutside={(e) => e.stopPropagation()}
+          onInteractOutside={(e) => e.stopPropagation()}
+        >
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <RotateCcw className="h-5 w-5 text-primary" />
@@ -744,7 +750,11 @@ function GiftDetailsDialog({ cartItem, children }: GiftDetailsDialogProps) {
 
       {/* Refund Dialog */}
       <AlertDialog open={refundDialogOpen} onOpenChange={setRefundDialogOpen}>
-        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+        <AlertDialogContent
+          onClick={(e) => e.stopPropagation()}
+          onPointerDownOutside={(e) => e.stopPropagation()}
+          onInteractOutside={(e) => e.stopPropagation()}
+        >
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <DollarSign className="h-5 w-5 text-primary" />
@@ -801,7 +811,11 @@ function GiftDetailsDialog({ cartItem, children }: GiftDetailsDialogProps) {
 
       {/* Claim Gift Dialog */}
       <AlertDialog open={claimDialogOpen} onOpenChange={setClaimDialogOpen}>
-        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+        <AlertDialogContent
+          onClick={(e) => e.stopPropagation()}
+          onPointerDownOutside={(e) => e.stopPropagation()}
+          onInteractOutside={(e) => e.stopPropagation()}
+        >
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <Package className="h-5 w-5 text-primary" />

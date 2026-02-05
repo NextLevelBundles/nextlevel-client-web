@@ -29,6 +29,11 @@ import {
 } from "@/app/(shared)/components/ui/table";
 import { Button } from "@/app/(shared)/components/ui/button";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/app/(shared)/components/ui/popover";
+import {
   CalendarIcon,
   SearchIcon,
   PackageIcon,
@@ -41,6 +46,11 @@ import {
   Send,
   TrendingUp,
   Clock,
+  AlertCircle,
+  RotateCcw,
+  DollarSign,
+  Package as PackageIcon2,
+  Repeat,
 } from "lucide-react";
 import { usePurchases } from "@/hooks/queries/usePurchases";
 import { PurchaseQueryParams, GiftFilterType } from "@/lib/api/types/purchase";
@@ -182,6 +192,7 @@ function PurchaseRow({
   shouldAutoOpen: boolean;
 }) {
   const [isModalOpen, setIsModalOpen] = useState(shouldAutoOpen);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const upgradeAvailable = isUpgradeAvailable(purchase);
   const { isExpiring, daysLeft } = isExpiringSoon(purchase);
 
@@ -214,12 +225,75 @@ function PurchaseRow({
                 </div>
               )}
               {shouldShowExpiringLabel && !upgradeAvailable && (
-                <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400 animate-pulse" />
-                  <span className="text-xs font-semibold text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-950/40 px-2 py-0.5 rounded-full">
-                    Expiring Soon · {daysLeft} {daysLeft === 1 ? "day" : "days"} left
-                  </span>
-                </div>
+                <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <div
+                      className="flex items-center gap-1 cursor-help"
+                      onClick={(e) => e.stopPropagation()}
+                      onMouseEnter={(e) => {
+                        e.stopPropagation();
+                        setIsPopoverOpen(true);
+                      }}
+                      onMouseLeave={(e) => {
+                        e.stopPropagation();
+                        setIsPopoverOpen(false);
+                      }}
+                    >
+                      <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400 animate-pulse" />
+                      <span className="text-xs font-semibold text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-950/40 px-2 py-0.5 rounded-full hover:bg-orange-200 dark:hover:bg-orange-950/60 transition-colors">
+                        Expiring Soon · {daysLeft} {daysLeft === 1 ? "day" : "days"} left
+                      </span>
+                    </div>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-80"
+                    onClick={(e) => e.stopPropagation()}
+                    onMouseEnter={(e) => {
+                      e.stopPropagation();
+                      setIsPopoverOpen(true);
+                    }}
+                    onMouseLeave={(e) => {
+                      e.stopPropagation();
+                      setIsPopoverOpen(false);
+                    }}
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-2">
+                        <AlertCircle className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5 shrink-0" />
+                        <div>
+                          <h4 className="font-semibold text-sm mb-1">Purchase Expiring Soon</h4>
+                          <p className="text-sm text-muted-foreground">
+                            This purchase is approaching its expiration deadline. Since this is a gifted collection that hasn't been accepted yet, you'll need to take action before it expires.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="rounded-lg bg-muted/50 p-3 space-y-2 text-xs">
+                        <p className="font-medium text-foreground">What happens when the purchase expires?</p>
+                        <p className="text-muted-foreground">
+                          If the gift is not accepted before the purchase expires, you can take one of these actions (each has its own deadline):
+                        </p>
+                        <ul className="space-y-1.5 text-muted-foreground ml-1">
+                          <li className="flex items-start gap-2">
+                            <RotateCcw className="h-3 w-3 mt-0.5 shrink-0" />
+                            <span><strong>Resend:</strong> Send to a different recipient (available for 90 days after collection end)</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <DollarSign className="h-3 w-3 mt-0.5 shrink-0" />
+                            <span><strong>Refund:</strong> Get your money back (available for 14 days after collection end)</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <PackageIcon2 className="h-3 w-3 mt-0.5 shrink-0" />
+                            <span><strong>Claim:</strong> Add keys to your own library (only if you haven't purchased this collection yourself)</span>
+                          </li>
+                        </ul>
+                        <p className="text-muted-foreground pt-1">
+                          If no action is taken before all deadlines pass, the keys will be automatically added to the exchange system.
+                        </p>
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               )}
             </div>
             <GiftIndicator cartItem={purchase} />
