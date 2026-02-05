@@ -126,43 +126,43 @@ function getStatusBadge(status?: CartItemStatus) {
   switch (status) {
     case CartItemStatus.Completed:
       return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400">
+        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700 border border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800">
           Completed
         </span>
       );
     case CartItemStatus.Refunded:
       return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-50 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400">
+        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-800">
           Refunded
         </span>
       );
     case CartItemStatus.Failed:
       return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400">
+        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-700 border border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800">
           Failed
         </span>
       );
     case CartItemStatus.Expired:
       return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400">
+        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-700 border border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800">
           Expired
         </span>
       );
     case CartItemStatus.Reserved:
       return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400">
+        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800">
           Reserved
         </span>
       );
     case CartItemStatus.AddedToCart:
       return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-50 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400">
+        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-50 text-gray-600 border border-gray-200 dark:bg-gray-900/30 dark:text-gray-400 dark:border-gray-700">
           In Cart
         </span>
       );
     default:
       return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-50 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400">
+        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-50 text-gray-600 border border-gray-200 dark:bg-gray-900/30 dark:text-gray-400 dark:border-gray-700">
           -
         </span>
       );
@@ -185,10 +185,11 @@ function PurchaseRow({
   const upgradeAvailable = isUpgradeAvailable(purchase);
   const { isExpiring, daysLeft } = isExpiringSoon(purchase);
 
-  // Only show expiring soon label for gift purchases where gift hasn't been accepted yet
+  // Only show expiring soon label for gift purchases where gift hasn't been accepted yet and status is Completed
   const shouldShowExpiringLabel = isExpiring &&
     purchase.isGift === true &&
-    purchase.giftAccepted !== true;
+    purchase.giftAccepted !== true &&
+    purchase.status === CartItemStatus.Completed;
 
   return (
     <>
