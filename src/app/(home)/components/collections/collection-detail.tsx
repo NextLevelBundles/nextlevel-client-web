@@ -13,6 +13,7 @@ import { CharityTierSection } from "./charity-tier-section";
 import { UpsellTierSection } from "./upsell-tier-section";
 import { MobileStickyCTA } from "./mobile-sticky-cta";
 import { MobilePurchaseSheet } from "./mobile-purchase-sheet";
+import { BundleCurators } from "./bundle-curators";
 import {
   Bundle,
   BundleType,
@@ -404,6 +405,10 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
     <TooltipProvider>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 lg:pb-8">
         <BundleHero bundle={bundle} />
+
+        {bundle.curators && bundle.curators.length > 0 && (
+          <BundleCurators curators={bundle.curators} />
+        )}
 
         {renderStatusBanner()}
         {renderLowStockBanner()}

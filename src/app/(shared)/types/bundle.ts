@@ -19,6 +19,23 @@ export interface BundleTypeTag {
   updatedAt: string;
 }
 
+export enum CuratorType {
+  Lead = "Lead",
+  Guest = "Guest",
+}
+
+export interface Curator {
+  id: string;
+  customerId: string;
+  customerName: string;
+  customerHandle: string;
+  customerPictureUrl: string;
+  type: CuratorType;
+  quote: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Partial bundle data for list views
 export interface BundleListItem {
   id: string;
@@ -48,6 +65,7 @@ export interface BundleListItem {
   bundleTypeTag?: BundleTypeTag | null;
   curatorVideoLink?: string | null;
   curatorStatement?: string | null;
+  curators?: Curator[];
   seo?: {
     title: string;
     description: string;
