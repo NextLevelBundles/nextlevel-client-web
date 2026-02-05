@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { giftApi } from "@/lib/api";
-import { CartItemGift, AcceptGiftResponse } from "@/lib/api/types/gift";
+import { CartItemGift, AcceptGiftResponse, ExpiredGiftActions } from "@/lib/api/types/gift";
 import { SteamKeyAssignment } from "@/lib/api/types/steam-key";
 import { toast } from "sonner";
 
@@ -10,6 +10,8 @@ const giftKeys = {
   cartItems: () => [...giftKeys.all, "cart-items"] as const,
   cartItem: (cartItemId: string) =>
     [...giftKeys.cartItems(), cartItemId] as const,
+  expiredGiftActions: (cartItemId: string) =>
+    [...giftKeys.cartItems(), cartItemId, "expired-actions"] as const,
   steamKeys: () => [...giftKeys.all, "steam-keys"] as const,
   steamKey: (assignmentId: string, email: string) =>
     [...giftKeys.steamKeys(), assignmentId, email] as const,
@@ -131,5 +133,16 @@ export function useResendSteamKeyGiftEmail() {
           error instanceof Error ? error.message : "Please try again later",
       });
     },
+  });
+}
+
+// Expired Gift Actions Hook
+export function useExpiredGiftActions(cartItemId: string, enabled = true) {
+  return useQuery({
+    queryKey: giftKeys.expiredGiftActions(cartItemId),
+    queryFn: () => giftApi.getExpiredGiftActions(cartItemId),
+    enabled: !!cartItemId && enabled,
+    staleTime: 2 * 60 * 1000, // 2 minutes - shorter since these can change
+    retry: 1,
   });
 }

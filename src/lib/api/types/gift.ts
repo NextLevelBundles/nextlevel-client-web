@@ -83,3 +83,13 @@ export interface AcceptGiftResponse {
   message: string;
   redirectUrl?: string;
 }
+
+export interface ExpiredGiftActions {
+  canResend: boolean;
+  resendDeadline: string | null;
+  canRefund: boolean;
+  refundDeadline: string | null;
+  canClaim: boolean;
+  claimDeadline: string | null;
+  cannotClaimReason: string | null;
+}

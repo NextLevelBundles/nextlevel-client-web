@@ -1,5 +1,5 @@
 import { ClientApi } from "../client-api";
-import { CartItemGift, AcceptGiftResponse } from "../types/gift";
+import { CartItemGift, AcceptGiftResponse, ExpiredGiftActions } from "../types/gift";
 import { SteamKeyAssignment } from "../types/steam-key";
 
 export class GiftApi {
@@ -60,6 +60,14 @@ export class GiftApi {
   ): Promise<{ message: string }> {
     return await this.client.post<{ message: string }>(
       `/customer/gifts/cart-items/${cartItemId}/claim`
+    );
+  }
+
+  async getExpiredGiftActions(
+    cartItemId: string
+  ): Promise<ExpiredGiftActions> {
+    return await this.client.get<ExpiredGiftActions>(
+      `/customer/purchases/${cartItemId}/expired-gift-actions`
     );
   }
 

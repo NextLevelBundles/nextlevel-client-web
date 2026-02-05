@@ -39,10 +39,33 @@ import {
 } from "@/app/(shared)/components/ui/alert-dialog";
 import { toast } from "sonner";
 import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 import { useState } from "react";
 import { giftApi } from "@/lib/api";
 import { CartItem, CartItemStatus } from "@/lib/api/types/cart";
 import { useQueryClient } from "@tanstack/react-query";
+import { useExpiredGiftActions } from "@/hooks/queries/useGifts";
+
+dayjs.extend(relativeTime);
+
+// Helper function to format deadline with relative time
+function formatDeadline(deadline: string): string {
+  const deadlineDate = dayjs(deadline);
+  const now = dayjs();
+  const daysLeft = deadlineDate.diff(now, "day");
+
+  if (daysLeft < 0) {
+    return `Expired on ${deadlineDate.format("MMM D, YYYY [at] h:mm A")}`;
+  } else if (daysLeft === 0) {
+    return `Today at ${deadlineDate.format("h:mm A")}`;
+  } else if (daysLeft === 1) {
+    return `Tomorrow (${deadlineDate.format("MMM D [at] h:mm A")})`;
+  } else if (daysLeft <= 7) {
+    return `In ${daysLeft} days (${deadlineDate.format("MMM D [at] h:mm A")})`;
+  } else {
+    return `${deadlineDate.format("MMM D, YYYY [at] h:mm A")} (${deadlineDate.fromNow()})`;
+  }
+}
 
 interface GiftIndicatorProps {
   cartItem: CartItem | null;
@@ -124,6 +147,13 @@ function GiftDetailsDialog({ cartItem, children }: GiftDetailsDialogProps) {
   const isExpired = !cartItem.giftAccepted && isGiftExpired(cartItem);
   const canTakeAction = cartItem.status === CartItemStatus.Completed;
   const isRefunded = cartItem.status === CartItemStatus.Refunded;
+
+  // Fetch expired gift actions when dialog opens and gift is expired
+  const { data: giftActions, isLoading: isLoadingActions } =
+    useExpiredGiftActions(
+      cartItem.id,
+      dialogOpen && isExpired && canTakeAction,
+    );
 
   const handleResendEmail = async () => {
     setIsResending(true);
@@ -274,7 +304,7 @@ function GiftDetailsDialog({ cartItem, children }: GiftDetailsDialogProps) {
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="max-w-md" onClick={(e) => e.stopPropagation()}>
+      <DialogContent className="max-w-xl" onClick={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {isExpired ? (
@@ -356,84 +386,139 @@ function GiftDetailsDialog({ cartItem, children }: GiftDetailsDialogProps) {
                 </div>
               ) : canTakeAction ? (
                 <>
-                  {/* Returned gift with available actions */}
-                  <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-4 space-y-3">
-                    <p className="text-sm font-medium text-foreground">
-                      What would you like to do?
-                    </p>
-                    <div className="space-y-2 text-sm text-muted-foreground">
-                      <div className="flex items-start gap-2">
-                        <RotateCcw className="h-4 w-4 mt-0.5 shrink-0" />
-                        <p>
-                          <span className="font-medium text-foreground">
-                            Resend:
-                          </span>{" "}
-                          Send this gift to a different recipient
-                        </p>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <DollarSign className="h-4 w-4 mt-0.5 shrink-0" />
-                        <p>
-                          <span className="font-medium text-foreground">
-                            Refund:
-                          </span>{" "}
-                          Request a refund (available for 14 days after
-                          collection end)
-                        </p>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <Package className="h-4 w-4 mt-0.5 shrink-0" />
-                        <p>
-                          <span className="font-medium text-foreground">
-                            Claim:
-                          </span>{" "}
-                          Add the keys to your own library
-                        </p>
-                      </div>
+                  {isLoadingActions ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                     </div>
-                  </div>
+                  ) : (
+                    <>
+                      {/* Returned gift with available actions */}
+                      <div className="space-y-4">
+                        <h4 className="text-sm font-semibold text-foreground">
+                          Available Actions
+                        </h4>
 
-                  {/* Action buttons for returned gifts with Completed status */}
-                  <div className="flex flex-col gap-2 mt-4">
-                    <Button
-                      variant="outline"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setDialogOpen(false);
-                        setTimeout(() => setResendDialogOpen(true), 100);
-                      }}
-                      className="gap-2 w-full"
-                    >
-                      <RotateCcw className="h-4 w-4" />
-                      Resend to New Recipient
-                    </Button>
+                        {/* Resend Action */}
+                        <div className="rounded-lg border border-border bg-muted/30 p-4">
+                          <div className="flex items-start gap-3 mb-3">
+                            <div className="rounded-full bg-background p-2">
+                              <RotateCcw className="h-5 w-5 text-primary" />
+                            </div>
+                            <div className="flex-1 space-y-1">
+                              <h5 className="font-semibold text-foreground">
+                                Resend to New Recipient
+                              </h5>
+                              <p className="text-sm text-muted-foreground">
+                                Send this gift to a different person. Available
+                                until 90 days after collection end.
+                              </p>
+                              {giftActions?.resendDeadline && (
+                                <p className="text-xs text-muted-foreground mt-2">
+                                  <strong>Deadline:</strong>{" "}
+                                  {formatDeadline(giftActions.resendDeadline)}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDialogOpen(false);
+                              setTimeout(() => setResendDialogOpen(true), 100);
+                            }}
+                            className="w-full"
+                            disabled={!giftActions?.canResend}
+                          >
+                            <RotateCcw className="h-4 w-4 mr-2" />
+                            Resend Gift
+                          </Button>
+                        </div>
 
-                    <Button
-                      variant="outline"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setDialogOpen(false);
-                        setTimeout(() => setRefundDialogOpen(true), 100);
-                      }}
-                      className="gap-2 w-full"
-                    >
-                      <DollarSign className="h-4 w-4" />
-                      Request Refund
-                    </Button>
+                        {/* Refund Action */}
+                        <div className="rounded-lg border border-border bg-muted/30 p-4">
+                          <div className="flex items-start gap-3 mb-3">
+                            <div className="rounded-full bg-background p-2">
+                              <DollarSign className="h-5 w-5 text-primary" />
+                            </div>
+                            <div className="flex-1 space-y-1">
+                              <h5 className="font-semibold text-foreground">
+                                Request Refund
+                              </h5>
+                              <p className="text-sm text-muted-foreground">
+                                Get your money back. Available until 14 days
+                                after collection end.
+                              </p>
+                              {giftActions?.refundDeadline && (
+                                <p className="text-xs text-muted-foreground mt-2">
+                                  <strong>Deadline:</strong>{" "}
+                                  {formatDeadline(giftActions.refundDeadline)}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDialogOpen(false);
+                              setTimeout(() => setRefundDialogOpen(true), 100);
+                            }}
+                            className="w-full"
+                            disabled={!giftActions?.canRefund}
+                          >
+                            <DollarSign className="h-4 w-4 mr-2" />
+                            Request Refund
+                          </Button>
+                        </div>
 
-                    <Button
-                      variant="default"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setDialogOpen(false);
-                        setTimeout(() => setClaimDialogOpen(true), 100);
-                      }}
-                      className="gap-2 w-full"
-                    >
-                      <Package className="h-4 w-4" />
-                      Claim for Myself
-                    </Button>
-                  </div>
+                        {/* Claim Action */}
+                        <div className="rounded-lg border border-border bg-muted/30 p-4">
+                          <div className="flex items-start gap-3 mb-3">
+                            <div className="rounded-full bg-background p-2">
+                              <Package className="h-5 w-5 text-primary" />
+                            </div>
+                            <div className="flex-1 space-y-1">
+                              <h5 className="font-semibold text-foreground">
+                                Claim for Yourself
+                              </h5>
+                              <p className="text-sm text-muted-foreground">
+                                Add the keys to your own library. Only available
+                                until 90 days after collection end and you
+                                haven't purchased this collection for yourself.
+                              </p>
+                              {giftActions?.cannotClaimReason && (
+                                <p className="text-xs text-destructive mt-2">
+                                  <strong>Not available:</strong>{" "}
+                                  {giftActions.cannotClaimReason}
+                                </p>
+                              )}
+                              {giftActions?.claimDeadline &&
+                                !giftActions?.cannotClaimReason && (
+                                  <p className="text-xs text-muted-foreground mt-2">
+                                    <strong>Deadline:</strong>{" "}
+                                    {formatDeadline(giftActions.claimDeadline)}
+                                  </p>
+                                )}
+                            </div>
+                          </div>
+                          <Button
+                            variant="default"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDialogOpen(false);
+                              setTimeout(() => setClaimDialogOpen(true), 100);
+                            }}
+                            className="w-full"
+                            disabled={!giftActions?.canClaim}
+                          >
+                            <Package className="h-4 w-4 mr-2" />
+                            Claim Gift
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </>
               ) : (
                 <div className="rounded-lg bg-muted border p-4">
@@ -444,8 +529,8 @@ function GiftDetailsDialog({ cartItem, children }: GiftDetailsDialogProps) {
                         No Actions Available
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        This gift has been returned and no further actions can be taken
-                        at this time.
+                        This gift has been returned and no further actions can
+                        be taken at this time.
                       </p>
                     </div>
                   </div>
