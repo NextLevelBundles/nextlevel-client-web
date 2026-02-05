@@ -132,32 +132,46 @@ function ExpiringLabel({ daysLeft }: { daysLeft: number }) {
           <div className="flex items-start gap-2">
             <AlertCircle className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5 shrink-0" />
             <div>
-              <h4 className="font-semibold text-sm mb-1">Steam Key Expiring Soon</h4>
+              <h4 className="font-semibold text-sm mb-1">
+                Steam Key Expiring Soon
+              </h4>
               <p className="text-sm text-muted-foreground">
-                This Steam key is approaching its expiration deadline. You must redeem and activate it before it expires.
+                This Steam key is approaching its expiration deadline. You must
+                redeem and activate it before it expires.
               </p>
             </div>
           </div>
 
           <div className="rounded-lg bg-muted/50 p-3 space-y-2 text-xs">
-            <p className="font-medium text-foreground">What happens when a key expires?</p>
+            <p className="font-medium text-foreground">
+              What happens when a key expires?
+            </p>
             <p className="text-muted-foreground">
-              Once expired, the key gets added to the exchange and cannot be activated on Steam.
+              Once expired, the key gets added to the exchange and cannot be
+              activated on Steam.
             </p>
             <div className="pt-2 border-t border-border mt-2">
-              <p className="font-medium text-foreground mb-1.5">To prevent expiration:</p>
-              <ul className="space-y-1 text-muted-foreground ml-1">
+              <p className="font-medium text-foreground mb-1.5">
+                Actions you can take before expiration:
+              </p>
+              <ul className="space-y-2 text-muted-foreground ml-1">
                 <li className="flex items-start gap-2">
                   <KeyIcon className="h-3 w-3 mt-0.5 shrink-0" />
-                  <span><strong>Redeem the key:</strong> Click "Redeem Key" to see your activation code</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <ExternalLinkIcon className="h-3 w-3 mt-0.5 shrink-0" />
-                  <span><strong>Activate on Steam:</strong> Add the key to your Steam library immediately</span>
+                  <span>
+                    <strong>Redeem on Steam:</strong> Reveal the key and activate it on your Steam account to keep the game permanently in your library
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <GiftIcon className="h-3 w-3 mt-0.5 shrink-0" />
-                  <span><strong>Or gift it:</strong> Send the key to someone else before it expires</span>
+                  <span>
+                    <strong>Gift:</strong> Send the key to someone else who can redeem it on their Steam account before it expires
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <ExternalLinkIcon className="h-3 w-3 mt-0.5 shrink-0" />
+                  <span>
+                    <strong>Add to Exchange:</strong> Manually exchange the key for credits before it expires, which you can use to get different games
+                  </span>
                 </li>
               </ul>
             </div>
@@ -337,11 +351,11 @@ export default function KeysPage() {
 
   // Calculate user's progress
   const revealedKeys = steamKeys.filter(
-    (key) => key.status === SteamKeyStatus.Revealed
+    (key) => key.status === SteamKeyStatus.Revealed,
   ).length;
   const currentLevel = PROGRESS_LEVELS.reduce(
     (acc, level) => (revealedKeys >= level.required ? level : acc),
-    PROGRESS_LEVELS[0]
+    PROGRESS_LEVELS[0],
   );
 
   const nextLevel = PROGRESS_LEVELS[PROGRESS_LEVELS.indexOf(currentLevel) + 1];
@@ -364,7 +378,9 @@ export default function KeysPage() {
   };
 
   // Helper function to check if key is expiring soon (less than 30 days)
-  const isExpiringSoon = (key: SteamKeyAssignment): { isExpiring: boolean; daysLeft: number } => {
+  const isExpiringSoon = (
+    key: SteamKeyAssignment,
+  ): { isExpiring: boolean; daysLeft: number } => {
     if (key.status !== SteamKeyStatus.Assigned || !key.expiresAt) {
       return { isExpiring: false, daysLeft: 0 };
     }
@@ -427,7 +443,7 @@ export default function KeysPage() {
   const handleViewKey = async (
     keyId: string,
     gameTitle: string,
-    coverImageUrl: string | null
+    coverImageUrl: string | null,
   ) => {
     setViewingKeyId(keyId);
     try {
@@ -519,7 +535,7 @@ export default function KeysPage() {
     try {
       // Call the API to reveal the key
       const revealedKey = await revealKeyMutation.mutateAsync(
-        redeemConfirmDialog.keyId
+        redeemConfirmDialog.keyId,
       );
 
       if (revealedKey.steamKeyValue) {
@@ -535,7 +551,7 @@ export default function KeysPage() {
         // Open Steam registration page with the key
         window.open(
           `https://store.steampowered.com/account/registerkey?key=${revealedKey.steamKeyValue}`,
-          "_blank"
+          "_blank",
         );
 
         // Trigger confetti
@@ -572,18 +588,40 @@ export default function KeysPage() {
     isLoading: boolean;
     isFetchingBundleInfo: boolean;
     bundleInfo: BundleExchangeInfo | null;
-  }>({ isOpen: false, keyId: null, gameName: null, isLoading: false, isFetchingBundleInfo: false, bundleInfo: null });
+  }>({
+    isOpen: false,
+    keyId: null,
+    gameName: null,
+    isLoading: false,
+    isFetchingBundleInfo: false,
+    bundleInfo: null,
+  });
 
   const handleSendToVault = async (assignmentId: string, gameName: string) => {
-    setExchangeDialog({ isOpen: true, keyId: assignmentId, gameName, isLoading: false, isFetchingBundleInfo: true, bundleInfo: null });
+    setExchangeDialog({
+      isOpen: true,
+      keyId: assignmentId,
+      gameName,
+      isLoading: false,
+      isFetchingBundleInfo: true,
+      bundleInfo: null,
+    });
 
     try {
       const steamKeyApi = new SteamKeyApi(apiClient);
       const bundleInfo = await steamKeyApi.getBundleExchangeInfo(assignmentId);
-      setExchangeDialog((prev) => ({ ...prev, isFetchingBundleInfo: false, bundleInfo }));
+      setExchangeDialog((prev) => ({
+        ...prev,
+        isFetchingBundleInfo: false,
+        bundleInfo,
+      }));
     } catch {
       // If fetching bundle info fails, continue without it
-      setExchangeDialog((prev) => ({ ...prev, isFetchingBundleInfo: false, bundleInfo: null }));
+      setExchangeDialog((prev) => ({
+        ...prev,
+        isFetchingBundleInfo: false,
+        bundleInfo: null,
+      }));
     }
   };
 
@@ -593,7 +631,7 @@ export default function KeysPage() {
     try {
       const exchangeApi = new ExchangeApi(apiClient);
       const result = await exchangeApi.exchangeSteamKeyForCredits(
-        exchangeDialog.keyId
+        exchangeDialog.keyId,
       );
       if (result.success === true || typeof result.credits === "number") {
         toast.success(`Steam key exchanged for ${result.credits} credits!`);
@@ -609,7 +647,14 @@ export default function KeysPage() {
     } catch {
       toast.error("Exchange failed. Please try again.");
     } finally {
-      setExchangeDialog({ isOpen: false, keyId: null, gameName: null, isLoading: false, isFetchingBundleInfo: false, bundleInfo: null });
+      setExchangeDialog({
+        isOpen: false,
+        keyId: null,
+        gameName: null,
+        isLoading: false,
+        isFetchingBundleInfo: false,
+        bundleInfo: null,
+      });
     }
   };
 
@@ -683,14 +728,14 @@ export default function KeysPage() {
           setSyncErrorMessage("profile-private");
         } else if (result.steamLibrarySyncStatus === "SyncError") {
           setSyncErrorMessage(
-            "Technical error occurred while syncing. Please try again later."
+            "Technical error occurred while syncing. Please try again later.",
           );
         }
       },
       onError: (error) => {
         console.error("Mutation error:", error);
         setSyncErrorMessage(
-          "Failed to connect to Steam. Please try again later."
+          "Failed to connect to Steam. Please try again later.",
         );
       },
     });
@@ -1055,29 +1100,31 @@ export default function KeysPage() {
                           Assigned on{" "}
                           {key.assignedAt
                             ? dayjs(key.assignedAt).format(
-                                "MMM D, YYYY [at] h:mm A"
+                                "MMM D, YYYY [at] h:mm A",
                               )
                             : "Unknown"}
-                          {key.status === SteamKeyStatus.Assigned && key.expiresAt && (
-                            <>
-                              {" "}
-                              <br />
-                              <span className="inline-flex items-center gap-2 flex-wrap">
-                                <span>
-                                  Expires on{" "}
-                                  {dayjs(key.expiresAt).format(
-                                    "MMM D, YYYY [at] h:mm A"
-                                  )}
+                          {key.status === SteamKeyStatus.Assigned &&
+                            key.expiresAt && (
+                              <>
+                                {" "}
+                                <br />
+                                <span className="inline-flex items-center gap-2 flex-wrap">
+                                  <span>
+                                    Expires on{" "}
+                                    {dayjs(key.expiresAt).format(
+                                      "MMM D, YYYY [at] h:mm A",
+                                    )}
+                                  </span>
+                                  {(() => {
+                                    const { isExpiring, daysLeft } =
+                                      isExpiringSoon(key);
+                                    return isExpiring ? (
+                                      <ExpiringLabel daysLeft={daysLeft} />
+                                    ) : null;
+                                  })()}
                                 </span>
-                                {(() => {
-                                  const { isExpiring, daysLeft } = isExpiringSoon(key);
-                                  return isExpiring ? (
-                                    <ExpiringLabel daysLeft={daysLeft} />
-                                  ) : null;
-                                })()}
-                              </span>
-                            </>
-                          )}
+                              </>
+                            )}
                         </p>
                       </div>
                     </div>
@@ -1138,7 +1185,7 @@ export default function KeysPage() {
                                     handleViewKey(
                                       key.id,
                                       key.title,
-                                      key.coverImage?.url || null
+                                      key.coverImage?.url || null,
                                     )
                                   }
                                   disabled={viewingKeyId === key.id}
@@ -1339,7 +1386,10 @@ export default function KeysPage() {
                                               key.alreadyOwnedOnSteam &&
                                               key.exchangeCredits &&
                                               key.exchangeCredits > 0 &&
-                                              handleSendToVault(key.id, key.title)
+                                              handleSendToVault(
+                                                key.id,
+                                                key.title,
+                                              )
                                             }
                                           >
                                             <ArchiveIcon className="h-4 w-4" />
@@ -1378,11 +1428,13 @@ export default function KeysPage() {
                                 >
                                   <DialogContent className="sm:max-w-md bg-card">
                                     <DialogHeader>
-                                      <DialogTitle>Exchange Steam Key?</DialogTitle>
+                                      <DialogTitle>
+                                        Exchange Steam Key?
+                                      </DialogTitle>
                                       <DialogDescription>
-                                        Are you sure you want to exchange this Steam
-                                        key for credits? This action cannot be
-                                        undone.
+                                        Are you sure you want to exchange this
+                                        Steam key for credits? This action
+                                        cannot be undone.
                                       </DialogDescription>
                                     </DialogHeader>
 
@@ -1390,31 +1442,68 @@ export default function KeysPage() {
                                     {exchangeDialog.isFetchingBundleInfo ? (
                                       <div className="flex items-center justify-center py-4">
                                         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                                        <span className="ml-2 text-sm text-muted-foreground">Loading collection info...</span>
+                                        <span className="ml-2 text-sm text-muted-foreground">
+                                          Loading collection info...
+                                        </span>
                                       </div>
                                     ) : exchangeDialog.bundleInfo ? (
-                                      <Alert className={exchangeDialog.bundleInfo.exchangedCount >= BUNDLE_EXCHANGE_LIMIT ? "border-destructive" : "border-blue-500"}>
-                                        <Info className={`h-4 w-4 ${exchangeDialog.bundleInfo.exchangedCount >= BUNDLE_EXCHANGE_LIMIT ? "text-destructive" : "text-blue-500"}`} />
+                                      <Alert
+                                        className={
+                                          exchangeDialog.bundleInfo
+                                            .exchangedCount >=
+                                          BUNDLE_EXCHANGE_LIMIT
+                                            ? "border-destructive"
+                                            : "border-blue-500"
+                                        }
+                                      >
+                                        <Info
+                                          className={`h-4 w-4 ${exchangeDialog.bundleInfo.exchangedCount >= BUNDLE_EXCHANGE_LIMIT ? "text-destructive" : "text-blue-500"}`}
+                                        />
                                         <AlertDescription>
                                           <div className="font-medium mb-1">
-                                            {exchangeDialog.bundleInfo.productTitle}
+                                            {
+                                              exchangeDialog.bundleInfo
+                                                .productTitle
+                                            }
                                           </div>
                                           {exchangeDialog.gameName && (
                                             <div className="text-muted-foreground text-sm mb-2">
                                               Game: {exchangeDialog.gameName}
                                             </div>
                                           )}
-                                          {exchangeDialog.bundleInfo.exchangedCount >= BUNDLE_EXCHANGE_LIMIT ? (
+                                          {exchangeDialog.bundleInfo
+                                            .exchangedCount >=
+                                          BUNDLE_EXCHANGE_LIMIT ? (
                                             <span className="text-destructive">
-                                              You have reached the maximum limit of {BUNDLE_EXCHANGE_LIMIT} games that can be exchanged from this collection.
+                                              You have reached the maximum limit
+                                              of {BUNDLE_EXCHANGE_LIMIT} games
+                                              that can be exchanged from this
+                                              collection.
                                             </span>
                                           ) : (
                                             <span>
-                                              You can exchange max {BUNDLE_EXCHANGE_LIMIT} games from this collection.
+                                              You can exchange max{" "}
+                                              {BUNDLE_EXCHANGE_LIMIT} games from
+                                              this collection.
                                               <br />
-                                              You've used <strong>{exchangeDialog.bundleInfo.exchangedCount}/{BUNDLE_EXCHANGE_LIMIT}</strong>.
+                                              You've used{" "}
+                                              <strong>
+                                                {
+                                                  exchangeDialog.bundleInfo
+                                                    .exchangedCount
+                                                }
+                                                /{BUNDLE_EXCHANGE_LIMIT}
+                                              </strong>
+                                              .
                                               <br />
-                                              After this exchange, <strong>{BUNDLE_EXCHANGE_LIMIT - exchangeDialog.bundleInfo.exchangedCount - 1}</strong> will remain.
+                                              After this exchange,{" "}
+                                              <strong>
+                                                {BUNDLE_EXCHANGE_LIMIT -
+                                                  exchangeDialog.bundleInfo
+                                                    .exchangedCount -
+                                                  1}
+                                              </strong>{" "}
+                                              will remain.
                                             </span>
                                           )}
                                         </AlertDescription>
@@ -1443,7 +1532,10 @@ export default function KeysPage() {
                                         disabled={
                                           exchangeDialog.isLoading ||
                                           exchangeDialog.isFetchingBundleInfo ||
-                                          (exchangeDialog.bundleInfo !== null && exchangeDialog.bundleInfo.exchangedCount >= BUNDLE_EXCHANGE_LIMIT)
+                                          (exchangeDialog.bundleInfo !== null &&
+                                            exchangeDialog.bundleInfo
+                                              .exchangedCount >=
+                                              BUNDLE_EXCHANGE_LIMIT)
                                         }
                                       >
                                         {exchangeDialog.isLoading ? (
@@ -1742,7 +1834,7 @@ export default function KeysPage() {
               onClick={() => {
                 window.open(
                   "https://help.steampowered.com/en/faqs/view/588C-C67D-0251-C276",
-                  "_blank"
+                  "_blank",
                 );
               }}
             >
@@ -1821,7 +1913,7 @@ export default function KeysPage() {
                 if (viewKeyDialog.keyValue) {
                   window.open(
                     `https://store.steampowered.com/account/registerkey?key=${viewKeyDialog.keyValue}`,
-                    "_blank"
+                    "_blank",
                   );
                 }
               }}
