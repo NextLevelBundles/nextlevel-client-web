@@ -653,8 +653,6 @@ function GiftDetailsDialog({ cartItem, children }: GiftDetailsDialogProps) {
       <AlertDialog open={resendDialogOpen} onOpenChange={setResendDialogOpen}>
         <AlertDialogContent
           onClick={(e) => e.stopPropagation()}
-          onPointerDownOutside={(e) => e.stopPropagation()}
-          onInteractOutside={(e) => e.stopPropagation()}
         >
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
@@ -752,8 +750,6 @@ function GiftDetailsDialog({ cartItem, children }: GiftDetailsDialogProps) {
       <AlertDialog open={refundDialogOpen} onOpenChange={setRefundDialogOpen}>
         <AlertDialogContent
           onClick={(e) => e.stopPropagation()}
-          onPointerDownOutside={(e) => e.stopPropagation()}
-          onInteractOutside={(e) => e.stopPropagation()}
         >
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
@@ -813,8 +809,6 @@ function GiftDetailsDialog({ cartItem, children }: GiftDetailsDialogProps) {
       <AlertDialog open={claimDialogOpen} onOpenChange={setClaimDialogOpen}>
         <AlertDialogContent
           onClick={(e) => e.stopPropagation()}
-          onPointerDownOutside={(e) => e.stopPropagation()}
-          onInteractOutside={(e) => e.stopPropagation()}
         >
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">

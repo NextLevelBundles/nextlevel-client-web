@@ -158,19 +158,24 @@ function ExpiringLabel({ daysLeft }: { daysLeft: number }) {
                 <li className="flex items-start gap-2">
                   <KeyIcon className="h-3 w-3 mt-0.5 shrink-0" />
                   <span>
-                    <strong>Redeem on Steam:</strong> Reveal the key and activate it on your Steam account to keep the game permanently in your library
+                    <strong>Redeem on Steam:</strong> Reveal the key and
+                    activate it on your Steam account to keep the game
+                    permanently in your library
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <GiftIcon className="h-3 w-3 mt-0.5 shrink-0" />
                   <span>
-                    <strong>Gift:</strong> Send the key to someone else who can redeem it on their Steam account before it expires
+                    <strong>Gift:</strong> Send the key to someone else who can
+                    redeem it on their Steam account before it expires
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <ExternalLinkIcon className="h-3 w-3 mt-0.5 shrink-0" />
                   <span>
-                    <strong>Add to Exchange:</strong> Manually exchange the key for credits before it expires, which you can use to get different games
+                    <strong>Add to Exchange:</strong> Manually exchange the key
+                    for credits before it expires, which you can use to get
+                    different games
                   </span>
                 </li>
               </ul>
@@ -348,18 +353,6 @@ export default function KeysPage() {
       }).length,
     }));
   }, [steamKeys, currentCustomerId]);
-
-  // Calculate user's progress
-  const revealedKeys = steamKeys.filter(
-    (key) => key.status === SteamKeyStatus.Revealed,
-  ).length;
-  const currentLevel = PROGRESS_LEVELS.reduce(
-    (acc, level) => (revealedKeys >= level.required ? level : acc),
-    PROGRESS_LEVELS[0],
-  );
-
-  const nextLevel = PROGRESS_LEVELS[PROGRESS_LEVELS.indexOf(currentLevel) + 1];
-  console.log(nextLevel);
 
   // Helper function to check if a key is newly assigned (within 7 days and status is Assigned)
   const isNewlyAssigned = (key: SteamKeyAssignment): boolean => {

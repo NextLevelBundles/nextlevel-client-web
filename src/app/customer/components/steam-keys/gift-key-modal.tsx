@@ -11,6 +11,9 @@ import {
   Clock,
 } from "lucide-react";
 import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+
+dayjs.extend(relativeTime);
 import {
   Dialog,
   DialogContent,
@@ -254,32 +257,30 @@ export function GiftKeyModal({
               <Gift className="h-4 w-4" />
               <AlertDescription>
                 <strong>Please confirm:</strong> Once you send this gift, the
-                recipient has 7 days to accept it. If the gift is not accepted
+                recipient has {steamKey.expiresAt && dayjs(steamKey.expiresAt).diff(dayjs(), 'day') < 7
+                  ? `${dayjs(steamKey.expiresAt).diff(dayjs(), 'day')} day${dayjs(steamKey.expiresAt).diff(dayjs(), 'day') === 1 ? '' : 's'} (until the key expires)`
+                  : '7 days'} to accept it. If the gift is not accepted
                 within this time, the Steam key will be returned to you
                 automatically.
               </AlertDescription>
             </Alert>
 
             {/* Warning if expiring soon (less than 7 days) */}
-
-            <div className="rounded-lg bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 p-3 space-y-1">
-              <div className="flex items-start gap-2">
-                <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400 mt-0.5 shrink-0" />
-                <div className="text-sm">
-                  <p className="font-medium text-orange-900 dark:text-orange-100">
-                    Expiring Soon
-                  </p>
-                  <p className="text-orange-700 dark:text-orange-300">
-                    This steam key will expire on{" "}
-                    {dayjs(steamKey.expiresAt).format(
-                      "MMM D, YYYY [at] h:mm A",
-                    )}{" "}
-                    ({dayjs(steamKey.expiresAt).fromNow()}). The new recipient
-                    will need to accept and redeem it before this date.
-                  </p>
+            {steamKey.expiresAt && dayjs(steamKey.expiresAt).diff(dayjs(), 'day') < 7 && (
+              <div className="rounded-lg bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 p-3 space-y-1">
+                <div className="flex items-start gap-2">
+                  <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400 mt-0.5 shrink-0" />
+                  <div className="text-sm">
+                    <p className="font-medium text-orange-900 dark:text-orange-100">
+                      Expiring Soon
+                    </p>
+                    <p className="text-orange-700 dark:text-orange-300">
+                      This steam key will expire on {dayjs(steamKey.expiresAt).format("MMM D, YYYY [at] h:mm A")} ({dayjs(steamKey.expiresAt).fromNow()}). The new recipient will need to accept and redeem it before this date.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             <div className="space-y-2 text-sm">
               <div>
