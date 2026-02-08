@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { PlusIcon, ListIcon, LockIcon } from "lucide-react";
+import Link from "next/link";
+import { PlusIcon, ListIcon, LockIcon, ChevronRightIcon } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
@@ -108,25 +109,27 @@ export default function ListsPage() {
       {systemLists.length > 0 && (
         <div className="grid gap-3">
           {systemLists.map((list) => (
-            <Card
-              key={list.id}
-              className="flex items-center justify-between p-4"
-            >
-              <div className="flex items-center gap-3">
-                <LockIcon className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="font-medium">{list.name}</p>
-                  {list.description && (
-                    <p className="text-sm text-muted-foreground">
-                      {list.description}
-                    </p>
-                  )}
+            <Link key={list.id} href={`/customer/profile/lists/${list.id}`}>
+              <Card className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <LockIcon className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">{list.name}</p>
+                    {list.description && (
+                      <p className="text-sm text-muted-foreground">
+                        {list.description}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <span className="text-sm text-muted-foreground">
-                {list.itemCount} {list.itemCount === 1 ? "item" : "items"}
-              </span>
-            </Card>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    {list.itemCount} {list.itemCount === 1 ? "item" : "items"}
+                  </span>
+                  <ChevronRightIcon className="h-4 w-4 text-muted-foreground" />
+                </div>
+              </Card>
+            </Link>
           ))}
         </div>
       )}
@@ -138,25 +141,27 @@ export default function ListsPage() {
             Custom Lists
           </h3>
           {customLists.map((list) => (
-            <Card
-              key={list.id}
-              className="flex items-center justify-between p-4"
-            >
-              <div className="flex items-center gap-3">
-                <ListIcon className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="font-medium">{list.name}</p>
-                  {list.description && (
-                    <p className="text-sm text-muted-foreground">
-                      {list.description}
-                    </p>
-                  )}
+            <Link key={list.id} href={`/customer/profile/lists/${list.id}`}>
+              <Card className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <ListIcon className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">{list.name}</p>
+                    {list.description && (
+                      <p className="text-sm text-muted-foreground">
+                        {list.description}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <span className="text-sm text-muted-foreground">
-                {list.itemCount} {list.itemCount === 1 ? "item" : "items"}
-              </span>
-            </Card>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    {list.itemCount} {list.itemCount === 1 ? "item" : "items"}
+                  </span>
+                  <ChevronRightIcon className="h-4 w-4 text-muted-foreground" />
+                </div>
+              </Card>
+            </Link>
           ))}
         </div>
       )}

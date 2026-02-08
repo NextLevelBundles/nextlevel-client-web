@@ -30,6 +30,9 @@ const nextConfig: NextConfig = {
       {
         hostname: "placeholder.com",
       },
+      {
+        hostname: "images.igdb.com",
+      },
     ],
   },
   async redirects() {
