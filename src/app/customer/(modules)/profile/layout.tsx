@@ -1,0 +1,121 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { Card } from "@/shared/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
+import {
+  Avatar,
+  AvatarFallback,
+} from "@/shared/components/ui/avatar";
+import { Skeleton } from "@/shared/components/ui/skeleton";
+import {
+  UserIcon,
+  LibraryIcon,
+  HeartIcon,
+  ListIcon,
+  BarChart3Icon,
+} from "lucide-react";
+import { useCustomer } from "@/hooks/queries/useCustomer";
+
+const profileTabs = [
+  { value: "overview", label: "Profile", href: "/customer/profile", icon: UserIcon },
+  { value: "collection", label: "Collection", href: "/customer/profile/collection", icon: LibraryIcon },
+  { value: "wishlist", label: "Wishlist", href: "/customer/profile/wishlist", icon: HeartIcon },
+  { value: "lists", label: "Lists", href: "/customer/profile/lists", icon: ListIcon },
+  { value: "stats", label: "Stats", href: "/customer/profile/stats", icon: BarChart3Icon },
+];
+
+export default function ProfileLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
+  const { data: customer, isLoading } = useCustomer();
+
+  const getCurrentTab = () => {
+    if (pathname.includes("/collection")) return "collection";
+    if (pathname.includes("/wishlist")) return "wishlist";
+    if (pathname.includes("/lists")) return "lists";
+    if (pathname.includes("/stats")) return "stats";
+    return "overview";
+  };
+
+  const getInitials = (name?: string) => {
+    if (!name) return "?";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const formatMemberSince = (dateString?: string) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "long",
+    }).format(date);
+  };
+
+  return (
+    <div className="grid gap-6">
+      {/* Profile Header */}
+      <div className="flex items-center gap-4">
+        {isLoading ? (
+          <>
+            <Skeleton className="h-16 w-16 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+          </>
+        ) : (
+          <>
+            <Avatar className="h-16 w-16">
+              <AvatarFallback className="bg-primary/10 text-lg font-semibold">
+                {getInitials(customer?.name)}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h1 className="text-2xl font-bold">{customer?.name}</h1>
+              <p className="text-sm text-muted-foreground">
+                @{customer?.handle}
+                {customer?.createdAt && (
+                  <span className="ml-2">
+                    · Member since {formatMemberSince(customer.createdAt)}
+                  </span>
+                )}
+              </p>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Tab Navigation */}
+      <Card className="p-1">
+        <Tabs value={getCurrentTab()} className="w-full">
+          <TabsList className="w-full justify-start gap-4 rounded-none border-b bg-transparent p-0 overflow-x-auto">
+            {profileTabs.map((tab) => (
+              <Link key={tab.value} href={tab.href} className="flex">
+                <TabsTrigger
+                  value={tab.value}
+                  className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                >
+                  <div className="flex items-center gap-2">
+                    <tab.icon className="h-4 w-4" />
+                    {tab.label}
+                  </div>
+                </TabsTrigger>
+              </Link>
+            ))}
+          </TabsList>
+          <div className="p-4">{children}</div>
+        </Tabs>
+      </Card>
+    </div>
+  );
+}

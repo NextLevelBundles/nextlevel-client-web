@@ -24,6 +24,7 @@ import {
   SettingsIcon,
   MessageCircleIcon,
   User,
+  UserIcon,
   MenuIcon,
 } from "lucide-react";
 import SignOutButton from "@/app/(home)/components/SignOutButton";
@@ -120,12 +121,15 @@ export function TopNav({ user }: TopNavProps) {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {/* <DropdownMenuItem className="rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary">
-                      <UserIcon className="mr-2 h-4 w-4" />
-                      <Link href="profile" className="flex-1">
-                        Profile
-                      </Link>
-                    </DropdownMenuItem> */}
+              <DropdownMenuItem
+                asChild
+                className="cursor-pointer rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary"
+              >
+                <Link href="/customer/profile" className="flex items-center cursor-pointer">
+                  <UserIcon className="mr-2 h-4 w-4" />
+                  <span className="flex-1">Profile</span>
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuItem
                 asChild
                 className="cursor-pointer rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary"
