@@ -7,6 +7,8 @@ import {
   CreateCustomerListRequest,
   UpdateCustomerListRequest,
   AddListItemRequest,
+  CommunityProfile,
+  UpdateCommunityProfileRequest,
 } from "../types/customer-profile";
 
 export class CustomerProfileApi {
@@ -66,6 +68,21 @@ export class CustomerProfileApi {
   async searchGames(query: string): Promise<GameSearchResult[]> {
     return await this.client.get<GameSearchResult[]>(
       `/customer/profile/games/search?q=${encodeURIComponent(query)}`
+    );
+  }
+
+  async getCommunityProfile(): Promise<CommunityProfile> {
+    return await this.client.get<CommunityProfile>(
+      "/customer/profile/community"
+    );
+  }
+
+  async updateCommunityProfile(
+    data: UpdateCommunityProfileRequest
+  ): Promise<CommunityProfile> {
+    return await this.client.put<CommunityProfile>(
+      "/customer/profile/community",
+      data
     );
   }
 }

@@ -48,3 +48,34 @@ export interface UpdateCustomerListRequest {
 export interface AddListItemRequest {
   gameId: number;
 }
+
+export interface CommunityProfile {
+  id: string;
+  handle: string;
+  title: string | null;
+  headline: string | null;
+  specialties: string | null;
+  socialHandles: SocialHandle[];
+  charities: ProfileCharity[];
+}
+
+export interface SocialHandle {
+  platform: string;
+  handle: string;
+  url: string | null;
+}
+
+export interface ProfileCharity {
+  name: string;
+  link: string | null;
+  logo: string | null;
+  description: string | null;
+}
+
+export interface UpdateCommunityProfileRequest {
+  title: string | null;
+  headline: string | null;
+  specialties: string | null;
+  socialHandles: SocialHandle[];
+  charities: ProfileCharity[];
+}

@@ -15,6 +15,7 @@ import {
   HeartIcon,
   ListIcon,
   BarChart3Icon,
+  SettingsIcon,
 } from "lucide-react";
 import { useCustomer } from "@/hooks/queries/useCustomer";
 
@@ -38,7 +39,10 @@ export default function ProfileLayout({
     { value: "stats", label: "Stats", href: `${basePath}/stats`, icon: BarChart3Icon },
   ];
 
+  const isOwnProfile = customer?.handle === username;
+
   const getCurrentTab = () => {
+    if (pathname.includes("/settings")) return "settings";
     if (pathname.includes("/collection")) return "collection";
     if (pathname.includes("/wishlist")) return "wishlist";
     if (pathname.includes("/lists")) return "lists";
@@ -116,6 +120,16 @@ export default function ProfileLayout({
                 </TabsTrigger>
               </Link>
             ))}
+            {isOwnProfile && (
+              <Link href={`${basePath}/settings`} className="flex ml-auto">
+                <TabsTrigger
+                  value="settings"
+                  className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                >
+                  <SettingsIcon className="h-4 w-4" />
+                </TabsTrigger>
+              </Link>
+            )}
           </TabsList>
           <div className="p-4">{children}</div>
         </Tabs>
