@@ -33,6 +33,7 @@ function getIgdbCoverUrl(coverImageId: string | null, size = "cover_big") {
 export default function ListDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const username = params.username as string;
   const listId = params.listId as string;
 
   const { data: list, isLoading } = useCustomerListDetail(listId);
@@ -61,10 +62,12 @@ export default function ListDetailPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const listsPath = `/community/profiles/${username}/lists`;
+
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this list?")) return;
     await deleteList.mutateAsync(listId);
-    router.push("/customer/profile/lists");
+    router.push(listsPath);
   };
 
   const handleAddGame = async (game: GameSearchResult) => {
@@ -95,7 +98,7 @@ export default function ListDetailPage() {
       <div className="text-center py-8">
         <p className="text-muted-foreground">List not found.</p>
         <Link
-          href="/customer/profile/lists"
+          href={listsPath}
           className="text-primary hover:underline mt-2 inline-block"
         >
           Back to lists
@@ -109,7 +112,7 @@ export default function ListDetailPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/customer/profile/lists">
+          <Link href={listsPath}>
             <Button variant="ghost" size="icon" className="h-8 w-8">
               <ArrowLeftIcon className="h-4 w-4" />
             </Button>

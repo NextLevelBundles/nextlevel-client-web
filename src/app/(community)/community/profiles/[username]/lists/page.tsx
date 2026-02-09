@@ -1,10 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { PlusIcon, ListIcon, LockIcon, ChevronRightIcon } from "lucide-react";
+import { useParams } from "next/navigation";
+import {
+  PlusIcon,
+  ListIcon,
+  LockIcon,
+  ImageIcon,
+} from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
-import { Card } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import {
   Dialog,
@@ -16,9 +22,73 @@ import {
 import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Label } from "@/shared/components/ui/label";
-import { useCustomerLists, useCreateCustomerList } from "@/hooks/queries/useCustomerLists";
+import {
+  useCustomerLists,
+  useCreateCustomerList,
+} from "@/hooks/queries/useCustomerLists";
+import { CustomerList } from "@/lib/api/types/customer-profile";
+
+function getIgdbCoverUrl(coverImageId: string, size = "cover_big") {
+  return `https://images.igdb.com/igdb/image/upload/t_${size}/${coverImageId}.jpg`;
+}
+
+function ListCard({ list, username }: { list: CustomerList; username: string }) {
+  const hasPreviews = list.previewCoverImageIds?.length > 0;
+
+  return (
+    <Link href={`/community/profiles/${username}/lists/${list.id}`}>
+      <div className="group flex gap-4 cursor-pointer rounded-lg border bg-card p-3 hover:bg-muted/50 transition-colors">
+        {/* Cover Image Preview */}
+        <div className="relative w-48 h-28 flex-shrink-0 rounded-md overflow-hidden bg-muted/50">
+          {hasPreviews ? (
+            <div className="flex h-full">
+              {list.previewCoverImageIds.slice(0, 4).map((imageId) => (
+                <div
+                  key={imageId}
+                  className="relative flex-1 min-w-0 overflow-hidden"
+                >
+                  <Image
+                    src={getIgdbCoverUrl(imageId, "cover_big")}
+                    alt=""
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="h-full w-full flex items-center justify-center">
+              <ImageIcon className="h-8 w-8 text-muted-foreground/40" />
+            </div>
+          )}
+        </div>
+        {/* List Info */}
+        <div className="flex flex-col justify-center min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            {list.systemName ? (
+              <LockIcon className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+            ) : (
+              <ListIcon className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+            )}
+            <p className="font-medium truncate">{list.name}</p>
+          </div>
+          {list.description && (
+            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+              {list.description}
+            </p>
+          )}
+          <span className="text-xs text-muted-foreground mt-1">
+            {list.itemCount} {list.itemCount === 1 ? "game" : "games"}
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
 
 export default function ListsPage() {
+  const params = useParams();
+  const username = params.username as string;
   const { data: lists, isLoading } = useCustomerLists();
   const createList = useCreateCustomerList();
   const [open, setOpen] = useState(false);
@@ -45,15 +115,16 @@ export default function ListsPage() {
           <Skeleton className="h-5 w-32" />
           <Skeleton className="h-9 w-28" />
         </div>
-        {[...Array(3)].map((_, i) => (
-          <Skeleton key={i} className="h-20" />
-        ))}
+        <div className="grid gap-3">
+          {[...Array(3)].map((_, i) => (
+            <Skeleton key={i} className="h-[7.75rem] rounded-lg" />
+          ))}
+        </div>
       </div>
     );
   }
 
-  const systemLists = lists?.filter((l) => l.systemName) ?? [];
-  const customLists = lists?.filter((l) => !l.systemName) ?? [];
+  const allLists = lists ?? [];
 
   return (
     <div className="grid gap-6">
@@ -105,69 +176,14 @@ export default function ListsPage() {
         </Dialog>
       </div>
 
-      {/* System Lists */}
-      {systemLists.length > 0 && (
+      {/* Lists */}
+      {allLists.length > 0 ? (
         <div className="grid gap-3">
-          {systemLists.map((list) => (
-            <Link key={list.id} href={`/customer/profile/lists/${list.id}`}>
-              <Card className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <LockIcon className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">{list.name}</p>
-                    {list.description && (
-                      <p className="text-sm text-muted-foreground">
-                        {list.description}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
-                    {list.itemCount} {list.itemCount === 1 ? "item" : "items"}
-                  </span>
-                  <ChevronRightIcon className="h-4 w-4 text-muted-foreground" />
-                </div>
-              </Card>
-            </Link>
+          {allLists.map((list) => (
+            <ListCard key={list.id} list={list} username={username} />
           ))}
         </div>
-      )}
-
-      {/* Custom Lists */}
-      {customLists.length > 0 && (
-        <div className="grid gap-3">
-          <h3 className="text-sm font-medium text-muted-foreground">
-            Custom Lists
-          </h3>
-          {customLists.map((list) => (
-            <Link key={list.id} href={`/customer/profile/lists/${list.id}`}>
-              <Card className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <ListIcon className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">{list.name}</p>
-                    {list.description && (
-                      <p className="text-sm text-muted-foreground">
-                        {list.description}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
-                    {list.itemCount} {list.itemCount === 1 ? "item" : "items"}
-                  </span>
-                  <ChevronRightIcon className="h-4 w-4 text-muted-foreground" />
-                </div>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      )}
-
-      {/* Empty state */}
-      {lists?.length === 0 && (
+      ) : (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
           <ListIcon className="mb-3 h-8 w-8 text-muted-foreground" />
           <p className="text-muted-foreground">

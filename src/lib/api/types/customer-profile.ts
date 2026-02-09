@@ -4,6 +4,7 @@ export interface CustomerList {
   systemName: string | null;
   description: string | null;
   itemCount: number;
+  previewCoverImageIds: string[];
   createdAt: string;
   updatedAt: string;
 }

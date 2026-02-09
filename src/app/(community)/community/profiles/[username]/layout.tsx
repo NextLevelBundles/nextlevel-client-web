@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useParams } from "next/navigation";
 import Link from "next/link";
 import { Card } from "@/shared/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
@@ -18,21 +18,25 @@ import {
 } from "lucide-react";
 import { useCustomer } from "@/hooks/queries/useCustomer";
 
-const profileTabs = [
-  { value: "overview", label: "Profile", href: "/customer/profile", icon: UserIcon },
-  { value: "collection", label: "Collection", href: "/customer/profile/collection", icon: LibraryIcon },
-  { value: "wishlist", label: "Wishlist", href: "/customer/profile/wishlist", icon: HeartIcon },
-  { value: "lists", label: "Lists", href: "/customer/profile/lists", icon: ListIcon },
-  { value: "stats", label: "Stats", href: "/customer/profile/stats", icon: BarChart3Icon },
-];
-
 export default function ProfileLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const params = useParams();
+  const username = params.username as string;
   const { data: customer, isLoading } = useCustomer();
+
+  const basePath = `/community/profiles/${username}`;
+
+  const profileTabs = [
+    { value: "overview", label: "Profile", href: basePath, icon: UserIcon },
+    { value: "collection", label: "Collection", href: `${basePath}/collection`, icon: LibraryIcon },
+    { value: "wishlist", label: "Wishlist", href: `${basePath}/wishlist`, icon: HeartIcon },
+    { value: "lists", label: "Lists", href: `${basePath}/lists`, icon: ListIcon },
+    { value: "stats", label: "Stats", href: `${basePath}/stats`, icon: BarChart3Icon },
+  ];
 
   const getCurrentTab = () => {
     if (pathname.includes("/collection")) return "collection";
@@ -83,7 +87,7 @@ export default function ProfileLayout({
             <div>
               <h1 className="text-2xl font-bold">{customer?.name}</h1>
               <p className="text-sm text-muted-foreground">
-                @{customer?.handle}
+                @{username}
                 {customer?.createdAt && (
                   <span className="ml-2">
                     · Member since {formatMemberSince(customer.createdAt)}
