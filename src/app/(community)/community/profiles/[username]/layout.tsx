@@ -102,7 +102,7 @@ export default function ProfileLayout({
       {/* Tab Navigation */}
       <Card className="p-1">
         <Tabs value={getCurrentTab()} className="w-full">
-          <TabsList className="w-full justify-start gap-4 rounded-none border-b bg-transparent p-0 overflow-x-auto">
+          <TabsList className="w-full justify-start gap-4 rounded-none border-b bg-transparent p-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {profileTabs.map((tab) => (
               <Link key={tab.value} href={tab.href} className="flex">
                 <TabsTrigger
