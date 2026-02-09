@@ -13,6 +13,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useCustomerLists } from "@/hooks/queries/useCustomerLists";
+import { useCommunityProfileByHandle } from "@/hooks/queries/useCommunityProfile";
 import { CustomerList } from "@/lib/api/types/customer-profile";
 
 function getIgdbCoverUrl(coverImageId: string, size = "cover_big") {
@@ -63,6 +64,7 @@ function RecentListCard({
 export default function ProfileOverviewPage() {
   const params = useParams();
   const username = params.username as string;
+  const { data: profile, isLoading: profileLoading } = useCommunityProfileByHandle(username);
   const { data: lists, isLoading } = useCustomerLists();
 
   const recentLists = (lists ?? [])
@@ -77,11 +79,87 @@ export default function ProfileOverviewPage() {
       {/* About Me */}
       <section>
         <h3 className="text-lg font-semibold mb-3">About Me</h3>
-        <Card className="p-6">
-          <p className="text-muted-foreground text-sm">
-            Nothing here yet. Details coming soon.
-          </p>
-        </Card>
+        {profileLoading ? (
+          <Card className="p-6 space-y-3">
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-32" />
+          </Card>
+        ) : profile?.title || profile?.headline || profile?.specialties || (profile?.socialHandles?.length ?? 0) > 0 ? (
+          <Card className="p-6 space-y-4">
+            {profile?.title && (
+              <p className="text-sm font-medium text-primary">{profile.title}</p>
+            )}
+            {profile?.headline && (
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{profile.headline}</p>
+            )}
+            {profile?.specialties && (
+              <div>
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Specialties</span>
+                <p className="text-sm mt-1">{profile.specialties}</p>
+              </div>
+            )}
+            {(profile?.socialHandles?.length ?? 0) > 0 && (
+              <div>
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Social Links</span>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {profile!.socialHandles.map((sh) => (
+                    <span
+                      key={sh.platform}
+                      className="inline-flex items-center gap-1 text-xs rounded-full bg-muted px-2.5 py-1"
+                    >
+                      <span className="font-medium">{sh.platform}:</span>
+                      {sh.url ? (
+                        <a
+                          href={sh.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                        >
+                          {sh.handle}
+                        </a>
+                      ) : (
+                        <span>{sh.handle}</span>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {(profile?.charities?.length ?? 0) > 0 && (
+              <div>
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Charities</span>
+                <div className="space-y-1 mt-1">
+                  {profile!.charities.map((c) => (
+                    <div key={c.name} className="text-sm">
+                      {c.link ? (
+                        <a
+                          href={c.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                        >
+                          {c.name}
+                        </a>
+                      ) : (
+                        <span className="font-medium">{c.name}</span>
+                      )}
+                      {c.description && (
+                        <span className="text-muted-foreground"> — {c.description}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </Card>
+        ) : (
+          <Card className="p-6">
+            <p className="text-muted-foreground text-sm">
+              Nothing here yet. Details coming soon.
+            </p>
+          </Card>
+        )}
       </section>
 
       {/* Recent Lists */}

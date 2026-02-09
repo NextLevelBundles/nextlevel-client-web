@@ -23,6 +23,21 @@ export function useCommunityProfile() {
   });
 }
 
+export const communityProfileByHandleQueryKey = (handle: string) =>
+  ["community-profile", handle] as const;
+
+export function useCommunityProfileByHandle(handle: string) {
+  return useQuery({
+    queryKey: communityProfileByHandleQueryKey(handle),
+    queryFn: (): Promise<CommunityProfile | null> =>
+      customerProfileApi.getCommunityProfileByHandle(handle),
+    enabled: !!handle,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: true,
+  });
+}
+
 export function useUpdateCommunityProfile() {
   const queryClient = useQueryClient();
 

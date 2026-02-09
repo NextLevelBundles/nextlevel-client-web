@@ -77,6 +77,16 @@ export class CustomerProfileApi {
     );
   }
 
+  async getCommunityProfileByHandle(handle: string): Promise<CommunityProfile | null> {
+    try {
+      return await this.client.get<CommunityProfile>(
+        `/customer/profile/community/${encodeURIComponent(handle)}`
+      );
+    } catch {
+      return null;
+    }
+  }
+
   async updateCommunityProfile(
     data: UpdateCommunityProfileRequest
   ): Promise<CommunityProfile> {
