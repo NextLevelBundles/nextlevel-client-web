@@ -382,15 +382,17 @@ export default function ProfileSettingsPage() {
           ))}
         </div>
 
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={addCharity}
-        >
-          <PlusIcon className="h-4 w-4 mr-1" />
-          Add Charity
-        </Button>
+        {charities.length < 3 && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={addCharity}
+          >
+            <PlusIcon className="h-4 w-4 mr-1" />
+            Add Charity
+          </Button>
+        )}
       </div>
 
       {/* Save */}
