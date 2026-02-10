@@ -138,3 +138,18 @@ export interface GameActivityItem {
   gameId: number | null;
   coverImageId: string | null;
 }
+
+export interface ProfileAchievements {
+  totalEarnedAchievements: number;
+  games: GameAchievementProgress[];
+}
+
+export interface GameAchievementProgress {
+  appId: number;
+  gameName: string;
+  coverImageId: string | null;
+  totalAchievements: number;
+  earnedAchievements: number;
+  completionPercentage: number;
+  lastUnlockTime: string | null;
+}

@@ -15,6 +15,7 @@ import {
   HeartIcon,
   ListIcon,
   BarChart3Icon,
+  TrophyIcon,
   SettingsIcon,
   DownloadIcon,
 } from "lucide-react";
@@ -35,6 +36,7 @@ export default function ProfileLayout({
   const profileTabs = [
     { value: "overview", label: "Profile", href: basePath, icon: UserIcon },
     { value: "collection", label: "Collection", href: `${basePath}/collection`, icon: LibraryIcon },
+    { value: "achievements", label: "Achievements", href: `${basePath}/achievements`, icon: TrophyIcon },
     { value: "wishlist", label: "Wishlist", href: `${basePath}/wishlist`, icon: HeartIcon },
     { value: "lists", label: "Lists", href: `${basePath}/lists`, icon: ListIcon },
     { value: "stats", label: "Stats", href: `${basePath}/stats`, icon: BarChart3Icon },
@@ -46,6 +48,7 @@ export default function ProfileLayout({
     if (pathname.includes("/game-imports")) return "game-imports";
     if (pathname.includes("/settings")) return "settings";
     if (pathname.includes("/collection")) return "collection";
+    if (pathname.includes("/achievements")) return "achievements";
     if (pathname.includes("/wishlist")) return "wishlist";
     if (pathname.includes("/lists")) return "lists";
     if (pathname.includes("/stats")) return "stats";

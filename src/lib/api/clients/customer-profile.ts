@@ -13,6 +13,7 @@ import {
   UnimportedSteamGame,
   ImportGamesRequest,
   ProfileStats,
+  ProfileAchievements,
 } from "../types/customer-profile";
 
 export class CustomerProfileApi {
@@ -127,6 +128,16 @@ export class CustomerProfileApi {
     try {
       return await this.client.get<ProfileStats>(
         `/customer/profile/stats/${encodeURIComponent(handle)}`
+      );
+    } catch {
+      return null;
+    }
+  }
+
+  async getAchievementsByHandle(handle: string): Promise<ProfileAchievements | null> {
+    try {
+      return await this.client.get<ProfileAchievements>(
+        `/customer/profile/achievements/${encodeURIComponent(handle)}`
       );
     } catch {
       return null;

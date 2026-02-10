@@ -25,10 +25,12 @@ import {
 import { useCustomerLists } from "@/hooks/queries/useCustomerLists";
 import { useCommunityProfileByHandle } from "@/hooks/queries/useCommunityProfile";
 import { useProfileStats } from "@/hooks/queries/useProfileStats";
+import { useProfileAchievements } from "@/hooks/queries/useProfileAchievements";
 import type {
   CustomerList,
   RecentlyPlayedGame,
   ProfileStats,
+  GameAchievementProgress,
 } from "@/lib/api/types/customer-profile";
 
 function getIgdbCoverUrl(coverImageId: string, size = "cover_big") {
@@ -513,6 +515,139 @@ function GameCollectionSection({
   );
 }
 
+// --- Achievements Overview Section ---
+
+function AchievementsOverviewSection({
+  games,
+  totalEarned,
+  isLoading,
+  username,
+}: {
+  games: GameAchievementProgress[];
+  totalEarned: number;
+  isLoading: boolean;
+  username: string;
+}) {
+  if (isLoading) {
+    return (
+      <Section title="Achievements">
+        <div className="space-y-3">
+          <Skeleton className="h-5 w-48" />
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex items-center gap-3">
+              <Skeleton className="w-10 h-10 rounded" />
+              <div className="flex-1 space-y-1.5">
+                <Skeleton className="h-3.5 w-40" />
+                <Skeleton className="h-2 w-full rounded-full" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </Section>
+    );
+  }
+
+  if (games.length === 0) return null;
+
+  const perfectGames = games.filter((g) => g.completionPercentage === 100).length;
+  const avgCompletion =
+    games.length > 0
+      ? Math.round(
+          games.reduce((sum, g) => sum + g.completionPercentage, 0) /
+            games.length
+        )
+      : 0;
+
+  // Show top 5 most recently unlocked
+  const recentGames = [...games]
+    .filter((g) => g.earnedAchievements > 0)
+    .sort((a, b) => {
+      if (!a.lastUnlockTime && !b.lastUnlockTime) return 0;
+      if (!a.lastUnlockTime) return 1;
+      if (!b.lastUnlockTime) return -1;
+      return (
+        new Date(b.lastUnlockTime).getTime() -
+        new Date(a.lastUnlockTime).getTime()
+      );
+    })
+    .slice(0, 5);
+
+  return (
+    <Section
+      title="Achievements"
+      action={
+        <Link href={`/community/profiles/${username}/achievements`}>
+          <Button variant="ghost" size="sm" className="h-auto py-0">
+            View All
+            <ArrowRightIcon className="ml-1 h-3.5 w-3.5" />
+          </Button>
+        </Link>
+      }
+    >
+      <div className="space-y-4">
+        {/* Summary stats */}
+        <div className="flex items-center gap-6 text-sm">
+          <div className="flex items-center gap-1.5">
+            <TrophyIcon className="h-4 w-4 text-primary" />
+            <span className="font-semibold">{totalEarned.toLocaleString()}</span>
+            <span className="text-muted-foreground">earned</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="font-semibold">{perfectGames}</span>
+            <span className="text-muted-foreground">perfect games</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="font-semibold">{avgCompletion}%</span>
+            <span className="text-muted-foreground">avg completion</span>
+          </div>
+        </div>
+
+        {/* Recent game achievement progress */}
+        <div className="space-y-2.5">
+          {recentGames.map((game) => (
+            <div key={game.appId} className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded overflow-hidden bg-muted/50 flex-shrink-0">
+                {game.coverImageId ? (
+                  <Image
+                    src={getIgdbCoverUrl(game.coverImageId, "cover_small")}
+                    alt={game.gameName}
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <ImageIcon className="h-4 w-4 text-muted-foreground/40" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between text-xs mb-1">
+                  <span className="font-medium truncate">{game.gameName}</span>
+                  <span className="text-muted-foreground flex-shrink-0 ml-2">
+                    {game.earnedAchievements}/{game.totalAchievements}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-primary transition-all"
+                      style={{ width: `${game.completionPercentage}%` }}
+                    />
+                  </div>
+                  <span className="text-[10px] text-muted-foreground w-8 text-right">
+                    {game.completionPercentage}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
 // --- Recent Lists Section ---
 
 function RecentListCard({
@@ -566,6 +701,8 @@ export default function ProfileOverviewPage() {
   const { data: profile, isLoading: profileLoading } =
     useCommunityProfileByHandle(username);
   const { data: stats, isLoading: statsLoading } = useProfileStats(username);
+  const { data: achievements, isLoading: achievementsLoading } =
+    useProfileAchievements(username);
   const { data: lists, isLoading: listsLoading } = useCustomerLists();
 
   const recentLists = (lists ?? [])
@@ -591,6 +728,14 @@ export default function ProfileOverviewPage() {
         />
         <StatsSection stats={stats} isLoading={statsLoading} />
       </div>
+
+      {/* Achievements Overview — full width */}
+      <AchievementsOverviewSection
+        games={achievements?.games ?? []}
+        totalEarned={achievements?.totalEarnedAchievements ?? 0}
+        isLoading={achievementsLoading}
+        username={username}
+      />
 
       {/* Recent Lists — full width */}
       <Section
