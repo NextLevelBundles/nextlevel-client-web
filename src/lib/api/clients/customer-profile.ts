@@ -12,6 +12,7 @@ import {
   CustomerCollectionGame,
   UnimportedSteamGame,
   ImportGamesRequest,
+  ProfileStats,
 } from "../types/customer-profile";
 
 export class CustomerProfileApi {
@@ -120,5 +121,15 @@ export class CustomerProfileApi {
 
   async removeFromCollection(id: string): Promise<void> {
     await this.client.delete(`/customer/profile/collection/${id}`);
+  }
+
+  async getStatsByHandle(handle: string): Promise<ProfileStats | null> {
+    try {
+      return await this.client.get<ProfileStats>(
+        `/customer/profile/stats/${encodeURIComponent(handle)}`
+      );
+    } catch {
+      return null;
+    }
   }
 }

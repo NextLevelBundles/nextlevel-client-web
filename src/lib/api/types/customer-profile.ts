@@ -103,3 +103,38 @@ export interface UnimportedSteamGame {
 export interface ImportGamesRequest {
   steamAppIds: number[];
 }
+
+export interface ProfileStats {
+  totalGames: number;
+  totalPlaytimeMinutes: number;
+  topGenre: string | null;
+  mostPlayedGame: string | null;
+  mostPlayedGameMinutes: number | null;
+  genreBreakdown: GenreStat[];
+  gameActivity: GameActivityList[];
+  recentlyPlayed: RecentlyPlayedGame[];
+}
+
+export interface RecentlyPlayedGame {
+  name: string;
+  coverImageId: string | null;
+  playtime2Weeks: number;
+}
+
+export interface GenreStat {
+  name: string;
+  count: number;
+  percentage: number;
+}
+
+export interface GameActivityList {
+  listName: string;
+  systemName: string;
+  items: GameActivityItem[];
+}
+
+export interface GameActivityItem {
+  title: string | null;
+  gameId: number | null;
+  coverImageId: string | null;
+}
