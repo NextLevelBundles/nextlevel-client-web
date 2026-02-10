@@ -7,8 +7,9 @@ import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Button } from "@/shared/components/ui/button";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import { PlusIcon, XIcon, Loader2Icon, SaveIcon } from "lucide-react";
+import { PlusIcon, XIcon, Loader2Icon, SaveIcon, DownloadIcon } from "lucide-react";
 import { useCustomer } from "@/hooks/queries/useCustomer";
+import Link from "next/link";
 import {
   useCommunityProfile,
   useUpdateCommunityProfile,
@@ -207,7 +208,15 @@ export default function ProfileSettingsPage() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl">
-      <h2 className="text-xl font-bold">Profile Settings</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold">Profile Settings</h2>
+        <Link href={`/community/profiles/${username}/settings/game-imports`}>
+          <Button type="button" variant="outline" size="sm">
+            <DownloadIcon className="h-4 w-4 mr-1" />
+            Game Imports
+          </Button>
+        </Link>
+      </div>
 
       {/* Profile Info */}
       <div className="space-y-4">

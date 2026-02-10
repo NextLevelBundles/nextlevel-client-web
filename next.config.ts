@@ -33,6 +33,9 @@ const nextConfig: NextConfig = {
       {
         hostname: "images.igdb.com",
       },
+      {
+        hostname: "media.steampowered.com",
+      },
     ],
   },
   async redirects() {

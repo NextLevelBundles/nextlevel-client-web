@@ -79,3 +79,27 @@ export interface UpdateCommunityProfileRequest {
   socialHandles: SocialHandle[];
   charities: ProfileCharity[];
 }
+
+export interface CustomerCollectionGame {
+  id: string;
+  steamAppId: number;
+  gameId: string | null;
+  name: string;
+  coverImageId: string | null;
+  steamIconUrl: string | null;
+  playtimeForever: number;
+  playtime2Weeks: number | null;
+  releaseYear: number | null;
+}
+
+export interface UnimportedSteamGame {
+  appId: number;
+  name: string | null;
+  imgIconUrl: string | null;
+  playtimeForever: number;
+  playtime2Weeks: number | null;
+}
+
+export interface ImportGamesRequest {
+  steamAppIds: number[];
+}

@@ -16,6 +16,7 @@ import {
   ListIcon,
   BarChart3Icon,
   SettingsIcon,
+  DownloadIcon,
 } from "lucide-react";
 import { useCustomer } from "@/hooks/queries/useCustomer";
 
@@ -42,6 +43,7 @@ export default function ProfileLayout({
   const isOwnProfile = customer?.handle === username;
 
   const getCurrentTab = () => {
+    if (pathname.includes("/game-imports")) return "game-imports";
     if (pathname.includes("/settings")) return "settings";
     if (pathname.includes("/collection")) return "collection";
     if (pathname.includes("/wishlist")) return "wishlist";
@@ -121,14 +123,24 @@ export default function ProfileLayout({
               </Link>
             ))}
             {isOwnProfile && (
-              <Link href={`${basePath}/settings`} className="flex ml-auto">
-                <TabsTrigger
-                  value="settings"
-                  className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
-                >
-                  <SettingsIcon className="h-4 w-4" />
-                </TabsTrigger>
-              </Link>
+              <div className="flex items-center ml-auto gap-1">
+                <Link href={`${basePath}/settings/game-imports`} className="flex">
+                  <TabsTrigger
+                    value="game-imports"
+                    className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                  >
+                    <DownloadIcon className="h-4 w-4" />
+                  </TabsTrigger>
+                </Link>
+                <Link href={`${basePath}/settings`} className="flex">
+                  <TabsTrigger
+                    value="settings"
+                    className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                  >
+                    <SettingsIcon className="h-4 w-4" />
+                  </TabsTrigger>
+                </Link>
+              </div>
             )}
           </TabsList>
           <div className="p-4">{children}</div>

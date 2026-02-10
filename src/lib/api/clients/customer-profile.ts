@@ -9,6 +9,9 @@ import {
   AddListItemRequest,
   CommunityProfile,
   UpdateCommunityProfileRequest,
+  CustomerCollectionGame,
+  UnimportedSteamGame,
+  ImportGamesRequest,
 } from "../types/customer-profile";
 
 export class CustomerProfileApi {
@@ -94,5 +97,28 @@ export class CustomerProfileApi {
       "/customer/profile/community",
       data
     );
+  }
+
+  async getCollection(): Promise<CustomerCollectionGame[]> {
+    return await this.client.get<CustomerCollectionGame[]>(
+      "/customer/profile/collection"
+    );
+  }
+
+  async getUnimportedGames(): Promise<UnimportedSteamGame[]> {
+    return await this.client.get<UnimportedSteamGame[]>(
+      "/customer/profile/collection/unimported"
+    );
+  }
+
+  async importGames(data: ImportGamesRequest): Promise<CustomerCollectionGame[]> {
+    return await this.client.post<CustomerCollectionGame[]>(
+      "/customer/profile/collection/import",
+      data
+    );
+  }
+
+  async removeFromCollection(id: string): Promise<void> {
+    await this.client.delete(`/customer/profile/collection/${id}`);
   }
 }

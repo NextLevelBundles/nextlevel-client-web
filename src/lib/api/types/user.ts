@@ -30,6 +30,8 @@ export interface Customer {
   steamConnectedAt?: string;
   steamCountry?: string;
   steamLevel?: string;
+  steamLibraryLastSyncedAt?: string;
+  steamLibrarySyncStatus?: string;
   countryCode: string;
   country?: Country;
   countryLastChangedAt?: string | null;
