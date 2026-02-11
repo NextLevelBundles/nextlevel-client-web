@@ -107,8 +107,14 @@ export interface UnimportedSteamGame {
   playtime2Weeks: number | null;
 }
 
+export interface ImportGameStatus {
+  playStatus?: string;
+  completionStatus?: string | null;
+}
+
 export interface ImportGamesRequest {
   steamAppIds: number[];
+  statuses?: Record<number, ImportGameStatus>;
 }
 
 export interface ProfileStats {

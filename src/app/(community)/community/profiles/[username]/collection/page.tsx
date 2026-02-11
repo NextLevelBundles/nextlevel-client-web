@@ -139,12 +139,10 @@ function GameRow({
 
       {/* Status badges */}
       <div className="flex items-center gap-2 flex-shrink-0">
-        {playStatus !== "NoStatus" && (
-          <StatusBadge
-            label={PLAY_STATUS_LABELS[playStatus]}
-            colorClass={PLAY_STATUS_COLORS[playStatus]}
-          />
-        )}
+        <StatusBadge
+          label={PLAY_STATUS_LABELS[playStatus]}
+          colorClass={PLAY_STATUS_COLORS[playStatus]}
+        />
         {completionStatus && (
           <StatusBadge
             label={completionStatus}

@@ -17,7 +17,7 @@ import {
   BarChart3Icon,
   TrophyIcon,
   SettingsIcon,
-  DownloadIcon,
+  Gamepad2,
 } from "lucide-react";
 import { useCustomer } from "@/hooks/queries/useCustomer";
 
@@ -132,7 +132,10 @@ export default function ProfileLayout({
                     value="game-imports"
                     className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
                   >
-                    <DownloadIcon className="h-4 w-4" />
+                    <div className="flex items-center gap-2">
+                      <Gamepad2 className="h-4 w-4" />
+                      <span className="hidden sm:inline">Import from Steam</span>
+                    </div>
                   </TabsTrigger>
                 </Link>
                 <Link href={`${basePath}/settings`} className="flex">
