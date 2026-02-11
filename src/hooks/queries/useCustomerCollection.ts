@@ -4,6 +4,7 @@ import {
   CustomerCollectionGame,
   UnimportedSteamGame,
   ImportGamesRequest,
+  UpdateCollectionGameStatusRequest,
 } from "@/lib/api/types/customer-profile";
 import { useAuth } from "@/shared/providers/auth-provider";
 
@@ -57,6 +58,20 @@ export function useRemoveFromCollection() {
 
   return useMutation({
     mutationFn: (id: string) => customerProfileApi.removeFromCollection(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: customerCollectionQueryKey });
+    },
+  });
+}
+
+export function useUpdateCollectionGameStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (params: {
+      id: string;
+      data: UpdateCollectionGameStatusRequest;
+    }) => customerProfileApi.updateCollectionGameStatus(params.id, params.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: customerCollectionQueryKey });
     },

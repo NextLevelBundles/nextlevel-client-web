@@ -90,6 +90,13 @@ export interface CustomerCollectionGame {
   playtimeForever: number;
   playtime2Weeks: number | null;
   releaseYear: number | null;
+  playStatus: string;
+  completionStatus: string | null;
+}
+
+export interface UpdateCollectionGameStatusRequest {
+  playStatus: string;
+  completionStatus: string | null;
 }
 
 export interface UnimportedSteamGame {
