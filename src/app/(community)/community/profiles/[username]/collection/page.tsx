@@ -112,25 +112,52 @@ function GameRow({
   return (
     <div className="flex items-center gap-4 py-3 border-b border-border/50">
       {/* Cover */}
-      <div className="w-16 h-20 flex-shrink-0 rounded overflow-hidden bg-muted/50">
-        {coverSrc ? (
-          <Image
-            src={coverSrc}
-            alt={game.name}
-            width={64}
-            height={80}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <ImageIcon className="h-5 w-5 text-muted-foreground/40" />
-          </div>
-        )}
-      </div>
+      {game.slug ? (
+        <Link href={`/community/games/${game.slug}`} className="w-16 h-20 flex-shrink-0 rounded overflow-hidden bg-muted/50 block">
+          {coverSrc ? (
+            <Image
+              src={coverSrc}
+              alt={game.name}
+              width={64}
+              height={80}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <ImageIcon className="h-5 w-5 text-muted-foreground/40" />
+            </div>
+          )}
+        </Link>
+      ) : (
+        <div className="w-16 h-20 flex-shrink-0 rounded overflow-hidden bg-muted/50">
+          {coverSrc ? (
+            <Image
+              src={coverSrc}
+              alt={game.name}
+              width={64}
+              height={80}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <ImageIcon className="h-5 w-5 text-muted-foreground/40" />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Name + playtime */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold truncate">{game.name}</p>
+        {game.slug ? (
+          <Link
+            href={`/community/games/${game.slug}`}
+            className="text-sm font-semibold truncate block hover:text-primary transition-colors"
+          >
+            {game.name}
+          </Link>
+        ) : (
+          <p className="text-sm font-semibold truncate">{game.name}</p>
+        )}
         <p className="text-xs text-muted-foreground mt-0.5">
           {formatPlaytime(game.playtimeForever)}
           {game.releaseYear && ` · ${game.releaseYear}`}

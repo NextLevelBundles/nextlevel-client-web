@@ -84,6 +84,7 @@ export interface CustomerCollectionGame {
   id: string;
   steamAppId: number;
   gameId: string | null;
+  slug: string | null;
   name: string;
   coverImageId: string | null;
   steamIconUrl: string | null;
