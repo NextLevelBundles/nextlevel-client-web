@@ -7,13 +7,16 @@ import { Button } from "@/shared/components/ui/button";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import Link from "next/link";
-import { Loader2Icon, ArrowLeftIcon, DownloadIcon } from "lucide-react";
+import { Loader2Icon, ArrowLeftIcon, DownloadIcon, RefreshCwIcon } from "lucide-react";
 import { useCustomer } from "@/hooks/queries/useCustomer";
 import { useAuth } from "@/shared/providers/auth-provider";
 import {
   useUnimportedGames,
   useImportGames,
+  unimportedGamesQueryKey,
 } from "@/hooks/queries/useCustomerCollection";
+import { useSyncSteamLibrary } from "@/hooks/queries/useSteamKeys";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 function formatPlaytime(minutes: number): string {
@@ -31,6 +34,8 @@ export default function GameImportsPage() {
   const { data: customer } = useCustomer();
   const { data: games, isLoading } = useUnimportedGames();
   const importGames = useImportGames();
+  const syncSteamLibrary = useSyncSteamLibrary();
+  const queryClient = useQueryClient();
 
   const [selected, setSelected] = useState<Set<number>>(new Set());
 
@@ -71,6 +76,14 @@ export default function GameImportsPage() {
     } catch {
       toast.error("Failed to import games");
     }
+  };
+
+  const handleSyncSteamLibrary = () => {
+    syncSteamLibrary.mutate(undefined, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: unimportedGamesQueryKey });
+      },
+    });
   };
 
   if (authLoading || isLoading) {
@@ -130,15 +143,33 @@ export default function GameImportsPage() {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <div className="flex items-center gap-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.push(`/community/profiles/${username}/settings`)}
-        >
-          <ArrowLeftIcon className="h-4 w-4" />
-        </Button>
-        <h2 className="text-xl font-bold">Game Imports</h2>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push(`/community/profiles/${username}/settings`)}
+          >
+            <ArrowLeftIcon className="h-4 w-4" />
+          </Button>
+          <h2 className="text-xl font-bold">Game Imports</h2>
+        </div>
+        {hasSteamConnected && (
+          <Button
+            onClick={handleSyncSteamLibrary}
+            disabled={syncSteamLibrary.isPending}
+            variant="outline"
+            size="sm"
+            className="gap-2"
+          >
+            {syncSteamLibrary.isPending ? (
+              <Loader2Icon className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCwIcon className="h-4 w-4" />
+            )}
+            Sync Steam Library
+          </Button>
+        )}
       </div>
 
       {hasNoGames ? (
