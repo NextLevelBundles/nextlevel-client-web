@@ -65,10 +65,14 @@ export async function generateMetadata({
 
 export default async function BundleDetailPage({
   params,
+  searchParams,
 }: {
   params: any;
+  searchParams: any;
 }) {
   const { slug } = await params;
+  const resolvedSearchParams = await searchParams;
+  const isPreview = resolvedSearchParams?.preview === "1";
 
   let bundle = null;
   let error = null;
@@ -96,10 +100,12 @@ export default async function BundleDetailPage({
       <div className="pt-16">
         {error ? (
           <BundleError error={error} />
-        ) : isNotFound ? (
+        ) : isNotFound && !isPreview ? (
           <BundleNotFound />
+        ) : bundle ? (
+          <BundleDetail bundle={bundle} isPreview={isPreview} />
         ) : (
-          <BundleDetail bundle={bundle!} />
+          <BundleNotFound />
         )}
       </div>
       <Footer />

@@ -48,7 +48,7 @@ const getCanonicalTiers = (tiers: Tier[]) => {
   return [...tiers].sort((a, b) => a.price - b.price);
 };
 
-export function BundleDetail({ bundle }: { bundle: Bundle }) {
+export function BundleDetail({ bundle, isPreview = false }: { bundle: Bundle; isPreview?: boolean }) {
   const { user } = useAuth();
   const { addToCart } = useCart();
   const isAuthenticated = !!user;
@@ -76,8 +76,8 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
 
   const isBundleActive = bundle.status === BundleStatus.Active;
 
-  // Determine if bundle should be visible - only show if Active status
-  const shouldShowBundle = isBundleActive;
+  // Determine if bundle should be visible - only show if Active status, unless in preview mode
+  const shouldShowBundle = isBundleActive || isPreview;
 
   if (!shouldShowBundle) {
     return <BundleNotFound />;
@@ -404,6 +404,21 @@ export function BundleDetail({ bundle }: { bundle: Bundle }) {
   return (
     <TooltipProvider>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 lg:pb-8">
+        {isPreview && (
+          <Card className="p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 mb-6">
+            <div className="flex items-start gap-3">
+              <Eye className="h-5 w-5 text-blue-700 dark:text-blue-300 mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-1">
+                  Preview Mode
+                </p>
+                <p className="text-xs text-blue-700 dark:text-blue-300">
+                  You are viewing this collection in preview mode. This collection is not publicly visible.
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
         <BundleHero bundle={bundle} />
 
         {bundle.curators && bundle.curators.length > 0 && (
