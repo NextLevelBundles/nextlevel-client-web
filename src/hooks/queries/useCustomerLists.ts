@@ -10,6 +10,7 @@ import {
 } from "@/lib/api/types/customer-profile";
 import { useAuth } from "@/shared/providers/auth-provider";
 
+export const customerWishlistQueryKey = ["customer-wishlist"] as const;
 export const customerListsQueryKey = ["customer-lists"] as const;
 export const customerListDetailQueryKey = (listId: string) =>
   ["customer-list-detail", listId] as const;
@@ -121,6 +122,43 @@ export function useRemoveListItem(listId: string) {
         queryKey: customerListDetailQueryKey(listId),
       });
       queryClient.invalidateQueries({ queryKey: customerListsQueryKey });
+    },
+  });
+}
+
+export function useWishlist() {
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
+
+  return useQuery({
+    queryKey: customerWishlistQueryKey,
+    queryFn: () => customerProfileApi.getWishlist(),
+    enabled: isAuthenticated,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+}
+
+export function useAddToWishlist() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: AddListItemRequest) =>
+      customerProfileApi.addToWishlist(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: customerWishlistQueryKey });
+    },
+  });
+}
+
+export function useRemoveFromWishlist() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (itemId: string) =>
+      customerProfileApi.removeFromWishlist(itemId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: customerWishlistQueryKey });
     },
   });
 }

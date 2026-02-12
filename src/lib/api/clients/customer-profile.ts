@@ -71,6 +71,25 @@ export class CustomerProfileApi {
     );
   }
 
+  async getWishlist(): Promise<CustomerListDetail> {
+    return await this.client.get<CustomerListDetail>(
+      "/customer/profile/wishlist"
+    );
+  }
+
+  async addToWishlist(data: AddListItemRequest): Promise<CustomerListItem> {
+    return await this.client.post<CustomerListItem>(
+      "/customer/profile/wishlist/items",
+      data
+    );
+  }
+
+  async removeFromWishlist(itemId: string): Promise<void> {
+    await this.client.delete(
+      `/customer/profile/wishlist/items/${itemId}`
+    );
+  }
+
   async searchGames(query: string): Promise<GameSearchResult[]> {
     return await this.client.get<GameSearchResult[]>(
       `/customer/profile/games/search?q=${encodeURIComponent(query)}`

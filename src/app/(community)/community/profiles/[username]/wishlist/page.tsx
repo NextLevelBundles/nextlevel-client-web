@@ -3,10 +3,7 @@
 import Image from "next/image";
 import { ImageIcon } from "lucide-react";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import {
-  useCustomerLists,
-  useCustomerListDetail,
-} from "@/hooks/queries/useCustomerLists";
+import { useWishlist } from "@/hooks/queries/useCustomerLists";
 
 function getIgdbCoverUrl(coverImageId: string | null, size = "cover_big") {
   if (!coverImageId) return null;
@@ -14,12 +11,7 @@ function getIgdbCoverUrl(coverImageId: string | null, size = "cover_big") {
 }
 
 export default function WishlistPage() {
-  const { data: lists, isLoading: listsLoading } = useCustomerLists();
-  const wishList = lists?.find((l) => l.systemName === "WishList");
-  const { data: wishListDetail, isLoading: detailLoading } =
-    useCustomerListDetail(wishList?.id ?? "");
-
-  const isLoading = listsLoading || (wishList && detailLoading);
+  const { data: wishListDetail, isLoading } = useWishlist();
 
   if (isLoading) {
     return (

@@ -20,10 +20,9 @@ import { useGameDetail } from "@/hooks/queries/useGameDetail";
 import { useAuth } from "@/shared/providers/auth-provider";
 import { useCustomerCollection } from "@/hooks/queries/useCustomerCollection";
 import {
-  useCustomerLists,
-  useCustomerListDetail,
-  useAddListItem,
-  useRemoveListItem,
+  useWishlist,
+  useAddToWishlist,
+  useRemoveFromWishlist,
 } from "@/hooks/queries/useCustomerLists";
 import type {
   GameDetail,
@@ -373,75 +372,34 @@ function SidebarSection({
   );
 }
 
-// --- Collection Status & Wishlist ---
+// --- Collection Status (readonly badges) ---
 
-function CollectionStatusSection({
+function CollectionStatusBadges({
   collectionGame,
-  igdbId,
 }: {
   collectionGame: CustomerCollectionGame | null;
-  igdbId: number;
 }) {
-  const { data: lists } = useCustomerLists();
-  const wishList = lists?.find((l) => l.systemName === "WishList");
-  const wishListId = wishList?.id ?? "";
-  const { data: wishListDetail } = useCustomerListDetail(wishListId);
-  const addItem = useAddListItem(wishListId);
-  const removeItem = useRemoveListItem(wishListId);
-
-  const wishListItem = wishListDetail?.items.find(
-    (item) => item.gameId === igdbId
-  );
-  const isInWishList = !!wishListItem;
-
-  function handleWishlistToggle() {
-    if (!wishListId) return;
-    if (isInWishList && wishListItem) {
-      removeItem.mutate(wishListItem.id);
-    } else {
-      addItem.mutate({ gameId: igdbId });
-    }
-  }
-
   const playStatus = collectionGame?.playStatus || "NoStatus";
   const completionStatus = collectionGame?.completionStatus;
-  const wishlistPending = addItem.isPending || removeItem.isPending;
+
+  if (!collectionGame) {
+    return <p className="text-xs text-muted-foreground">Not in collection</p>;
+  }
 
   return (
-    <div className="flex flex-col gap-2 w-[170px]">
-      {/* Status badges (readonly) */}
-      {collectionGame ? (
-        <div className="flex flex-wrap gap-1.5">
-          <span
-            className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${PLAY_STATUS_COLORS[playStatus]}`}
-          >
-            {PLAY_STATUS_LABELS[playStatus]}
-          </span>
-          {completionStatus && (
-            <span
-              className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${COMPLETION_STATUS_COLORS[completionStatus] ?? "bg-muted text-muted-foreground"}`}
-            >
-              {completionStatus}
-            </span>
-          )}
-        </div>
-      ) : (
-        <p className="text-xs text-muted-foreground">Not in collection</p>
-      )}
-
-      {/* Wishlist toggle */}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="h-8 text-xs gap-1.5 justify-start"
-        onClick={handleWishlistToggle}
-        disabled={!wishListId || wishlistPending}
+    <div className="flex flex-wrap gap-1.5">
+      <span
+        className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${PLAY_STATUS_COLORS[playStatus]}`}
       >
-        <Heart
-          className={`h-3.5 w-3.5 ${isInWishList ? "fill-red-500 text-red-500" : ""}`}
-        />
-        {isInWishList ? "In Wishlist" : "Wishlist"}
-      </Button>
+        {PLAY_STATUS_LABELS[playStatus]}
+      </span>
+      {completionStatus && (
+        <span
+          className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${COMPLETION_STATUS_COLORS[completionStatus] ?? "bg-muted text-muted-foreground"}`}
+        >
+          {completionStatus}
+        </span>
+      )}
     </div>
   );
 }
@@ -501,6 +459,28 @@ export default function GameDetailPage() {
   const collectionGame =
     collection?.find((g) => g.slug === slug) ?? null;
 
+  // Wishlist logic
+  const { data: wishlistDetail } = useWishlist();
+  const addToWishlist = useAddToWishlist();
+  const removeFromWishlist = useRemoveFromWishlist();
+
+  const igdbId = game?.igdbId ?? 0;
+  const wishListItem = wishlistDetail?.items.find(
+    (item) => item.gameId === igdbId
+  );
+  const isInWishList = !!wishListItem;
+  const wishlistPending =
+    addToWishlist.isPending || removeFromWishlist.isPending;
+
+  function handleWishlistToggle() {
+    if (!igdbId) return;
+    if (isInWishList && wishListItem) {
+      removeFromWishlist.mutate(wishListItem.id);
+    } else {
+      addToWishlist.mutate({ gameId: igdbId });
+    }
+  }
+
   if (isLoading) {
     return <GameDetailSkeleton />;
   }
@@ -551,28 +531,43 @@ export default function GameDetailPage() {
             </div>
 
             {isAuthenticated && (
-              <CollectionStatusSection
-                collectionGame={collectionGame}
-                igdbId={game.igdbId}
-              />
+              <CollectionStatusBadges collectionGame={collectionGame} />
             )}
           </div>
 
           {/* Title + meta */}
           <div className="flex-1 min-w-0 pt-1">
-            <h1 className="text-2xl font-bold leading-tight">
-              {game.name}
-              {releaseYear && (
-                <span className="text-muted-foreground font-normal ml-2">
-                  ({releaseYear})
-                </span>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h1 className="text-2xl font-bold leading-tight">
+                  {game.name}
+                  {releaseYear && (
+                    <span className="text-muted-foreground font-normal ml-2">
+                      ({releaseYear})
+                    </span>
+                  )}
+                </h1>
+                {developerName && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {developerName}
+                  </p>
+                )}
+              </div>
+              {isAuthenticated && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-shrink-0 gap-1.5"
+                  onClick={handleWishlistToggle}
+                  disabled={wishlistPending}
+                >
+                  <Heart
+                    className={`h-4 w-4 ${isInWishList ? "fill-red-500 text-red-500" : ""}`}
+                  />
+                  {isInWishList ? "In Wishlist" : "Wishlist"}
+                </Button>
               )}
-            </h1>
-            {developerName && (
-              <p className="text-sm text-muted-foreground mt-1">
-                {developerName}
-              </p>
-            )}
+            </div>
 
             {/* Rating circles */}
             <div className="flex items-center gap-5 mt-4">
