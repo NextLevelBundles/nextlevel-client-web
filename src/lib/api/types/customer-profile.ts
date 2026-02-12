@@ -65,6 +65,7 @@ export interface CuratorProfile {
   curatedBundlesCount: number;
   leadCuratedCount: number;
   guestCuratedCount: number;
+  genreFocusTags: string[];
   curatedBundles: CuratedBundle[];
 }
 
