@@ -7,23 +7,7 @@ import Link from "next/link";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Badge } from "@/shared/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
-import { ToggleGroup, ToggleGroupItem } from "@/shared/components/ui/toggle-group";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
 import {
   ImageIcon,
   ExternalLink,
@@ -31,14 +15,10 @@ import {
   ChevronDown,
   ChevronUp,
   Heart,
-  Pencil,
 } from "lucide-react";
 import { useGameDetail } from "@/hooks/queries/useGameDetail";
 import { useAuth } from "@/shared/providers/auth-provider";
-import {
-  useCustomerCollection,
-  useUpdateCollectionGameStatus,
-} from "@/hooks/queries/useCustomerCollection";
+import { useCustomerCollection } from "@/hooks/queries/useCustomerCollection";
 import {
   useCustomerLists,
   useCustomerListDetail,
@@ -99,8 +79,6 @@ const WEBSITE_TYPE_LABELS: Record<number, string> = {
 
 // --- Status Constants ---
 
-const PLAY_STATUSES = ["NoStatus", "Unplayed", "Playing", "Played"] as const;
-
 const PLAY_STATUS_LABELS: Record<string, string> = {
   NoStatus: "No Status",
   Unplayed: "Unplayed",
@@ -122,14 +100,6 @@ const COMPLETION_STATUS_COLORS: Record<string, string> = {
   Continuous: "bg-cyan-600 text-white",
   Dropped: "bg-red-600 text-white",
 };
-
-function getCompletionOptions(playStatus: string) {
-  const base = ["Unfinished", "Beaten", "Completed", "Continuous"];
-  if (playStatus === "Played") {
-    return [...base, "Dropped"];
-  }
-  return base;
-}
 
 // --- Sub-Components ---
 
@@ -408,15 +378,10 @@ function SidebarSection({
 function CollectionStatusSection({
   collectionGame,
   igdbId,
-  gameName,
-  coverImageId,
 }: {
   collectionGame: CustomerCollectionGame | null;
   igdbId: number;
-  gameName: string | null;
-  coverImageId: string | null;
 }) {
-  const [dialogOpen, setDialogOpen] = useState(false);
   const { data: lists } = useCustomerLists();
   const wishList = lists?.find((l) => l.systemName === "WishList");
   const wishListId = wishList?.id ?? "";
@@ -444,7 +409,7 @@ function CollectionStatusSection({
 
   return (
     <div className="flex flex-col gap-2 w-[170px]">
-      {/* Status badges */}
+      {/* Status badges (readonly) */}
       {collectionGame ? (
         <div className="flex flex-wrap gap-1.5">
           <span
@@ -464,167 +429,20 @@ function CollectionStatusSection({
         <p className="text-xs text-muted-foreground">Not in collection</p>
       )}
 
-      {/* Action buttons */}
-      <div className="flex gap-1.5">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 text-xs gap-1.5 flex-1 justify-start"
-          onClick={handleWishlistToggle}
-          disabled={!wishListId || wishlistPending}
-        >
-          <Heart
-            className={`h-3.5 w-3.5 ${isInWishList ? "fill-red-500 text-red-500" : ""}`}
-          />
-          {isInWishList ? "In Wishlist" : "Wishlist"}
-        </Button>
-
-        {collectionGame && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0"
-            onClick={() => setDialogOpen(true)}
-          >
-            <Pencil className="h-3.5 w-3.5" />
-          </Button>
-        )}
-      </div>
-
-      {collectionGame && (
-        <GameStatusDialog
-          game={collectionGame}
-          gameName={gameName}
-          coverImageId={coverImageId}
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
+      {/* Wishlist toggle */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-8 text-xs gap-1.5 justify-start"
+        onClick={handleWishlistToggle}
+        disabled={!wishListId || wishlistPending}
+      >
+        <Heart
+          className={`h-3.5 w-3.5 ${isInWishList ? "fill-red-500 text-red-500" : ""}`}
         />
-      )}
+        {isInWishList ? "In Wishlist" : "Wishlist"}
+      </Button>
     </div>
-  );
-}
-
-function GameStatusDialog({
-  game,
-  gameName,
-  coverImageId,
-  open,
-  onOpenChange,
-}: {
-  game: CustomerCollectionGame;
-  gameName: string | null;
-  coverImageId: string | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}) {
-  const updateStatus = useUpdateCollectionGameStatus();
-  const [playStatus, setPlayStatus] = useState(
-    game.playStatus || "NoStatus"
-  );
-  const [completionStatus, setCompletionStatus] = useState(
-    game.completionStatus ?? null
-  );
-
-  const showCompletion = playStatus === "Playing" || playStatus === "Played";
-
-  function handlePlayStatusChange(value: string) {
-    if (!value) return;
-    setPlayStatus(value);
-
-    if (value === "NoStatus" || value === "Unplayed") {
-      setCompletionStatus(null);
-    } else if (completionStatus) {
-      const validOptions = getCompletionOptions(value);
-      if (!validOptions.includes(completionStatus)) {
-        setCompletionStatus(null);
-      }
-    }
-  }
-
-  function handleSave() {
-    const finalCompletion = showCompletion ? completionStatus : null;
-    updateStatus.mutate(
-      {
-        id: game.id,
-        data: { playStatus, completionStatus: finalCompletion },
-      },
-      { onSuccess: () => onOpenChange(false) }
-    );
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-3">
-            {coverImageId && (
-              <Image
-                src={getIgdbImageUrl(coverImageId, "cover_small")}
-                alt={gameName || "Game"}
-                width={48}
-                height={64}
-                className="rounded object-cover"
-              />
-            )}
-            <span className="truncate">{gameName || game.name}</span>
-          </DialogTitle>
-          <DialogDescription>Update play and completion status</DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4 pt-2">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Play Status</label>
-            <ToggleGroup
-              type="single"
-              value={playStatus}
-              onValueChange={handlePlayStatusChange}
-              className="justify-start flex-wrap"
-            >
-              {PLAY_STATUSES.map((status) => (
-                <ToggleGroupItem
-                  key={status}
-                  value={status}
-                  variant="outline"
-                  size="sm"
-                >
-                  {PLAY_STATUS_LABELS[status]}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-          </div>
-
-          {showCompletion && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Completion Status</label>
-              <Select
-                value={completionStatus ?? ""}
-                onValueChange={(value) => setCompletionStatus(value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select completion status" />
-                </SelectTrigger>
-                <SelectContent className="z-[101]">
-                  {getCompletionOptions(playStatus).map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-        </div>
-
-        <DialogFooter>
-          <Button
-            onClick={handleSave}
-            disabled={updateStatus.isPending}
-          >
-            {updateStatus.isPending ? "Saving..." : "Save"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   );
 }
 
@@ -736,8 +554,6 @@ export default function GameDetailPage() {
               <CollectionStatusSection
                 collectionGame={collectionGame}
                 igdbId={game.igdbId}
-                gameName={game.name}
-                coverImageId={game.coverImageId}
               />
             )}
           </div>

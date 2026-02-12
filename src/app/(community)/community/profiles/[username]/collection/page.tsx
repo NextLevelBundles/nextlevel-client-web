@@ -1,26 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import { ImageIcon, Pencil } from "lucide-react";
+import { ImageIcon } from "lucide-react";
 import { useAuth } from "@/shared/providers/auth-provider";
 import {
   useCustomerCollection,
   useUpdateCollectionGameStatus,
 } from "@/hooks/queries/useCustomerCollection";
 import type { CustomerCollectionGame } from "@/lib/api/types/customer-profile";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/shared/components/ui/dialog";
-import { Button } from "@/shared/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/shared/components/ui/toggle-group";
 import {
   Select,
@@ -77,31 +67,15 @@ function formatPlaytime(minutes: number): string {
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
-function StatusBadge({
-  label,
-  colorClass,
-}: {
-  label: string;
-  colorClass: string;
-}) {
-  return (
-    <span
-      className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${colorClass}`}
-    >
-      {label}
-    </span>
-  );
-}
-
 function GameRow({
   game,
   username,
-  onEdit,
 }: {
   game: CustomerCollectionGame;
   username: string;
-  onEdit: () => void;
 }) {
+  const updateStatus = useUpdateCollectionGameStatus();
+
   const coverSrc = game.coverImageId
     ? getIgdbCoverUrl(game.coverImageId)
     : game.steamIconUrl
@@ -110,6 +84,35 @@ function GameRow({
 
   const playStatus = game.playStatus || "NoStatus";
   const completionStatus = game.completionStatus;
+  const showCompletion = playStatus === "Playing" || playStatus === "Played";
+
+  function handlePlayStatusChange(value: string) {
+    if (!value) return;
+    let newCompletion: string | null = completionStatus ?? null;
+
+    if (value === "NoStatus" || value === "Unplayed") {
+      newCompletion = null;
+    } else if (newCompletion) {
+      const validOptions = getCompletionOptions(value);
+      if (!validOptions.includes(newCompletion)) {
+        newCompletion = "Unfinished";
+      }
+    } else {
+      newCompletion = "Unfinished";
+    }
+
+    updateStatus.mutate({
+      id: game.id,
+      data: { playStatus: value, completionStatus: newCompletion },
+    });
+  }
+
+  function handleCompletionChange(value: string) {
+    updateStatus.mutate({
+      id: game.id,
+      data: { playStatus, completionStatus: value },
+    });
+  }
 
   return (
     <div className="flex items-center gap-4 py-3 border-b border-border/50">
@@ -166,161 +169,46 @@ function GameRow({
         </p>
       </div>
 
-      {/* Status badges */}
-      <div className="flex items-center gap-2 flex-shrink-0">
-        <StatusBadge
-          label={PLAY_STATUS_LABELS[playStatus]}
-          colorClass={PLAY_STATUS_COLORS[playStatus]}
-        />
-        {completionStatus && (
-          <StatusBadge
-            label={completionStatus}
-            colorClass={
-              COMPLETION_STATUS_COLORS[completionStatus] ??
-              "bg-muted text-muted-foreground"
-            }
-          />
+      {/* Inline status controls */}
+      <div className="flex flex-col items-start gap-1.5 flex-shrink-0">
+        <ToggleGroup
+          type="single"
+          value={playStatus}
+          onValueChange={handlePlayStatusChange}
+          className="justify-start"
+        >
+          {PLAY_STATUSES.map((status) => (
+            <ToggleGroupItem
+              key={status}
+              value={status}
+              variant="outline"
+              size="sm"
+              className="text-xs"
+            >
+              {PLAY_STATUS_LABELS[status]}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+
+        {showCompletion && (
+          <Select
+            value={completionStatus ?? ""}
+            onValueChange={handleCompletionChange}
+          >
+            <SelectTrigger className="w-[130px] h-8 text-xs">
+              <SelectValue placeholder="Completion..." />
+            </SelectTrigger>
+            <SelectContent>
+              {getCompletionOptions(playStatus).map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         )}
       </div>
-
-      {/* Edit button */}
-      <button
-        onClick={onEdit}
-        className="flex-shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-      >
-        <Pencil className="h-4 w-4" />
-      </button>
     </div>
-  );
-}
-
-function GameStatusDialog({
-  game,
-  open,
-  onOpenChange,
-}: {
-  game: CustomerCollectionGame;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}) {
-  const updateStatus = useUpdateCollectionGameStatus();
-  const [playStatus, setPlayStatus] = useState(
-    game.playStatus || "NoStatus"
-  );
-  const [completionStatus, setCompletionStatus] = useState(
-    game.completionStatus ?? null
-  );
-
-  const showCompletion = playStatus === "Playing" || playStatus === "Played";
-
-  function handlePlayStatusChange(value: string) {
-    if (!value) return;
-    setPlayStatus(value);
-
-    if (value === "NoStatus" || value === "Unplayed") {
-      setCompletionStatus(null);
-    } else if (completionStatus) {
-      const validOptions = getCompletionOptions(value);
-      if (!validOptions.includes(completionStatus)) {
-        setCompletionStatus(null);
-      }
-    }
-  }
-
-  function handleCompletionChange(value: string) {
-    setCompletionStatus(value);
-  }
-
-  function handleSave() {
-    const finalCompletion = showCompletion ? completionStatus : null;
-    updateStatus.mutate(
-      {
-        id: game.id,
-        data: { playStatus, completionStatus: finalCompletion },
-      },
-      { onSuccess: () => onOpenChange(false) }
-    );
-  }
-
-  const coverSrc = game.coverImageId
-    ? getIgdbCoverUrl(game.coverImageId)
-    : game.steamIconUrl
-      ? getSteamIconUrl(game.steamAppId, game.steamIconUrl)
-      : null;
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-3">
-            {coverSrc && (
-              <Image
-                src={coverSrc}
-                alt={game.name}
-                width={48}
-                height={64}
-                className="rounded object-cover"
-              />
-            )}
-            <span className="truncate">{game.name}</span>
-          </DialogTitle>
-          <DialogDescription>Update play and completion status</DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4 pt-2">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Play Status</label>
-            <ToggleGroup
-              type="single"
-              value={playStatus}
-              onValueChange={handlePlayStatusChange}
-              className="justify-start flex-wrap"
-            >
-              {PLAY_STATUSES.map((status) => (
-                <ToggleGroupItem
-                  key={status}
-                  value={status}
-                  variant="outline"
-                  size="sm"
-                >
-                  {PLAY_STATUS_LABELS[status]}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-          </div>
-
-          {showCompletion && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Completion Status</label>
-              <Select
-                value={completionStatus ?? ""}
-                onValueChange={handleCompletionChange}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select completion status" />
-                </SelectTrigger>
-                <SelectContent className="z-[101]">
-                  {getCompletionOptions(playStatus).map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-        </div>
-
-        <DialogFooter>
-          <Button
-            onClick={handleSave}
-            disabled={updateStatus.isPending}
-          >
-            {updateStatus.isPending ? "Saving..." : "Save"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   );
 }
 
@@ -329,8 +217,6 @@ export default function CollectionPage() {
   const username = params.username as string;
   const { isLoading: authLoading } = useAuth();
   const { data: collection, isLoading } = useCustomerCollection();
-  const [selectedGame, setSelectedGame] =
-    useState<CustomerCollectionGame | null>(null);
 
   if (authLoading || isLoading) {
     return (
@@ -373,21 +259,9 @@ export default function CollectionPage() {
             key={game.id}
             game={game}
             username={username}
-            onEdit={() => setSelectedGame(game)}
           />
         ))}
       </div>
-
-      {selectedGame && (
-        <GameStatusDialog
-          key={selectedGame.id}
-          game={selectedGame}
-          open={!!selectedGame}
-          onOpenChange={(open) => {
-            if (!open) setSelectedGame(null);
-          }}
-        />
-      )}
     </div>
   );
 }
