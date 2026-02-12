@@ -218,6 +218,7 @@ export default function ProfileSettingsPage() {
   const [socialHandles, setSocialHandles] = useState<SocialHandle[]>([]);
   const [customHandles, setCustomHandles] = useState<SocialHandle[]>([]);
   const [charities, setCharities] = useState<ProfileCharity[]>([]);
+  const [urlErrors, setUrlErrors] = useState<Record<number, string>>({});
 
   // Redirect if not own profile
   useEffect(() => {
@@ -329,6 +330,16 @@ export default function ProfileSettingsPage() {
     );
   };
 
+  const validateUrl = (value: string): boolean => {
+    if (!value.trim()) return true;
+    try {
+      const url = new URL(value);
+      return url.protocol === "http:" || url.protocol === "https:";
+    } catch {
+      return false;
+    }
+  };
+
   const updateCustomHandle = (
     index: number,
     field: keyof SocialHandle,
@@ -337,6 +348,17 @@ export default function ProfileSettingsPage() {
     setCustomHandles((prev) =>
       prev.map((sh, i) => (i === index ? { ...sh, [field]: value } : sh))
     );
+    if (field === "url") {
+      setUrlErrors((prev) => {
+        const next = { ...prev };
+        if (!value.trim() || validateUrl(value)) {
+          delete next[index];
+        } else {
+          next[index] = "Please enter a valid URL (e.g. https://example.com)";
+        }
+        return next;
+      });
+    }
   };
 
   const addCustomHandle = () => {
@@ -348,6 +370,15 @@ export default function ProfileSettingsPage() {
 
   const removeCustomHandle = (index: number) => {
     setCustomHandles((prev) => prev.filter((_, i) => i !== index));
+    setUrlErrors((prev) => {
+      const next: Record<number, string> = {};
+      for (const [key, value] of Object.entries(prev)) {
+        const k = Number(key);
+        if (k < index) next[k] = value;
+        else if (k > index) next[k - 1] = value;
+      }
+      return next;
+    });
   };
 
   const addCharity = (charity: ProfileCharity) => {
@@ -366,6 +397,19 @@ export default function ProfileSettingsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate custom handle URLs before saving
+    const newUrlErrors: Record<number, string> = {};
+    customHandles.forEach((sh, index) => {
+      if (sh.url?.trim() && !validateUrl(sh.url)) {
+        newUrlErrors[index] = "Please enter a valid URL (e.g. https://example.com)";
+      }
+    });
+    if (Object.keys(newUrlErrors).length > 0) {
+      setUrlErrors(newUrlErrors);
+      toast.error("Please fix invalid URLs before saving");
+      return;
+    }
 
     // Only include predefined handles that have a value
     const filledPredefined = socialHandles.filter(
@@ -432,7 +476,7 @@ export default function ProfileSettingsPage() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl">
+    <form onSubmit={handleSubmit} className="space-y-8">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold">Profile Settings</h2>
         <Link href={`/community/profiles/${username}/settings/game-imports`}>
@@ -443,233 +487,245 @@ export default function ProfileSettingsPage() {
         </Link>
       </div>
 
-      {/* Profile Info */}
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="handle">Handle</Label>
-          <div className="relative">
-            <Input
-              id="handle"
-              value={handle}
-              onChange={(e) => handleHandleChange(e.target.value)}
-              placeholder="Your unique handle"
-              maxLength={30}
-            />
-            {isCheckingHandle && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <Loader2Icon className="h-4 w-4 animate-spin text-muted-foreground" />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Left column: About Me + Charities */}
+        <div className="space-y-8">
+          {/* Profile Info */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">About Me</h3>
+
+            <div className="space-y-2">
+              <Label htmlFor="handle">Handle</Label>
+              <div className="relative">
+                <Input
+                  id="handle"
+                  value={handle}
+                  onChange={(e) => handleHandleChange(e.target.value)}
+                  placeholder="Your unique handle"
+                  maxLength={30}
+                />
+                {isCheckingHandle && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <Loader2Icon className="h-4 w-4 animate-spin text-muted-foreground" />
+                  </div>
+                )}
+                {!isCheckingHandle && handleChanged && handleAvailable === true && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <CheckIcon className="h-4 w-4 text-green-500" />
+                  </div>
+                )}
+                {!isCheckingHandle && handleChanged && handleAvailable === false && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <XIcon className="h-4 w-4 text-red-500" />
+                  </div>
+                )}
               </div>
+              {handleChanged && handleAvailable === false && (
+                <p className="text-sm text-red-500">This handle is already taken.</p>
+              )}
+              {handleChanged && handleAvailable === true && (
+                <p className="text-sm text-green-500">Handle is available!</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g. Game Collector, Speedrunner, Indie Enthusiast"
+                maxLength={255}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="headline">Headline</Label>
+              <Textarea
+                id="headline"
+                value={headline}
+                onChange={(e) => setHeadline(e.target.value)}
+                placeholder="Write something about yourself..."
+                maxLength={500}
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="specialties">Specialties</Label>
+              <Input
+                id="specialties"
+                value={specialties}
+                onChange={(e) => setSpecialties(e.target.value)}
+                placeholder="e.g. RPGs, Indie Games, Retro Gaming"
+                maxLength={500}
+              />
+            </div>
+          </div>
+
+          {/* Charities */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Preferred Charities</h3>
+            <p className="text-sm text-muted-foreground">
+              Search and add up to 3 charities you support.
+            </p>
+
+            {charities.length < 3 && (
+              <CharitySearch
+                onSelect={addCharity}
+                disabled={charities.length >= 3}
+              />
             )}
-            {!isCheckingHandle && handleChanged && handleAvailable === true && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <CheckIcon className="h-4 w-4 text-green-500" />
-              </div>
-            )}
-            {!isCheckingHandle && handleChanged && handleAvailable === false && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <XIcon className="h-4 w-4 text-red-500" />
+
+            {charities.length > 0 && (
+              <div className="space-y-3">
+                {charities.map((charity, index) => (
+                  <div
+                    key={charity.name}
+                    className="flex items-start gap-3 rounded-md border p-3"
+                  >
+                    <div className="w-10 h-10 rounded flex-shrink-0 overflow-hidden bg-muted/50">
+                      {charity.logo ? (
+                        <Image
+                          src={charity.logo}
+                          alt={charity.name}
+                          width={40}
+                          height={40}
+                          className="w-full h-full object-cover"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <HeartIcon className="h-4 w-4 text-muted-foreground/40" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        {charity.link ? (
+                          <a
+                            href={charity.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm font-medium text-primary hover:underline truncate"
+                          >
+                            {charity.name}
+                          </a>
+                        ) : (
+                          <p className="text-sm font-medium truncate">{charity.name}</p>
+                        )}
+                      </div>
+                      {charity.description && (
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                          {charity.description}
+                        </p>
+                      )}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeCharity(index)}
+                      className="flex-shrink-0 h-7 w-7"
+                    >
+                      <XIcon className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
               </div>
             )}
           </div>
-          {handleChanged && handleAvailable === false && (
-            <p className="text-sm text-red-500">This handle is already taken.</p>
-          )}
-          {handleChanged && handleAvailable === true && (
-            <p className="text-sm text-green-500">Handle is available!</p>
-          )}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="title">Title</Label>
-          <Input
-            id="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Game Collector, Speedrunner, Indie Enthusiast"
-            maxLength={255}
-          />
-        </div>
+        {/* Right column: Social Links */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Social Links</h3>
 
-        <div className="space-y-2">
-          <Label htmlFor="headline">Headline</Label>
-          <Textarea
-            id="headline"
-            value={headline}
-            onChange={(e) => setHeadline(e.target.value)}
-            placeholder="Write something about yourself..."
-            maxLength={500}
-            rows={3}
-          />
-        </div>
+          <div className="space-y-3">
+            {socialHandles.map((sh, index) => {
+              const Icon = PLATFORM_ICONS[sh.platform];
+              const urlTemplate = PLATFORM_URL_TEMPLATES[sh.platform];
+              const generatedUrl = sh.handle.trim() && urlTemplate ? urlTemplate(sh.handle.trim()) : null;
+              return (
+                <div key={sh.platform} className="space-y-1">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 w-28 flex-shrink-0">
+                      {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
+                      <span className="text-sm font-medium">
+                        {PREDEFINED_PLATFORMS.find((p) => p.key === sh.platform)?.label}
+                      </span>
+                    </div>
+                    <Input
+                      value={sh.handle}
+                      onChange={(e) =>
+                        updateSocialHandle(index, "handle", e.target.value)
+                      }
+                      placeholder="Username"
+                      className="flex-1"
+                    />
+                  </div>
+                  {generatedUrl && (
+                    <p className="text-xs text-muted-foreground ml-[7.75rem] truncate">{generatedUrl}</p>
+                  )}
+                </div>
+              );
+            })}
 
-        <div className="space-y-2">
-          <Label htmlFor="specialties">Specialties</Label>
-          <Input
-            id="specialties"
-            value={specialties}
-            onChange={(e) => setSpecialties(e.target.value)}
-            placeholder="e.g. RPGs, Indie Games, Retro Gaming"
-            maxLength={500}
-          />
-        </div>
-      </div>
-
-      {/* Social Handles */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Social Links</h3>
-
-        <div className="space-y-3">
-          {socialHandles.map((sh, index) => {
-            const Icon = PLATFORM_ICONS[sh.platform];
-            const urlTemplate = PLATFORM_URL_TEMPLATES[sh.platform];
-            const generatedUrl = sh.handle.trim() && urlTemplate ? urlTemplate(sh.handle.trim()) : null;
-            return (
-              <div key={sh.platform} className="space-y-1">
+            {/* Custom handles */}
+            {customHandles.map((sh, index) => (
+              <div key={`custom-${index}`} className="space-y-1">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2 w-28 flex-shrink-0">
-                    {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
-                    <span className="text-sm font-medium">
-                      {PREDEFINED_PLATFORMS.find((p) => p.key === sh.platform)?.label}
-                    </span>
+                    <GlobeIcon className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Other</span>
                   </div>
                   <Input
                     value={sh.handle}
                     onChange={(e) =>
-                      updateSocialHandle(index, "handle", e.target.value)
+                      updateCustomHandle(index, "handle", e.target.value)
                     }
-                    placeholder="Username"
+                    placeholder="Username / handle"
                     className="flex-1"
                   />
+                  <Input
+                    value={sh.url ?? ""}
+                    onChange={(e) =>
+                      updateCustomHandle(index, "url", e.target.value)
+                    }
+                    placeholder="https://example.com"
+                    className={`flex-1 ${urlErrors[index] ? "border-red-500" : ""}`}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeCustomHandle(index)}
+                    className="flex-shrink-0"
+                  >
+                    <XIcon className="h-4 w-4" />
+                  </Button>
                 </div>
-                {generatedUrl && (
-                  <p className="text-xs text-muted-foreground ml-[7.75rem] truncate">{generatedUrl}</p>
+                {urlErrors[index] && (
+                  <p className="text-xs text-red-500 ml-[7.75rem]">{urlErrors[index]}</p>
                 )}
-              </div>
-            );
-          })}
-
-          {/* Custom handles */}
-          {customHandles.map((sh, index) => (
-            <div key={`custom-${index}`} className="flex items-center gap-3">
-              <div className="flex items-center gap-2 w-28 flex-shrink-0">
-                <GlobeIcon className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Other</span>
-              </div>
-              <Input
-                value={sh.handle}
-                onChange={(e) =>
-                  updateCustomHandle(index, "handle", e.target.value)
-                }
-                placeholder="Username / handle"
-                className="flex-1"
-              />
-              <Input
-                value={sh.url ?? ""}
-                onChange={(e) =>
-                  updateCustomHandle(index, "url", e.target.value)
-                }
-                placeholder="URL"
-                className="flex-1"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => removeCustomHandle(index)}
-                className="flex-shrink-0"
-              >
-                <XIcon className="h-4 w-4" />
-              </Button>
-            </div>
-          ))}
-        </div>
-
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={addCustomHandle}
-        >
-          <PlusIcon className="h-4 w-4 mr-1" />
-          Add Other Platform
-        </Button>
-      </div>
-
-      {/* Charities */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Preferred Charities</h3>
-        <p className="text-sm text-muted-foreground">
-          Search and add up to 3 charities you support.
-        </p>
-
-        {charities.length < 3 && (
-          <CharitySearch
-            onSelect={addCharity}
-            disabled={charities.length >= 3}
-          />
-        )}
-
-        {charities.length > 0 && (
-          <div className="space-y-3">
-            {charities.map((charity, index) => (
-              <div
-                key={charity.name}
-                className="flex items-start gap-3 rounded-md border p-3"
-              >
-                <div className="w-10 h-10 rounded flex-shrink-0 overflow-hidden bg-muted/50">
-                  {charity.logo ? (
-                    <Image
-                      src={charity.logo}
-                      alt={charity.name}
-                      width={40}
-                      height={40}
-                      className="w-full h-full object-cover"
-                      unoptimized
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <HeartIcon className="h-4 w-4 text-muted-foreground/40" />
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    {charity.link ? (
-                      <a
-                        href={charity.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm font-medium text-primary hover:underline truncate"
-                      >
-                        {charity.name}
-                      </a>
-                    ) : (
-                      <p className="text-sm font-medium truncate">{charity.name}</p>
-                    )}
-                  </div>
-                  {charity.description && (
-                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                      {charity.description}
-                    </p>
-                  )}
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removeCharity(index)}
-                  className="flex-shrink-0 h-7 w-7"
-                >
-                  <XIcon className="h-3.5 w-3.5" />
-                </Button>
               </div>
             ))}
           </div>
-        )}
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={addCustomHandle}
+          >
+            <PlusIcon className="h-4 w-4 mr-1" />
+            Add Other Platform
+          </Button>
+        </div>
       </div>
 
       {/* Save */}
-      <Button type="submit" disabled={updateProfile.isPending || updateHandle.isPending || (handleChanged && !handleAvailable) || isCheckingHandle}>
+      <Button type="submit" disabled={updateProfile.isPending || updateHandle.isPending || (handleChanged && !handleAvailable) || isCheckingHandle || Object.keys(urlErrors).length > 0}>
         {updateProfile.isPending || updateHandle.isPending ? (
           <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
         ) : (

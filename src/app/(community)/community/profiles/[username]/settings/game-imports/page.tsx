@@ -246,7 +246,7 @@ export default function GameImportsPage() {
                 ) : (
                   <DownloadIcon className="h-4 w-4 mr-1" />
                 )}
-                Import Selected
+                Add games to collection
               </Button>
             </div>
           </div>
