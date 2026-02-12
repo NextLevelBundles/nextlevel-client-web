@@ -48,6 +48,39 @@ const PLATFORM_ICONS: Record<string, React.ComponentType<{ className?: string }>
   Steam: FaSteam,
 };
 
+const PLATFORM_STYLES: Record<string, { bg: string; text: string; border: string }> = {
+  YouTube: {
+    bg: "bg-red-500/10 dark:bg-red-500/20",
+    text: "text-red-600 dark:text-red-400",
+    border: "border-red-500/20 dark:border-red-500/30",
+  },
+  Instagram: {
+    bg: "bg-pink-500/10 dark:bg-pink-500/20",
+    text: "text-pink-600 dark:text-pink-400",
+    border: "border-pink-500/20 dark:border-pink-500/30",
+  },
+  Bluesky: {
+    bg: "bg-sky-500/10 dark:bg-sky-500/20",
+    text: "text-sky-600 dark:text-sky-400",
+    border: "border-sky-500/20 dark:border-sky-500/30",
+  },
+  Twitter: {
+    bg: "bg-neutral-500/10 dark:bg-neutral-400/20",
+    text: "text-neutral-700 dark:text-neutral-300",
+    border: "border-neutral-500/20 dark:border-neutral-400/30",
+  },
+  Reddit: {
+    bg: "bg-orange-500/10 dark:bg-orange-500/20",
+    text: "text-orange-600 dark:text-orange-400",
+    border: "border-orange-500/20 dark:border-orange-500/30",
+  },
+  Steam: {
+    bg: "bg-indigo-500/10 dark:bg-indigo-500/20",
+    text: "text-indigo-600 dark:text-indigo-400",
+    border: "border-indigo-500/20 dark:border-indigo-500/30",
+  },
+};
+
 const PREDEFINED_PLATFORMS = [
   { key: "YouTube", label: "YouTube" },
   { key: "Instagram", label: "Instagram" },
@@ -646,12 +679,13 @@ export default function ProfileSettingsPage() {
               const Icon = PLATFORM_ICONS[sh.platform];
               const urlTemplate = PLATFORM_URL_TEMPLATES[sh.platform];
               const generatedUrl = sh.handle.trim() && urlTemplate ? urlTemplate(sh.handle.trim()) : null;
+              const style = PLATFORM_STYLES[sh.platform];
               return (
                 <div key={sh.platform} className="space-y-1">
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 w-28 flex-shrink-0">
-                      {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
-                      <span className="text-sm font-medium">
+                    <div className={`inline-flex items-center gap-2 w-28 flex-shrink-0 rounded-full border px-3 py-1.5 ${style ? `${style.bg} ${style.text} ${style.border}` : "bg-muted text-muted-foreground border-border"}`}>
+                      {Icon && <Icon className="h-3.5 w-3.5" />}
+                      <span className="text-xs font-medium">
                         {PREDEFINED_PLATFORMS.find((p) => p.key === sh.platform)?.label}
                       </span>
                     </div>
@@ -675,9 +709,9 @@ export default function ProfileSettingsPage() {
             {customHandles.map((sh, index) => (
               <div key={`custom-${index}`} className="space-y-1">
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 w-28 flex-shrink-0">
-                    <GlobeIcon className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Other</span>
+                  <div className="inline-flex items-center gap-2 w-28 flex-shrink-0 rounded-full border bg-muted text-muted-foreground border-border px-3 py-1.5">
+                    <GlobeIcon className="h-3.5 w-3.5" />
+                    <span className="text-xs font-medium">Other</span>
                   </div>
                   <Input
                     value={sh.handle}
