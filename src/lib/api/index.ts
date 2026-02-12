@@ -10,6 +10,8 @@ import { CommonClient } from "./clients/common";
 import { BundleApi } from "./clients/bundle";
 import { ExchangeApi } from "./clients/exchange";
 import { UpgradeApi } from "./clients/upgrade";
+import { CustomerProfileApi } from "./clients/customer-profile";
+import { GameApi } from "./clients/game";
 
 // Export types
 export type { TradeInStatus, TradeInValueData } from "./clients/exchange";
@@ -29,3 +31,5 @@ export const bookApi = new BookClient(apiClient);
 export const commonApi = new CommonClient(apiClient);
 export const bundleApi = new BundleApi(apiClient);
 export const upgradeApi = new UpgradeApi(apiClient);
+export const customerProfileApi = new CustomerProfileApi(apiClient);
+export const gameApi = new GameApi(apiClient);

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { userApi } from "@/lib/api";
 import { Customer } from "@/lib/api/types/user";
 import { useAuth } from "@/shared/providers/auth-provider";
@@ -25,4 +25,19 @@ export function useCustomer() {
     refetchOnWindowFocus: true, // Refetch on window focus to ensure fresh data
     refetchOnReconnect: true, // Refetch on reconnect
   });
+}
+
+export function useUpdateHandle() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (handle: string) => userApi.updateHandle(handle),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: customerQueryKey });
+    },
+  });
+}
+
+export function useCheckHandleAvailability() {
+  return async (handle: string) => userApi.checkHandleAvailability(handle);
 }

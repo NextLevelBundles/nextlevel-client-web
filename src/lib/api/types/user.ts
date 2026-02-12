@@ -23,6 +23,8 @@ export interface Customer {
   name: string;
   email: string;
   handle: string;
+  type?: string;
+  pictureUrl?: string | null;
   createdAt: string;
   updatedAt: string;
   steamId?: string;
@@ -30,6 +32,8 @@ export interface Customer {
   steamConnectedAt?: string;
   steamCountry?: string;
   steamLevel?: string;
+  steamLibraryLastSyncedAt?: string;
+  steamLibrarySyncStatus?: string;
   countryCode: string;
   country?: Country;
   countryLastChangedAt?: string | null;
