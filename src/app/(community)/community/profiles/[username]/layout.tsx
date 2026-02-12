@@ -47,6 +47,7 @@ export default function ProfileLayout({
   const getCurrentTab = () => {
     if (pathname.includes("/game-imports")) return "game-imports";
     if (pathname.includes("/settings")) return "settings";
+    if (pathname.includes("/games/")) return "collection";
     if (pathname.includes("/collection")) return "collection";
     if (pathname.includes("/achievements")) return "achievements";
     if (pathname.includes("/wishlist")) return "wishlist";

@@ -384,6 +384,7 @@ function GameDetailSkeleton() {
 
 export default function GameDetailPage() {
   const params = useParams();
+  const username = params.username as string;
   const slug = params.slug as string;
   const { data: game, isLoading } = useGameDetail(slug);
 
@@ -399,10 +400,10 @@ export default function GameDetailPage() {
           The game you&apos;re looking for doesn&apos;t exist or hasn&apos;t been synced yet.
         </p>
         <Link
-          href="/community"
+          href={`/community/profiles/${username}/collection`}
           className="text-primary hover:underline text-sm mt-4 inline-block"
         >
-          Back to Community
+          Back to Collection
         </Link>
       </div>
     );

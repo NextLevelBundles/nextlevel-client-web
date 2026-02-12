@@ -95,9 +95,11 @@ function StatusBadge({
 
 function GameRow({
   game,
+  username,
   onEdit,
 }: {
   game: CustomerCollectionGame;
+  username: string;
   onEdit: () => void;
 }) {
   const coverSrc = game.coverImageId
@@ -113,7 +115,7 @@ function GameRow({
     <div className="flex items-center gap-4 py-3 border-b border-border/50">
       {/* Cover */}
       {game.slug ? (
-        <Link href={`/community/games/${game.slug}`} className="w-16 h-20 flex-shrink-0 rounded overflow-hidden bg-muted/50 block">
+        <Link href={`/community/profiles/${username}/games/${game.slug}`} className="w-16 h-20 flex-shrink-0 rounded overflow-hidden bg-muted/50 block">
           {coverSrc ? (
             <Image
               src={coverSrc}
@@ -150,7 +152,7 @@ function GameRow({
       <div className="flex-1 min-w-0">
         {game.slug ? (
           <Link
-            href={`/community/games/${game.slug}`}
+            href={`/community/profiles/${username}/games/${game.slug}`}
             className="text-sm font-semibold truncate block hover:text-primary transition-colors"
           >
             {game.name}
@@ -370,6 +372,7 @@ export default function CollectionPage() {
           <GameRow
             key={game.id}
             game={game}
+            username={username}
             onEdit={() => setSelectedGame(game)}
           />
         ))}
