@@ -12,7 +12,25 @@ import {
   ClockIcon,
   TagIcon,
   TrophyIcon,
+  GlobeIcon,
 } from "lucide-react";
+import {
+  FaYoutube,
+  FaInstagram,
+  FaBluesky,
+  FaXTwitter,
+  FaReddit,
+  FaSteam,
+} from "react-icons/fa6";
+
+const PLATFORM_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  YouTube: FaYoutube,
+  Instagram: FaInstagram,
+  Bluesky: FaBluesky,
+  Twitter: FaXTwitter,
+  Reddit: FaReddit,
+  Steam: FaSteam,
+};
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
@@ -130,26 +148,29 @@ function AboutMeSection({
                 Social Links
               </span>
               <div className="flex flex-wrap gap-2 mt-1">
-                {profile!.socialHandles.map((sh) => (
-                  <span
-                    key={sh.platform}
-                    className="inline-flex items-center gap-1 text-xs rounded-full bg-muted px-2.5 py-1"
-                  >
-                    <span className="font-medium">{sh.platform}:</span>
-                    {sh.url ? (
-                      <a
-                        href={sh.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        {sh.handle}
-                      </a>
-                    ) : (
-                      <span>{sh.handle}</span>
-                    )}
-                  </span>
-                ))}
+                {profile!.socialHandles.map((sh) => {
+                  const Icon = PLATFORM_ICONS[sh.platform] ?? GlobeIcon;
+                  return (
+                    <span
+                      key={sh.platform}
+                      className="inline-flex items-center gap-1.5 text-xs rounded-full bg-muted px-2.5 py-1"
+                    >
+                      <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+                      {sh.url ? (
+                        <a
+                          href={sh.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                        >
+                          {sh.handle}
+                        </a>
+                      ) : (
+                        <span>{sh.handle}</span>
+                      )}
+                    </span>
+                  );
+                })}
               </div>
             </div>
           )}

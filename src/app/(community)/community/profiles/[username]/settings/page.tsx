@@ -8,6 +8,14 @@ import { Textarea } from "@/shared/components/ui/textarea";
 import { Button } from "@/shared/components/ui/button";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { PlusIcon, XIcon, Loader2Icon, SaveIcon, DownloadIcon, CheckIcon } from "lucide-react";
+import {
+  FaYoutube,
+  FaInstagram,
+  FaBluesky,
+  FaXTwitter,
+  FaReddit,
+  FaSteam,
+} from "react-icons/fa6";
 import { useCustomer, useUpdateHandle } from "@/hooks/queries/useCustomer";
 import { userApi } from "@/lib/api";
 import Link from "next/link";
@@ -20,6 +28,24 @@ import type {
   SocialHandle,
   ProfileCharity,
 } from "@/lib/api/types/customer-profile";
+
+const PLATFORM_URL_TEMPLATES: Record<string, (handle: string) => string> = {
+  YouTube: (h) => `https://youtube.com/@${h}`,
+  Instagram: (h) => `https://instagram.com/${h}`,
+  Bluesky: (h) => `https://bsky.app/profile/${h}`,
+  Twitter: (h) => `https://x.com/${h}`,
+  Reddit: (h) => `https://reddit.com/u/${h}`,
+  Steam: (h) => `https://steamcommunity.com/id/${h}`,
+};
+
+const PLATFORM_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  YouTube: FaYoutube,
+  Instagram: FaInstagram,
+  Bluesky: FaBluesky,
+  Twitter: FaXTwitter,
+  Reddit: FaReddit,
+  Steam: FaSteam,
+};
 
 const PREDEFINED_PLATFORMS = [
   { key: "YouTube", label: "YouTube" },
@@ -231,11 +257,15 @@ export default function ProfileSettingsPage() {
         headline: headline.trim() || null,
         specialties: specialties.trim() || null,
         socialHandles: [
-          ...filledPredefined.map((sh) => ({
-            platform: sh.platform,
-            handle: sh.handle.trim(),
-            url: sh.url?.trim() || null,
-          })),
+          ...filledPredefined.map((sh) => {
+            const trimmedHandle = sh.handle.trim();
+            const urlTemplate = PLATFORM_URL_TEMPLATES[sh.platform];
+            return {
+              platform: sh.platform,
+              handle: trimmedHandle,
+              url: urlTemplate ? urlTemplate(trimmedHandle) : null,
+            };
+          }),
           ...filledCustom.map((sh) => ({
             platform: sh.platform.trim(),
             handle: sh.handle.trim(),
@@ -353,29 +383,34 @@ export default function ProfileSettingsPage() {
         <h3 className="text-lg font-semibold">Social Links</h3>
 
         <div className="space-y-3">
-          {socialHandles.map((sh, index) => (
-            <div key={sh.platform} className="flex items-center gap-3">
-              <span className="text-sm font-medium w-24 flex-shrink-0">
-                {PREDEFINED_PLATFORMS.find((p) => p.key === sh.platform)?.label}
-              </span>
-              <Input
-                value={sh.handle}
-                onChange={(e) =>
-                  updateSocialHandle(index, "handle", e.target.value)
-                }
-                placeholder="Username / handle"
-                className="flex-1"
-              />
-              <Input
-                value={sh.url ?? ""}
-                onChange={(e) =>
-                  updateSocialHandle(index, "url", e.target.value)
-                }
-                placeholder="URL (optional)"
-                className="flex-1"
-              />
-            </div>
-          ))}
+          {socialHandles.map((sh, index) => {
+            const Icon = PLATFORM_ICONS[sh.platform];
+            const urlTemplate = PLATFORM_URL_TEMPLATES[sh.platform];
+            const generatedUrl = sh.handle.trim() && urlTemplate ? urlTemplate(sh.handle.trim()) : null;
+            return (
+              <div key={sh.platform} className="space-y-1">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 w-28 flex-shrink-0">
+                    {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
+                    <span className="text-sm font-medium">
+                      {PREDEFINED_PLATFORMS.find((p) => p.key === sh.platform)?.label}
+                    </span>
+                  </div>
+                  <Input
+                    value={sh.handle}
+                    onChange={(e) =>
+                      updateSocialHandle(index, "handle", e.target.value)
+                    }
+                    placeholder="Username"
+                    className="flex-1"
+                  />
+                </div>
+                {generatedUrl && (
+                  <p className="text-xs text-muted-foreground ml-[7.75rem] truncate">{generatedUrl}</p>
+                )}
+              </div>
+            );
+          })}
 
           {/* Custom handles */}
           {customHandles.map((sh, index) => (
