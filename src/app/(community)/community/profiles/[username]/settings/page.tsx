@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Button } from "@/shared/components/ui/button";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import { PlusIcon, XIcon, Loader2Icon, SaveIcon, DownloadIcon, CheckIcon, GlobeIcon } from "lucide-react";
+import { PlusIcon, XIcon, Loader2Icon, SaveIcon, DownloadIcon, CheckIcon, GlobeIcon, SearchIcon, HeartIcon } from "lucide-react";
 import {
   FaYoutube,
   FaInstagram,
@@ -55,6 +56,148 @@ const PREDEFINED_PLATFORMS = [
   { key: "Reddit", label: "Reddit" },
   { key: "Steam", label: "Steam" },
 ];
+
+interface EveryOrgNonprofit {
+  name: string;
+  profileUrl: string;
+  logoUrl: string | null;
+  description: string | null;
+  websiteUrl: string | null;
+}
+
+function CharitySearch({
+  onSelect,
+  disabled,
+}: {
+  onSelect: (charity: ProfileCharity) => void;
+  disabled: boolean;
+}) {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<EveryOrgNonprofit[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!query.trim()) {
+      setResults([]);
+      setShowResults(false);
+      return;
+    }
+
+    setIsSearching(true);
+    const timeoutId = setTimeout(async () => {
+      try {
+        const apiKey = process.env.NEXT_PUBLIC_EVERY_ORG_API_KEY;
+        if (!apiKey) {
+          setResults([]);
+          return;
+        }
+        const res = await fetch(
+          `https://partners.every.org/v0.2/search/${encodeURIComponent(query.trim())}?apiKey=${apiKey}&take=5`
+        );
+        if (!res.ok) throw new Error("Search failed");
+        const data = await res.json();
+        setResults(data.nonprofits ?? []);
+        setShowResults(true);
+      } catch {
+        setResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 350);
+
+    return () => clearTimeout(timeoutId);
+  }, [query]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setShowResults(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  function handleSelect(nonprofit: EveryOrgNonprofit) {
+    onSelect({
+      name: nonprofit.name,
+      link: nonprofit.websiteUrl || nonprofit.profileUrl || null,
+      logo: nonprofit.logoUrl || null,
+      description: nonprofit.description?.slice(0, 200) || null,
+    });
+    setQuery("");
+    setResults([]);
+    setShowResults(false);
+  }
+
+  return (
+    <div ref={containerRef} className="relative">
+      <div className="relative">
+        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => results.length > 0 && setShowResults(true)}
+          placeholder="Search for a charity..."
+          className="pl-9"
+          disabled={disabled}
+        />
+        {isSearching && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            <Loader2Icon className="h-4 w-4 animate-spin text-muted-foreground" />
+          </div>
+        )}
+      </div>
+
+      {showResults && results.length > 0 && (
+        <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg">
+          {results.map((nonprofit, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => handleSelect(nonprofit)}
+              className="flex items-center gap-3 w-full px-3 py-2.5 text-left hover:bg-muted/50 transition-colors first:rounded-t-md last:rounded-b-md"
+            >
+              <div className="w-8 h-8 rounded flex-shrink-0 overflow-hidden bg-muted/50">
+                {nonprofit.logoUrl ? (
+                  <Image
+                    src={nonprofit.logoUrl}
+                    alt={nonprofit.name}
+                    width={32}
+                    height={32}
+                    className="w-full h-full object-cover"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <HeartIcon className="h-4 w-4 text-muted-foreground/40" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{nonprofit.name}</p>
+                {nonprofit.description && (
+                  <p className="text-xs text-muted-foreground truncate">
+                    {nonprofit.description}
+                  </p>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {showResults && query.trim() && !isSearching && results.length === 0 && (
+        <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg px-3 py-2.5">
+          <p className="text-sm text-muted-foreground">No charities found.</p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function ProfileSettingsPage() {
   const params = useParams();
@@ -207,21 +350,14 @@ export default function ProfileSettingsPage() {
     setCustomHandles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const updateCharity = (
-    index: number,
-    field: keyof ProfileCharity,
-    value: string
-  ) => {
-    setCharities((prev) =>
-      prev.map((c, i) => (i === index ? { ...c, [field]: value } : c))
-    );
-  };
-
-  const addCharity = () => {
-    setCharities((prev) => [
-      ...prev,
-      { name: "", link: "", logo: "", description: "" },
-    ]);
+  const addCharity = (charity: ProfileCharity) => {
+    if (charities.length >= 3) return;
+    // Prevent duplicates by name
+    if (charities.some((c) => c.name === charity.name)) {
+      toast.info(`${charity.name} is already added.`);
+      return;
+    }
+    setCharities((prev) => [...prev, charity]);
   };
 
   const removeCharity = (index: number) => {
@@ -461,70 +597,74 @@ export default function ProfileSettingsPage() {
 
       {/* Charities */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Charities</h3>
-
-        <div className="space-y-4">
-          {charities.map((charity, index) => (
-            <div
-              key={index}
-              className="space-y-2 rounded-md border p-3 relative"
-            >
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => removeCharity(index)}
-                className="absolute top-2 right-2 h-6 w-6"
-              >
-                <XIcon className="h-3 w-3" />
-              </Button>
-              <div className="grid grid-cols-2 gap-3 pr-8">
-                <div className="space-y-1">
-                  <Label>Name</Label>
-                  <Input
-                    value={charity.name}
-                    onChange={(e) =>
-                      updateCharity(index, "name", e.target.value)
-                    }
-                    placeholder="Charity name"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label>Link</Label>
-                  <Input
-                    value={charity.link ?? ""}
-                    onChange={(e) =>
-                      updateCharity(index, "link", e.target.value)
-                    }
-                    placeholder="https://..."
-                  />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <Label>Description</Label>
-                <Textarea
-                  value={charity.description ?? ""}
-                  onChange={(e) =>
-                    updateCharity(index, "description", e.target.value)
-                  }
-                  placeholder="Brief description"
-                  rows={2}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
+        <h3 className="text-lg font-semibold">Preferred Charities</h3>
+        <p className="text-sm text-muted-foreground">
+          Search and add up to 3 charities you support.
+        </p>
 
         {charities.length < 3 && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={addCharity}
-          >
-            <PlusIcon className="h-4 w-4 mr-1" />
-            Add Charity
-          </Button>
+          <CharitySearch
+            onSelect={addCharity}
+            disabled={charities.length >= 3}
+          />
+        )}
+
+        {charities.length > 0 && (
+          <div className="space-y-3">
+            {charities.map((charity, index) => (
+              <div
+                key={charity.name}
+                className="flex items-start gap-3 rounded-md border p-3"
+              >
+                <div className="w-10 h-10 rounded flex-shrink-0 overflow-hidden bg-muted/50">
+                  {charity.logo ? (
+                    <Image
+                      src={charity.logo}
+                      alt={charity.name}
+                      width={40}
+                      height={40}
+                      className="w-full h-full object-cover"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <HeartIcon className="h-4 w-4 text-muted-foreground/40" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    {charity.link ? (
+                      <a
+                        href={charity.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-medium text-primary hover:underline truncate"
+                      >
+                        {charity.name}
+                      </a>
+                    ) : (
+                      <p className="text-sm font-medium truncate">{charity.name}</p>
+                    )}
+                  </div>
+                  {charity.description && (
+                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                      {charity.description}
+                    </p>
+                  )}
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeCharity(index)}
+                  className="flex-shrink-0 h-7 w-7"
+                >
+                  <XIcon className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 

@@ -128,17 +128,19 @@ export default function ProfileLayout({
             ))}
             {isOwnProfile && (
               <div className="flex items-center ml-auto gap-1">
-                <Link href={`${basePath}/settings/game-imports`} className="flex">
-                  <TabsTrigger
-                    value="game-imports"
-                    className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Gamepad2 className="h-4 w-4" />
-                      <span className="hidden sm:inline">Import from Steam</span>
-                    </div>
-                  </TabsTrigger>
-                </Link>
+                {getCurrentTab() === "collection" && (
+                  <Link href={`${basePath}/settings/game-imports`} className="flex">
+                    <TabsTrigger
+                      value="game-imports"
+                      className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Gamepad2 className="h-4 w-4" />
+                        <span className="hidden sm:inline">Import from Steam</span>
+                      </div>
+                    </TabsTrigger>
+                  </Link>
+                )}
                 <Link href={`${basePath}/settings`} className="flex">
                   <TabsTrigger
                     value="settings"
