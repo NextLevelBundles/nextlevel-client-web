@@ -7,7 +7,7 @@ import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Button } from "@/shared/components/ui/button";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import { PlusIcon, XIcon, Loader2Icon, SaveIcon, DownloadIcon, CheckIcon } from "lucide-react";
+import { PlusIcon, XIcon, Loader2Icon, SaveIcon, DownloadIcon, CheckIcon, GlobeIcon } from "lucide-react";
 import {
   FaYoutube,
   FaInstagram,
@@ -199,7 +199,7 @@ export default function ProfileSettingsPage() {
   const addCustomHandle = () => {
     setCustomHandles((prev) => [
       ...prev,
-      { platform: "", handle: "", url: "" },
+      { platform: "Other", handle: "", url: "" },
     ]);
   };
 
@@ -415,14 +415,10 @@ export default function ProfileSettingsPage() {
           {/* Custom handles */}
           {customHandles.map((sh, index) => (
             <div key={`custom-${index}`} className="flex items-center gap-3">
-              <Input
-                value={sh.platform}
-                onChange={(e) =>
-                  updateCustomHandle(index, "platform", e.target.value)
-                }
-                placeholder="Platform"
-                className="w-24 flex-shrink-0"
-              />
+              <div className="flex items-center gap-2 w-28 flex-shrink-0">
+                <GlobeIcon className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Other</span>
+              </div>
               <Input
                 value={sh.handle}
                 onChange={(e) =>
@@ -436,7 +432,7 @@ export default function ProfileSettingsPage() {
                 onChange={(e) =>
                   updateCustomHandle(index, "url", e.target.value)
                 }
-                placeholder="URL (optional)"
+                placeholder="URL"
                 className="flex-1"
               />
               <Button
@@ -459,7 +455,7 @@ export default function ProfileSettingsPage() {
           onClick={addCustomHandle}
         >
           <PlusIcon className="h-4 w-4 mr-1" />
-          Add Custom Platform
+          Add Other Platform
         </Button>
       </div>
 
