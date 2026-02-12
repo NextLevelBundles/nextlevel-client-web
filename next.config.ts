@@ -36,6 +36,9 @@ const nextConfig: NextConfig = {
       {
         hostname: "media.steampowered.com",
       },
+      {
+        hostname: "img.youtube.com",
+      },
     ],
   },
   async redirects() {

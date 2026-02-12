@@ -83,7 +83,7 @@ export interface UpdateCommunityProfileRequest {
 export interface CustomerCollectionGame {
   id: string;
   steamAppId: number;
-  gameId: string | null;
+  gameId: string;
   slug: string | null;
   name: string;
   coverImageId: string | null;
