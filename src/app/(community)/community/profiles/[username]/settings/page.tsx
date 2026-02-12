@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Button } from "@/shared/components/ui/button";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import { PlusIcon, XIcon, Loader2Icon, SaveIcon, DownloadIcon } from "lucide-react";
-import { useCustomer } from "@/hooks/queries/useCustomer";
+import { PlusIcon, XIcon, Loader2Icon, SaveIcon, DownloadIcon, CheckIcon } from "lucide-react";
+import { useCustomer, useUpdateHandle } from "@/hooks/queries/useCustomer";
+import { userApi } from "@/lib/api";
 import Link from "next/link";
 import {
   useCommunityProfile,
@@ -36,7 +37,12 @@ export default function ProfileSettingsPage() {
   const { data: customer } = useCustomer();
   const { data: profile, isLoading } = useCommunityProfile();
   const updateProfile = useUpdateCommunityProfile();
+  const updateHandle = useUpdateHandle();
 
+  const [handle, setHandle] = useState("");
+  const [originalHandle, setOriginalHandle] = useState("");
+  const [isCheckingHandle, setIsCheckingHandle] = useState(false);
+  const [handleAvailable, setHandleAvailable] = useState<boolean | null>(null);
   const [title, setTitle] = useState("");
   const [headline, setHeadline] = useState("");
   const [specialties, setSpecialties] = useState("");
@@ -50,6 +56,50 @@ export default function ProfileSettingsPage() {
       router.replace(`/community/profiles/${username}`);
     }
   }, [customer, username, router]);
+
+  // Initialize handle from customer data
+  useEffect(() => {
+    if (customer?.handle) {
+      setHandle(customer.handle);
+      setOriginalHandle(customer.handle);
+    }
+  }, [customer]);
+
+  const handleHandleChange = useCallback((value: string) => {
+    const allowedChars = /[a-z0-9.\-_!@#$%^&*()=+]/g;
+    const filtered = value
+      .toLowerCase()
+      .match(allowedChars)
+      ?.join("") ?? "";
+    setHandle(filtered);
+    setHandleAvailable(null);
+  }, []);
+
+  // Debounced handle availability check
+  useEffect(() => {
+    if (!handle.trim() || handle === originalHandle) {
+      setHandleAvailable(null);
+      setIsCheckingHandle(false);
+      return;
+    }
+
+    setIsCheckingHandle(true);
+    const timeoutId = setTimeout(async () => {
+      try {
+        const isAvailable = await userApi.checkHandleAvailability(handle);
+        setHandleAvailable(isAvailable);
+      } catch {
+        setHandleAvailable(null);
+      } finally {
+        setIsCheckingHandle(false);
+      }
+    }, 350);
+
+    return () => clearTimeout(timeoutId);
+  }, [handle, originalHandle]);
+
+  const handleChanged = handle !== originalHandle;
+  const handleValid = !handleChanged || handleAvailable === true;
 
   // Initialize form from profile data
   useEffect(() => {
@@ -167,6 +217,15 @@ export default function ProfileSettingsPage() {
     );
 
     try {
+      // Update handle if changed
+      if (handleChanged && handleAvailable) {
+        await updateHandle.mutateAsync(handle);
+        setOriginalHandle(handle);
+        setHandleAvailable(null);
+        // Redirect to new handle URL
+        router.replace(`/community/profiles/${handle}/settings`);
+      }
+
       await updateProfile.mutateAsync({
         title: title.trim() || null,
         headline: headline.trim() || null,
@@ -220,6 +279,40 @@ export default function ProfileSettingsPage() {
 
       {/* Profile Info */}
       <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="handle">Handle</Label>
+          <div className="relative">
+            <Input
+              id="handle"
+              value={handle}
+              onChange={(e) => handleHandleChange(e.target.value)}
+              placeholder="Your unique handle"
+              maxLength={30}
+            />
+            {isCheckingHandle && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                <Loader2Icon className="h-4 w-4 animate-spin text-muted-foreground" />
+              </div>
+            )}
+            {!isCheckingHandle && handleChanged && handleAvailable === true && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                <CheckIcon className="h-4 w-4 text-green-500" />
+              </div>
+            )}
+            {!isCheckingHandle && handleChanged && handleAvailable === false && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                <XIcon className="h-4 w-4 text-red-500" />
+              </div>
+            )}
+          </div>
+          {handleChanged && handleAvailable === false && (
+            <p className="text-sm text-red-500">This handle is already taken.</p>
+          )}
+          {handleChanged && handleAvailable === true && (
+            <p className="text-sm text-green-500">Handle is available!</p>
+          )}
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="title">Title</Label>
           <Input
@@ -405,8 +498,8 @@ export default function ProfileSettingsPage() {
       </div>
 
       {/* Save */}
-      <Button type="submit" disabled={updateProfile.isPending}>
-        {updateProfile.isPending ? (
+      <Button type="submit" disabled={updateProfile.isPending || updateHandle.isPending || (handleChanged && !handleAvailable) || isCheckingHandle}>
+        {updateProfile.isPending || updateHandle.isPending ? (
           <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
         ) : (
           <SaveIcon className="h-4 w-4 mr-2" />
