@@ -23,6 +23,8 @@ export interface Customer {
   name: string;
   email: string;
   handle: string;
+  type?: string;
+  pictureUrl?: string | null;
   createdAt: string;
   updatedAt: string;
   steamId?: string;

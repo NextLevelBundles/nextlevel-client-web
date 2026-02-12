@@ -15,17 +15,19 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/shared/components/ui/avatar";
-import { Settings, MessageCircleIcon, GamepadIcon, User, UserIcon } from "lucide-react";
+import { Settings, MessageCircleIcon, GamepadIcon, User, UserIcon, StarIcon } from "lucide-react";
 import Link from "next/link";
 import SignInButton from "./SignInButton";
 import SignUpButton from "./SignUpButton";
 import SignOutButton from "./SignOutButton";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
 import { useCustomer } from "@/hooks/queries/useCustomer";
+import { useCommunityProfileByHandle } from "@/hooks/queries/useCommunityProfile";
 
 export function UserProfile() {
   const { user, isLoading } = useAuth();
   const { data: customer } = useCustomer();
+  const { data: communityProfile } = useCommunityProfileByHandle(customer?.handle ?? "");
 
   if (isLoading) {
     return (
@@ -92,6 +94,17 @@ export function UserProfile() {
               <span className="flex-1">Profile</span>
             </Link>
           </DropdownMenuItem>
+          {communityProfile?.isCurator && (
+            <DropdownMenuItem
+              asChild
+              className="cursor-pointer rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary"
+            >
+              <Link href={`/community/curators/${customer?.handle ?? ""}`} className="flex items-center cursor-pointer">
+                <StarIcon className="mr-2 h-4 w-4" />
+                <span className="flex-1">Curator Profile</span>
+              </Link>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem
             asChild
             className="cursor-pointer rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary"

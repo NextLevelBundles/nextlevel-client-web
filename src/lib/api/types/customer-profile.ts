@@ -55,8 +55,26 @@ export interface CommunityProfile {
   title: string | null;
   headline: string | null;
   specialties: string | null;
+  isCurator: boolean;
+  pictureUrl: string | null;
   socialHandles: SocialHandle[];
   charities: ProfileCharity[];
+}
+
+export interface CuratorProfile {
+  curatedBundlesCount: number;
+  leadCuratedCount: number;
+  guestCuratedCount: number;
+  curatedBundles: CuratedBundle[];
+}
+
+export interface CuratedBundle {
+  id: string;
+  slug: string;
+  title: string;
+  coverImageUrl: string | null;
+  curatorRole: string;
+  quote: string | null;
 }
 
 export interface SocialHandle {

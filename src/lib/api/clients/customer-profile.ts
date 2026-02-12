@@ -15,6 +15,7 @@ import {
   UpdateCollectionGameStatusRequest,
   ProfileStats,
   ProfileAchievements,
+  CuratorProfile,
 } from "../types/customer-profile";
 
 export class CustomerProfileApi {
@@ -165,6 +166,16 @@ export class CustomerProfileApi {
     try {
       return await this.client.get<ProfileAchievements>(
         `/customer/profile/achievements/${encodeURIComponent(handle)}`
+      );
+    } catch {
+      return null;
+    }
+  }
+
+  async getCuratorProfile(handle: string): Promise<CuratorProfile | null> {
+    try {
+      return await this.client.get<CuratorProfile>(
+        `/customer/profile/curator/${encodeURIComponent(handle)}`
       );
     } catch {
       return null;

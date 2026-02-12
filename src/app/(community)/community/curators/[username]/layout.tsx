@@ -9,21 +9,28 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/shared/components/ui/avatar";
+import { Badge } from "@/shared/components/ui/badge";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import {
   UserIcon,
   LibraryIcon,
-  HeartIcon,
-  ListIcon,
-  BarChart3Icon,
-  TrophyIcon,
   SettingsIcon,
-  Gamepad2,
 } from "lucide-react";
 import { useCustomer } from "@/hooks/queries/useCustomer";
 import { useCommunityProfileByHandle } from "@/hooks/queries/useCommunityProfile";
+import { useCuratorProfile } from "@/hooks/queries/useCuratorProfile";
 
-export default function ProfileLayout({
+function getInitials(name?: string | null) {
+  if (!name) return "?";
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+export default function CuratorLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -32,58 +39,33 @@ export default function ProfileLayout({
   const params = useParams();
   const username = params.username as string;
   const { data: customer, isLoading } = useCustomer();
-  const { data: communityProfile } = useCommunityProfileByHandle(username);
+  const { data: profile } = useCommunityProfileByHandle(username);
+  const { data: curatorProfile } = useCuratorProfile(username);
 
-  const basePath = `/community/profiles/${username}`;
+  const basePath = `/community/curators/${username}`;
 
-  const profileTabs = [
-    { value: "overview", label: "Profile", href: basePath, icon: UserIcon },
-    { value: "collection", label: "Collection", href: `${basePath}/collection`, icon: LibraryIcon },
-    { value: "achievements", label: "Achievements", href: `${basePath}/achievements`, icon: TrophyIcon },
-    { value: "wishlist", label: "Wishlist", href: `${basePath}/wishlist`, icon: HeartIcon },
-    { value: "lists", label: "Lists", href: `${basePath}/lists`, icon: ListIcon },
-    { value: "stats", label: "Stats", href: `${basePath}/stats`, icon: BarChart3Icon },
+  const curatorTabs = [
+    { value: "overview", label: "Overview", href: basePath, icon: UserIcon },
+    { value: "collections", label: "Collections", href: `${basePath}/collections`, icon: LibraryIcon },
   ];
 
   const isOwnProfile = customer?.handle === username;
 
   const getCurrentTab = () => {
-    if (pathname.includes("/game-imports")) return "game-imports";
     if (pathname.includes("/settings")) return "settings";
-
-    if (pathname.includes("/games/")) return "collection";
-    if (pathname.includes("/collection")) return "collection";
-    if (pathname.includes("/achievements")) return "achievements";
-    if (pathname.includes("/wishlist")) return "wishlist";
-    if (pathname.includes("/lists")) return "lists";
-    if (pathname.includes("/stats")) return "stats";
+    if (pathname.includes("/collections")) return "collections";
     return "overview";
   };
 
-  const getInitials = (name?: string) => {
-    if (!name) return "?";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
+  const avatarUrl = profile?.pictureUrl || customer?.pictureUrl;
 
-  const formatMemberSince = (dateString?: string) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "long",
-    }).format(date);
-  };
-
-  const avatarUrl = communityProfile?.pictureUrl || customer?.pictureUrl;
+  const specialtyTags = profile?.specialties
+    ? profile.specialties.split(",").map((s) => s.trim()).filter(Boolean)
+    : [];
 
   return (
     <div className="grid gap-6">
-      {/* Profile Header */}
+      {/* Curator Header */}
       <div className="flex items-center gap-4">
         {isLoading ? (
           <>
@@ -97,22 +79,47 @@ export default function ProfileLayout({
           <>
             <Avatar className="h-16 w-16">
               {avatarUrl && (
-                <AvatarImage src={avatarUrl} alt={customer?.name ?? username} />
+                <AvatarImage src={avatarUrl} alt={profile?.handle ?? username} />
               )}
               <AvatarFallback className="bg-primary/10 text-lg font-semibold">
-                {getInitials(customer?.name)}
+                {getInitials(profile?.handle ?? username)}
               </AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-2xl font-bold">{customer?.name}</h1>
-              <p className="text-sm text-muted-foreground">
-                @{username}
-                {customer?.createdAt && (
-                  <span className="ml-2">
-                    · Member since {formatMemberSince(customer.createdAt)}
-                  </span>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold">{profile?.handle ?? username}</h1>
+                <Link
+                  href={`/community/profiles/${username}`}
+                  className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                >
+                  View Profile
+                </Link>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                {profile?.title && (
+                  <p className="text-sm text-primary font-medium">{profile.title}</p>
                 )}
-              </p>
+                {(curatorProfile?.curatedBundlesCount ?? 0) > 0 && (
+                  <>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="text-sm text-muted-foreground">
+                      {curatorProfile!.curatedBundlesCount} Collections Curated
+                    </span>
+                  </>
+                )}
+                {specialtyTags.length > 0 && (
+                  <>
+                    <span className="text-muted-foreground">·</span>
+                    <div className="flex flex-wrap gap-1">
+                      {specialtyTags.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-[10px]">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </>
         )}
@@ -122,7 +129,7 @@ export default function ProfileLayout({
       <Card className="p-1">
         <Tabs value={getCurrentTab()} className="w-full">
           <TabsList className="w-full justify-start gap-4 rounded-none border-b bg-transparent p-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {profileTabs.map((tab) => (
+            {curatorTabs.map((tab) => (
               <Link key={tab.value} href={tab.href} className="flex">
                 <TabsTrigger
                   value={tab.value}
@@ -137,19 +144,6 @@ export default function ProfileLayout({
             ))}
             {isOwnProfile && (
               <div className="flex items-center ml-auto gap-1">
-                {getCurrentTab() === "collection" && (
-                  <Link href={`${basePath}/settings/game-imports`} className="flex">
-                    <TabsTrigger
-                      value="game-imports"
-                      className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Gamepad2 className="h-4 w-4" />
-                        <span className="hidden sm:inline">Import from Steam</span>
-                      </div>
-                    </TabsTrigger>
-                  </Link>
-                )}
                 <Link href={`${basePath}/settings`} className="flex">
                   <TabsTrigger
                     value="settings"
