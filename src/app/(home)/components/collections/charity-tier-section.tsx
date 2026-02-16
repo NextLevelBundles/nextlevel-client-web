@@ -128,7 +128,7 @@ export function CharityTierSection({
 
         {/* Products Grid - matching base tier grid sizing */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6 mb-4">
-          {allCharityItems.slice(0, 4).map((product, idx) => (
+          {allCharityItems.map((product) => (
             <div
               key={product.id}
               onClick={() => {
@@ -172,14 +172,6 @@ export function CharityTierSection({
                   )}
                 </div>
               </div>
-              {idx === 3 && allCharityItems.length > 4 && (
-                <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center">
-                  <Plus className="h-6 w-6 text-white mb-1" />
-                  <span className="text-xs font-medium text-white">
-                    +{allCharityItems.length - 4} more
-                  </span>
-                </div>
-              )}
             </div>
           ))}
         </div>

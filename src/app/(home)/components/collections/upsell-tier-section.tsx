@@ -115,7 +115,7 @@ export function UpsellTierSection({
 
         {/* Products Grid - matching base tier grid sizing */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6 mb-4">
-          {tierProducts.slice(0, 4).map((product, idx) => (
+          {tierProducts.map((product) => (
             <div
               key={product.id}
               onClick={() => setSelectedProduct(product)}
@@ -149,14 +149,6 @@ export function UpsellTierSection({
                   </p>
                 </div>
               </div>
-              {idx === 3 && tierProducts.length > 4 && (
-                <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center">
-                  <Plus className="h-6 w-6 text-white mb-1" />
-                  <span className="text-xs font-medium text-white">
-                    +{tierProducts.length - 4} more
-                  </span>
-                </div>
-              )}
             </div>
           ))}
         </div>
