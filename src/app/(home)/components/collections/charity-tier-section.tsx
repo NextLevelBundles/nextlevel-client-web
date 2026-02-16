@@ -410,9 +410,11 @@ export function CharityTierSection({
         <ProductDetailModal
           product={selectedProduct}
           bundle={bundle}
-          allBundleProducts={allBundleProducts}
-          allUnlockedProducts={allUnlockedProducts}
+          allProducts={allBundleProducts || []}
+          unlockedProducts={allUnlockedProducts || []}
+          isOpen={!!selectedProduct}
           onClose={() => setSelectedProduct(null)}
+          onNavigateToProduct={(product) => setSelectedProduct(product)}
         />
       )}
 
