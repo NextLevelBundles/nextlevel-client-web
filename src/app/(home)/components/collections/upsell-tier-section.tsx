@@ -60,7 +60,7 @@ function RegularLayout({
           <div
             className={cn(
               "p-2.5 rounded-full",
-              isUnlocked ? "bg-purple-100 dark:bg-purple-900/30" : "bg-muted"
+              isUnlocked ? "bg-purple-100 dark:bg-purple-900/30" : "bg-muted",
             )}
           >
             <Gamepad2
@@ -68,7 +68,7 @@ function RegularLayout({
                 "h-5 w-5",
                 isUnlocked
                   ? "text-purple-600 dark:text-purple-400"
-                  : "text-muted-foreground"
+                  : "text-muted-foreground",
               )}
             />
           </div>
@@ -77,7 +77,7 @@ function RegularLayout({
               {tier.name || "Extra Items"}
             </h3>
             <p className="text-sm text-muted-foreground">
-              100% of this tier goes for this publisher • {tierProducts.length}{" "}
+              100% of this tier goes for this partner • {tierProducts.length}{" "}
               {isBookBundle
                 ? tierProducts.length === 1
                   ? "book"
@@ -114,7 +114,7 @@ function RegularLayout({
               "relative aspect-[2/3] rounded-lg overflow-hidden group cursor-pointer transition-all w-full",
               isUnlocked
                 ? "ring-1 ring-purple-200 dark:ring-purple-800"
-                : "ring-1 ring-border opacity-60"
+                : "ring-1 ring-border opacity-60",
             )}
           >
             {product.coverImage?.url ? (
@@ -165,7 +165,7 @@ function RegularLayout({
             "w-48 transition-all disabled:opacity-50 disabled:cursor-not-allowed",
             isUnlocked
               ? "bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border-2 border-purple-300 dark:border-purple-700 hover:bg-purple-200 dark:hover:bg-purple-900/30 hover:border-purple-400 dark:hover:border-purple-600"
-              : "bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white"
+              : "bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white",
           )}
           size="default"
         >
@@ -205,7 +205,7 @@ function CompactLayout({
           <div
             className={cn(
               "p-2 rounded-full",
-              isUnlocked ? "bg-purple-100 dark:bg-purple-900/30" : "bg-muted"
+              isUnlocked ? "bg-purple-100 dark:bg-purple-900/30" : "bg-muted",
             )}
           >
             <Gamepad2
@@ -213,7 +213,7 @@ function CompactLayout({
                 "h-4 w-4",
                 isUnlocked
                   ? "text-purple-600 dark:text-purple-400"
-                  : "text-muted-foreground"
+                  : "text-muted-foreground",
               )}
             />
           </div>
@@ -222,7 +222,7 @@ function CompactLayout({
               {tier.name || "Extra Items"}
             </h3>
             <p className="text-xs text-muted-foreground">
-              100% of this tier goes for this publisher
+              100% of this tier goes for this partner
             </p>
           </div>
         </div>
@@ -252,7 +252,7 @@ function CompactLayout({
               "relative aspect-[2/3] rounded-lg overflow-hidden group cursor-pointer transition-all w-48",
               isUnlocked
                 ? "ring-1 ring-purple-200 dark:ring-purple-800"
-                : "ring-1 ring-border opacity-60"
+                : "ring-1 ring-border opacity-60",
             )}
           >
             {product.coverImage?.url ? (
@@ -303,7 +303,7 @@ function CompactLayout({
             "w-48 transition-all disabled:opacity-50 disabled:cursor-not-allowed",
             isUnlocked
               ? "bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border-2 border-purple-300 dark:border-purple-700 hover:bg-purple-200 dark:hover:bg-purple-900/30 hover:border-purple-400 dark:hover:border-purple-600"
-              : "bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white"
+              : "bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white",
           )}
           size="default"
         >
@@ -369,7 +369,7 @@ export function UpsellTierSection({
         isUnlocked
           ? "bg-gradient-to-br from-purple-50/50 to-indigo-50/50 dark:from-purple-950/20 dark:to-indigo-950/20 border-purple-200 dark:border-purple-800"
           : "bg-card border-border",
-        !isAvailable && hasAvailableBaseTiers && "opacity-60"
+        !isAvailable && hasAvailableBaseTiers && "opacity-60",
       )}
     >
       {/* Unavailability Overlay */}
@@ -396,9 +396,11 @@ export function UpsellTierSection({
         <ProductDetailModal
           product={selectedProduct}
           bundle={bundle}
-          allBundleProducts={allBundleProducts}
-          allUnlockedProducts={allUnlockedProducts}
+          allProducts={allBundleProducts || []}
+          unlockedProducts={allUnlockedProducts || []}
+          isOpen={!!selectedProduct}
           onClose={() => setSelectedProduct(null)}
+          onNavigateToProduct={(product) => setSelectedProduct(product)}
         />
       )}
     </Card>
