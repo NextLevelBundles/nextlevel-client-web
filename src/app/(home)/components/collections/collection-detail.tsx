@@ -466,9 +466,9 @@ export function BundleDetail({ bundle, isPreview = false }: { bundle: Bundle; is
               {/* Charity Tier Sections */}
               {charityTiers.map((tier) => {
                 const isUnlocked = selectedCharityTierIds.includes(tier.id);
-                const isAvailable = tierAvailability
+                const isAvailable = isPreview || (tierAvailability
                   ? tier.id in tierAvailability && tierAvailability[tier.id] > 0
-                  : true;
+                  : true);
                 const keysCount = tierAvailability?.[tier.id];
                 return (
                   <CharityTierSection
@@ -514,9 +514,9 @@ export function BundleDetail({ bundle, isPreview = false }: { bundle: Bundle; is
               {/* Upsell Tier Sections */}
               {upsellTiers.map((tier) => {
                 const isUnlocked = selectedUpsellTierIds.includes(tier.id);
-                const isAvailable = tierAvailability
+                const isAvailable = isPreview || (tierAvailability
                   ? tier.id in tierAvailability && tierAvailability[tier.id] > 0
-                  : true;
+                  : true);
                 const keysCount = tierAvailability?.[tier.id];
                 return (
                   <UpsellTierSection
@@ -617,6 +617,7 @@ export function BundleDetail({ bundle, isPreview = false }: { bundle: Bundle; is
                 userPurchase={userPurchase}
                 isLoadingPurchase={isLoadingPurchase}
                 autoOpenUpgrade={shouldAutoOpenUpgrade}
+                isPreview={isPreview}
               />
               {/* </div> */}
             </div>
@@ -672,6 +673,7 @@ export function BundleDetail({ bundle, isPreview = false }: { bundle: Bundle; is
           isSaleActive={isSaleActive}
           userPurchase={userPurchase}
           isLoadingPurchase={isLoadingPurchase}
+          isPreview={isPreview}
         />
       </div>
     </TooltipProvider>

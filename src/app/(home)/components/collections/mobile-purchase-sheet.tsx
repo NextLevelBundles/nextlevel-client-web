@@ -46,6 +46,7 @@ interface MobilePurchaseSheetProps {
   onOpenChange: (open: boolean) => void;
   userPurchase?: CartItem | null;
   isLoadingPurchase?: boolean;
+  isPreview?: boolean;
 }
 
 export function MobilePurchaseSheet({
@@ -64,6 +65,7 @@ export function MobilePurchaseSheet({
   tipAmount,
   userPurchase,
   isLoadingPurchase = false,
+  isPreview = false,
   ...purchaseSummaryProps
 }: MobilePurchaseSheetProps) {
   const { user } = useAuth();
@@ -151,6 +153,7 @@ export function MobilePurchaseSheet({
             isMobileSheet={true}
             userPurchase={userPurchase}
             isLoadingPurchase={isLoadingPurchase}
+            isPreview={isPreview}
           />
         </div>
 

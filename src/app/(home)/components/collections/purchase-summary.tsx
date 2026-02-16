@@ -148,6 +148,7 @@ interface PurchaseSummaryProps {
   userPurchase?: CartItem | null;
   isLoadingPurchase?: boolean;
   autoOpenUpgrade?: boolean;
+  isPreview?: boolean;
 }
 
 export function PurchaseSummary({
@@ -175,6 +176,7 @@ export function PurchaseSummary({
   userPurchase,
   isLoadingPurchase = false,
   autoOpenUpgrade = false,
+  isPreview = false,
 }: PurchaseSummaryProps) {
   const [tipInputValue, setTipInputValue] = useState("");
   const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
@@ -487,10 +489,12 @@ export function PurchaseSummary({
               <div className="space-y-2">
                 {charityTiers.map((tier) => {
                   const isSelected = selectedCharityTierIds.includes(tier.id);
-                  const isAvailable = tierAvailability
+                  const isAvailable = isPreview || (tierAvailability
                     ? tier.id in tierAvailability &&
                       tierAvailability[tier.id] > 0
-                    : true;
+                    : true);
+                  // Allow deselection even if not available, but only if already selected
+                  const isClickable = isAvailable || isSelected;
                   return (
                     <div
                       key={tier.id}
@@ -499,12 +503,12 @@ export function PurchaseSummary({
                         isSelected
                           ? "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800"
                           : "bg-gray-50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-700",
-                        isAvailable
+                        isClickable
                           ? "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/40"
                           : "opacity-50 cursor-not-allowed"
                       )}
                       onClick={() => {
-                        if (!isAvailable) return;
+                        if (!isClickable) return;
                         if (isSelected) {
                           setSelectedCharityTierIds(
                             selectedCharityTierIds.filter(
@@ -519,9 +523,9 @@ export function PurchaseSummary({
                         }
                       }}
                       role="button"
-                      tabIndex={isAvailable ? 0 : -1}
+                      tabIndex={isClickable ? 0 : -1}
                       aria-pressed={isSelected}
-                      aria-disabled={!isAvailable}
+                      aria-disabled={!isClickable}
                     >
                       <div className="flex items-start justify-between">
                         <div className="space-y-1 flex-1">
@@ -631,10 +635,12 @@ export function PurchaseSummary({
               <div className="space-y-2">
                 {upsellTiers.map((tier) => {
                   const isSelected = selectedUpsellTierIds.includes(tier.id);
-                  const isAvailable = tierAvailability
+                  const isAvailable = isPreview || (tierAvailability
                     ? tier.id in tierAvailability &&
                       tierAvailability[tier.id] > 0
-                    : true;
+                    : true);
+                  // Allow deselection even if not available, but only if already selected
+                  const isClickable = isAvailable || isSelected;
                   return (
                     <div
                       key={tier.id}
@@ -643,12 +649,12 @@ export function PurchaseSummary({
                         isSelected
                           ? "bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800"
                           : "bg-gray-50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-700",
-                        isAvailable
+                        isClickable
                           ? "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/40"
                           : "opacity-50 cursor-not-allowed"
                       )}
                       onClick={() => {
-                        if (!isAvailable) return;
+                        if (!isClickable) return;
                         if (isSelected) {
                           setSelectedUpsellTierIds(
                             selectedUpsellTierIds.filter((id) => id !== tier.id)
@@ -661,9 +667,9 @@ export function PurchaseSummary({
                         }
                       }}
                       role="button"
-                      tabIndex={isAvailable ? 0 : -1}
+                      tabIndex={isClickable ? 0 : -1}
                       aria-pressed={isSelected}
-                      aria-disabled={!isAvailable}
+                      aria-disabled={!isClickable}
                     >
                       <div className="flex items-start justify-between">
                         <div className="space-y-1 flex-1">
