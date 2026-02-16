@@ -62,7 +62,7 @@ function RegularLayout({
           <div
             className={cn(
               "p-2.5 rounded-full",
-              isUnlocked ? "bg-rose-100 dark:bg-rose-900/30" : "bg-muted"
+              isUnlocked ? "bg-rose-100 dark:bg-rose-900/30" : "bg-muted",
             )}
           >
             <Heart
@@ -70,7 +70,7 @@ function RegularLayout({
                 "h-5 w-5",
                 isUnlocked
                   ? "text-rose-600 dark:text-rose-400 fill-rose-600 dark:fill-rose-400"
-                  : "text-muted-foreground"
+                  : "text-muted-foreground",
               )}
             />
           </div>
@@ -116,7 +116,7 @@ function RegularLayout({
               "relative aspect-[2/3] rounded-lg overflow-hidden group cursor-pointer transition-all w-full",
               isUnlocked
                 ? "ring-1 ring-rose-200 dark:ring-rose-800"
-                : "ring-1 ring-border opacity-60"
+                : "ring-1 ring-border opacity-60",
             )}
           >
             {product.coverImage?.url ? (
@@ -169,7 +169,7 @@ function RegularLayout({
             "w-48 transition-all disabled:opacity-50 disabled:cursor-not-allowed",
             isUnlocked
               ? "bg-rose-100 dark:bg-rose-900/20 text-rose-700 dark:text-rose-300 border-2 border-rose-300 dark:border-rose-700 hover:bg-rose-200 dark:hover:bg-rose-900/30 hover:border-rose-400 dark:hover:border-rose-600"
-              : "bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white"
+              : "bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white",
           )}
           size="default"
         >
@@ -210,7 +210,7 @@ function CompactLayout({
           <div
             className={cn(
               "p-2 rounded-full",
-              isUnlocked ? "bg-rose-100 dark:bg-rose-900/30" : "bg-muted"
+              isUnlocked ? "bg-rose-100 dark:bg-rose-900/30" : "bg-muted",
             )}
           >
             <Heart
@@ -218,7 +218,7 @@ function CompactLayout({
                 "h-4 w-4",
                 isUnlocked
                   ? "text-rose-600 dark:text-rose-400 fill-rose-600 dark:fill-rose-400"
-                  : "text-muted-foreground"
+                  : "text-muted-foreground",
               )}
             />
           </div>
@@ -257,7 +257,7 @@ function CompactLayout({
               "relative aspect-[2/3] rounded-lg overflow-hidden group cursor-pointer transition-all w-48",
               isUnlocked
                 ? "ring-1 ring-rose-200 dark:ring-rose-800"
-                : "ring-1 ring-border opacity-60"
+                : "ring-1 ring-border opacity-60",
             )}
           >
             {product.coverImage?.url ? (
@@ -310,7 +310,7 @@ function CompactLayout({
             "w-48 transition-all disabled:opacity-50 disabled:cursor-not-allowed",
             isUnlocked
               ? "bg-rose-100 dark:bg-rose-900/20 text-rose-700 dark:text-rose-300 border-2 border-rose-300 dark:border-rose-700 hover:bg-rose-200 dark:hover:bg-rose-900/30 hover:border-rose-400 dark:hover:border-rose-600"
-              : "bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white"
+              : "bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white",
           )}
           size="default"
         >
@@ -347,7 +347,7 @@ export function CharityTierSection({
   isCompact = false,
 }: CharityTierSectionProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [showArtworkModal, setShowArtworkModal] = useState(false);
+  const [selectedArtwork, setSelectedArtwork] = useState<Product | null>(null);
   const tierProducts = products.filter((p) => p.bundleTierId === tier.id);
   const isBookBundle = bundleType === BundleType.EBook;
   const allCharityItems = tierProducts;
@@ -356,7 +356,7 @@ export function CharityTierSection({
 
   const handleProductClick = (product: Product) => {
     if (product.id === "charity-artwork-rotis") {
-      setShowArtworkModal(true);
+      setSelectedArtwork(product);
     } else {
       setSelectedProduct(product as Product);
     }
@@ -383,7 +383,7 @@ export function CharityTierSection({
         isUnlocked
           ? "bg-gradient-to-br from-rose-50/50 to-pink-50/50 dark:from-rose-950/20 dark:to-pink-950/20 border-rose-200 dark:border-rose-800"
           : "bg-card border-border",
-        !isAvailable && hasAvailableBaseTiers && "opacity-60"
+        !isAvailable && hasAvailableBaseTiers && "opacity-60",
       )}
     >
       {/* Unavailability Overlay */}
@@ -419,10 +419,13 @@ export function CharityTierSection({
       )}
 
       {/* Artwork Detail Modal */}
-      {showArtworkModal && (
+      {selectedArtwork && (
         <ArtworkDetailModal
-          isOpen={showArtworkModal}
-          onClose={() => setShowArtworkModal(false)}
+          isOpen={!!selectedArtwork}
+          onClose={() => setSelectedArtwork(null)}
+          artworkSrc={selectedArtwork.coverImage?.url ?? ""}
+          title={selectedArtwork.title}
+          description={selectedArtwork.description || undefined}
         />
       )}
     </Card>
