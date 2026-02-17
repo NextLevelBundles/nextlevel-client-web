@@ -12,64 +12,7 @@ import {
   ClockIcon,
   TagIcon,
   TrophyIcon,
-  GlobeIcon,
 } from "lucide-react";
-import {
-  FaYoutube,
-  FaInstagram,
-  FaBluesky,
-  FaXTwitter,
-  FaReddit,
-  FaSteam,
-} from "react-icons/fa6";
-
-const PLATFORM_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  YouTube: FaYoutube,
-  Instagram: FaInstagram,
-  Bluesky: FaBluesky,
-  Twitter: FaXTwitter,
-  Reddit: FaReddit,
-  Steam: FaSteam,
-};
-
-const PLATFORM_STYLES: Record<string, { bg: string; text: string; border: string }> = {
-  YouTube: {
-    bg: "bg-red-500/10 dark:bg-red-500/20",
-    text: "text-red-600 dark:text-red-400",
-    border: "border-red-500/20 dark:border-red-500/30",
-  },
-  Instagram: {
-    bg: "bg-pink-500/10 dark:bg-pink-500/20",
-    text: "text-pink-600 dark:text-pink-400",
-    border: "border-pink-500/20 dark:border-pink-500/30",
-  },
-  Bluesky: {
-    bg: "bg-sky-500/10 dark:bg-sky-500/20",
-    text: "text-sky-600 dark:text-sky-400",
-    border: "border-sky-500/20 dark:border-sky-500/30",
-  },
-  Twitter: {
-    bg: "bg-neutral-500/10 dark:bg-neutral-400/20",
-    text: "text-neutral-700 dark:text-neutral-300",
-    border: "border-neutral-500/20 dark:border-neutral-400/30",
-  },
-  Reddit: {
-    bg: "bg-orange-500/10 dark:bg-orange-500/20",
-    text: "text-orange-600 dark:text-orange-400",
-    border: "border-orange-500/20 dark:border-orange-500/30",
-  },
-  Steam: {
-    bg: "bg-indigo-500/10 dark:bg-indigo-500/20",
-    text: "text-indigo-600 dark:text-indigo-400",
-    border: "border-indigo-500/20 dark:border-indigo-500/30",
-  },
-};
-
-const DEFAULT_PLATFORM_STYLE = {
-  bg: "bg-muted",
-  text: "text-muted-foreground",
-  border: "border-border",
-};
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
@@ -80,12 +23,12 @@ import {
   type ChartConfig,
 } from "@/shared/components/ui/chart";
 import { useCustomerLists } from "@/hooks/queries/useCustomerLists";
-import { useCustomerProfileByHandle } from "@/hooks/queries/useCustomerProfile";
+import { useCustomerCollection } from "@/hooks/queries/useCustomerCollection";
 import { useProfileStats } from "@/hooks/queries/useProfileStats";
 import { useProfileAchievements } from "@/hooks/queries/useProfileAchievements";
 import type {
   CustomerList,
-  RecentlyPlayedGame,
+  CustomerGame,
   ProfileStats,
   GameAchievementProgress,
 } from "@/lib/api/types/customer-profile";
@@ -134,134 +77,13 @@ function Section({
   );
 }
 
-// --- About Me Section ---
-
-function AboutMeSection({
-  profile,
-  isLoading,
-}: {
-  profile: ReturnType<typeof useCustomerProfileByHandle>["data"];
-  isLoading: boolean;
-}) {
-  if (isLoading) {
-    return (
-      <Section title="About Me">
-        <div className="space-y-3">
-          <Skeleton className="h-4 w-48" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-32" />
-        </div>
-      </Section>
-    );
-  }
-
-  const hasContent =
-    profile?.title ||
-    profile?.headline ||
-    profile?.specialties ||
-    (profile?.socialHandles?.length ?? 0) > 0;
-
-  return (
-    <Section title="About Me">
-      {hasContent ? (
-        <div className="space-y-4">
-          {profile?.title && (
-            <p className="text-sm font-medium text-primary">{profile.title}</p>
-          )}
-          {profile?.headline && (
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-              {profile.headline}
-            </p>
-          )}
-          {profile?.specialties && (
-            <div>
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Specialties
-              </span>
-              <p className="text-sm mt-1">{profile.specialties}</p>
-            </div>
-          )}
-          {(profile?.socialHandles?.length ?? 0) > 0 && (
-            <div>
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Social Links
-              </span>
-              <div className="flex flex-wrap gap-2 mt-1">
-                {profile!.socialHandles.map((sh) => {
-                  const Icon = PLATFORM_ICONS[sh.platform] ?? GlobeIcon;
-                  const style = PLATFORM_STYLES[sh.platform] ?? DEFAULT_PLATFORM_STYLE;
-                  return sh.url ? (
-                    <a
-                      key={sh.platform}
-                      href={sh.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`inline-flex items-center gap-1.5 text-xs font-medium rounded-full border px-3 py-1.5 transition-opacity hover:opacity-80 ${style.bg} ${style.text} ${style.border}`}
-                    >
-                      <Icon className="h-3.5 w-3.5" />
-                      {sh.handle}
-                    </a>
-                  ) : (
-                    <span
-                      key={sh.platform}
-                      className={`inline-flex items-center gap-1.5 text-xs font-medium rounded-full border px-3 py-1.5 ${style.bg} ${style.text} ${style.border}`}
-                    >
-                      <Icon className="h-3.5 w-3.5" />
-                      {sh.handle}
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-          {(profile?.charities?.length ?? 0) > 0 && (
-            <div>
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Charities
-              </span>
-              <div className="space-y-1 mt-1">
-                {profile!.charities.map((c) => (
-                  <div key={c.name} className="text-sm">
-                    {c.link ? (
-                      <a
-                        href={c.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        {c.name}
-                      </a>
-                    ) : (
-                      <span className="font-medium">{c.name}</span>
-                    )}
-                    {c.description && (
-                      <span className="text-muted-foreground">
-                        {" "}
-                        — {c.description}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        <p className="text-muted-foreground text-sm">
-          Nothing here yet. Details coming soon.
-        </p>
-      )}
-    </Section>
-  );
-}
-
 // --- Currently Playing Section ---
 
 function CurrentlyPlayingSection({
   games,
   isLoading,
 }: {
-  games: RecentlyPlayedGame[];
+  games: CustomerGame[];
   isLoading: boolean;
 }) {
   if (isLoading) {
@@ -280,8 +102,8 @@ function CurrentlyPlayingSection({
     <Section title="Currently Playing">
       {games.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {games.map((game, idx) => (
-            <div key={idx}>
+          {games.map((game) => (
+            <div key={game.id}>
               <div className="aspect-[3/4] rounded-md overflow-hidden bg-muted/50 mb-1.5">
                 {game.coverImageId ? (
                   <Image
@@ -300,15 +122,12 @@ function CurrentlyPlayingSection({
               <p className="text-xs font-medium truncate" title={game.name}>
                 {game.name}
               </p>
-              <p className="text-xs text-muted-foreground">
-                {formatPlaytime(game.playtime2Weeks)} past 2 weeks
-              </p>
             </div>
           ))}
         </div>
       ) : (
         <p className="text-muted-foreground text-sm">
-          No games played in the last 2 weeks.
+          No games marked as currently playing.
         </p>
       )}
     </Section>
@@ -759,12 +578,15 @@ function RecentListCard({
 export default function ProfileOverviewPage() {
   const params = useParams();
   const username = params.username as string;
-  const { data: profile, isLoading: profileLoading } =
-    useCustomerProfileByHandle(username);
+  const { data: collection, isLoading: collectionLoading } = useCustomerCollection();
   const { data: stats, isLoading: statsLoading } = useProfileStats(username);
   const { data: achievements, isLoading: achievementsLoading } =
     useProfileAchievements(username);
   const { data: lists, isLoading: listsLoading } = useCustomerLists();
+
+  const playingGames = (collection ?? []).filter(
+    (game) => game.playStatus === "Playing"
+  );
 
   const recentLists = (lists ?? [])
     .sort(
@@ -777,10 +599,9 @@ export default function ProfileOverviewPage() {
     <div className="grid gap-6">
       {/* Quadrant grid: 2x2 on desktop, stacked on mobile */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <AboutMeSection profile={profile} isLoading={profileLoading} />
         <CurrentlyPlayingSection
-          games={stats?.recentlyPlayed ?? []}
-          isLoading={statsLoading}
+          games={playingGames}
+          isLoading={collectionLoading}
         />
         <GameCollectionSection
           totalGames={stats?.totalGames ?? 0}

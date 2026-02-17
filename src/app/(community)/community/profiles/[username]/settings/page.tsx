@@ -10,18 +10,17 @@ import { Button } from "@/shared/components/ui/button";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { PlusIcon, XIcon, Loader2Icon, SaveIcon, DownloadIcon, CheckIcon, GlobeIcon, SearchIcon, HeartIcon } from "lucide-react";
 import {
-  FaYoutube,
-  FaInstagram,
-  FaBluesky,
-  FaXTwitter,
-  FaReddit,
-  FaSteam,
-} from "react-icons/fa6";
+  PLATFORM_ICONS,
+  PLATFORM_STYLES,
+  PLATFORM_URL_TEMPLATES,
+  PREDEFINED_PLATFORMS,
+} from "@/lib/constants/social-platforms";
 import { useCustomer, useUpdateHandle } from "@/hooks/queries/useCustomer";
 import { userApi } from "@/lib/api";
 import Link from "next/link";
 import {
   useCustomerProfile,
+  useCustomerProfileByHandle,
   useUpdateCustomerProfile,
 } from "@/hooks/queries/useCustomerProfile";
 import { toast } from "sonner";
@@ -29,66 +28,6 @@ import type {
   SocialHandle,
   ProfileCharity,
 } from "@/lib/api/types/customer-profile";
-
-const PLATFORM_URL_TEMPLATES: Record<string, (handle: string) => string> = {
-  YouTube: (h) => `https://youtube.com/@${h}`,
-  Instagram: (h) => `https://instagram.com/${h}`,
-  Bluesky: (h) => `https://bsky.app/profile/${h}`,
-  Twitter: (h) => `https://x.com/${h}`,
-  Reddit: (h) => `https://reddit.com/u/${h}`,
-  Steam: (h) => `https://steamcommunity.com/id/${h}`,
-};
-
-const PLATFORM_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  YouTube: FaYoutube,
-  Instagram: FaInstagram,
-  Bluesky: FaBluesky,
-  Twitter: FaXTwitter,
-  Reddit: FaReddit,
-  Steam: FaSteam,
-};
-
-const PLATFORM_STYLES: Record<string, { bg: string; text: string; border: string }> = {
-  YouTube: {
-    bg: "bg-red-500/10 dark:bg-red-500/20",
-    text: "text-red-600 dark:text-red-400",
-    border: "border-red-500/20 dark:border-red-500/30",
-  },
-  Instagram: {
-    bg: "bg-pink-500/10 dark:bg-pink-500/20",
-    text: "text-pink-600 dark:text-pink-400",
-    border: "border-pink-500/20 dark:border-pink-500/30",
-  },
-  Bluesky: {
-    bg: "bg-sky-500/10 dark:bg-sky-500/20",
-    text: "text-sky-600 dark:text-sky-400",
-    border: "border-sky-500/20 dark:border-sky-500/30",
-  },
-  Twitter: {
-    bg: "bg-neutral-500/10 dark:bg-neutral-400/20",
-    text: "text-neutral-700 dark:text-neutral-300",
-    border: "border-neutral-500/20 dark:border-neutral-400/30",
-  },
-  Reddit: {
-    bg: "bg-orange-500/10 dark:bg-orange-500/20",
-    text: "text-orange-600 dark:text-orange-400",
-    border: "border-orange-500/20 dark:border-orange-500/30",
-  },
-  Steam: {
-    bg: "bg-indigo-500/10 dark:bg-indigo-500/20",
-    text: "text-indigo-600 dark:text-indigo-400",
-    border: "border-indigo-500/20 dark:border-indigo-500/30",
-  },
-};
-
-const PREDEFINED_PLATFORMS = [
-  { key: "YouTube", label: "YouTube" },
-  { key: "Instagram", label: "Instagram" },
-  { key: "Bluesky", label: "Bluesky" },
-  { key: "Twitter", label: "Twitter" },
-  { key: "Reddit", label: "Reddit" },
-  { key: "Steam", label: "Steam" },
-];
 
 interface EveryOrgNonprofit {
   name: string;
@@ -238,7 +177,9 @@ export default function ProfileSettingsPage() {
   const username = params.username as string;
   const { data: customer } = useCustomer();
   const { data: profile, isLoading } = useCustomerProfile();
+  const { data: customerProfile } = useCustomerProfileByHandle(username);
   const updateProfile = useUpdateCustomerProfile();
+  const isCurator = customerProfile?.isCurator ?? false;
   const updateHandle = useUpdateHandle();
 
   const [handle, setHandle] = useState("");
@@ -563,23 +504,23 @@ export default function ProfileSettingsPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="title">{isCurator ? "Title / Role" : "Title"}</Label>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Game Collector, Speedrunner, Indie Enthusiast"
+                placeholder={isCurator ? "e.g. Curator · Former Humble Bundle" : "e.g. Game Collector, Speedrunner, Indie Enthusiast"}
                 maxLength={255}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="headline">Headline</Label>
+              <Label htmlFor="headline">{isCurator ? "Headline / Taste Statement" : "Headline"}</Label>
               <Textarea
                 id="headline"
                 value={headline}
                 onChange={(e) => setHeadline(e.target.value)}
-                placeholder="Write something about yourself..."
+                placeholder={isCurator ? "What drives your curation? e.g. Just looking for the best of each genre..." : "Write something about yourself..."}
                 maxLength={500}
                 rows={3}
               />

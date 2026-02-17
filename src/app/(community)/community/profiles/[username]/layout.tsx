@@ -9,6 +9,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/shared/components/ui/avatar";
+import { Badge } from "@/shared/components/ui/badge";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import {
   UserIcon,
@@ -19,9 +20,18 @@ import {
   TrophyIcon,
   SettingsIcon,
   Gamepad2,
+  StarIcon,
+  GlobeIcon,
+  QuoteIcon,
 } from "lucide-react";
+import {
+  PLATFORM_ICONS,
+  PLATFORM_STYLES,
+  DEFAULT_PLATFORM_STYLE,
+} from "@/lib/constants/social-platforms";
 import { useCustomer } from "@/hooks/queries/useCustomer";
 import { useCustomerProfileByHandle } from "@/hooks/queries/useCustomerProfile";
+import { useCuratorProfile } from "@/hooks/queries/useCuratorProfile";
 
 export default function ProfileLayout({
   children,
@@ -33,6 +43,9 @@ export default function ProfileLayout({
   const username = params.username as string;
   const { data: customer, isLoading } = useCustomer();
   const { data: customerProfile } = useCustomerProfileByHandle(username);
+  const { data: curatorProfile } = useCuratorProfile(
+    customerProfile?.isCurator ? username : ""
+  );
 
   const basePath = `/community/profiles/${username}`;
 
@@ -43,6 +56,9 @@ export default function ProfileLayout({
     { value: "wishlist", label: "Wishlist", href: `${basePath}/wishlist`, icon: HeartIcon },
     { value: "lists", label: "Lists", href: `${basePath}/lists`, icon: ListIcon },
     { value: "stats", label: "Stats", href: `${basePath}/stats`, icon: BarChart3Icon },
+    ...(customerProfile?.isCurator
+      ? [{ value: "curated-collections", label: "Curated Collections", href: `${basePath}/curated-collections`, icon: StarIcon }]
+      : []),
   ];
 
   const isOwnProfile = customer?.handle === username;
@@ -50,6 +66,7 @@ export default function ProfileLayout({
   const getCurrentTab = () => {
     if (pathname.includes("/game-imports")) return "game-imports";
     if (pathname.includes("/settings")) return "settings";
+    if (pathname.includes("/curated-collections")) return "curated-collections";
 
     if (pathname.includes("/games/")) return "collection";
     if (pathname.includes("/collection")) return "collection";
@@ -81,6 +98,11 @@ export default function ProfileLayout({
 
   const avatarUrl = customerProfile?.pictureUrl || customer?.pictureUrl;
 
+  const genreTags = curatorProfile?.genreFocusTags ?? [];
+  const specialtyTags = customerProfile?.specialties
+    ? customerProfile.specialties.split(",").map((s) => s.trim()).filter(Boolean)
+    : [];
+
   return (
     <div className="grid gap-6">
       {/* Profile Header */}
@@ -104,7 +126,14 @@ export default function ProfileLayout({
               </AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-2xl font-bold">{customer?.name}</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold">{customer?.name}</h1>
+                {customerProfile?.isCurator && (
+                  <Badge variant="default" className="text-[10px]">
+                    Curator
+                  </Badge>
+                )}
+              </div>
               <p className="text-sm text-muted-foreground">
                 @{username}
                 {customer?.createdAt && (
@@ -113,6 +142,65 @@ export default function ProfileLayout({
                   </span>
                 )}
               </p>
+              <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                {customerProfile?.title && (
+                  <p className="text-sm text-primary font-medium">{customerProfile.title}</p>
+                )}
+                {(curatorProfile?.curatedBundlesCount ?? 0) > 0 && (
+                  <>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="text-sm text-muted-foreground">
+                      {curatorProfile!.curatedBundlesCount} Collections Curated
+                    </span>
+                  </>
+                )}
+                {(genreTags.length > 0 || specialtyTags.length > 0) && (
+                  <>
+                    <span className="text-muted-foreground">·</span>
+                    <div className="flex flex-wrap gap-1">
+                      {(genreTags.length > 0 ? genreTags : specialtyTags).map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-[10px]">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+              {customerProfile?.headline && (
+                <div className="flex items-start gap-1.5 mt-1">
+                  <QuoteIcon className="h-3.5 w-3.5 flex-shrink-0 mt-0.5 text-primary/60" />
+                  <p className="text-sm text-muted-foreground italic">{customerProfile.headline}</p>
+                </div>
+              )}
+              {(customerProfile?.socialHandles?.length ?? 0) > 0 && (
+                <div className="flex gap-1.5 mt-1.5">
+                  {customerProfile!.socialHandles.map((sh) => {
+                    const Icon = PLATFORM_ICONS[sh.platform] ?? GlobeIcon;
+                    const style = PLATFORM_STYLES[sh.platform] ?? DEFAULT_PLATFORM_STYLE;
+                    return sh.url ? (
+                      <a
+                        key={sh.platform}
+                        href={sh.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={`${sh.platform}: ${sh.handle}`}
+                        className={`inline-flex items-center justify-center h-7 w-7 rounded-full border transition-opacity hover:opacity-80 ${style.bg} ${style.text} ${style.border}`}
+                      >
+                        <Icon className="h-3.5 w-3.5" />
+                      </a>
+                    ) : (
+                      <span
+                        key={sh.platform}
+                        title={`${sh.platform}: ${sh.handle}`}
+                        className={`inline-flex items-center justify-center h-7 w-7 rounded-full border ${style.bg} ${style.text} ${style.border}`}
+                      >
+                        <Icon className="h-3.5 w-3.5" />
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </>
         )}
