@@ -46,6 +46,7 @@ type ActiveTab = "ready" | "ignored";
 const PAGE_SIZES = [25, 50, 100] as const;
 
 const PLAY_STATUSES = ["NoStatus", "Unplayed", "Playing", "Played"] as const;
+const VISIBLE_PLAY_STATUSES = ["Unplayed", "Playing", "Played"] as const;
 
 const PLAY_STATUS_LABELS: Record<string, string> = {
   NoStatus: "No Status",
@@ -159,11 +160,19 @@ export default function GameImportsPage() {
   };
 
   const selectAll = () => {
-    setSelected(new Set(games?.map((g) => g.appId) ?? []));
+    setSelected((prev) => {
+      const next = new Set(prev);
+      for (const g of games ?? []) next.add(g.appId);
+      return next;
+    });
   };
 
   const deselectAll = () => {
-    setSelected(new Set());
+    setSelected((prev) => {
+      const next = new Set(prev);
+      for (const g of games ?? []) next.delete(g.appId);
+      return next;
+    });
   };
 
   const handleStatusSave = useCallback((appId: number, status: ImportGameStatus) => {
@@ -439,6 +448,7 @@ export default function GameImportsPage() {
 
               function handlePlayStatusChange(value: string) {
                 if (!value) return;
+                if (!selected.has(game.appId)) toggleGame(game.appId);
                 let newCompletion: string | null = completionStatus ?? null;
 
                 if (value === "NoStatus" || value === "Unplayed") {
@@ -468,48 +478,49 @@ export default function GameImportsPage() {
               return (
                 <div
                   key={game.appId}
-                  className={`group relative flex rounded-lg border transition-colors overflow-hidden ${
+                  className={`group relative flex rounded-lg border transition-colors overflow-hidden cursor-pointer ${
                     isSelected
                       ? "border-primary bg-primary/5"
                       : "border-border bg-card hover:border-muted-foreground/25"
                   }`}
+                  onClick={() => toggleGame(game.appId)}
                 >
                   {/* Quick remove/recover button */}
                   <button
-                    onClick={() =>
-                      activeTab === "ready"
-                        ? setGamesRemoved.mutate({ appIds: [game.appId], isRemoved: true }, {
-                            onSuccess: () => toast.success(`Removed ${game.name ?? "game"}`),
-                          })
-                        : setGamesRemoved.mutate({ appIds: [game.appId], isRemoved: false }, {
-                            onSuccess: () => toast.success(`Recovered ${game.name ?? "game"}`),
-                          })
-                    }
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (activeTab === "ready") {
+                        setGamesRemoved.mutate({ appIds: [game.appId], isRemoved: true }, {
+                          onSuccess: () => toast.success(`Removed ${game.name ?? "game"}`),
+                        });
+                      } else {
+                        setGamesRemoved.mutate({ appIds: [game.appId], isRemoved: false }, {
+                          onSuccess: () => toast.success(`Recovered ${game.name ?? "game"}`),
+                        });
+                      }
+                    }}
                     className="absolute -top-px -right-px z-10 h-6 w-6 rounded-bl-md rounded-tr-lg flex items-center justify-center bg-muted/80 text-muted-foreground hover:bg-destructive hover:text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <XIcon className="h-3.5 w-3.5" />
                   </button>
 
-                  {/* Checkbox */}
-                  <div className="absolute top-1 left-1 z-10">
-                    <Checkbox
-                      checked={isSelected}
-                      onCheckedChange={() => toggleGame(game.appId)}
-                    />
-                  </div>
-
-                  {/* Cover image */}
-                  <div
-                    className="relative w-[60px] flex-shrink-0 aspect-[2/3] m-2 rounded overflow-hidden cursor-pointer"
-                    onClick={() => toggleGame(game.appId)}
-                  >
-                    <Image
-                      src={`https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${game.appId}/library_600x900_2x.jpg`}
-                      alt=""
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
+                  {/* Checkbox + Cover image */}
+                  <div className="flex items-start gap-2 p-2 flex-shrink-0">
+                    <div className="pt-1" onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => toggleGame(game.appId)}
+                      />
+                    </div>
+                    <div className="relative w-[50px] flex-shrink-0 aspect-[2/3] rounded overflow-hidden">
+                      <Image
+                        src={`https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${game.appId}/library_600x900_2x.jpg`}
+                        alt=""
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    </div>
                   </div>
 
                   {/* Card content */}
@@ -530,8 +541,9 @@ export default function GameImportsPage() {
                           value={playStatus}
                           onValueChange={handlePlayStatusChange}
                           className="w-full"
+                          onClick={(e: React.MouseEvent) => e.stopPropagation()}
                         >
-                          {PLAY_STATUSES.map((status) => (
+                          {VISIBLE_PLAY_STATUSES.map((status) => (
                             <ToggleGroupItem
                               key={status}
                               value={status}
@@ -545,21 +557,23 @@ export default function GameImportsPage() {
                         </ToggleGroup>
 
                         {showCompletion && (
-                          <Select
-                            value={completionStatus ?? ""}
-                            onValueChange={handleCompletionChange}
-                          >
-                            <SelectTrigger className="w-[140px] h-8 text-xs">
-                              <SelectValue placeholder="Completion..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {getCompletionOptions(playStatus).map((option) => (
-                                <SelectItem key={option} value={option}>
-                                  {option}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <Select
+                              value={completionStatus ?? ""}
+                              onValueChange={handleCompletionChange}
+                            >
+                              <SelectTrigger className="w-[140px] h-8 text-xs">
+                                <SelectValue placeholder="Completion..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {getCompletionOptions(playStatus).map((option) => (
+                                  <SelectItem key={option} value={option}>
+                                    {option}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
                         )}
                       </div>
                     )}
