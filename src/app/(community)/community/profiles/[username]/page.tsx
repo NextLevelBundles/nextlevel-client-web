@@ -80,7 +80,7 @@ import {
   type ChartConfig,
 } from "@/shared/components/ui/chart";
 import { useCustomerLists } from "@/hooks/queries/useCustomerLists";
-import { useCommunityProfileByHandle } from "@/hooks/queries/useCommunityProfile";
+import { useCustomerProfileByHandle } from "@/hooks/queries/useCustomerProfile";
 import { useProfileStats } from "@/hooks/queries/useProfileStats";
 import { useProfileAchievements } from "@/hooks/queries/useProfileAchievements";
 import type {
@@ -140,7 +140,7 @@ function AboutMeSection({
   profile,
   isLoading,
 }: {
-  profile: ReturnType<typeof useCommunityProfileByHandle>["data"];
+  profile: ReturnType<typeof useCustomerProfileByHandle>["data"];
   isLoading: boolean;
 }) {
   if (isLoading) {
@@ -760,7 +760,7 @@ export default function ProfileOverviewPage() {
   const params = useParams();
   const username = params.username as string;
   const { data: profile, isLoading: profileLoading } =
-    useCommunityProfileByHandle(username);
+    useCustomerProfileByHandle(username);
   const { data: stats, isLoading: statsLoading } = useProfileStats(username);
   const { data: achievements, isLoading: achievementsLoading } =
     useProfileAchievements(username);

@@ -18,9 +18,9 @@ import {
 } from "react-icons/fa6";
 import { useCustomer } from "@/hooks/queries/useCustomer";
 import {
-  useCommunityProfile,
-  useUpdateCommunityProfile,
-} from "@/hooks/queries/useCommunityProfile";
+  useCustomerProfile,
+  useUpdateCustomerProfile,
+} from "@/hooks/queries/useCustomerProfile";
 import { toast } from "sonner";
 import type {
   SocialHandle,
@@ -91,8 +91,8 @@ export default function CuratorSettingsPage() {
   const router = useRouter();
   const username = params.username as string;
   const { data: customer } = useCustomer();
-  const { data: profile, isLoading } = useCommunityProfile();
-  const updateProfile = useUpdateCommunityProfile();
+  const { data: profile, isLoading } = useCustomerProfile();
+  const updateProfile = useUpdateCustomerProfile();
 
   const [title, setTitle] = useState("");
   const [headline, setHeadline] = useState("");
@@ -232,6 +232,7 @@ export default function CuratorSettingsPage() {
 
     try {
       await updateProfile.mutateAsync({
+        name: null,
         title: title.trim() || null,
         headline: headline.trim() || null,
         specialties: specialties.trim() || null,

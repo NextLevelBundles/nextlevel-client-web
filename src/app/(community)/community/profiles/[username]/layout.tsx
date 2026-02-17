@@ -21,7 +21,7 @@ import {
   Gamepad2,
 } from "lucide-react";
 import { useCustomer } from "@/hooks/queries/useCustomer";
-import { useCommunityProfileByHandle } from "@/hooks/queries/useCommunityProfile";
+import { useCustomerProfileByHandle } from "@/hooks/queries/useCustomerProfile";
 
 export default function ProfileLayout({
   children,
@@ -32,7 +32,7 @@ export default function ProfileLayout({
   const params = useParams();
   const username = params.username as string;
   const { data: customer, isLoading } = useCustomer();
-  const { data: communityProfile } = useCommunityProfileByHandle(username);
+  const { data: customerProfile } = useCustomerProfileByHandle(username);
 
   const basePath = `/community/profiles/${username}`;
 
@@ -79,7 +79,7 @@ export default function ProfileLayout({
     }).format(date);
   };
 
-  const avatarUrl = communityProfile?.pictureUrl || customer?.pictureUrl;
+  const avatarUrl = customerProfile?.pictureUrl || customer?.pictureUrl;
 
   return (
     <div className="grid gap-6">

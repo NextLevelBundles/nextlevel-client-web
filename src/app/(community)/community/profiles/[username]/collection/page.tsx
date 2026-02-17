@@ -10,7 +10,7 @@ import {
   useCustomerCollection,
   useUpdateCollectionGameStatus,
 } from "@/hooks/queries/useCustomerCollection";
-import type { CustomerCollectionGame } from "@/lib/api/types/customer-profile";
+import type { CustomerGame } from "@/lib/api/types/customer-profile";
 import { ToggleGroup, ToggleGroupItem } from "@/shared/components/ui/toggle-group";
 import {
   Select,
@@ -71,7 +71,7 @@ function GameRow({
   game,
   username,
 }: {
-  game: CustomerCollectionGame;
+  game: CustomerGame;
   username: string;
 }) {
   const updateStatus = useUpdateCollectionGameStatus();

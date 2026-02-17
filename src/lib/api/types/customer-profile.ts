@@ -49,9 +49,10 @@ export interface AddListItemRequest {
   gameId: number;
 }
 
-export interface CommunityProfile {
+export interface CustomerProfile {
   id: string;
   handle: string;
+  name: string | null;
   title: string | null;
   headline: string | null;
   specialties: string | null;
@@ -91,7 +92,8 @@ export interface ProfileCharity {
   description: string | null;
 }
 
-export interface UpdateCommunityProfileRequest {
+export interface UpdateCustomerProfileRequest {
+  name: string | null;
   title: string | null;
   headline: string | null;
   specialties: string | null;
@@ -99,7 +101,7 @@ export interface UpdateCommunityProfileRequest {
   charities: ProfileCharity[];
 }
 
-export interface CustomerCollectionGame {
+export interface CustomerGame {
   id: string;
   steamAppId: number;
   gameId: string;

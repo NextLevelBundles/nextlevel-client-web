@@ -7,9 +7,9 @@ import {
   CreateCustomerListRequest,
   UpdateCustomerListRequest,
   AddListItemRequest,
-  CommunityProfile,
-  UpdateCommunityProfileRequest,
-  CustomerCollectionGame,
+  CustomerProfile,
+  UpdateCustomerProfileRequest,
+  CustomerGame,
   UnimportedSteamGame,
   ImportGamesRequest,
   UpdateCollectionGameStatusRequest,
@@ -26,18 +26,18 @@ export class CustomerProfileApi {
   }
 
   async getLists(): Promise<CustomerList[]> {
-    return await this.client.get<CustomerList[]>("/customer/profile/lists");
+    return await this.client.get<CustomerList[]>("/community/lists");
   }
 
   async getListDetail(listId: string): Promise<CustomerListDetail> {
     return await this.client.get<CustomerListDetail>(
-      `/customer/profile/lists/${listId}`
+      `/community/lists/${listId}`
     );
   }
 
   async createList(data: CreateCustomerListRequest): Promise<CustomerList> {
     return await this.client.post<CustomerList>(
-      "/customer/profile/lists",
+      "/community/lists",
       data
     );
   }
@@ -47,13 +47,13 @@ export class CustomerProfileApi {
     data: UpdateCustomerListRequest
   ): Promise<CustomerList> {
     return await this.client.put<CustomerList>(
-      `/customer/profile/lists/${listId}`,
+      `/community/lists/${listId}`,
       data
     );
   }
 
   async deleteList(listId: string): Promise<void> {
-    await this.client.delete(`/customer/profile/lists/${listId}`);
+    await this.client.delete(`/community/lists/${listId}`);
   }
 
   async addItem(
@@ -61,82 +61,82 @@ export class CustomerProfileApi {
     data: AddListItemRequest
   ): Promise<CustomerListItem> {
     return await this.client.post<CustomerListItem>(
-      `/customer/profile/lists/${listId}/items`,
+      `/community/lists/${listId}/items`,
       data
     );
   }
 
   async removeItem(listId: string, itemId: string): Promise<void> {
     await this.client.delete(
-      `/customer/profile/lists/${listId}/items/${itemId}`
+      `/community/lists/${listId}/items/${itemId}`
     );
   }
 
   async getWishlist(): Promise<CustomerListDetail> {
     return await this.client.get<CustomerListDetail>(
-      "/customer/profile/wishlist"
+      "/community/wishlist"
     );
   }
 
   async addToWishlist(data: AddListItemRequest): Promise<CustomerListItem> {
     return await this.client.post<CustomerListItem>(
-      "/customer/profile/wishlist/items",
+      "/community/wishlist/items",
       data
     );
   }
 
   async removeFromWishlist(itemId: string): Promise<void> {
     await this.client.delete(
-      `/customer/profile/wishlist/items/${itemId}`
+      `/community/wishlist/items/${itemId}`
     );
   }
 
   async searchGames(query: string): Promise<GameSearchResult[]> {
     return await this.client.get<GameSearchResult[]>(
-      `/customer/profile/games/search?q=${encodeURIComponent(query)}`
+      `/community/games/search?q=${encodeURIComponent(query)}`
     );
   }
 
-  async getCommunityProfile(): Promise<CommunityProfile> {
-    return await this.client.get<CommunityProfile>(
-      "/customer/profile/community"
+  async getCustomerProfile(): Promise<CustomerProfile> {
+    return await this.client.get<CustomerProfile>(
+      "/community/profile"
     );
   }
 
-  async getCommunityProfileByHandle(handle: string): Promise<CommunityProfile | null> {
+  async getCustomerProfileByHandle(handle: string): Promise<CustomerProfile | null> {
     try {
-      return await this.client.get<CommunityProfile>(
-        `/customer/profile/community/${encodeURIComponent(handle)}`
+      return await this.client.get<CustomerProfile>(
+        `/community/profile/${encodeURIComponent(handle)}`
       );
     } catch {
       return null;
     }
   }
 
-  async updateCommunityProfile(
-    data: UpdateCommunityProfileRequest
-  ): Promise<CommunityProfile> {
-    return await this.client.put<CommunityProfile>(
-      "/customer/profile/community",
+  async updateCustomerProfile(
+    data: UpdateCustomerProfileRequest
+  ): Promise<CustomerProfile> {
+    return await this.client.put<CustomerProfile>(
+      "/community/profile",
       data
     );
   }
 
-  async getCollection(): Promise<CustomerCollectionGame[]> {
-    return await this.client.get<CustomerCollectionGame[]>(
-      "/customer/profile/collection"
+  async getCollection(): Promise<CustomerGame[]> {
+    return await this.client.get<CustomerGame[]>(
+      "/community/collection"
     );
   }
 
   async getUnimportedGames(): Promise<UnimportedSteamGame[]> {
     return await this.client.get<UnimportedSteamGame[]>(
-      "/customer/profile/collection/unimported"
+      "/community/collection/unimported"
     );
   }
 
-  async importGames(data: ImportGamesRequest): Promise<CustomerCollectionGame[]> {
-    return await this.client.post<CustomerCollectionGame[]>(
-      "/customer/profile/collection/import",
+  async importGames(data: ImportGamesRequest): Promise<CustomerGame[]> {
+    return await this.client.post<CustomerGame[]>(
+      "/community/collection/import",
       data
     );
   }
@@ -145,17 +145,17 @@ export class CustomerProfileApi {
     id: string,
     data: UpdateCollectionGameStatusRequest
   ): Promise<void> {
-    await this.client.patch(`/customer/profile/collection/${id}/status`, data);
+    await this.client.patch(`/community/collection/${id}/status`, data);
   }
 
   async removeFromCollection(id: string): Promise<void> {
-    await this.client.delete(`/customer/profile/collection/${id}`);
+    await this.client.delete(`/community/collection/${id}`);
   }
 
   async getStatsByHandle(handle: string): Promise<ProfileStats | null> {
     try {
       return await this.client.get<ProfileStats>(
-        `/customer/profile/stats/${encodeURIComponent(handle)}`
+        `/community/stats/${encodeURIComponent(handle)}`
       );
     } catch {
       return null;
@@ -165,7 +165,7 @@ export class CustomerProfileApi {
   async getAchievementsByHandle(handle: string): Promise<ProfileAchievements | null> {
     try {
       return await this.client.get<ProfileAchievements>(
-        `/customer/profile/achievements/${encodeURIComponent(handle)}`
+        `/community/achievements/${encodeURIComponent(handle)}`
       );
     } catch {
       return null;
@@ -175,7 +175,7 @@ export class CustomerProfileApi {
   async getCuratorProfile(handle: string): Promise<CuratorProfile | null> {
     try {
       return await this.client.get<CuratorProfile>(
-        `/customer/profile/curator/${encodeURIComponent(handle)}`
+        `/community/curator/${encodeURIComponent(handle)}`
       );
     } catch {
       return null;

@@ -14,7 +14,7 @@ import {
 } from "react-icons/fa6";
 import { Card } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import { useCommunityProfileByHandle } from "@/hooks/queries/useCommunityProfile";
+import { useCustomerProfileByHandle } from "@/hooks/queries/useCustomerProfile";
 
 const PLATFORM_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   YouTube: FaYoutube,
@@ -67,7 +67,7 @@ const DEFAULT_PLATFORM_STYLE = {
 export default function CuratorOverviewPage() {
   const params = useParams();
   const username = params.username as string;
-  const { data: profile, isLoading } = useCommunityProfileByHandle(username);
+  const { data: profile, isLoading } = useCustomerProfileByHandle(username);
 
   if (isLoading) {
     return (

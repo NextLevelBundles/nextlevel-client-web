@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { customerProfileApi } from "@/lib/api";
 import {
-  CustomerCollectionGame,
+  CustomerGame,
   UnimportedSteamGame,
   ImportGamesRequest,
   UpdateCollectionGameStatusRequest,
@@ -17,7 +17,7 @@ export function useCustomerCollection() {
 
   return useQuery({
     queryKey: customerCollectionQueryKey,
-    queryFn: (): Promise<CustomerCollectionGame[]> =>
+    queryFn: (): Promise<CustomerGame[]> =>
       customerProfileApi.getCollection(),
     enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000,

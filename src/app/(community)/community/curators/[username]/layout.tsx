@@ -27,7 +27,7 @@ import {
   FaSteam,
 } from "react-icons/fa6";
 import { useCustomer } from "@/hooks/queries/useCustomer";
-import { useCommunityProfileByHandle } from "@/hooks/queries/useCommunityProfile";
+import { useCustomerProfileByHandle } from "@/hooks/queries/useCustomerProfile";
 import { useCuratorProfile } from "@/hooks/queries/useCuratorProfile";
 
 const PLATFORM_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -97,7 +97,7 @@ export default function CuratorLayout({
   const params = useParams();
   const username = params.username as string;
   const { data: customer, isLoading } = useCustomer();
-  const { data: profile } = useCommunityProfileByHandle(username);
+  const { data: profile } = useCustomerProfileByHandle(username);
   const { data: curatorProfile } = useCuratorProfile(username);
 
   const basePath = `/community/curators/${username}`;

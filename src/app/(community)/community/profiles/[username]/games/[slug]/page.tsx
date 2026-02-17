@@ -29,7 +29,7 @@ import type {
   GameDetailRelatedGame,
   GameDetailWebsite,
 } from "@/lib/api/types/game";
-import type { CustomerCollectionGame } from "@/lib/api/types/customer-profile";
+import type { CustomerGame } from "@/lib/api/types/customer-profile";
 
 // --- Helpers ---
 
@@ -377,7 +377,7 @@ function SidebarSection({
 function CollectionStatusBadges({
   collectionGame,
 }: {
-  collectionGame: CustomerCollectionGame | null;
+  collectionGame: CustomerGame | null;
 }) {
   const playStatus = collectionGame?.playStatus || "NoStatus";
   const completionStatus = collectionGame?.completionStatus;

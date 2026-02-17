@@ -21,9 +21,9 @@ import { useCustomer, useUpdateHandle } from "@/hooks/queries/useCustomer";
 import { userApi } from "@/lib/api";
 import Link from "next/link";
 import {
-  useCommunityProfile,
-  useUpdateCommunityProfile,
-} from "@/hooks/queries/useCommunityProfile";
+  useCustomerProfile,
+  useUpdateCustomerProfile,
+} from "@/hooks/queries/useCustomerProfile";
 import { toast } from "sonner";
 import type {
   SocialHandle,
@@ -237,8 +237,8 @@ export default function ProfileSettingsPage() {
   const router = useRouter();
   const username = params.username as string;
   const { data: customer } = useCustomer();
-  const { data: profile, isLoading } = useCommunityProfile();
-  const updateProfile = useUpdateCommunityProfile();
+  const { data: profile, isLoading } = useCustomerProfile();
+  const updateProfile = useUpdateCustomerProfile();
   const updateHandle = useUpdateHandle();
 
   const [handle, setHandle] = useState("");
@@ -466,6 +466,7 @@ export default function ProfileSettingsPage() {
       }
 
       await updateProfile.mutateAsync({
+        name: null,
         title: title.trim() || null,
         headline: headline.trim() || null,
         specialties: specialties.trim() || null,

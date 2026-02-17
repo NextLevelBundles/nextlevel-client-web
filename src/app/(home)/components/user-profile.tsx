@@ -22,12 +22,12 @@ import SignUpButton from "./SignUpButton";
 import SignOutButton from "./SignOutButton";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
 import { useCustomer } from "@/hooks/queries/useCustomer";
-import { useCommunityProfileByHandle } from "@/hooks/queries/useCommunityProfile";
+import { useCustomerProfileByHandle } from "@/hooks/queries/useCustomerProfile";
 
 export function UserProfile() {
   const { user, isLoading } = useAuth();
   const { data: customer } = useCustomer();
-  const { data: communityProfile } = useCommunityProfileByHandle(customer?.handle ?? "");
+  const { data: customerProfile } = useCustomerProfileByHandle(customer?.handle ?? "");
 
   if (isLoading) {
     return (
@@ -94,7 +94,7 @@ export function UserProfile() {
               <span className="flex-1">Profile</span>
             </Link>
           </DropdownMenuItem>
-          {communityProfile?.isCurator && (
+          {customerProfile?.isCurator && (
             <DropdownMenuItem
               asChild
               className="cursor-pointer rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary"
