@@ -82,9 +82,11 @@ function Section({
 function CurrentlyPlayingSection({
   games,
   isLoading,
+  username,
 }: {
   games: CustomerGame[];
   isLoading: boolean;
+  username: string;
 }) {
   if (isLoading) {
     return (
@@ -102,28 +104,42 @@ function CurrentlyPlayingSection({
     <Section title="Currently Playing">
       {games.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {games.map((game) => (
-            <div key={game.id}>
-              <div className="aspect-[3/4] rounded-md overflow-hidden bg-muted/50 mb-1.5">
-                {game.coverImageId ? (
-                  <Image
-                    src={getIgdbCoverUrl(game.coverImageId)}
-                    alt={game.name}
-                    width={264}
-                    height={352}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <ImageIcon className="h-6 w-6 text-muted-foreground/40" />
-                  </div>
-                )}
+          {games.map((game) => {
+            const content = (
+              <div>
+                <div className="aspect-[3/4] rounded-md overflow-hidden bg-muted/50 mb-1.5">
+                  {game.coverImageId ? (
+                    <Image
+                      src={getIgdbCoverUrl(game.coverImageId)}
+                      alt={game.name}
+                      width={264}
+                      height={352}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <ImageIcon className="h-6 w-6 text-muted-foreground/40" />
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs font-medium truncate" title={game.name}>
+                  {game.name}
+                </p>
               </div>
-              <p className="text-xs font-medium truncate" title={game.name}>
-                {game.name}
-              </p>
-            </div>
-          ))}
+            );
+
+            return game.slug ? (
+              <Link
+                key={game.id}
+                href={`/community/profiles/${username}/games/${game.slug}`}
+                className="group hover:opacity-90 transition-opacity"
+              >
+                {content}
+              </Link>
+            ) : (
+              <div key={game.id}>{content}</div>
+            );
+          })}
         </div>
       ) : (
         <p className="text-muted-foreground text-sm">
@@ -602,6 +618,7 @@ export default function ProfileOverviewPage() {
         <CurrentlyPlayingSection
           games={playingGames}
           isLoading={collectionLoading}
+          username={username}
         />
         <GameCollectionSection
           totalGames={stats?.totalGames ?? 0}
