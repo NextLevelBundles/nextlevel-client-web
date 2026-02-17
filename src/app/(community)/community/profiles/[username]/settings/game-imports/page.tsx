@@ -16,8 +16,8 @@ import {
   SearchIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  EyeOffIcon,
   RotateCcwIcon,
+  XIcon,
 } from "lucide-react";
 import { useCustomer } from "@/hooks/queries/useCustomer";
 import { useAuth } from "@/shared/providers/auth-provider";
@@ -205,11 +205,11 @@ export default function GameImportsPage() {
       setSelected(new Set());
       toast.success(
         setRemoved
-          ? `Ignored ${appIds.length} game${appIds.length > 1 ? "s" : ""}`
+          ? `Removed ${appIds.length} game${appIds.length > 1 ? "s" : ""}`
           : `Recovered ${appIds.length} game${appIds.length > 1 ? "s" : ""}`
       );
     } catch {
-      toast.error(setRemoved ? "Failed to ignore games" : "Failed to recover games");
+      toast.error(setRemoved ? "Failed to remove games" : "Failed to recover games");
     }
   };
 
@@ -223,11 +223,13 @@ export default function GameImportsPage() {
 
   if (authLoading || isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         <Skeleton className="h-8 w-48" />
-        {[...Array(5)].map((_, i) => (
-          <Skeleton key={i} className="h-14 w-full" />
-        ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          {[...Array(6)].map((_, i) => (
+            <Skeleton key={i} className="h-[113px] w-full rounded-lg" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -391,12 +393,10 @@ export default function GameImportsPage() {
                       disabled={selected.size === 0 || setGamesRemoved.isPending}
                       onClick={() => handleSetRemoved(true)}
                     >
-                      {setGamesRemoved.isPending ? (
+                      {setGamesRemoved.isPending && (
                         <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
-                      ) : (
-                        <EyeOffIcon className="h-4 w-4 mr-1" />
                       )}
-                      Ignore
+                      Remove
                     </Button>
                     <Button
                       size="sm"
@@ -429,12 +429,13 @@ export default function GameImportsPage() {
             </div>
           </div>
 
-          <div className="space-y-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
             {games?.map((game) => {
               const gameStatus = statuses[game.appId];
               const playStatus = gameStatus?.playStatus || "NoStatus";
               const completionStatus = gameStatus?.completionStatus;
               const showCompletion = playStatus === "Playing" || playStatus === "Played";
+              const isSelected = selected.has(game.appId);
 
               function handlePlayStatusChange(value: string) {
                 if (!value) return;
@@ -467,71 +468,102 @@ export default function GameImportsPage() {
               return (
                 <div
                   key={game.appId}
-                  className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 transition-colors"
+                  className={`group relative flex rounded-lg border transition-colors overflow-hidden ${
+                    isSelected
+                      ? "border-primary bg-primary/5"
+                      : "border-border bg-card hover:border-muted-foreground/25"
+                  }`}
                 >
-                  <Checkbox
-                    checked={selected.has(game.appId)}
-                    onCheckedChange={() => toggleGame(game.appId)}
-                  />
-                  <div className="w-8 h-8 flex-shrink-0 rounded overflow-hidden bg-muted/50">
-                    {game.imgIconUrl ? (
-                      <Image
-                        src={`https://media.steampowered.com/steamcommunity/public/images/apps/${game.appId}/${game.imgIconUrl}.jpg`}
-                        alt=""
-                        width={32}
-                        height={32}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full" />
+                  {/* Quick remove/recover button */}
+                  <button
+                    onClick={() =>
+                      activeTab === "ready"
+                        ? setGamesRemoved.mutate({ appIds: [game.appId], isRemoved: true }, {
+                            onSuccess: () => toast.success(`Removed ${game.name ?? "game"}`),
+                          })
+                        : setGamesRemoved.mutate({ appIds: [game.appId], isRemoved: false }, {
+                            onSuccess: () => toast.success(`Recovered ${game.name ?? "game"}`),
+                          })
+                    }
+                    className="absolute -top-px -right-px z-10 h-6 w-6 rounded-bl-md rounded-tr-lg flex items-center justify-center bg-muted/80 text-muted-foreground hover:bg-destructive hover:text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <XIcon className="h-3.5 w-3.5" />
+                  </button>
+
+                  {/* Checkbox */}
+                  <div className="absolute top-1 left-1 z-10">
+                    <Checkbox
+                      checked={isSelected}
+                      onCheckedChange={() => toggleGame(game.appId)}
+                    />
+                  </div>
+
+                  {/* Cover image */}
+                  <div
+                    className="relative w-[60px] flex-shrink-0 aspect-[2/3] m-2 rounded overflow-hidden cursor-pointer"
+                    onClick={() => toggleGame(game.appId)}
+                  >
+                    <Image
+                      src={`https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${game.appId}/library_600x900_2x.jpg`}
+                      alt=""
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                  </div>
+
+                  {/* Card content */}
+                  <div className="flex-1 min-w-0 p-3 flex flex-col gap-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-sm font-medium leading-tight line-clamp-2">
+                        {game.name ?? `Steam App ${game.appId}`}
+                      </span>
+                      <span className="text-xs text-muted-foreground flex-shrink-0">
+                        {formatPlaytime(game.playtimeForever)}
+                      </span>
+                    </div>
+
+                    {activeTab === "ready" && (
+                      <div className="flex flex-col gap-1.5 mt-auto h-[68px]">
+                        <ToggleGroup
+                          type="single"
+                          value={playStatus}
+                          onValueChange={handlePlayStatusChange}
+                          className="w-full"
+                        >
+                          {PLAY_STATUSES.map((status) => (
+                            <ToggleGroupItem
+                              key={status}
+                              value={status}
+                              variant="outline"
+                              size="sm"
+                              className="text-xs flex-1"
+                            >
+                              {PLAY_STATUS_LABELS[status]}
+                            </ToggleGroupItem>
+                          ))}
+                        </ToggleGroup>
+
+                        {showCompletion && (
+                          <Select
+                            value={completionStatus ?? ""}
+                            onValueChange={handleCompletionChange}
+                          >
+                            <SelectTrigger className="w-[140px] h-8 text-xs">
+                              <SelectValue placeholder="Completion..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {getCompletionOptions(playStatus).map((option) => (
+                                <SelectItem key={option} value={option}>
+                                  {option}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </div>
                     )}
                   </div>
-                  <span className="text-sm font-medium flex-1 min-w-0 truncate">
-                    {game.name ?? `Steam App ${game.appId}`}
-                  </span>
-                  {activeTab === "ready" && (
-                    <div className="flex flex-col items-start gap-1.5 flex-shrink-0">
-                      <ToggleGroup
-                        type="single"
-                        value={playStatus}
-                        onValueChange={handlePlayStatusChange}
-                        className="justify-start"
-                      >
-                        {PLAY_STATUSES.map((status) => (
-                          <ToggleGroupItem
-                            key={status}
-                            value={status}
-                            variant="outline"
-                            size="sm"
-                            className="text-xs"
-                          >
-                            {PLAY_STATUS_LABELS[status]}
-                          </ToggleGroupItem>
-                        ))}
-                      </ToggleGroup>
-
-                      {showCompletion && (
-                        <Select
-                          value={completionStatus ?? ""}
-                          onValueChange={handleCompletionChange}
-                        >
-                          <SelectTrigger className="w-[130px] h-8 text-xs">
-                            <SelectValue placeholder="Completion..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {getCompletionOptions(playStatus).map((option) => (
-                              <SelectItem key={option} value={option}>
-                                {option}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    </div>
-                  )}
-                  <span className="text-xs text-muted-foreground flex-shrink-0 w-16 text-right">
-                    {formatPlaytime(game.playtimeForever)}
-                  </span>
                 </div>
               );
             })}
