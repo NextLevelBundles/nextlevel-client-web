@@ -3,6 +3,7 @@ import { customerProfileApi } from "@/lib/api";
 import {
   CustomerGame,
   UnimportedSteamGame,
+  PaginatedResponse,
   ImportGamesRequest,
   UpdateCollectionGameStatusRequest,
 } from "@/lib/api/types/customer-profile";
@@ -26,17 +27,23 @@ export function useCustomerCollection() {
   });
 }
 
-export function useUnimportedGames() {
+export function useUnimportedGames(params?: {
+  search?: string;
+  playtimeFilter?: string;
+  page?: number;
+  pageSize?: number;
+}) {
   const { user } = useAuth();
   const isAuthenticated = !!user;
 
   return useQuery({
-    queryKey: unimportedGamesQueryKey,
-    queryFn: (): Promise<UnimportedSteamGame[]> =>
-      customerProfileApi.getUnimportedGames(),
+    queryKey: [...unimportedGamesQueryKey, params],
+    queryFn: (): Promise<PaginatedResponse<UnimportedSteamGame>> =>
+      customerProfileApi.getUnimportedGames(params),
     enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev,
   });
 }
 

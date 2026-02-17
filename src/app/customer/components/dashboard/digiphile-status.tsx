@@ -8,7 +8,8 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
-import { User, ExternalLink } from "lucide-react";
+import { User } from "lucide-react";
+import Link from "next/link";
 import { useCustomer } from "@/hooks/queries/useCustomer";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -77,22 +78,20 @@ export function DigiphileStatus() {
             </div>
           </div>
         </div>
-        <Button
-          variant="outline"
-          className="relative overflow-hidden group"
-          onClick={() => window.open('https://sites.google.com/digiphile.co/help/construction', '_blank')}
-        >
-          <span className="relative z-10 flex items-center gap-2">
-            View Profile
-            <ExternalLink className="h-3 w-3" />
-          </span>
-          <motion.div
-            className="absolute inset-0 bg-primary/5"
-            initial={{ scale: 0 }}
-            whileHover={{ scale: 1 }}
-            transition={{ duration: 0.2 }}
-          />
-        </Button>
+        <Link href={`/community/profiles/${customer.handle}`}>
+          <Button
+            variant="outline"
+            className="relative overflow-hidden group"
+          >
+            <span className="relative z-10">View Profile</span>
+            <motion.div
+              className="absolute inset-0 bg-primary/5"
+              initial={{ scale: 0 }}
+              whileHover={{ scale: 1 }}
+              transition={{ duration: 0.2 }}
+            />
+          </Button>
+        </Link>
       </CardContent>
     </Card>
   );

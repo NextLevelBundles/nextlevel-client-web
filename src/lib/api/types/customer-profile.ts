@@ -187,4 +187,18 @@ export interface GameAchievementProgress {
   earnedAchievements: number;
   completionPercentage: number;
   lastUnlockTime: string | null;
+  earnedAchievementsList: EarnedAchievement[];
+}
+
+export interface EarnedAchievement {
+  apiName: string;
+  unlockTime: string | null;
+}
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }

@@ -11,6 +11,7 @@ import {
   UpdateCustomerProfileRequest,
   CustomerGame,
   UnimportedSteamGame,
+  PaginatedResponse,
   ImportGamesRequest,
   UpdateCollectionGameStatusRequest,
   ProfileStats,
@@ -128,9 +129,20 @@ export class CustomerProfileApi {
     );
   }
 
-  async getUnimportedGames(): Promise<UnimportedSteamGame[]> {
-    return await this.client.get<UnimportedSteamGame[]>(
-      "/community/collection/unimported"
+  async getUnimportedGames(params?: {
+    search?: string;
+    playtimeFilter?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<PaginatedResponse<UnimportedSteamGame>> {
+    const searchParams = new URLSearchParams();
+    if (params?.search) searchParams.set("search", params.search);
+    if (params?.playtimeFilter) searchParams.set("playtimeFilter", params.playtimeFilter);
+    if (params?.page) searchParams.set("page", params.page.toString());
+    if (params?.pageSize) searchParams.set("pageSize", params.pageSize.toString());
+    const qs = searchParams.toString();
+    return await this.client.get<PaginatedResponse<UnimportedSteamGame>>(
+      `/community/collection/unimported${qs ? `?${qs}` : ""}`
     );
   }
 

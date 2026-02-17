@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Card } from "@/shared/components/ui/card";
-import { TrophyIcon, ImageIcon } from "lucide-react";
+import { TrophyIcon, ImageIcon, ChevronDownIcon } from "lucide-react";
 import { useProfileAchievements } from "@/hooks/queries/useProfileAchievements";
 import type { GameAchievementProgress } from "@/lib/api/types/customer-profile";
 
@@ -25,56 +25,102 @@ function formatDate(dateString: string): string {
   }).format(date);
 }
 
+function formatApiName(apiName: string): string {
+  return apiName
+    .replace(/^ACH_/i, "")
+    .replace(/[_-]/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 function GameAchievementRow({ game }: { game: GameAchievementProgress }) {
+  const [expanded, setExpanded] = useState(false);
+
   return (
-    <div className="flex items-center gap-4 py-3 border-b last:border-b-0">
-      {/* Cover Image */}
-      <div className="w-14 h-14 rounded-md overflow-hidden bg-muted/50 flex-shrink-0">
-        {game.coverImageId ? (
-          <Image
-            src={getIgdbCoverUrl(game.coverImageId, "cover_small")}
-            alt={game.gameName}
-            width={56}
-            height={56}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <ImageIcon className="h-5 w-5 text-muted-foreground/40" />
-          </div>
-        )}
-      </div>
-
-      {/* Game Info */}
-      <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm truncate">{game.gameName}</p>
-        {game.lastUnlockTime && (
-          <p className="text-xs text-muted-foreground">
-            {formatDate(game.lastUnlockTime)}
-          </p>
-        )}
-      </div>
-
-      {/* Achievement Progress */}
-      <div className="flex-shrink-0 w-36">
-        <div className="flex items-center gap-1.5 text-sm mb-1">
-          <TrophyIcon className="h-3.5 w-3.5 text-primary" />
-          <span className="font-medium">
-            {game.earnedAchievements} / {game.totalAchievements}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-            <div
-              className="h-full rounded-full bg-primary transition-all"
-              style={{ width: `${game.completionPercentage}%` }}
+    <div className="border-b last:border-b-0">
+      <button
+        type="button"
+        onClick={() => setExpanded((prev) => !prev)}
+        className="flex items-center gap-4 py-3 w-full text-left hover:bg-muted/30 transition-colors px-1 rounded-sm"
+      >
+        {/* Cover Image */}
+        <div className="w-14 h-14 rounded-md overflow-hidden bg-muted/50 flex-shrink-0">
+          {game.coverImageId ? (
+            <Image
+              src={getIgdbCoverUrl(game.coverImageId, "cover_small")}
+              alt={game.gameName}
+              width={56}
+              height={56}
+              className="w-full h-full object-cover"
             />
-          </div>
-          <span className="text-xs text-muted-foreground w-10 text-right">
-            {game.completionPercentage}%
-          </span>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <ImageIcon className="h-5 w-5 text-muted-foreground/40" />
+            </div>
+          )}
         </div>
-      </div>
+
+        {/* Game Info */}
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-sm truncate">{game.gameName}</p>
+          {game.lastUnlockTime && (
+            <p className="text-xs text-muted-foreground">
+              {formatDate(game.lastUnlockTime)}
+            </p>
+          )}
+        </div>
+
+        {/* Achievement Progress */}
+        <div className="flex-shrink-0 w-36">
+          <div className="flex items-center gap-1.5 text-sm mb-1">
+            <TrophyIcon className="h-3.5 w-3.5 text-primary" />
+            <span className="font-medium">
+              {game.earnedAchievements} / {game.totalAchievements}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+              <div
+                className="h-full rounded-full bg-primary transition-all"
+                style={{ width: `${game.completionPercentage}%` }}
+              />
+            </div>
+            <span className="text-xs text-muted-foreground w-10 text-right">
+              {game.completionPercentage}%
+            </span>
+          </div>
+        </div>
+
+        {/* Chevron */}
+        <ChevronDownIcon
+          className={`h-4 w-4 text-muted-foreground flex-shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {/* Expanded: Earned achievements list */}
+      {expanded && game.earnedAchievementsList?.length > 0 && (
+        <div className="pb-3 pl-[4.75rem] pr-1">
+          <div className="rounded-md border bg-muted/20 divide-y">
+            {game.earnedAchievementsList.map((ach) => (
+              <div
+                key={ach.apiName}
+                className="flex items-center justify-between px-3 py-2 text-xs"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <TrophyIcon className="h-3 w-3 text-primary flex-shrink-0" />
+                  <span className="truncate font-medium">
+                    {formatApiName(ach.apiName)}
+                  </span>
+                </div>
+                {ach.unlockTime && (
+                  <span className="text-muted-foreground flex-shrink-0 ml-3">
+                    {formatDate(ach.unlockTime)}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
