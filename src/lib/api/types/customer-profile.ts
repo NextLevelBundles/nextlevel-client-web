@@ -139,6 +139,11 @@ export interface ImportGamesRequest {
   statuses?: Record<number, ImportGameStatus>;
 }
 
+export interface SetGamesRemovedRequest {
+  appIds: number[];
+  isRemoved: boolean;
+}
+
 export interface ProfileStats {
   totalGames: number;
   totalPlaytimeMinutes: number;

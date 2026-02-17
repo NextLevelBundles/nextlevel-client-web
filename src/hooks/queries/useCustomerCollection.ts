@@ -6,6 +6,7 @@ import {
   PaginatedResponse,
   ImportGamesRequest,
   UpdateCollectionGameStatusRequest,
+  SetGamesRemovedRequest,
 } from "@/lib/api/types/customer-profile";
 import { useAuth } from "@/shared/providers/auth-provider";
 
@@ -32,6 +33,7 @@ export function useUnimportedGames(params?: {
   playtimeFilter?: string;
   page?: number;
   pageSize?: number;
+  isRemoved?: boolean;
 }) {
   const { user } = useAuth();
   const isAuthenticated = !!user;
@@ -81,6 +83,18 @@ export function useUpdateCollectionGameStatus() {
     }) => customerProfileApi.updateCollectionGameStatus(params.id, params.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: customerCollectionQueryKey });
+    },
+  });
+}
+
+export function useSetGamesRemoved() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: SetGamesRemovedRequest) =>
+      customerProfileApi.setGamesRemoved(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: unimportedGamesQueryKey });
     },
   });
 }

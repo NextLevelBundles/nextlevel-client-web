@@ -14,6 +14,7 @@ import {
   PaginatedResponse,
   ImportGamesRequest,
   UpdateCollectionGameStatusRequest,
+  SetGamesRemovedRequest,
   ProfileStats,
   ProfileAchievements,
   CuratorProfile,
@@ -134,16 +135,22 @@ export class CustomerProfileApi {
     playtimeFilter?: string;
     page?: number;
     pageSize?: number;
+    isRemoved?: boolean;
   }): Promise<PaginatedResponse<UnimportedSteamGame>> {
     const searchParams = new URLSearchParams();
     if (params?.search) searchParams.set("search", params.search);
     if (params?.playtimeFilter) searchParams.set("playtimeFilter", params.playtimeFilter);
     if (params?.page) searchParams.set("page", params.page.toString());
     if (params?.pageSize) searchParams.set("pageSize", params.pageSize.toString());
+    if (params?.isRemoved !== undefined) searchParams.set("isRemoved", params.isRemoved.toString());
     const qs = searchParams.toString();
     return await this.client.get<PaginatedResponse<UnimportedSteamGame>>(
       `/community/collection/unimported${qs ? `?${qs}` : ""}`
     );
+  }
+
+  async setGamesRemoved(data: SetGamesRemovedRequest): Promise<void> {
+    await this.client.patch("/community/collection/unimported/set-removed", data);
   }
 
   async importGames(data: ImportGamesRequest): Promise<CustomerGame[]> {
