@@ -641,20 +641,18 @@ export default function ProfileOverviewPage() {
   const { data: stats, isLoading: statsLoading } = useProfileStats(username);
   const { data: achievements, isLoading: achievementsLoading } =
     useProfileAchievements(username);
-  const { data: lists, isLoading: listsLoading } = useCustomerLists();
+  const { data: lists, isLoading: listsLoading } = useCustomerLists(username);
 
   const playingGames = (collection ?? []).filter(
     (game) => game.playStatus === "Playing"
   );
 
-  const recentLists = isOwnProfile
-    ? (lists ?? [])
-        .sort(
-          (a, b) =>
-            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-        )
-        .slice(0, 5)
-    : [];
+  const recentLists = (lists ?? [])
+    .sort(
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    )
+    .slice(0, 5);
 
   return (
     <div className="grid gap-6">

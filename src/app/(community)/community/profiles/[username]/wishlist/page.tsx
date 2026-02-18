@@ -15,7 +15,7 @@ function getIgdbCoverUrl(coverImageId: string | null, size = "cover_big") {
 export default function WishlistPage() {
   const params = useParams();
   const username = params.username as string;
-  const { data: wishListDetail, isLoading } = useWishlist();
+  const { data: wishListDetail, isLoading } = useWishlist(username);
 
   if (isLoading) {
     return (

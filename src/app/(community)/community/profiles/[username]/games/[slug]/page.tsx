@@ -462,23 +462,35 @@ export default function GameDetailPage() {
   const collectionGame =
     collection?.find((g) => g.slug === slug) ?? null;
 
-  // Wishlist logic
-  const { data: wishlistDetail } = useWishlist();
+  // Wishlist logic — own wishlist (for toggle on own profile, or "Add to My Wishlist" on other profiles)
+  const { data: myWishlistDetail } = useWishlist();
   const addToWishlist = useAddToWishlist();
   const removeFromWishlist = useRemoveFromWishlist();
 
+  // Visited user's wishlist (for showing their wishlist status on non-own profiles)
+  const { data: profileWishlistDetail } = useWishlist(isOwnProfile ? undefined : username);
+
   const igdbId = game?.igdbId ?? 0;
-  const wishListItem = wishlistDetail?.items.find(
+
+  // Own wishlist state
+  const myWishListItem = myWishlistDetail?.items.find(
     (item) => item.gameId === igdbId
   );
-  const isInWishList = !!wishListItem;
+  const isInMyWishList = !!myWishListItem;
+
+  // Visited profile's wishlist state
+  const profileWishListItem = profileWishlistDetail?.items.find(
+    (item) => item.gameId === igdbId
+  );
+  const isInProfileWishList = !!profileWishListItem;
+
   const wishlistPending =
     addToWishlist.isPending || removeFromWishlist.isPending;
 
   function handleWishlistToggle() {
     if (!igdbId) return;
-    if (isInWishList && wishListItem) {
-      removeFromWishlist.mutate(wishListItem.id);
+    if (isInMyWishList && myWishListItem) {
+      removeFromWishlist.mutate(myWishListItem.id);
     } else {
       addToWishlist.mutate({ gameId: igdbId });
     }
@@ -565,28 +577,40 @@ export default function GameDetailPage() {
                   disabled={wishlistPending}
                 >
                   <Heart
-                    className={`h-4 w-4 ${isInWishList ? "fill-red-500 text-red-500" : ""}`}
+                    className={`h-4 w-4 ${isInMyWishList ? "fill-red-500 text-red-500" : ""}`}
                   />
-                  {isInWishList ? "In Wishlist" : "Wishlist"}
+                  {isInMyWishList ? "In Wishlist" : "Wishlist"}
                 </Button>
               )}
               {isAuthenticated && !isOwnProfile && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-shrink-0 gap-1.5"
-                  onClick={() => {
-                    if (!igdbId) return;
-                    if (isInWishList) return;
-                    addToWishlist.mutate({ gameId: igdbId });
-                  }}
-                  disabled={wishlistPending || isInWishList}
-                >
-                  <Heart
-                    className={`h-4 w-4 ${isInWishList ? "fill-red-500 text-red-500" : ""}`}
-                  />
-                  {isInWishList ? "In My Wishlist" : "Add to My Wishlist"}
-                </Button>
+                <div className="flex flex-col gap-1.5 flex-shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                    disabled
+                  >
+                    <Heart
+                      className={`h-4 w-4 ${isInProfileWishList ? "fill-red-500 text-red-500" : ""}`}
+                    />
+                    {isInProfileWishList ? "In Wishlist" : "Not in Wishlist"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={() => {
+                      if (!igdbId || isInMyWishList) return;
+                      addToWishlist.mutate({ gameId: igdbId });
+                    }}
+                    disabled={wishlistPending || isInMyWishList}
+                  >
+                    <Heart
+                      className={`h-4 w-4 ${isInMyWishList ? "fill-red-500 text-red-500" : ""}`}
+                    />
+                    {isInMyWishList ? "In My Wishlist" : "Add to My Wishlist"}
+                  </Button>
+                </div>
               )}
             </div>
 

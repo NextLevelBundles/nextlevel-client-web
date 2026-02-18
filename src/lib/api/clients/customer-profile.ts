@@ -74,10 +74,36 @@ export class CustomerProfileApi {
     );
   }
 
+  async getListsByHandle(handle: string): Promise<CustomerList[]> {
+    return await this.client.get<CustomerList[]>(
+      `/community/lists/by-handle/${encodeURIComponent(handle)}`
+    );
+  }
+
+  async getListDetailByHandle(handle: string, listId: string): Promise<CustomerListDetail | null> {
+    try {
+      return await this.client.get<CustomerListDetail>(
+        `/community/lists/by-handle/${encodeURIComponent(handle)}/${listId}`
+      );
+    } catch {
+      return null;
+    }
+  }
+
   async getWishlist(): Promise<CustomerListDetail> {
     return await this.client.get<CustomerListDetail>(
       "/community/wishlist"
     );
+  }
+
+  async getWishlistByHandle(handle: string): Promise<CustomerListDetail | null> {
+    try {
+      return await this.client.get<CustomerListDetail>(
+        `/community/wishlist/by-handle/${encodeURIComponent(handle)}`
+      );
+    } catch {
+      return null;
+    }
   }
 
   async addToWishlist(data: AddListItemRequest): Promise<CustomerListItem> {

@@ -17,12 +17,24 @@ import { Card } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/shared/components/ui/alert-dialog";
+import {
   useCustomerListDetail,
   useDeleteCustomerList,
   useAddListItem,
   useRemoveListItem,
   useGameSearch,
 } from "@/hooks/queries/useCustomerLists";
+import { useCustomer } from "@/hooks/queries/useCustomer";
 import { GameSearchResult } from "@/lib/api/types/customer-profile";
 
 function getIgdbCoverUrl(coverImageId: string | null, size = "cover_big") {
@@ -36,7 +48,9 @@ export default function ListDetailPage() {
   const username = params.username as string;
   const listId = params.listId as string;
 
-  const { data: list, isLoading } = useCustomerListDetail(listId);
+  const { data: customer } = useCustomer();
+  const isOwnProfile = customer?.handle === username;
+  const { data: list, isLoading } = useCustomerListDetail(listId, isOwnProfile ? undefined : username);
   const deleteList = useDeleteCustomerList();
   const addItem = useAddListItem(listId);
   const removeItem = useRemoveListItem(listId);
@@ -65,7 +79,6 @@ export default function ListDetailPage() {
   const listsPath = `/community/profiles/${username}/lists`;
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this list?")) return;
     await deleteList.mutateAsync(listId);
     router.push(listsPath);
   };
@@ -130,28 +143,50 @@ export default function ListDetailPage() {
             {list.items.length === 1 ? "Game" : "Games"}
           </span>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsEditing(!isEditing)}
-          >
-            <PencilIcon className="mr-2 h-3.5 w-3.5" />
-            {isEditing ? "Done" : "Edit"}
-          </Button>
-          {!list.systemName && (
+        {isOwnProfile && (
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={handleDelete}
-              disabled={deleteList.isPending}
-              className="text-destructive hover:text-destructive"
+              onClick={() => setIsEditing(!isEditing)}
             >
-              <Trash2Icon className="mr-2 h-3.5 w-3.5" />
-              Delete
+              <PencilIcon className="mr-2 h-3.5 w-3.5" />
+              {isEditing ? "Done" : "Edit"}
             </Button>
-          )}
-        </div>
+            {!list.systemName && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={deleteList.isPending}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2Icon className="mr-2 h-3.5 w-3.5" />
+                    Delete
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete list</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete &quot;{list.name}&quot;? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDelete}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Edit Mode: Game Search */}
@@ -319,7 +354,9 @@ export default function ListDetailPage() {
             <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
               <ImageIcon className="mb-3 h-8 w-8 text-muted-foreground" />
               <p className="text-muted-foreground">
-                No games in this list yet. Click Edit to add games.
+                {isOwnProfile
+                  ? "No games in this list yet. Click Edit to add games."
+                  : "No games in this list yet."}
               </p>
             </div>
           )}
