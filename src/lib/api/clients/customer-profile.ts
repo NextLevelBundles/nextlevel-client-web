@@ -130,6 +130,32 @@ export class CustomerProfileApi {
     );
   }
 
+  async getCollectionByHandle(handle: string): Promise<CustomerGame[]> {
+    return await this.client.get<CustomerGame[]>(
+      `/community/collection/by-handle/${encodeURIComponent(handle)}`
+    );
+  }
+
+  async getCollectionPagedByHandle(
+    handle: string,
+    params?: {
+      search?: string;
+      playStatus?: string;
+      page?: number;
+      pageSize?: number;
+    }
+  ): Promise<PaginatedResponse<CustomerGame>> {
+    const searchParams = new URLSearchParams();
+    if (params?.search) searchParams.set("search", params.search);
+    if (params?.playStatus) searchParams.set("playStatus", params.playStatus);
+    if (params?.page) searchParams.set("page", params.page.toString());
+    if (params?.pageSize) searchParams.set("pageSize", params.pageSize.toString());
+    const qs = searchParams.toString();
+    return await this.client.get<PaginatedResponse<CustomerGame>>(
+      `/community/collection/by-handle/${encodeURIComponent(handle)}/paged${qs ? `?${qs}` : ""}`
+    );
+  }
+
   async getCollectionPaged(params?: {
     search?: string;
     playStatus?: string;

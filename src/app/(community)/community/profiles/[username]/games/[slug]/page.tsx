@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useGameDetail } from "@/hooks/queries/useGameDetail";
 import { useAuth } from "@/shared/providers/auth-provider";
+import { useCustomer } from "@/hooks/queries/useCustomer";
 import { useCustomerCollection } from "@/hooks/queries/useCustomerCollection";
 import {
   useWishlist,
@@ -455,7 +456,9 @@ export default function GameDetailPage() {
   const { data: game, isLoading } = useGameDetail(slug);
   const { user } = useAuth();
   const isAuthenticated = !!user;
-  const { data: collection } = useCustomerCollection();
+  const { data: customer } = useCustomer();
+  const isOwnProfile = customer?.handle === username;
+  const { data: collection } = useCustomerCollection(username);
   const collectionGame =
     collection?.find((g) => g.slug === slug) ?? null;
 
@@ -553,7 +556,7 @@ export default function GameDetailPage() {
                   </p>
                 )}
               </div>
-              {isAuthenticated && (
+              {isAuthenticated && isOwnProfile && (
                 <Button
                   variant="outline"
                   size="sm"

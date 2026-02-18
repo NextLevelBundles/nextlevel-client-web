@@ -14,6 +14,7 @@ import {
   ChevronRightIcon,
 } from "lucide-react";
 import { useAuth } from "@/shared/providers/auth-provider";
+import { useCustomer } from "@/hooks/queries/useCustomer";
 import {
   useCollectionPaged,
   useUpdateCollectionGameStatus,
@@ -66,9 +67,11 @@ function formatPlaytime(minutes: number): string {
 function GameCard({
   game,
   username,
+  isOwnProfile,
 }: {
   game: CustomerGame;
   username: string;
+  isOwnProfile: boolean;
 }) {
   const updateStatus = useUpdateCollectionGameStatus();
 
@@ -168,44 +171,46 @@ function GameCard({
           </span>
         </div>
 
-        <div className="flex flex-col gap-1.5 mt-auto h-[68px]">
-          <ToggleGroup
-            type="single"
-            value={playStatus}
-            onValueChange={handlePlayStatusChange}
-            className="w-full"
-          >
-            {VISIBLE_PLAY_STATUSES.map((status) => (
-              <ToggleGroupItem
-                key={status}
-                value={status}
-                variant="outline"
-                size="sm"
-                className="text-xs flex-1"
-              >
-                {PLAY_STATUS_LABELS[status]}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
-
-          {showCompletion && (
-            <Select
-              value={completionStatus ?? ""}
-              onValueChange={handleCompletionChange}
+        {isOwnProfile && (
+          <div className="flex flex-col gap-1.5 mt-auto h-[68px]">
+            <ToggleGroup
+              type="single"
+              value={playStatus}
+              onValueChange={handlePlayStatusChange}
+              className="w-full"
             >
-              <SelectTrigger className="w-[140px] h-8 text-xs">
-                <SelectValue placeholder="Completion..." />
-              </SelectTrigger>
-              <SelectContent>
-                {getCompletionOptions(playStatus).map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        </div>
+              {VISIBLE_PLAY_STATUSES.map((status) => (
+                <ToggleGroupItem
+                  key={status}
+                  value={status}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs flex-1"
+                >
+                  {PLAY_STATUS_LABELS[status]}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+
+            {showCompletion && (
+              <Select
+                value={completionStatus ?? ""}
+                onValueChange={handleCompletionChange}
+              >
+                <SelectTrigger className="w-[140px] h-8 text-xs">
+                  <SelectValue placeholder="Completion..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {getCompletionOptions(playStatus).map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -217,6 +222,8 @@ export default function CollectionPage() {
   const username = params.username as string;
   const initialPlayStatus = searchParams.get("playStatus");
   const { isLoading: authLoading } = useAuth();
+  const { data: customer } = useCustomer();
+  const isOwnProfile = customer?.handle === username;
 
   const [playStatusFilter, setPlayStatusFilter] = useState<string>(
     initialPlayStatus ?? ""
@@ -245,6 +252,7 @@ export default function CollectionPage() {
     playStatus: playStatusFilter || undefined,
     page,
     pageSize,
+    handle: isOwnProfile ? undefined : username,
   });
 
   const games = data?.items;
@@ -272,13 +280,19 @@ export default function CollectionPage() {
       {hasNoGames ? (
         <div className="text-center py-12">
           <p className="text-muted-foreground">
-            No games in collection yet.{" "}
-            <Link
-              href={`/community/profiles/${username}/settings/game-imports`}
-              className="text-primary hover:underline"
-            >
-              Import from Steam
-            </Link>
+            {isOwnProfile ? (
+              <>
+                No games in collection yet.{" "}
+                <Link
+                  href={`/community/profiles/${username}/settings/game-imports`}
+                  className="text-primary hover:underline"
+                >
+                  Import from Steam
+                </Link>
+              </>
+            ) : (
+              "This user hasn\u2019t added any games to their collection yet."
+            )}
           </p>
         </div>
       ) : (
@@ -331,6 +345,7 @@ export default function CollectionPage() {
                   key={game.id}
                   game={game}
                   username={username}
+                  isOwnProfile={isOwnProfile}
                 />
               ))}
             </div>

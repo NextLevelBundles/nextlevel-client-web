@@ -14,14 +14,18 @@ export const customerCollectionQueryKey = ["customer-collection"] as const;
 export const collectionPagedQueryKey = ["collection-paged"] as const;
 export const unimportedGamesQueryKey = ["unimported-games"] as const;
 
-export function useCustomerCollection() {
+export function useCustomerCollection(handle?: string) {
   const { user } = useAuth();
   const isAuthenticated = !!user;
 
   return useQuery({
-    queryKey: customerCollectionQueryKey,
+    queryKey: handle
+      ? ["collection-by-handle", handle]
+      : customerCollectionQueryKey,
     queryFn: (): Promise<CustomerGame[]> =>
-      customerProfileApi.getCollection(),
+      handle
+        ? customerProfileApi.getCollectionByHandle(handle)
+        : customerProfileApi.getCollection(),
     enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -34,14 +38,20 @@ export function useCollectionPaged(params?: {
   playStatus?: string;
   page?: number;
   pageSize?: number;
+  handle?: string;
 }) {
   const { user } = useAuth();
   const isAuthenticated = !!user;
+  const handle = params?.handle;
 
   return useQuery({
-    queryKey: [...collectionPagedQueryKey, params],
+    queryKey: handle
+      ? ["collection-paged-by-handle", handle, params]
+      : [...collectionPagedQueryKey, params],
     queryFn: (): Promise<PaginatedResponse<CustomerGame>> =>
-      customerProfileApi.getCollectionPaged(params),
+      handle
+        ? customerProfileApi.getCollectionPagedByHandle(handle, params)
+        : customerProfileApi.getCollectionPaged(params),
     enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

@@ -30,6 +30,7 @@ import {
   DEFAULT_PLATFORM_STYLE,
 } from "@/lib/constants/social-platforms";
 import { useCustomer } from "@/hooks/queries/useCustomer";
+import { useAuth } from "@/shared/providers/auth-provider";
 import { useCustomerProfileByHandle } from "@/hooks/queries/useCustomerProfile";
 import { useCuratorProfile } from "@/hooks/queries/useCuratorProfile";
 
@@ -41,6 +42,7 @@ export default function ProfileLayout({
   const pathname = usePathname();
   const params = useParams();
   const username = params.username as string;
+  const { user, isLoading: authLoading } = useAuth();
   const { data: customer, isLoading } = useCustomer();
   const { data: customerProfile } = useCustomerProfileByHandle(username);
   const { data: curatorProfile } = useCuratorProfile(
@@ -103,6 +105,19 @@ export default function ProfileLayout({
     ? customerProfile.specialties.split(",").map((s) => s.trim()).filter(Boolean)
     : [];
 
+  if (!authLoading && !user) {
+    return (
+      <div className="text-center py-20">
+        <h2 className="text-xl font-semibold mb-2">Sign in required</h2>
+        <p className="text-muted-foreground">
+          You need to be signed in to view profiles.
+        </p>
+      </div>
+    );
+  }
+
+  const displayName = isOwnProfile ? customer?.name : (customerProfile?.name ?? username);
+
   return (
     <div className="grid gap-6">
       {/* Profile Header */}
@@ -122,12 +137,12 @@ export default function ProfileLayout({
                 <AvatarImage src={avatarUrl} alt={customer?.name ?? username} />
               )}
               <AvatarFallback className="bg-primary/10 text-lg font-semibold">
-                {getInitials(customer?.name)}
+                {getInitials(displayName)}
               </AvatarFallback>
             </Avatar>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold">{customer?.name}</h1>
+                <h1 className="text-2xl font-bold">{displayName}</h1>
                 {customerProfile?.isCurator && (
                   <Badge variant="default" className="text-[10px]">
                     Curator
@@ -136,7 +151,7 @@ export default function ProfileLayout({
               </div>
               <p className="text-sm text-muted-foreground">
                 @{username}
-                {customer?.createdAt && (
+                {isOwnProfile && customer?.createdAt && (
                   <span className="ml-2">
                     · Member since {formatMemberSince(customer.createdAt)}
                   </span>

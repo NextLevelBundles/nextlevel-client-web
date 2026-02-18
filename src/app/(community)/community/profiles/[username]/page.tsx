@@ -26,6 +26,7 @@ import { useCustomerLists } from "@/hooks/queries/useCustomerLists";
 import { useCustomerCollection } from "@/hooks/queries/useCustomerCollection";
 import { useProfileStats } from "@/hooks/queries/useProfileStats";
 import { useProfileAchievements } from "@/hooks/queries/useProfileAchievements";
+import { useCustomer } from "@/hooks/queries/useCustomer";
 import type {
   CustomerList,
   CustomerGame,
@@ -634,7 +635,9 @@ function RecentListCard({
 export default function ProfileOverviewPage() {
   const params = useParams();
   const username = params.username as string;
-  const { data: collection, isLoading: collectionLoading } = useCustomerCollection();
+  const { data: customer } = useCustomer();
+  const isOwnProfile = customer?.handle === username;
+  const { data: collection, isLoading: collectionLoading } = useCustomerCollection(username);
   const { data: stats, isLoading: statsLoading } = useProfileStats(username);
   const { data: achievements, isLoading: achievementsLoading } =
     useProfileAchievements(username);
@@ -644,12 +647,14 @@ export default function ProfileOverviewPage() {
     (game) => game.playStatus === "Playing"
   );
 
-  const recentLists = (lists ?? [])
-    .sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-    )
-    .slice(0, 5);
+  const recentLists = isOwnProfile
+    ? (lists ?? [])
+        .sort(
+          (a, b) =>
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        )
+        .slice(0, 5)
+    : [];
 
   return (
     <div className="grid gap-6">
