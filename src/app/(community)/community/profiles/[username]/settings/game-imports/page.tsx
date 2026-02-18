@@ -403,7 +403,7 @@ export default function GameImportsPage() {
                       {setGamesRemoved.isPending && (
                         <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
                       )}
-                      Remove
+                      Remove Selected
                     </Button>
                     <Button
                       size="sm"
