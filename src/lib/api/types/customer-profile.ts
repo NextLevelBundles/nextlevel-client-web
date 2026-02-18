@@ -24,6 +24,7 @@ export interface CustomerListItem {
   gameId: number | null;
   title: string | null;
   coverImageId: string | null;
+  slug: string | null;
   releaseYear: number | null;
   order: number;
 }
@@ -177,6 +178,7 @@ export interface GameActivityItem {
   title: string | null;
   gameId: number | null;
   coverImageId: string | null;
+  slug: string | null;
 }
 
 export interface ProfileAchievements {

@@ -570,6 +570,24 @@ export default function GameDetailPage() {
                   {isInWishList ? "In Wishlist" : "Wishlist"}
                 </Button>
               )}
+              {isAuthenticated && !isOwnProfile && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-shrink-0 gap-1.5"
+                  onClick={() => {
+                    if (!igdbId) return;
+                    if (isInWishList) return;
+                    addToWishlist.mutate({ gameId: igdbId });
+                  }}
+                  disabled={wishlistPending || isInWishList}
+                >
+                  <Heart
+                    className={`h-4 w-4 ${isInWishList ? "fill-red-500 text-red-500" : ""}`}
+                  />
+                  {isInWishList ? "In My Wishlist" : "Add to My Wishlist"}
+                </Button>
+              )}
             </div>
 
             {/* Rating circles */}

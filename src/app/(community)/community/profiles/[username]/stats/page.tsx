@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Card } from "@/shared/components/ui/card";
 import {
@@ -114,39 +115,55 @@ function GenreBreakdown({
   );
 }
 
-function GameActivitySection({ list }: { list: GameActivityList }) {
+function GameActivitySection({ list, username }: { list: GameActivityList; username: string }) {
   return (
     <div className="space-y-3">
       <h3 className="text-base font-semibold">{list.listName}</h3>
       <div className="flex gap-3 overflow-x-auto pb-2 [scrollbar-width:thin]">
-        {list.items.map((item, idx) => (
-          <div
-            key={`${item.gameId ?? idx}`}
-            className="flex-shrink-0 w-[120px]"
-          >
-            <div className="aspect-[3/4] rounded-md overflow-hidden bg-muted/50 mb-1.5">
-              {item.coverImageId ? (
-                <Image
-                  src={getIgdbCoverUrl(item.coverImageId)}
-                  alt={item.title ?? "Game"}
-                  width={120}
-                  height={160}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <ImageIcon className="h-6 w-6 text-muted-foreground/40" />
-                </div>
-              )}
-            </div>
-            <p
-              className="text-xs font-medium truncate"
-              title={item.title ?? undefined}
+        {list.items.map((item, idx) => {
+          const content = (
+            <>
+              <div className="aspect-[3/4] rounded-md overflow-hidden bg-muted/50 mb-1.5">
+                {item.coverImageId ? (
+                  <Image
+                    src={getIgdbCoverUrl(item.coverImageId)}
+                    alt={item.title ?? "Game"}
+                    width={120}
+                    height={160}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <ImageIcon className="h-6 w-6 text-muted-foreground/40" />
+                  </div>
+                )}
+              </div>
+              <p
+                className="text-xs font-medium truncate"
+                title={item.title ?? undefined}
+              >
+                {item.title ?? "Unknown"}
+              </p>
+            </>
+          );
+
+          return item.slug ? (
+            <Link
+              key={`${item.gameId ?? idx}`}
+              href={`/community/profiles/${username}/games/${item.slug}`}
+              className="flex-shrink-0 w-[120px] hover:opacity-90 transition-opacity"
             >
-              {item.title ?? "Unknown"}
-            </p>
-          </div>
-        ))}
+              {content}
+            </Link>
+          ) : (
+            <div
+              key={`${item.gameId ?? idx}`}
+              className="flex-shrink-0 w-[120px]"
+            >
+              {content}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -231,7 +248,7 @@ export default function StatsPage() {
         <div className="space-y-6">
           <h2 className="text-lg font-semibold">Game Activity</h2>
           {stats.gameActivity.map((list) => (
-            <GameActivitySection key={list.systemName} list={list} />
+            <GameActivitySection key={list.systemName} list={list} username={username} />
           ))}
         </div>
       )}

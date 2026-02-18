@@ -275,31 +275,45 @@ export default function ListDetailPage() {
         <>
           {list.items.length > 0 ? (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
-              {list.items.map((item) => (
-                <div key={item.id} className="group relative">
-                  <div className="aspect-[3/4] rounded-lg overflow-hidden bg-muted">
-                    {item.coverImageId ? (
-                      <Image
-                        src={getIgdbCoverUrl(item.coverImageId)!}
-                        alt={item.title || ""}
-                        width={264}
-                        height={352}
-                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="h-full w-full flex flex-col items-center justify-center gap-1">
-                        <ImageIcon className="h-6 w-6 text-muted-foreground" />
-                        <p className="text-xs text-muted-foreground text-center px-2 truncate w-full">
-                          {item.title}
-                        </p>
-                      </div>
-                    )}
+              {list.items.map((item) => {
+                const content = (
+                  <div className="group relative">
+                    <div className="aspect-[3/4] rounded-lg overflow-hidden bg-muted">
+                      {item.coverImageId ? (
+                        <Image
+                          src={getIgdbCoverUrl(item.coverImageId)!}
+                          alt={item.title || ""}
+                          width={264}
+                          height={352}
+                          className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="h-full w-full flex flex-col items-center justify-center gap-1">
+                          <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                          <p className="text-xs text-muted-foreground text-center px-2 truncate w-full">
+                            {item.title}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs mt-1 truncate text-muted-foreground">
+                      {item.title}
+                    </p>
                   </div>
-                  <p className="text-xs mt-1 truncate text-muted-foreground">
-                    {item.title}
-                  </p>
-                </div>
-              ))}
+                );
+
+                return item.slug ? (
+                  <Link
+                    key={item.id}
+                    href={`/community/profiles/${username}/games/${item.slug}`}
+                    className="hover:opacity-90 transition-opacity"
+                  >
+                    {content}
+                  </Link>
+                ) : (
+                  <div key={item.id}>{content}</div>
+                );
+              })}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
