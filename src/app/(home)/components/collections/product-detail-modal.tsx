@@ -45,6 +45,11 @@ import {
   TooltipTrigger,
 } from "@/shared/components/ui/tooltip";
 
+function decodeHtmlEntities(text: string): string {
+  const doc = new DOMParser().parseFromString(text, "text/html");
+  return doc.body.textContent ?? text;
+}
+
 interface ProductDetailModalProps {
   bundle: Bundle;
   product: Product | null;
@@ -505,7 +510,7 @@ export function ProductDetailModal({
                 <BookDetails product={product} formats={getProductFormats()} />
               ) : (
                 <div className="text-muted-foreground">
-                  <p>{product.description}</p>
+                  <p>{decodeHtmlEntities(product.description)}</p>
                 </div>
               )}
 
@@ -837,7 +842,7 @@ function GameDetails({
           About This Steam Game
         </h3>
         <p className="text-muted-foreground text-sm lg:text-base leading-relaxed">
-          {product.description}
+          {decodeHtmlEntities(product.description)}
         </p>
       </div>
 
@@ -1033,7 +1038,7 @@ function BookDetails({
           About This Book
         </h3>
         <p className="text-muted-foreground text-sm lg:text-base leading-relaxed">
-          {product.description}
+          {decodeHtmlEntities(product.description)}
         </p>
       </div>
 

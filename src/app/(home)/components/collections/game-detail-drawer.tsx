@@ -18,6 +18,11 @@ import { cn } from "@/shared/utils/tailwind";
 import Image from "next/image";
 import { Bundle, Product } from "@/app/(shared)/types/bundle";
 
+function decodeHtmlEntities(text: string): string {
+  const doc = new DOMParser().parseFromString(text, "text/html");
+  return doc.body.textContent ?? text;
+}
+
 interface GameDetailDrawerProps {
   bundle: Bundle;
   product: Product | null;
@@ -185,7 +190,7 @@ export function GameDetailDrawer({
               className="text-muted-foreground text-sm leading-relaxed animate-fade-up"
               style={{ animationDelay: "100ms" }}
             >
-              {product.description}
+              {decodeHtmlEntities(product.description)}
             </p>
 
             <div

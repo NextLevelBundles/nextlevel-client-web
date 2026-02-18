@@ -22,6 +22,11 @@ import {
 import Image from "next/image";
 import { Bundle, Product } from "@/app/(shared)/types/bundle";
 
+function decodeHtmlEntities(text: string): string {
+  const doc = new DOMParser().parseFromString(text, "text/html");
+  return doc.body.textContent ?? text;
+}
+
 interface BookDetailDrawerProps {
   bundle: Bundle;
   product: Product | null;
@@ -188,7 +193,7 @@ export function BookDetailDrawer({
               <div>
                 <h3 className="text-lg font-semibold mb-2">About this book</h3>
                 <p className="text-muted-foreground whitespace-pre-wrap">
-                  {product.description}
+                  {decodeHtmlEntities(product.description)}
                 </p>
               </div>
 
