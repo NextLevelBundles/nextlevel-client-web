@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/shared/components/ui/button";
-import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Input } from "@/shared/components/ui/input";
 import Link from "next/link";
@@ -17,7 +16,6 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   RotateCcwIcon,
-  XIcon,
 } from "lucide-react";
 import { useCustomer } from "@/hooks/queries/useCustomer";
 import { useAuth } from "@/shared/providers/auth-provider";
@@ -485,33 +483,8 @@ export default function GameImportsPage() {
                   }`}
                   onClick={() => toggleGame(game.appId)}
                 >
-                  {/* Quick remove/recover button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (activeTab === "ready") {
-                        setGamesRemoved.mutate({ appIds: [game.appId], isRemoved: true }, {
-                          onSuccess: () => toast.success(`Removed ${game.name ?? "game"}`),
-                        });
-                      } else {
-                        setGamesRemoved.mutate({ appIds: [game.appId], isRemoved: false }, {
-                          onSuccess: () => toast.success(`Recovered ${game.name ?? "game"}`),
-                        });
-                      }
-                    }}
-                    className="absolute -top-px -right-px z-10 h-6 w-6 rounded-bl-md rounded-tr-lg flex items-center justify-center bg-muted/80 text-muted-foreground hover:bg-destructive hover:text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <XIcon className="h-3.5 w-3.5" />
-                  </button>
-
                   {/* Checkbox + Cover image */}
-                  <div className="flex items-start gap-2 p-2 flex-shrink-0">
-                    <div className="pt-1" onClick={(e) => e.stopPropagation()}>
-                      <Checkbox
-                        checked={isSelected}
-                        onCheckedChange={() => toggleGame(game.appId)}
-                      />
-                    </div>
+                  <div className="p-2 flex-shrink-0">
                     <div className="relative w-[50px] flex-shrink-0 aspect-[2/3] rounded overflow-hidden">
                       <Image
                         src={`https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${game.appId}/library_600x900_2x.jpg`}

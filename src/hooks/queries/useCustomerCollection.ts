@@ -11,6 +11,7 @@ import {
 import { useAuth } from "@/shared/providers/auth-provider";
 
 export const customerCollectionQueryKey = ["customer-collection"] as const;
+export const collectionPagedQueryKey = ["collection-paged"] as const;
 export const unimportedGamesQueryKey = ["unimported-games"] as const;
 
 export function useCustomerCollection() {
@@ -25,6 +26,26 @@ export function useCustomerCollection() {
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: true,
+  });
+}
+
+export function useCollectionPaged(params?: {
+  search?: string;
+  playStatus?: string;
+  page?: number;
+  pageSize?: number;
+}) {
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
+
+  return useQuery({
+    queryKey: [...collectionPagedQueryKey, params],
+    queryFn: (): Promise<PaginatedResponse<CustomerGame>> =>
+      customerProfileApi.getCollectionPaged(params),
+    enabled: isAuthenticated,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev,
   });
 }
 
@@ -69,6 +90,7 @@ export function useRemoveFromCollection() {
     mutationFn: (id: string) => customerProfileApi.removeFromCollection(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: customerCollectionQueryKey });
+      queryClient.invalidateQueries({ queryKey: collectionPagedQueryKey });
     },
   });
 }
@@ -83,6 +105,7 @@ export function useUpdateCollectionGameStatus() {
     }) => customerProfileApi.updateCollectionGameStatus(params.id, params.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: customerCollectionQueryKey });
+      queryClient.invalidateQueries({ queryKey: collectionPagedQueryKey });
     },
   });
 }

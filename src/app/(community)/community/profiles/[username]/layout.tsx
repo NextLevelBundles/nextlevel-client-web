@@ -159,7 +159,7 @@ export default function ProfileLayout({
                     <span className="text-muted-foreground">·</span>
                     <div className="flex flex-wrap gap-1">
                       {(genreTags.length > 0 ? genreTags : specialtyTags).map((tag) => (
-                        <Badge key={tag} variant="secondary" className="text-[10px]">
+                        <Badge key={tag} variant="outline" className="text-[10px]">
                           {tag}
                         </Badge>
                       ))}

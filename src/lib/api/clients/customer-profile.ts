@@ -130,6 +130,23 @@ export class CustomerProfileApi {
     );
   }
 
+  async getCollectionPaged(params?: {
+    search?: string;
+    playStatus?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<PaginatedResponse<CustomerGame>> {
+    const searchParams = new URLSearchParams();
+    if (params?.search) searchParams.set("search", params.search);
+    if (params?.playStatus) searchParams.set("playStatus", params.playStatus);
+    if (params?.page) searchParams.set("page", params.page.toString());
+    if (params?.pageSize) searchParams.set("pageSize", params.pageSize.toString());
+    const qs = searchParams.toString();
+    return await this.client.get<PaginatedResponse<CustomerGame>>(
+      `/community/collection/paged${qs ? `?${qs}` : ""}`
+    );
+  }
+
   async getUnimportedGames(params?: {
     search?: string;
     playtimeFilter?: string;

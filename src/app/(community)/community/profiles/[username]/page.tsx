@@ -77,6 +77,22 @@ function Section({
   );
 }
 
+const COMPLETION_STATUS_COLORS: Record<string, string> = {
+  Unfinished: "bg-yellow-600",
+  Beaten: "bg-indigo-600",
+  Completed: "bg-purple-600",
+  Continuous: "bg-cyan-600",
+  Dropped: "bg-red-600",
+};
+
+const COMPLETION_STATUS_SHORT: Record<string, string> = {
+  Unfinished: "Unfinished",
+  Beaten: "Beaten",
+  Completed: "Completed",
+  Continuous: "Continuous",
+  Dropped: "Dropped",
+};
+
 // --- Currently Playing Section ---
 
 function CurrentlyPlayingSection({
@@ -100,14 +116,31 @@ function CurrentlyPlayingSection({
     );
   }
 
+  const maxVisible = 6;
+  const hasMore = games.length > maxVisible;
+  const visibleGames = games.slice(0, maxVisible);
+
   return (
-    <Section title="Currently Playing">
+    <Section
+      title="Currently Playing"
+      action={
+        games.length > 0 ? (
+          <Link
+            href={`/community/profiles/${username}/collection?playStatus=Playing`}
+            className="text-xs text-primary hover:underline"
+          >
+            View all ({games.length})
+          </Link>
+        ) : null
+      }
+    >
       {games.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {games.map((game) => {
+          {visibleGames.map((game) => {
+            const completionStatus = game.completionStatus;
             const content = (
               <div>
-                <div className="aspect-[3/4] rounded-md overflow-hidden bg-muted/50 mb-1.5">
+                <div className="relative aspect-[3/4] rounded-md overflow-hidden bg-muted/50 mb-1.5">
                   {game.coverImageId ? (
                     <Image
                       src={getIgdbCoverUrl(game.coverImageId)}
@@ -120,6 +153,13 @@ function CurrentlyPlayingSection({
                     <div className="w-full h-full flex items-center justify-center">
                       <ImageIcon className="h-6 w-6 text-muted-foreground/40" />
                     </div>
+                  )}
+                  {completionStatus && COMPLETION_STATUS_COLORS[completionStatus] && (
+                    <span
+                      className={`absolute top-1 right-1 px-1.5 py-0.5 rounded text-[9px] font-semibold text-white ${COMPLETION_STATUS_COLORS[completionStatus]}`}
+                    >
+                      {COMPLETION_STATUS_SHORT[completionStatus]}
+                    </span>
                   )}
                 </div>
                 <p className="text-xs font-medium truncate" title={game.name}>
@@ -613,59 +653,62 @@ export default function ProfileOverviewPage() {
 
   return (
     <div className="grid gap-6">
-      {/* Quadrant grid: 2x2 on desktop, stacked on mobile */}
+      {/* Two-column layout: left = Game Collection + Stats, right = Currently Playing */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="flex flex-col gap-6">
+          <GameCollectionSection
+            totalGames={stats?.totalGames ?? 0}
+            genres={stats?.genreBreakdown ?? []}
+            isLoading={statsLoading}
+          />
+          <StatsSection stats={stats} isLoading={statsLoading} />
+        </div>
         <CurrentlyPlayingSection
           games={playingGames}
           isLoading={collectionLoading}
           username={username}
         />
-        <GameCollectionSection
-          totalGames={stats?.totalGames ?? 0}
-          genres={stats?.genreBreakdown ?? []}
-          isLoading={statsLoading}
-        />
-        <StatsSection stats={stats} isLoading={statsLoading} />
       </div>
 
-      {/* Achievements Overview — full width */}
-      <AchievementsOverviewSection
-        games={achievements?.games ?? []}
-        totalEarned={achievements?.totalEarnedAchievements ?? 0}
-        isLoading={achievementsLoading}
-        username={username}
-      />
+      {/* Achievements + Recent Lists side by side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <AchievementsOverviewSection
+          games={achievements?.games ?? []}
+          totalEarned={achievements?.totalEarnedAchievements ?? 0}
+          isLoading={achievementsLoading}
+          username={username}
+        />
 
-      {/* Recent Lists — full width */}
-      <Section
-        title="Recent Lists"
-        action={
-          (lists?.length ?? 0) > 5 ? (
-            <Link href={`/community/profiles/${username}/lists`}>
-              <Button variant="ghost" size="sm" className="h-auto py-0">
-                More
-                <ArrowRightIcon className="ml-1 h-3.5 w-3.5" />
-              </Button>
-            </Link>
-          ) : undefined
-        }
-      >
-        {listsLoading ? (
-          <div className="grid gap-2">
-            {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-[4.5rem] rounded-md" />
-            ))}
-          </div>
-        ) : recentLists.length > 0 ? (
-          <div className="grid gap-2">
-            {recentLists.map((list) => (
-              <RecentListCard key={list.id} list={list} username={username} />
-            ))}
-          </div>
-        ) : (
-          <p className="text-muted-foreground text-sm">No lists yet.</p>
-        )}
-      </Section>
+        <Section
+          title="Recent Lists"
+          action={
+            (lists?.length ?? 0) > 0 ? (
+              <Link
+                href={`/community/profiles/${username}/lists`}
+                className="text-xs text-primary hover:underline"
+              >
+                View all ({lists!.length})
+              </Link>
+            ) : undefined
+          }
+        >
+          {listsLoading ? (
+            <div className="grid gap-2">
+              {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} className="h-[4.5rem] rounded-md" />
+              ))}
+            </div>
+          ) : recentLists.length > 0 ? (
+            <div className="grid gap-2">
+              {recentLists.map((list) => (
+                <RecentListCard key={list.id} list={list} username={username} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-sm">No lists yet.</p>
+          )}
+        </Section>
+      </div>
     </div>
   );
 }

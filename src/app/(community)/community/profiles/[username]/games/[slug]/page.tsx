@@ -596,7 +596,7 @@ export default function GameDetailPage() {
         {/* Platform badges + Genre tags */}
         <div className="flex flex-wrap gap-2">
           {game.platforms.map((p, i) => (
-            <Badge key={i} variant="secondary" className="text-xs">
+            <Badge key={i} variant="outline" className="text-xs">
               {p.abbreviation || p.name}
             </Badge>
           ))}
