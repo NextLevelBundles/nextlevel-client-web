@@ -216,7 +216,7 @@ export default function ListDetailPage() {
                     key={game.igdbId}
                     onClick={() => !alreadyAdded && handleAddGame(game)}
                     disabled={alreadyAdded || addItem.isPending}
-                    className="flex items-center gap-3 w-full p-3 hover:bg-muted/50 transition-colors text-left disabled:opacity-50"
+                    className="flex items-center gap-3 w-full p-3 hover:bg-muted/50 transition-colors text-left disabled:opacity-50 cursor-pointer disabled:cursor-default"
                   >
                     <div className="h-10 w-8 flex-shrink-0 rounded overflow-hidden bg-muted">
                       {game.coverImageId ? (

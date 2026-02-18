@@ -369,7 +369,7 @@ export default function GameImportsPage() {
                     <button
                       key={f.value}
                       onClick={() => setPlaytimeFilter(f.value)}
-                      className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+                      className={`px-3 py-1 text-xs rounded-full border transition-colors cursor-pointer ${
                         playtimeFilter === f.value
                           ? "bg-primary text-primary-foreground border-primary"
                           : "bg-transparent text-muted-foreground border-border hover:text-foreground"

@@ -40,7 +40,7 @@ function GameAchievementRow({ game }: { game: GameAchievementProgress }) {
       <button
         type="button"
         onClick={() => setExpanded((prev) => !prev)}
-        className="flex items-center gap-4 py-3 w-full text-left hover:bg-muted/30 transition-colors px-1 rounded-sm"
+        className="flex items-center gap-4 py-3 w-full text-left hover:bg-muted/30 transition-colors px-1 rounded-sm cursor-pointer"
       >
         {/* Cover Image */}
         <div className="w-14 h-14 rounded-md overflow-hidden bg-muted/50 flex-shrink-0">
@@ -231,7 +231,7 @@ export default function AchievementsPage() {
               <button
                 key={f.value}
                 onClick={() => setFilter(f.value)}
-                className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+                className={`px-3 py-1 text-xs rounded-full border transition-colors cursor-pointer ${
                   filter === f.value
                     ? "bg-primary text-primary-foreground border-primary"
                     : "bg-transparent text-muted-foreground border-border hover:text-foreground"

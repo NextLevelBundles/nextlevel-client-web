@@ -96,7 +96,7 @@ function GenreBreakdown({
       {genres.length > 5 && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
         >
           {expanded ? (
             <>
