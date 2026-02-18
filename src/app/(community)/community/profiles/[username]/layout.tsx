@@ -229,7 +229,7 @@ export default function ProfileLayout({
               <Link key={tab.value} href={tab.href} className="flex">
                 <TabsTrigger
                   value={tab.value}
-                  className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                  className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
                     <tab.icon className="h-4 w-4" />
@@ -244,7 +244,7 @@ export default function ProfileLayout({
                   <Link href={`${basePath}/settings/game-imports`} className="flex">
                     <TabsTrigger
                       value="game-imports"
-                      className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                      className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none cursor-pointer"
                     >
                       <div className="flex items-center gap-2">
                         <Gamepad2 className="h-4 w-4" />
@@ -256,7 +256,7 @@ export default function ProfileLayout({
                 <Link href={`${basePath}/settings`} className="flex">
                   <TabsTrigger
                     value="settings"
-                    className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                    className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none cursor-pointer"
                   >
                     <SettingsIcon className="h-4 w-4" />
                   </TabsTrigger>
