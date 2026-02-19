@@ -218,30 +218,28 @@ function StatsSection({
     );
   }
 
-  if (!stats || stats.totalGames === 0) return null;
-
   const items = [
     {
       icon: GamepadIcon,
       label: "Total Games",
-      value: stats.totalGames.toLocaleString(),
+      value: stats ? stats.totalGames.toLocaleString() : "0",
     },
     {
       icon: ClockIcon,
       label: "Total Playtime",
-      value: formatPlaytime(stats.totalPlaytimeMinutes),
+      value: stats ? formatPlaytime(stats.totalPlaytimeMinutes) : "0m",
     },
     {
       icon: TagIcon,
       label: "Top Genre",
-      value: stats.topGenre ?? "N/A",
+      value: stats?.topGenre ?? "N/A",
     },
     {
       icon: TrophyIcon,
       label: "Most Played",
-      value: stats.mostPlayedGame ?? "N/A",
+      value: stats?.mostPlayedGame ?? "N/A",
       sub:
-        stats.mostPlayedGameMinutes != null
+        stats?.mostPlayedGameMinutes != null
           ? formatPlaytime(stats.mostPlayedGameMinutes)
           : undefined,
     },
@@ -364,8 +362,6 @@ function TasteProfileSection({
     );
   }
 
-  if (totalGames === 0) return null;
-
   const hasGenres = displayGenres.length > 0;
   const chartTotal = displayGenres.reduce((sum, g) => sum + g.count, 0);
 
@@ -439,7 +435,7 @@ function TasteProfileSection({
                                   y={viewBox.cy}
                                   className="fill-foreground text-2xl font-bold"
                                 >
-                                  {chartTotal.toLocaleString()}
+                                  {totalGames.toLocaleString()}
                                 </tspan>
                                 <tspan
                                   x={viewBox.cx}
@@ -489,21 +485,9 @@ function TasteProfileSection({
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-4">
-              <div className="flex items-center justify-center h-20 w-20 rounded-full bg-muted flex-shrink-0">
-                <span className="text-xl font-bold">
-                  {totalGames.toLocaleString()}
-                </span>
-              </div>
-              <div>
-                <p className="text-sm font-medium">
-                  {totalGames.toLocaleString()} games
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Genre breakdown will appear once games are matched.
-                </p>
-              </div>
-            </div>
+            <p className="text-sm text-muted-foreground">
+              No genre data available yet.
+            </p>
           )}
         </div>
 
@@ -637,7 +621,15 @@ function AchievementsOverviewSection({
     );
   }
 
-  if (games.length === 0) return null;
+  if (games.length === 0) {
+    return (
+      <Section title="Achievements">
+        <p className="text-sm text-muted-foreground">
+          No achievements yet.
+        </p>
+      </Section>
+    );
+  }
 
   const perfectGames = games.filter((g) => g.completionPercentage === 100).length;
   const avgCompletion =
