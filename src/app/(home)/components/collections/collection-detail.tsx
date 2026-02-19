@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from "react";
 import { TooltipProvider } from "@/shared/components/ui/tooltip";
-import { BundleHero } from "./collection-hero";
+import { CollectionHeroSwitcher } from "./collection-hero-switcher";
 import { BundleProgress } from "./collection-progress";
 import { ProductGrid } from "./product-grid";
 import { CharityHighlight } from "./charity-highlight";
@@ -13,7 +13,6 @@ import { CharityTierSection } from "./charity-tier-section";
 import { UpsellTierSection } from "./upsell-tier-section";
 import { MobileStickyCTA } from "./mobile-sticky-cta";
 import { MobilePurchaseSheet } from "./mobile-purchase-sheet";
-import { BundleCurators } from "./bundle-curators";
 import {
   Bundle,
   BundleType,
@@ -419,15 +418,7 @@ export function BundleDetail({ bundle, isPreview = false }: { bundle: Bundle; is
             </div>
           </Card>
         )}
-        <BundleHero bundle={bundle} />
-
-        {bundle.curators && bundle.curators.length > 0 && (
-          <BundleCurators
-            curators={bundle.curators}
-            curatorStatement={bundle.curatorStatement}
-            curatorVideoLink={bundle.curatorVideoLink}
-          />
-        )}
+        <CollectionHeroSwitcher bundle={bundle} />
 
         {renderStatusBanner()}
         {renderLowStockBanner()}

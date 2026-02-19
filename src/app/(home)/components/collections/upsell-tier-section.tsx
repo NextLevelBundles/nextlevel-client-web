@@ -401,6 +401,8 @@ export function UpsellTierSection({
           isOpen={!!selectedProduct}
           onClose={() => setSelectedProduct(null)}
           onNavigateToProduct={(product) => setSelectedProduct(product)}
+          allTiers={bundle.tiers}
+          baseTierDisplayOrder="desc"
         />
       )}
     </Card>

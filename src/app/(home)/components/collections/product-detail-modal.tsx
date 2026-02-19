@@ -2,7 +2,11 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Button } from "@/shared/components/ui/button";
-import { Dialog, DialogContent, DialogTitle } from "@/shared/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/shared/components/ui/dialog";
 import { Badge } from "@/shared/components/ui/badge";
 import { ScrollArea, ScrollBar } from "@/shared/components/ui/scroll-area";
 import { cn } from "@/shared/utils/tailwind";
@@ -101,7 +105,7 @@ export function ProductDetailModal({
       .sort((a, b) => a.price - b.price); // Always low to high for charity
     const upsellTiers = allTiers
       .filter((t) => t.type === TierType.Upsell)
-      .sort((a, b) => a.price - b.price); // Always low to high for upsell
+      .sort((a, b) => b.price - a.price); // High to low for upsell (matches bundle view)
 
     const orderedTiers = [...baseTiers, ...charityTiers, ...upsellTiers];
 
@@ -254,7 +258,9 @@ export function ProductDetailModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[95vw] lg:max-w-[90vw] w-full lg:w-[1400px] max-h-[95vh] lg:max-h-[900px] h-[90vh] lg:h-[85vh] p-0 overflow-hidden flex flex-col gap-0">
-        <DialogTitle className="sr-only">{product?.title ?? "Product Details"}</DialogTitle>
+        <DialogTitle className="sr-only">
+          {product?.title ?? "Product Details"}
+        </DialogTitle>
         {/* Header with status indicator - always present to prevent layout shift */}
         <div
           className={cn(
@@ -847,7 +853,7 @@ function GameDetails({
         </p>
       </div>
 
-      {/* Developers & Partners */}
+      {/* Developers & Publishers */}
       {(metadata?.developers?.length || metadata?.publishers?.length) && (
         <div className="grid grid-cols-2 gap-3 lg:gap-4">
           {metadata.developers?.length > 0 && (
@@ -863,7 +869,7 @@ function GameDetails({
           {metadata.publishers?.length > 0 && (
             <div>
               <h4 className="text-xs lg:text-sm font-medium mb-0.5 lg:mb-1">
-                Partner
+                Publisher
               </h4>
               <p className="text-xs lg:text-sm text-muted-foreground">
                 {metadata.publishers.map((p) => p.name).join(", ")}
@@ -906,19 +912,40 @@ function GameDetails({
         </div>
       )}
 
-      {/* System Requirements - Always visible, PC minimum only */}
-      {metadata?.pcRequirements?.minimum && (
+      {/* System Requirements */}
+      {(metadata?.pcRequirements?.minimum ||
+        metadata?.pcRequirements?.recommended) && (
         <div>
           <h4 className="text-xs lg:text-sm font-medium mb-1.5 lg:mb-2">
             System Requirements
           </h4>
-          <div className="bg-muted/30 p-3 lg:p-4 rounded-lg">
-            <div
-              className="text-xs lg:text-sm text-muted-foreground [&>strong]:font-medium [&>br]:leading-relaxed"
-              dangerouslySetInnerHTML={{
-                __html: metadata.pcRequirements.minimum,
-              }}
-            />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+            {metadata.pcRequirements.minimum && (
+              <div className="bg-muted/30 p-3 lg:p-4 rounded-lg">
+                <div
+                  className="text-xs lg:text-sm text-muted-foreground [&_strong]:font-semibold [&_strong]:text-foreground"
+                  dangerouslySetInnerHTML={{
+                    __html: metadata.pcRequirements.minimum.replace(
+                      /<br\s*\/?>/gi,
+                      '<div style="height:0.25rem"></div>',
+                    ),
+                  }}
+                />
+              </div>
+            )}
+            {metadata.pcRequirements.recommended && (
+              <div className="bg-muted/30 p-3 lg:p-4 rounded-lg">
+                <div
+                  className="text-xs lg:text-sm text-muted-foreground [&_strong]:font-semibold [&_strong]:text-foreground"
+                  dangerouslySetInnerHTML={{
+                    __html: metadata.pcRequirements.recommended.replace(
+                      /<br\s*\/?>/gi,
+                      '<div style="height:0.25rem"></div>',
+                    ),
+                  }}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}
