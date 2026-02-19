@@ -148,6 +148,7 @@ export interface SetGamesRemovedRequest {
 
 export interface ProfileStats {
   totalGames: number;
+  filteredTotalGames: number;
   totalPlaytimeMinutes: number;
   topGenre: string | null;
   mostPlayedGame: string | null;

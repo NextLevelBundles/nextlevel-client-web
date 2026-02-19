@@ -280,6 +280,7 @@ const TASTE_FILTER_OPTIONS = [
 
 function TasteProfileSection({
   totalGames,
+  filteredTotalGames,
   genres,
   completionBreakdown,
   isLoading,
@@ -288,6 +289,7 @@ function TasteProfileSection({
   username,
 }: {
   totalGames: number;
+  filteredTotalGames: number;
   genres: { name: string; count: number; percentage: number }[];
   completionBreakdown: CompletionStat[];
   isLoading: boolean;
@@ -435,7 +437,7 @@ function TasteProfileSection({
                                   y={viewBox.cy}
                                   className="fill-foreground text-2xl font-bold"
                                 >
-                                  {totalGames.toLocaleString()}
+                                  {filteredTotalGames.toLocaleString()}
                                 </tspan>
                                 <tspan
                                   x={viewBox.cx}
@@ -811,6 +813,7 @@ export default function ProfileOverviewPage() {
         <div className="flex flex-col gap-6">
           <TasteProfileSection
             totalGames={stats?.totalGames ?? 0}
+            filteredTotalGames={stats?.filteredTotalGames ?? 0}
             genres={stats?.genreBreakdown ?? []}
             completionBreakdown={stats?.completionBreakdown ?? []}
             isLoading={statsLoading}
