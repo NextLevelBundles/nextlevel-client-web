@@ -27,6 +27,7 @@ import {
 } from "@/hooks/queries/useCustomerLists";
 import type {
   GameDetail,
+  GameDetailReleaseDate,
   GameDetailRelatedGame,
   GameDetailWebsite,
 } from "@/lib/api/types/game";
@@ -55,6 +56,48 @@ function getReleaseYear(dateStr: string | null): number | null {
   if (!dateStr) return null;
   const date = new Date(dateStr);
   return isNaN(date.getTime()) ? null : date.getFullYear();
+}
+
+// Maps organization + rating strings from IGDB to local image paths
+const AGE_RATING_IMAGES: Record<string, Record<string, string>> = {
+  ESRB: {
+    EC: "/ratings/esrb-ec.svg",
+    "Early Childhood": "/ratings/esrb-ec.svg",
+    E: "/ratings/esrb-e.svg",
+    Everyone: "/ratings/esrb-e.svg",
+    E10: "/ratings/esrb-e10.svg",
+    "Everyone 10+": "/ratings/esrb-e10.svg",
+    T: "/ratings/esrb-t.svg",
+    Teen: "/ratings/esrb-t.svg",
+    M: "/ratings/esrb-m.svg",
+    "Mature 17+": "/ratings/esrb-m.svg",
+    Mature: "/ratings/esrb-m.svg",
+    AO: "/ratings/esrb-ao.svg",
+    "Adults Only": "/ratings/esrb-ao.svg",
+    "Adults Only 18+": "/ratings/esrb-ao.svg",
+    RP: "/ratings/esrb-rp.svg",
+    "Rating Pending": "/ratings/esrb-rp.svg",
+  },
+  PEGI: {
+    Three: "/ratings/pegi-3.png",
+    "3": "/ratings/pegi-3.png",
+    Seven: "/ratings/pegi-7.png",
+    "7": "/ratings/pegi-7.png",
+    Twelve: "/ratings/pegi-12.png",
+    "12": "/ratings/pegi-12.png",
+    Sixteen: "/ratings/pegi-16.png",
+    "16": "/ratings/pegi-16.png",
+    Eighteen: "/ratings/pegi-18.png",
+    "18": "/ratings/pegi-18.png",
+  },
+};
+
+function getAgeRatingImage(
+  organization: string | null,
+  rating: string | null
+): string | null {
+  if (!organization || !rating) return null;
+  return AGE_RATING_IMAGES[organization]?.[rating] ?? null;
 }
 
 const WEBSITE_TYPE_LABELS: Record<number, string> = {
@@ -329,31 +372,79 @@ function WebsiteLinks({ websites }: { websites: GameDetailWebsite[] }) {
   if (validWebsites.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-1.5">
+    <div className="flex flex-wrap gap-2">
       {validWebsites.map((w, i) => (
         <a
           key={i}
           href={w.url!}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 rounded-md bg-muted/50 px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          title={WEBSITE_TYPE_LABELS[w.type!] ?? "Link"}
+          className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors text-xs font-semibold"
         >
-          <ExternalLink className="h-3 w-3" />
-          {WEBSITE_TYPE_LABELS[w.type!] ?? "Link"}
+          {WEBSITE_TYPE_SHORT[w.type!] ?? <ExternalLink className="h-3.5 w-3.5" />}
         </a>
       ))}
     </div>
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: string | null | undefined }) {
-  if (!value) return null;
+const WEBSITE_TYPE_SHORT: Record<number, string> = {
+  1: "\u{1F310}",  // Official — globe
+  2: "W",    // Wikia
+  3: "W",    // Wikipedia
+  4: "f",    // Facebook
+  5: "\u{1D54F}",  // Twitter — 𝕏
+  6: "\u{25B6}",   // Twitch — play symbol
+  8: "\u{1F4F7}",  // Instagram — camera
+  9: "\u{25B6}",   // YouTube — play
+  10: "\u{F8FF}",  // iPhone
+  11: "\u{F8FF}",  // iPad
+  12: "\u{1F4F1}", // Android
+  13: "S",   // Steam
+  14: "r/",  // Reddit
+  15: "it",  // Itch
+  16: "E",   // Epic
+  17: "G",   // GOG
+  18: "D",   // Discord
+};
+
+function InfoBlock({
+  label,
+  values,
+}: {
+  label: string;
+  values: (string | null | undefined)[];
+}) {
+  const filtered = values.filter(Boolean) as string[];
+  if (filtered.length === 0) return null;
   return (
-    <div className="flex justify-between gap-2 py-1.5 text-sm border-b border-border/30">
-      <span className="text-muted-foreground shrink-0">{label}</span>
-      <span className="text-right truncate">{value}</span>
+    <div className="space-y-0.5">
+      <h4 className="text-sm font-semibold">{label}</h4>
+      {filtered.map((v, i) => (
+        <p key={i} className="text-sm text-muted-foreground">
+          {v}
+        </p>
+      ))}
     </div>
   );
+}
+
+const REGION_FLAGS: Record<string, string> = {
+  "North America": "\u{1F1FA}\u{1F1F8}",
+  "Europe": "\u{1F1EA}\u{1F1FA}",
+  "Japan": "\u{1F1EF}\u{1F1F5}",
+  "Australia": "\u{1F1E6}\u{1F1FA}",
+  "New Zealand": "\u{1F1F3}\u{1F1FF}",
+  "China": "\u{1F1E8}\u{1F1F3}",
+  "South Korea": "\u{1F1F0}\u{1F1F7}",
+  "Brazil": "\u{1F1E7}\u{1F1F7}",
+  "Worldwide": "\u{1F30D}",
+};
+
+function getRegionFlag(region: string | null): string {
+  if (!region) return "\u{1F30D}";
+  return REGION_FLAGS[region] ?? "\u{1F3F3}\u{FE0F}";
 }
 
 function SidebarSection({
@@ -369,6 +460,77 @@ function SidebarSection({
         {title}
       </h3>
       {children}
+    </div>
+  );
+}
+
+// --- Release Dates grouped by platform ---
+
+function ReleaseDatesByPlatform({
+  releaseDates,
+}: {
+  releaseDates: GameDetailReleaseDate[];
+}) {
+  const [expandedPlatform, setExpandedPlatform] = useState<string | null>(null);
+
+  // Group by platform
+  const grouped = releaseDates.reduce<
+    Record<string, { region: string | null; date: number | null }[]>
+  >((acc, rd) => {
+    const platform = rd.platformName ?? "Unknown";
+    if (!acc[platform]) acc[platform] = [];
+    acc[platform].push({ region: rd.region, date: rd.date });
+    return acc;
+  }, {});
+
+  return (
+    <div className="space-y-0">
+      {Object.entries(grouped).map(([platform, dates]) => {
+        const primary = dates[0];
+        const hasMultiple = dates.length > 1;
+        const isExpanded = expandedPlatform === platform;
+
+        return (
+          <div key={platform} className="border-b border-border/30 py-1.5 space-y-0.5">
+            {dates.map((d, i) => {
+              const isFirst = i === 0;
+              const isHidden = !isFirst && !isExpanded;
+              if (isHidden) return null;
+
+              return (
+                <div
+                  key={i}
+                  className="flex items-center justify-between gap-2 text-sm"
+                >
+                  <span className="text-muted-foreground shrink-0">
+                    {isFirst ? platform : ""}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span>
+                      {getRegionFlag(d.region)}{" "}
+                      {d.date ? formatReleaseDate(d.date) : "TBA"}
+                    </span>
+                    {isFirst && hasMultiple ? (
+                      <button
+                        onClick={() =>
+                          setExpandedPlatform(isExpanded ? null : platform)
+                        }
+                        className="text-muted-foreground hover:text-foreground transition-colors w-3.5"
+                      >
+                        <ChevronDown
+                          className={`h-3.5 w-3.5 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                        />
+                      </button>
+                    ) : hasMultiple ? (
+                      <span className="w-3.5" />
+                    ) : null}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -638,21 +800,25 @@ export default function GameDetailPage() {
           </div>
         )}
 
-        {/* Platform badges */}
-        <div className="flex flex-wrap gap-2">
-          {game.platforms.map((p, i) => (
-            <Badge key={i} variant="outline" className="text-xs">
-              {p.abbreviation || p.name}
-            </Badge>
-          ))}
-        </div>
-        {/* Genre tags */}
-        <div className="flex flex-wrap gap-2">
-          {game.genres.map((g, i) => (
-            <Badge key={`g-${i}`} variant="outline" className="text-xs">
-              {g.name}
-            </Badge>
-          ))}
+        {/* Platforms & Genres */}
+        <div className="space-y-2">
+          {game.platforms.length > 0 && (
+            <p className="text-sm">
+              <span className="font-semibold">Platforms:</span>{" "}
+              <span className="text-muted-foreground">
+                {game.platforms.map((p) => p.abbreviation || p.name).join(", ")}
+              </span>
+            </p>
+          )}
+          {game.genres.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {game.genres.map((g, i) => (
+                <Badge key={`g-${i}`} variant="outline" className="text-xs">
+                  {g.name}
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Media */}
@@ -666,39 +832,25 @@ export default function GameDetailPage() {
       <aside className="w-full lg:w-72 flex-shrink-0 space-y-5">
         {/* Game Info */}
         <SidebarSection title="Game Info">
-          <div className="space-y-0">
-            <InfoRow
-              label="Developer"
-              value={game.developers.map((d) => d.name).join(", ") || null}
+          <div className="space-y-3">
+            <InfoBlock
+              label="Developers"
+              values={game.developers.map((d) => d.name)}
             />
-            <InfoRow
-              label="Publisher"
-              value={game.publishers.map((p) => p.name).join(", ") || null}
+            <InfoBlock
+              label="Publishers"
+              values={game.publishers.map((p) => p.name)}
             />
-            <InfoRow
+            <InfoBlock
               label="Game Modes"
-              value={game.gameModes.map((m) => m.name).join(", ") || null}
+              values={game.gameModes.map((m) => m.name)}
             />
-            <InfoRow
-              label="Perspectives"
-              value={
-                game.playerPerspectives.map((p) => p.name).join(", ") || null
-              }
+            <InfoBlock
+              label="Player Perspectives"
+              values={game.playerPerspectives.map((p) => p.name)}
             />
-            <InfoRow
-              label="Genres"
-              value={game.genres.map((g) => g.name).join(", ") || null}
-            />
-            <InfoRow
-              label="Themes"
-              value={game.themes.map((t) => t.name).join(", ") || null}
-            />
-            <InfoRow
-              label="Engine"
-              value={game.gameEngines.map((e) => e.name).join(", ") || null}
-            />
-            <InfoRow label="Franchise" value={game.franchiseName} />
-            <InfoRow label="IGDB ID" value={String(game.igdbId)} />
+            <InfoBlock label="Series" values={[game.franchiseName]} />
+            <InfoBlock label="IGDB ID" values={[String(game.igdbId)]} />
           </div>
         </SidebarSection>
 
@@ -712,38 +864,31 @@ export default function GameDetailPage() {
         {/* Release Dates */}
         {game.releaseDates.length > 0 && (
           <SidebarSection title="Release Dates">
-            <div className="space-y-0">
-              {game.releaseDates.map((rd, i) => (
-                <div
-                  key={i}
-                  className="flex justify-between gap-2 py-1.5 text-sm border-b border-border/30"
-                >
-                  <span className="text-muted-foreground truncate">
-                    {rd.platformName}
-                    {rd.region && (
-                      <span className="text-[10px] ml-1 opacity-60">
-                        ({rd.region})
-                      </span>
-                    )}
-                  </span>
-                  <span className="shrink-0">
-                    {rd.date ? formatReleaseDate(rd.date) : "TBA"}
-                  </span>
-                </div>
-              ))}
-            </div>
+            <ReleaseDatesByPlatform releaseDates={game.releaseDates} />
           </SidebarSection>
         )}
 
         {/* Age Ratings */}
         {game.ageRatings.length > 0 && (
-          <SidebarSection title="Age Ratings">
-            <div className="flex flex-wrap gap-2">
-              {game.ageRatings.map((ar, i) => (
-                <Badge key={i} variant="outline" className="text-xs">
-                  {ar.organization}: {ar.rating}
-                </Badge>
-              ))}
+          <SidebarSection title="Age Rating">
+            <div className="flex flex-wrap gap-3 items-end">
+              {game.ageRatings.map((ar, i) => {
+                const imagePath = getAgeRatingImage(ar.organization, ar.rating);
+                return imagePath ? (
+                  <Image
+                    key={i}
+                    src={imagePath}
+                    alt={`${ar.organization} ${ar.rating}`}
+                    width={48}
+                    height={64}
+                    className="h-16 w-auto object-contain"
+                  />
+                ) : (
+                  <Badge key={i} variant="outline" className="text-xs">
+                    {ar.organization}: {ar.rating}
+                  </Badge>
+                );
+              })}
             </div>
           </SidebarSection>
         )}

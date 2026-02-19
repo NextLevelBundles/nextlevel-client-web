@@ -27,6 +27,7 @@ export interface CustomerListItem {
   slug: string | null;
   releaseYear: number | null;
   order: number;
+  genre: string | null;
 }
 
 export interface GameSearchResult {

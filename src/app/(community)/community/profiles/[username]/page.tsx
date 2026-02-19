@@ -22,14 +22,14 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/shared/components/ui/chart";
-import { useCustomerLists } from "@/hooks/queries/useCustomerLists";
-import { useCustomerCollection } from "@/hooks/queries/useCustomerCollection";
+import { useCustomerLists, useCustomerListDetail } from "@/hooks/queries/useCustomerLists";
+
 import { useProfileStats } from "@/hooks/queries/useProfileStats";
 import { useProfileAchievements } from "@/hooks/queries/useProfileAchievements";
 import { useCustomer } from "@/hooks/queries/useCustomer";
 import type {
   CustomerList,
-  CustomerGame,
+  CustomerListItem,
   ProfileStats,
   GameAchievementProgress,
 } from "@/lib/api/types/customer-profile";
@@ -84,36 +84,22 @@ function Section({
   );
 }
 
-const COMPLETION_STATUS_COLORS: Record<string, string> = {
-  Unfinished: "bg-yellow-600",
-  Beaten: "bg-indigo-600",
-  Completed: "bg-purple-600",
-  Continuous: "bg-cyan-600",
-  Dropped: "bg-red-600",
-};
+// --- Playing Now Section ---
 
-const COMPLETION_STATUS_SHORT: Record<string, string> = {
-  Unfinished: "Unfinished",
-  Beaten: "Beaten",
-  Completed: "Completed",
-  Continuous: "Continuous",
-  Dropped: "Dropped",
-};
-
-// --- Currently Playing Section ---
-
-function CurrentlyPlayingSection({
+function PlayingNowSection({
   games,
   isLoading,
   username,
+  listId,
 }: {
-  games: CustomerGame[];
+  games: CustomerListItem[];
   isLoading: boolean;
   username: string;
+  listId: string | null;
 }) {
   if (isLoading) {
     return (
-      <Section title="Currently Playing">
+      <Section title="Playing Now">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[...Array(4)].map((_, i) => (
             <Skeleton key={i} className="aspect-[3/4] rounded-md" />
@@ -124,16 +110,15 @@ function CurrentlyPlayingSection({
   }
 
   const maxVisible = 6;
-  const hasMore = games.length > maxVisible;
   const visibleGames = games.slice(0, maxVisible);
 
   return (
     <Section
-      title="Currently Playing"
+      title="Playing Now"
       action={
-        games.length > 0 ? (
+        games.length > 0 && listId ? (
           <Link
-            href={`/community/profiles/${username}/collection?playStatus=Playing`}
+            href={`/community/profiles/${username}/lists/${listId}`}
             className="text-xs text-primary hover:underline"
           >
             View all ({games.length})
@@ -144,14 +129,13 @@ function CurrentlyPlayingSection({
       {games.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {visibleGames.map((game) => {
-            const completionStatus = game.completionStatus;
             const content = (
               <div>
                 <div className="relative aspect-[3/4] rounded-md overflow-hidden bg-muted/50 mb-1.5">
                   {game.coverImageId ? (
                     <Image
                       src={getIgdbCoverUrl(game.coverImageId)}
-                      alt={game.name}
+                      alt={game.title ?? "Game"}
                       width={264}
                       height={352}
                       className="w-full h-full object-cover"
@@ -161,16 +145,14 @@ function CurrentlyPlayingSection({
                       <ImageIcon className="h-6 w-6 text-muted-foreground/40" />
                     </div>
                   )}
-                  {completionStatus && COMPLETION_STATUS_COLORS[completionStatus] && (
-                    <span
-                      className={`absolute top-1 right-1 px-1.5 py-0.5 rounded text-[9px] font-semibold text-white ${COMPLETION_STATUS_COLORS[completionStatus]}`}
-                    >
-                      {COMPLETION_STATUS_SHORT[completionStatus]}
+                  {game.genre && (
+                    <span className="absolute top-1 right-1 px-1.5 py-0.5 rounded text-[9px] font-semibold text-white bg-primary/80">
+                      {game.genre}
                     </span>
                   )}
                 </div>
-                <p className="text-xs font-medium truncate" title={game.name}>
-                  {game.name}
+                <p className="text-xs font-medium truncate" title={game.title ?? undefined}>
+                  {game.title}
                 </p>
               </div>
             );
@@ -190,7 +172,7 @@ function CurrentlyPlayingSection({
         </div>
       ) : (
         <p className="text-muted-foreground text-sm">
-          No games marked as currently playing.
+          No games in Playing Now list.
         </p>
       )}
     </Section>
@@ -616,15 +598,16 @@ export default function ProfileOverviewPage() {
   const username = params.username as string;
   const { data: customer } = useCustomer();
   const isOwnProfile = customer?.handle === username;
-  const { data: collection, isLoading: collectionLoading } = useCustomerCollection(username);
   const { data: stats, isLoading: statsLoading } = useProfileStats(username);
   const { data: achievements, isLoading: achievementsLoading } =
     useProfileAchievements(username);
   const { data: lists, isLoading: listsLoading } = useCustomerLists(username);
 
-  const playingGames = (collection ?? []).filter(
-    (game) => game.playStatus === "Playing"
+  const playingNowList = (lists ?? []).find(
+    (l) => l.systemName === "PlayingNow"
   );
+  const { data: playingNowDetail, isLoading: playingNowLoading } =
+    useCustomerListDetail(playingNowList?.id ?? "", username);
 
   const recentLists = (lists ?? [])
     .sort(
@@ -645,10 +628,11 @@ export default function ProfileOverviewPage() {
           />
           <StatsSection stats={stats} isLoading={statsLoading} />
         </div>
-        <CurrentlyPlayingSection
-          games={playingGames}
-          isLoading={collectionLoading}
+        <PlayingNowSection
+          games={playingNowDetail?.items ?? []}
+          isLoading={listsLoading || playingNowLoading}
           username={username}
+          listId={playingNowList?.id ?? null}
         />
       </div>
 
