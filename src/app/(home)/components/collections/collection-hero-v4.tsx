@@ -34,7 +34,7 @@ function extractVideoId(iframeSrc: string): string | null {
 // Extract YouTube thumbnail from embed URL
 function extractVideoThumbnail(iframeSrc: string): string | null {
   const id = extractVideoId(iframeSrc);
-  return id ? `https://img.youtube.com/vi/${id}/maxresdefault.jpg` : null;
+  return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : null;
 }
 
 // Game art cascade card positions (desktop)

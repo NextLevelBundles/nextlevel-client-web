@@ -36,7 +36,7 @@ function extractVideoThumbnail(iframeSrc: string): string | null {
     /youtube\.com\/embed\/([a-zA-Z0-9_-]+)/
   );
   if (ytMatch) {
-    return `https://img.youtube.com/vi/${ytMatch[1]}/maxresdefault.jpg`;
+    return `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
   }
   return null;
 }
