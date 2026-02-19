@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -17,20 +17,28 @@ import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
 } from "@/shared/components/ui/chart";
-import { useCustomerLists } from "@/hooks/queries/useCustomerLists";
-import { useCustomerCollection } from "@/hooks/queries/useCustomerCollection";
+import { useCustomerLists, useCustomerListDetail } from "@/hooks/queries/useCustomerLists";
+
 import { useProfileStats } from "@/hooks/queries/useProfileStats";
 import { useProfileAchievements } from "@/hooks/queries/useProfileAchievements";
 import { useCustomer } from "@/hooks/queries/useCustomer";
 import type {
   CustomerList,
-  CustomerGame,
+  CustomerListItem,
   ProfileStats,
+  CompletionStat,
   GameAchievementProgress,
 } from "@/lib/api/types/customer-profile";
 
@@ -60,6 +68,16 @@ const GENRE_COLORS = [
   "hsl(15, 75%, 55%)",
 ];
 
+const COMPLETION_COLORS: Record<string, string> = {
+  "Not Started": "hsl(0, 65%, 50%)",
+  "Unfinished": "hsl(45, 80%, 50%)",
+  "Beaten": "hsl(210, 70%, 55%)",
+  "Completed": "hsl(140, 60%, 45%)",
+  "Continuous": "hsl(270, 55%, 55%)",
+  "Dropped": "hsl(0, 0%, 50%)",
+  "No Status": "hsl(0, 0%, 35%)",
+};
+
 // --- Section wrapper with border ---
 
 function Section({
@@ -84,36 +102,22 @@ function Section({
   );
 }
 
-const COMPLETION_STATUS_COLORS: Record<string, string> = {
-  Unfinished: "bg-yellow-600",
-  Beaten: "bg-indigo-600",
-  Completed: "bg-purple-600",
-  Continuous: "bg-cyan-600",
-  Dropped: "bg-red-600",
-};
+// --- Playing Now Section ---
 
-const COMPLETION_STATUS_SHORT: Record<string, string> = {
-  Unfinished: "Unfinished",
-  Beaten: "Beaten",
-  Completed: "Completed",
-  Continuous: "Continuous",
-  Dropped: "Dropped",
-};
-
-// --- Currently Playing Section ---
-
-function CurrentlyPlayingSection({
+function PlayingNowSection({
   games,
   isLoading,
   username,
+  listId,
 }: {
-  games: CustomerGame[];
+  games: CustomerListItem[];
   isLoading: boolean;
   username: string;
+  listId: string | null;
 }) {
   if (isLoading) {
     return (
-      <Section title="Currently Playing">
+      <Section title="Playing Now">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[...Array(4)].map((_, i) => (
             <Skeleton key={i} className="aspect-[3/4] rounded-md" />
@@ -124,16 +128,15 @@ function CurrentlyPlayingSection({
   }
 
   const maxVisible = 6;
-  const hasMore = games.length > maxVisible;
   const visibleGames = games.slice(0, maxVisible);
 
   return (
     <Section
-      title="Currently Playing"
+      title="Playing Now"
       action={
-        games.length > 0 ? (
+        games.length > 0 && listId ? (
           <Link
-            href={`/community/profiles/${username}/collection?playStatus=Playing`}
+            href={`/community/profiles/${username}/lists/${listId}`}
             className="text-xs text-primary hover:underline"
           >
             View all ({games.length})
@@ -144,14 +147,13 @@ function CurrentlyPlayingSection({
       {games.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {visibleGames.map((game) => {
-            const completionStatus = game.completionStatus;
             const content = (
               <div>
                 <div className="relative aspect-[3/4] rounded-md overflow-hidden bg-muted/50 mb-1.5">
                   {game.coverImageId ? (
                     <Image
                       src={getIgdbCoverUrl(game.coverImageId)}
-                      alt={game.name}
+                      alt={game.title ?? "Game"}
                       width={264}
                       height={352}
                       className="w-full h-full object-cover"
@@ -161,16 +163,14 @@ function CurrentlyPlayingSection({
                       <ImageIcon className="h-6 w-6 text-muted-foreground/40" />
                     </div>
                   )}
-                  {completionStatus && COMPLETION_STATUS_COLORS[completionStatus] && (
-                    <span
-                      className={`absolute top-1 right-1 px-1.5 py-0.5 rounded text-[9px] font-semibold text-white ${COMPLETION_STATUS_COLORS[completionStatus]}`}
-                    >
-                      {COMPLETION_STATUS_SHORT[completionStatus]}
+                  {game.genre && (
+                    <span className="absolute top-1 right-1 px-1.5 py-0.5 rounded text-[9px] font-semibold text-white bg-primary/80">
+                      {game.genre}
                     </span>
                   )}
                 </div>
-                <p className="text-xs font-medium truncate" title={game.name}>
-                  {game.name}
+                <p className="text-xs font-medium truncate" title={game.title ?? undefined}>
+                  {game.title}
                 </p>
               </div>
             );
@@ -190,7 +190,7 @@ function CurrentlyPlayingSection({
         </div>
       ) : (
         <p className="text-muted-foreground text-sm">
-          No games marked as currently playing.
+          No games in Playing Now list.
         </p>
       )}
     </Section>
@@ -218,30 +218,28 @@ function StatsSection({
     );
   }
 
-  if (!stats || stats.totalGames === 0) return null;
-
   const items = [
     {
       icon: GamepadIcon,
       label: "Total Games",
-      value: stats.totalGames.toLocaleString(),
+      value: stats ? stats.totalGames.toLocaleString() : "0",
     },
     {
       icon: ClockIcon,
       label: "Total Playtime",
-      value: formatPlaytime(stats.totalPlaytimeMinutes),
+      value: stats ? formatPlaytime(stats.totalPlaytimeMinutes) : "0m",
     },
     {
       icon: TagIcon,
       label: "Top Genre",
-      value: stats.topGenre ?? "N/A",
+      value: stats?.topGenre ?? "N/A",
     },
     {
       icon: TrophyIcon,
       label: "Most Played",
-      value: stats.mostPlayedGame ?? "N/A",
+      value: stats?.mostPlayedGame ?? "N/A",
       sub:
-        stats.mostPlayedGameMinutes != null
+        stats?.mostPlayedGameMinutes != null
           ? formatPlaytime(stats.mostPlayedGameMinutes)
           : undefined,
     },
@@ -272,24 +270,57 @@ function StatsSection({
   );
 }
 
-// --- Game Collection Donut Chart ---
+// --- Taste Profile Donut Chart ---
 
-function GameCollectionSection({
+const TASTE_FILTER_OPTIONS = [
+  { value: "all", label: "All" },
+  { value: "played", label: "Games played" },
+  { value: "completed", label: "Games completed" },
+];
+
+function TasteProfileSection({
   totalGames,
+  filteredTotalGames,
   genres,
+  completionBreakdown,
   isLoading,
+  filter,
+  onFilterChange,
+  username,
 }: {
   totalGames: number;
+  filteredTotalGames: number;
   genres: { name: string; count: number; percentage: number }[];
+  completionBreakdown: CompletionStat[];
   isLoading: boolean;
+  filter: string;
+  onFilterChange: (value: string) => void;
+  username: string;
 }) {
+  // Top 9 genres + "Other" bucket
+  const displayGenres = useMemo(() => {
+    if (genres.length <= 10) return genres;
+    const top9 = genres.slice(0, 9);
+    const rest = genres.slice(9);
+    const otherCount = rest.reduce((sum, g) => sum + g.count, 0);
+    const otherPercentage = rest.reduce((sum, g) => sum + g.percentage, 0);
+    return [
+      ...top9,
+      {
+        name: "Other",
+        count: otherCount,
+        percentage: Math.round(otherPercentage * 10) / 10,
+      },
+    ];
+  }, [genres]);
+
   const chartData = useMemo(() => {
-    return genres.map((g, i) => ({
+    return displayGenres.map((g, i) => ({
       name: g.name,
       value: g.count,
       fill: GENRE_COLORS[i % GENRE_COLORS.length],
     }));
-  }, [genres]);
+  }, [displayGenres]);
 
   const chartConfig: ChartConfig = useMemo(() => {
     const config: ChartConfig = {};
@@ -299,9 +330,31 @@ function GameCollectionSection({
     return config;
   }, [chartData]);
 
+  // Completion chart data
+  const completionChartData = useMemo(() => {
+    const nonZero = completionBreakdown
+      .filter((s) => s.count > 0)
+      .map((s) => ({
+        name: s.name,
+        value: s.count,
+        fill: COMPLETION_COLORS[s.name] ?? "hsl(0, 0%, 50%)",
+      }));
+    return nonZero;
+  }, [completionBreakdown]);
+
+  const completionChartConfig: ChartConfig = useMemo(() => {
+    const config: ChartConfig = {};
+    completionChartData.forEach((d) => {
+      config[d.name] = { label: d.name, color: d.fill };
+    });
+    return config;
+  }, [completionChartData]);
+
+  const completionTotal = completionBreakdown.reduce((sum, s) => sum + s.count, 0);
+
   if (isLoading) {
     return (
-      <Section title="Game Collection">
+      <Section title="Taste Profile">
         <div className="flex items-center gap-8">
           <Skeleton className="h-40 w-40 rounded-full flex-shrink-0" />
           <div className="space-y-3 flex-1">
@@ -314,119 +367,232 @@ function GameCollectionSection({
     );
   }
 
-  if (totalGames === 0) return null;
-
-  const hasGenres = genres.length > 0;
+  const hasGenres = displayGenres.length > 0;
+  const hasCompletion = completionChartData.length > 0;
+  const chartTotal = displayGenres.reduce((sum, g) => sum + g.count, 0);
 
   return (
-    <Section title="Game Collection">
-      {hasGenres ? (
-        <div className="flex flex-col sm:flex-row items-center gap-6">
-          {/* Donut Chart */}
-          <div className="flex-shrink-0">
-            <ChartContainer
-              config={chartConfig}
-              className="aspect-square w-[180px]"
-            >
-              <PieChart>
-                <ChartTooltip
-                  content={<ChartTooltipContent hideLabel nameKey="name" />}
-                />
-                <Pie
-                  data={chartData}
-                  dataKey="value"
-                  nameKey="name"
-                  innerRadius={55}
-                  outerRadius={80}
-                  strokeWidth={2}
-                  stroke="hsl(var(--background))"
-                >
-                  {chartData.map((entry) => (
-                    <Cell key={entry.name} fill={entry.fill} />
-                  ))}
-                  <Label
-                    content={({ viewBox }) => {
-                      if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                        return (
-                          <text
-                            x={viewBox.cx}
-                            y={viewBox.cy}
-                            textAnchor="middle"
-                            dominantBaseline="middle"
-                          >
-                            <tspan
+    <Section
+      title="Taste Profile"
+      action={
+        <div className="flex items-center gap-2">
+          <Link href={`/community/profiles/${username}/stats`}>
+            <Button variant="ghost" size="sm" className="h-auto py-0">
+              View All
+              <ArrowRightIcon className="ml-1 h-3.5 w-3.5" />
+            </Button>
+          </Link>
+        </div>
+      }
+    >
+      <div className="space-y-6">
+        {/* Genre breakdown with filter */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Genres</h4>
+            <Select value={filter} onValueChange={onFilterChange}>
+              <SelectTrigger className="h-7 w-[140px] text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TASTE_FILTER_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <div className="flex-shrink-0">
+              <ChartContainer
+                config={hasGenres ? chartConfig : { empty: { label: "No data", color: "hsl(var(--muted))" } }}
+                className="aspect-square w-[180px]"
+              >
+                <PieChart>
+                  {hasGenres && (
+                    <ChartTooltip
+                      content={<ChartTooltipContent hideLabel nameKey="name" />}
+                    />
+                  )}
+                  <Pie
+                    data={hasGenres ? chartData : [{ name: "empty", value: 1, fill: "hsl(var(--muted))" }]}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={55}
+                    outerRadius={80}
+                    strokeWidth={2}
+                    stroke="hsl(var(--background))"
+                  >
+                    {hasGenres
+                      ? chartData.map((entry) => (
+                          <Cell key={entry.name} fill={entry.fill} />
+                        ))
+                      : <Cell fill="hsl(var(--muted))" />
+                    }
+                    <Label
+                      content={({ viewBox }) => {
+                        if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                          return (
+                            <text
                               x={viewBox.cx}
                               y={viewBox.cy}
-                              className="fill-foreground text-2xl font-bold"
+                              textAnchor="middle"
+                              dominantBaseline="middle"
                             >
-                              {totalGames.toLocaleString()}
-                            </tspan>
-                            <tspan
-                              x={viewBox.cx}
-                              y={(viewBox.cy || 0) + 20}
-                              className="fill-muted-foreground text-xs"
-                            >
-                              Total
-                            </tspan>
-                          </text>
-                        );
-                      }
-                    }}
-                  />
-                </Pie>
-              </PieChart>
-            </ChartContainer>
-          </div>
-
-          {/* Genre Legend */}
-          <div className="flex-1 space-y-2.5 w-full">
-            {genres.map((genre, i) => (
-              <div key={genre.name} className="flex items-center gap-2.5">
-                <div
-                  className="h-3 w-3 rounded-sm flex-shrink-0"
-                  style={{
-                    backgroundColor: GENRE_COLORS[i % GENRE_COLORS.length],
-                  }}
-                />
-                <span className="text-sm flex-1 min-w-0 truncate">
-                  {genre.name}
-                </span>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <div className="w-20 h-1.5 rounded-full bg-muted overflow-hidden">
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${genre.percentage}%`,
-                        backgroundColor:
-                          GENRE_COLORS[i % GENRE_COLORS.length],
+                              <tspan
+                                x={viewBox.cx}
+                                y={viewBox.cy}
+                                className="fill-foreground text-2xl font-bold"
+                              >
+                                {filteredTotalGames.toLocaleString()}
+                              </tspan>
+                              <tspan
+                                x={viewBox.cx}
+                                y={(viewBox.cy || 0) + 20}
+                                className="fill-muted-foreground text-xs"
+                              >
+                                Games
+                              </tspan>
+                            </text>
+                          );
+                        }
                       }}
                     />
-                  </div>
-                  <span className="text-xs text-muted-foreground w-10 text-right">
-                    {genre.percentage}%
+                  </Pie>
+                </PieChart>
+              </ChartContainer>
+            </div>
+            <div className="flex-1 space-y-2.5 w-full">
+              {displayGenres.map((genre, i) => (
+                <div key={genre.name} className="flex items-center gap-2.5">
+                  <div
+                    className="h-3 w-3 rounded-sm flex-shrink-0"
+                    style={{
+                      backgroundColor: GENRE_COLORS[i % GENRE_COLORS.length],
+                    }}
+                  />
+                  <span className="text-sm flex-1 min-w-0 truncate">
+                    {genre.name}
                   </span>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="w-20 h-1.5 rounded-full bg-muted overflow-hidden">
+                      <div
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${genre.percentage}%`,
+                          backgroundColor:
+                            GENRE_COLORS[i % GENRE_COLORS.length],
+                        }}
+                      />
+                    </div>
+                    <span className="text-xs text-muted-foreground w-10 text-right">
+                      {genre.percentage}%
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
-      ) : (
-        <div className="flex items-center gap-4">
-          <div className="flex items-center justify-center h-20 w-20 rounded-full bg-muted flex-shrink-0">
-            <span className="text-xl font-bold">
-              {totalGames.toLocaleString()}
-            </span>
-          </div>
-          <div>
-            <p className="text-sm font-medium">
-              {totalGames.toLocaleString()} games
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Genre breakdown will appear once games are matched.
-            </p>
+
+        {/* Completion status breakdown */}
+        <div>
+          <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-4">
+            Completion Status
+          </h4>
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <div className="flex-shrink-0">
+              <ChartContainer
+                config={hasCompletion ? completionChartConfig : { empty: { label: "No data", color: "hsl(var(--muted))" } }}
+                className="aspect-square w-[180px]"
+              >
+                <PieChart>
+                  {hasCompletion && (
+                    <ChartTooltip
+                      content={<ChartTooltipContent hideLabel nameKey="name" />}
+                    />
+                  )}
+                  <Pie
+                    data={hasCompletion ? completionChartData : [{ name: "empty", value: 1, fill: "hsl(var(--muted))" }]}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={55}
+                    outerRadius={80}
+                    strokeWidth={2}
+                    stroke="hsl(var(--background))"
+                  >
+                    {hasCompletion
+                      ? completionChartData.map((entry) => (
+                          <Cell key={entry.name} fill={entry.fill} />
+                        ))
+                      : <Cell fill="hsl(var(--muted))" />
+                    }
+                    <Label
+                      content={({ viewBox }) => {
+                        if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                          return (
+                            <text
+                              x={viewBox.cx}
+                              y={viewBox.cy}
+                              textAnchor="middle"
+                              dominantBaseline="middle"
+                            >
+                              <tspan
+                                x={viewBox.cx}
+                                y={viewBox.cy}
+                                className="fill-foreground text-2xl font-bold"
+                              >
+                                {completionTotal.toLocaleString()}
+                              </tspan>
+                              <tspan
+                                x={viewBox.cx}
+                                y={(viewBox.cy || 0) + 20}
+                                className="fill-muted-foreground text-xs"
+                              >
+                                Total
+                              </tspan>
+                            </text>
+                          );
+                        }
+                      }}
+                    />
+                  </Pie>
+                </PieChart>
+              </ChartContainer>
+            </div>
+            <div className="flex-1 space-y-2.5 w-full">
+              {completionBreakdown.map((status) => (
+                <div key={status.name} className="flex items-center gap-2.5">
+                  <div
+                    className="h-3 w-3 rounded-sm flex-shrink-0"
+                    style={{
+                      backgroundColor: COMPLETION_COLORS[status.name] ?? "hsl(0, 0%, 50%)",
+                    }}
+                  />
+                  <span className="text-sm flex-1 min-w-0 truncate">
+                    {status.name}
+                  </span>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="w-20 h-1.5 rounded-full bg-muted overflow-hidden">
+                      <div
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${status.percentage}%`,
+                          backgroundColor: COMPLETION_COLORS[status.name] ?? "hsl(0, 0%, 50%)",
+                        }}
+                      />
+                    </div>
+                    <span className="text-xs text-muted-foreground w-10 text-right">
+                      {status.percentage}%
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      )}
+      </div>
     </Section>
   );
 }
@@ -463,7 +629,25 @@ function AchievementsOverviewSection({
     );
   }
 
-  if (games.length === 0) return null;
+  if (games.length === 0) {
+    return (
+      <Section
+        title="Achievements"
+        action={
+          <Link href={`/community/profiles/${username}/achievements`}>
+            <Button variant="ghost" size="sm" className="h-auto py-0">
+              View All
+              <ArrowRightIcon className="ml-1 h-3.5 w-3.5" />
+            </Button>
+          </Link>
+        }
+      >
+        <p className="text-sm text-muted-foreground">
+          No achievements yet.
+        </p>
+      </Section>
+    );
+  }
 
   const perfectGames = games.filter((g) => g.completionPercentage === 100).length;
   const avgCompletion =
@@ -616,15 +800,20 @@ export default function ProfileOverviewPage() {
   const username = params.username as string;
   const { data: customer } = useCustomer();
   const isOwnProfile = customer?.handle === username;
-  const { data: collection, isLoading: collectionLoading } = useCustomerCollection(username);
-  const { data: stats, isLoading: statsLoading } = useProfileStats(username);
+  const [tasteFilter, setTasteFilter] = useState("all");
+  const { data: stats, isLoading: statsLoading } = useProfileStats(
+    username,
+    tasteFilter !== "all" ? tasteFilter : undefined
+  );
   const { data: achievements, isLoading: achievementsLoading } =
     useProfileAchievements(username);
   const { data: lists, isLoading: listsLoading } = useCustomerLists(username);
 
-  const playingGames = (collection ?? []).filter(
-    (game) => game.playStatus === "Playing"
+  const playingNowList = (lists ?? []).find(
+    (l) => l.systemName === "PlayingNow"
   );
+  const { data: playingNowDetail, isLoading: playingNowLoading } =
+    useCustomerListDetail(playingNowList?.id ?? "", username);
 
   const recentLists = (lists ?? [])
     .sort(
@@ -638,17 +827,23 @@ export default function ProfileOverviewPage() {
       {/* Two-column layout: left = Game Collection + Stats, right = Currently Playing */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="flex flex-col gap-6">
-          <GameCollectionSection
+          <TasteProfileSection
             totalGames={stats?.totalGames ?? 0}
+            filteredTotalGames={stats?.filteredTotalGames ?? 0}
             genres={stats?.genreBreakdown ?? []}
+            completionBreakdown={stats?.completionBreakdown ?? []}
             isLoading={statsLoading}
+            filter={tasteFilter}
+            onFilterChange={setTasteFilter}
+            username={username}
           />
           <StatsSection stats={stats} isLoading={statsLoading} />
         </div>
-        <CurrentlyPlayingSection
-          games={playingGames}
-          isLoading={collectionLoading}
+        <PlayingNowSection
+          games={playingNowDetail?.items ?? []}
+          isLoading={listsLoading || playingNowLoading}
           username={username}
+          listId={playingNowList?.id ?? null}
         />
       </div>
 

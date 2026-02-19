@@ -27,6 +27,7 @@ export interface CustomerListItem {
   slug: string | null;
   releaseYear: number | null;
   order: number;
+  genre: string | null;
 }
 
 export interface GameSearchResult {
@@ -147,13 +148,21 @@ export interface SetGamesRemovedRequest {
 
 export interface ProfileStats {
   totalGames: number;
+  filteredTotalGames: number;
   totalPlaytimeMinutes: number;
   topGenre: string | null;
   mostPlayedGame: string | null;
   mostPlayedGameMinutes: number | null;
   genreBreakdown: GenreStat[];
+  completionBreakdown: CompletionStat[];
   gameActivity: GameActivityList[];
   recentlyPlayed: RecentlyPlayedGame[];
+}
+
+export interface CompletionStat {
+  name: string;
+  count: number;
+  percentage: number;
 }
 
 export interface RecentlyPlayedGame {
