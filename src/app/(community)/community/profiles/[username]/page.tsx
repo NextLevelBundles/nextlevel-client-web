@@ -38,6 +38,7 @@ import type {
   CustomerList,
   CustomerListItem,
   ProfileStats,
+  CompletionStat,
   GameAchievementProgress,
 } from "@/lib/api/types/customer-profile";
 
@@ -66,6 +67,16 @@ const GENRE_COLORS = [
   "hsl(190, 70%, 45%)",
   "hsl(15, 75%, 55%)",
 ];
+
+const COMPLETION_COLORS: Record<string, string> = {
+  "Not Started": "hsl(0, 65%, 50%)",
+  "Unfinished": "hsl(45, 80%, 50%)",
+  "Beaten": "hsl(210, 70%, 55%)",
+  "Completed": "hsl(140, 60%, 45%)",
+  "Continuous": "hsl(270, 55%, 55%)",
+  "Dropped": "hsl(0, 0%, 50%)",
+  "No Status": "hsl(0, 0%, 35%)",
+};
 
 // --- Section wrapper with border ---
 
@@ -272,6 +283,7 @@ const TASTE_FILTER_OPTIONS = [
 function TasteProfileSection({
   totalGames,
   genres,
+  completionBreakdown,
   isLoading,
   filter,
   onFilterChange,
@@ -279,6 +291,7 @@ function TasteProfileSection({
 }: {
   totalGames: number;
   genres: { name: string; count: number; percentage: number }[];
+  completionBreakdown: CompletionStat[];
   isLoading: boolean;
   filter: string;
   onFilterChange: (value: string) => void;
@@ -317,6 +330,25 @@ function TasteProfileSection({
     return config;
   }, [chartData]);
 
+  // Completion chart data
+  const completionChartData = useMemo(() => {
+    return completionBreakdown.map((s) => ({
+      name: s.name,
+      value: s.count,
+      fill: COMPLETION_COLORS[s.name] ?? "hsl(0, 0%, 50%)",
+    }));
+  }, [completionBreakdown]);
+
+  const completionChartConfig: ChartConfig = useMemo(() => {
+    const config: ChartConfig = {};
+    completionChartData.forEach((d) => {
+      config[d.name] = { label: d.name, color: d.fill };
+    });
+    return config;
+  }, [completionChartData]);
+
+  const completionTotal = completionBreakdown.reduce((sum, s) => sum + s.count, 0);
+
   if (isLoading) {
     return (
       <Section title="Taste Profile">
@@ -342,18 +374,6 @@ function TasteProfileSection({
       title="Taste Profile"
       action={
         <div className="flex items-center gap-2">
-          <Select value={filter} onValueChange={onFilterChange}>
-            <SelectTrigger className="h-7 w-[140px] text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {TASTE_FILTER_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value} className="text-xs">
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
           <Link href={`/community/profiles/${username}/stats`}>
             <Button variant="ghost" size="sm" className="h-auto py-0">
               View All
@@ -363,113 +383,224 @@ function TasteProfileSection({
         </div>
       }
     >
-      {hasGenres ? (
-        <div className="flex flex-col sm:flex-row items-center gap-6">
-          {/* Donut Chart */}
-          <div className="flex-shrink-0">
-            <ChartContainer
-              config={chartConfig}
-              className="aspect-square w-[180px]"
-            >
-              <PieChart>
-                <ChartTooltip
-                  content={<ChartTooltipContent hideLabel nameKey="name" />}
-                />
-                <Pie
-                  data={chartData}
-                  dataKey="value"
-                  nameKey="name"
-                  innerRadius={55}
-                  outerRadius={80}
-                  strokeWidth={2}
-                  stroke="hsl(var(--background))"
-                >
-                  {chartData.map((entry) => (
-                    <Cell key={entry.name} fill={entry.fill} />
-                  ))}
-                  <Label
-                    content={({ viewBox }) => {
-                      if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                        return (
-                          <text
-                            x={viewBox.cx}
-                            y={viewBox.cy}
-                            textAnchor="middle"
-                            dominantBaseline="middle"
-                          >
-                            <tspan
-                              x={viewBox.cx}
-                              y={viewBox.cy}
-                              className="fill-foreground text-2xl font-bold"
-                            >
-                              {chartTotal.toLocaleString()}
-                            </tspan>
-                            <tspan
-                              x={viewBox.cx}
-                              y={(viewBox.cy || 0) + 20}
-                              className="fill-muted-foreground text-xs"
-                            >
-                              Games
-                            </tspan>
-                          </text>
-                        );
-                      }
-                    }}
-                  />
-                </Pie>
-              </PieChart>
-            </ChartContainer>
+      <div className="space-y-6">
+        {/* Genre breakdown with filter */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Genres</h4>
+            <Select value={filter} onValueChange={onFilterChange}>
+              <SelectTrigger className="h-7 w-[140px] text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TASTE_FILTER_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-
-          {/* Genre Legend */}
-          <div className="flex-1 space-y-2.5 w-full">
-            {displayGenres.map((genre, i) => (
-              <div key={genre.name} className="flex items-center gap-2.5">
-                <div
-                  className="h-3 w-3 rounded-sm flex-shrink-0"
-                  style={{
-                    backgroundColor: GENRE_COLORS[i % GENRE_COLORS.length],
-                  }}
-                />
-                <span className="text-sm flex-1 min-w-0 truncate">
-                  {genre.name}
-                </span>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <div className="w-20 h-1.5 rounded-full bg-muted overflow-hidden">
+          {hasGenres ? (
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <div className="flex-shrink-0">
+                <ChartContainer
+                  config={chartConfig}
+                  className="aspect-square w-[180px]"
+                >
+                  <PieChart>
+                    <ChartTooltip
+                      content={<ChartTooltipContent hideLabel nameKey="name" />}
+                    />
+                    <Pie
+                      data={chartData}
+                      dataKey="value"
+                      nameKey="name"
+                      innerRadius={55}
+                      outerRadius={80}
+                      strokeWidth={2}
+                      stroke="hsl(var(--background))"
+                    >
+                      {chartData.map((entry) => (
+                        <Cell key={entry.name} fill={entry.fill} />
+                      ))}
+                      <Label
+                        content={({ viewBox }) => {
+                          if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                            return (
+                              <text
+                                x={viewBox.cx}
+                                y={viewBox.cy}
+                                textAnchor="middle"
+                                dominantBaseline="middle"
+                              >
+                                <tspan
+                                  x={viewBox.cx}
+                                  y={viewBox.cy}
+                                  className="fill-foreground text-2xl font-bold"
+                                >
+                                  {chartTotal.toLocaleString()}
+                                </tspan>
+                                <tspan
+                                  x={viewBox.cx}
+                                  y={(viewBox.cy || 0) + 20}
+                                  className="fill-muted-foreground text-xs"
+                                >
+                                  Games
+                                </tspan>
+                              </text>
+                            );
+                          }
+                        }}
+                      />
+                    </Pie>
+                  </PieChart>
+                </ChartContainer>
+              </div>
+              <div className="flex-1 space-y-2.5 w-full">
+                {displayGenres.map((genre, i) => (
+                  <div key={genre.name} className="flex items-center gap-2.5">
                     <div
-                      className="h-full rounded-full"
+                      className="h-3 w-3 rounded-sm flex-shrink-0"
                       style={{
-                        width: `${genre.percentage}%`,
-                        backgroundColor:
-                          GENRE_COLORS[i % GENRE_COLORS.length],
+                        backgroundColor: GENRE_COLORS[i % GENRE_COLORS.length],
                       }}
                     />
+                    <span className="text-sm flex-1 min-w-0 truncate">
+                      {genre.name}
+                    </span>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="w-20 h-1.5 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full rounded-full"
+                          style={{
+                            width: `${genre.percentage}%`,
+                            backgroundColor:
+                              GENRE_COLORS[i % GENRE_COLORS.length],
+                          }}
+                        />
+                      </div>
+                      <span className="text-xs text-muted-foreground w-10 text-right">
+                        {genre.percentage}%
+                      </span>
+                    </div>
                   </div>
-                  <span className="text-xs text-muted-foreground w-10 text-right">
-                    {genre.percentage}%
-                  </span>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center h-20 w-20 rounded-full bg-muted flex-shrink-0">
+                <span className="text-xl font-bold">
+                  {totalGames.toLocaleString()}
+                </span>
+              </div>
+              <div>
+                <p className="text-sm font-medium">
+                  {totalGames.toLocaleString()} games
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Genre breakdown will appear once games are matched.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="flex items-center gap-4">
-          <div className="flex items-center justify-center h-20 w-20 rounded-full bg-muted flex-shrink-0">
-            <span className="text-xl font-bold">
-              {totalGames.toLocaleString()}
-            </span>
-          </div>
+
+        {/* Completion status breakdown */}
+        {completionBreakdown.length > 0 && (
           <div>
-            <p className="text-sm font-medium">
-              {totalGames.toLocaleString()} games
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Genre breakdown will appear once games are matched.
-            </p>
+            <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-4">
+              Completion Status
+            </h4>
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <div className="flex-shrink-0">
+                <ChartContainer
+                  config={completionChartConfig}
+                  className="aspect-square w-[180px]"
+                >
+                  <PieChart>
+                    <ChartTooltip
+                      content={<ChartTooltipContent hideLabel nameKey="name" />}
+                    />
+                    <Pie
+                      data={completionChartData}
+                      dataKey="value"
+                      nameKey="name"
+                      innerRadius={55}
+                      outerRadius={80}
+                      strokeWidth={2}
+                      stroke="hsl(var(--background))"
+                    >
+                      {completionChartData.map((entry) => (
+                        <Cell key={entry.name} fill={entry.fill} />
+                      ))}
+                      <Label
+                        content={({ viewBox }) => {
+                          if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                            return (
+                              <text
+                                x={viewBox.cx}
+                                y={viewBox.cy}
+                                textAnchor="middle"
+                                dominantBaseline="middle"
+                              >
+                                <tspan
+                                  x={viewBox.cx}
+                                  y={viewBox.cy}
+                                  className="fill-foreground text-2xl font-bold"
+                                >
+                                  {completionTotal.toLocaleString()}
+                                </tspan>
+                                <tspan
+                                  x={viewBox.cx}
+                                  y={(viewBox.cy || 0) + 20}
+                                  className="fill-muted-foreground text-xs"
+                                >
+                                  Total
+                                </tspan>
+                              </text>
+                            );
+                          }
+                        }}
+                      />
+                    </Pie>
+                  </PieChart>
+                </ChartContainer>
+              </div>
+              <div className="flex-1 space-y-2.5 w-full">
+                {completionBreakdown.map((status) => (
+                  <div key={status.name} className="flex items-center gap-2.5">
+                    <div
+                      className="h-3 w-3 rounded-sm flex-shrink-0"
+                      style={{
+                        backgroundColor: COMPLETION_COLORS[status.name] ?? "hsl(0, 0%, 50%)",
+                      }}
+                    />
+                    <span className="text-sm flex-1 min-w-0 truncate">
+                      {status.name}
+                    </span>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="w-20 h-1.5 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full rounded-full"
+                          style={{
+                            width: `${status.percentage}%`,
+                            backgroundColor: COMPLETION_COLORS[status.name] ?? "hsl(0, 0%, 50%)",
+                          }}
+                        />
+                      </div>
+                      <span className="text-xs text-muted-foreground w-10 text-right">
+                        {status.percentage}%
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </Section>
   );
 }
@@ -689,6 +820,7 @@ export default function ProfileOverviewPage() {
           <TasteProfileSection
             totalGames={stats?.totalGames ?? 0}
             genres={stats?.genreBreakdown ?? []}
+            completionBreakdown={stats?.completionBreakdown ?? []}
             isLoading={statsLoading}
             filter={tasteFilter}
             onFilterChange={setTasteFilter}

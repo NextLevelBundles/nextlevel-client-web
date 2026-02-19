@@ -153,8 +153,15 @@ export interface ProfileStats {
   mostPlayedGame: string | null;
   mostPlayedGameMinutes: number | null;
   genreBreakdown: GenreStat[];
+  completionBreakdown: CompletionStat[];
   gameActivity: GameActivityList[];
   recentlyPlayed: RecentlyPlayedGame[];
+}
+
+export interface CompletionStat {
+  name: string;
+  count: number;
+  percentage: number;
 }
 
 export interface RecentlyPlayedGame {
