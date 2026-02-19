@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useGameDetail } from "@/hooks/queries/useGameDetail";
 import { useAuth } from "@/shared/providers/auth-provider";
+import { useCustomer } from "@/hooks/queries/useCustomer";
 import { useCustomerCollection } from "@/hooks/queries/useCustomerCollection";
 import {
   useWishlist,
@@ -29,7 +30,7 @@ import type {
   GameDetailRelatedGame,
   GameDetailWebsite,
 } from "@/lib/api/types/game";
-import type { CustomerCollectionGame } from "@/lib/api/types/customer-profile";
+import type { CustomerGame } from "@/lib/api/types/customer-profile";
 
 // --- Helpers ---
 
@@ -377,7 +378,7 @@ function SidebarSection({
 function CollectionStatusBadges({
   collectionGame,
 }: {
-  collectionGame: CustomerCollectionGame | null;
+  collectionGame: CustomerGame | null;
 }) {
   const playStatus = collectionGame?.playStatus || "NoStatus";
   const completionStatus = collectionGame?.completionStatus;
@@ -455,27 +456,41 @@ export default function GameDetailPage() {
   const { data: game, isLoading } = useGameDetail(slug);
   const { user } = useAuth();
   const isAuthenticated = !!user;
-  const { data: collection } = useCustomerCollection();
+  const { data: customer } = useCustomer();
+  const isOwnProfile = customer?.handle === username;
+  const { data: collection } = useCustomerCollection(username);
   const collectionGame =
     collection?.find((g) => g.slug === slug) ?? null;
 
-  // Wishlist logic
-  const { data: wishlistDetail } = useWishlist();
+  // Wishlist logic — own wishlist (for toggle on own profile, or "Add to My Wishlist" on other profiles)
+  const { data: myWishlistDetail } = useWishlist();
   const addToWishlist = useAddToWishlist();
   const removeFromWishlist = useRemoveFromWishlist();
 
+  // Visited user's wishlist (for showing their wishlist status on non-own profiles)
+  const { data: profileWishlistDetail } = useWishlist(isOwnProfile ? undefined : username);
+
   const igdbId = game?.igdbId ?? 0;
-  const wishListItem = wishlistDetail?.items.find(
+
+  // Own wishlist state
+  const myWishListItem = myWishlistDetail?.items.find(
     (item) => item.gameId === igdbId
   );
-  const isInWishList = !!wishListItem;
+  const isInMyWishList = !!myWishListItem;
+
+  // Visited profile's wishlist state
+  const profileWishListItem = profileWishlistDetail?.items.find(
+    (item) => item.gameId === igdbId
+  );
+  const isInProfileWishList = !!profileWishListItem;
+
   const wishlistPending =
     addToWishlist.isPending || removeFromWishlist.isPending;
 
   function handleWishlistToggle() {
     if (!igdbId) return;
-    if (isInWishList && wishListItem) {
-      removeFromWishlist.mutate(wishListItem.id);
+    if (isInMyWishList && myWishListItem) {
+      removeFromWishlist.mutate(myWishListItem.id);
     } else {
       addToWishlist.mutate({ gameId: igdbId });
     }
@@ -553,7 +568,7 @@ export default function GameDetailPage() {
                   </p>
                 )}
               </div>
-              {isAuthenticated && (
+              {isAuthenticated && isOwnProfile && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -562,10 +577,40 @@ export default function GameDetailPage() {
                   disabled={wishlistPending}
                 >
                   <Heart
-                    className={`h-4 w-4 ${isInWishList ? "fill-red-500 text-red-500" : ""}`}
+                    className={`h-4 w-4 ${isInMyWishList ? "fill-red-500 text-red-500" : ""}`}
                   />
-                  {isInWishList ? "In Wishlist" : "Wishlist"}
+                  {isInMyWishList ? "In Wishlist" : "Wishlist"}
                 </Button>
+              )}
+              {isAuthenticated && !isOwnProfile && (
+                <div className="flex flex-col gap-1.5 flex-shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                    disabled
+                  >
+                    <Heart
+                      className={`h-4 w-4 ${isInProfileWishList ? "fill-red-500 text-red-500" : ""}`}
+                    />
+                    {isInProfileWishList ? "In Wishlist" : "Not in Wishlist"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={() => {
+                      if (!igdbId || isInMyWishList) return;
+                      addToWishlist.mutate({ gameId: igdbId });
+                    }}
+                    disabled={wishlistPending || isInMyWishList}
+                  >
+                    <Heart
+                      className={`h-4 w-4 ${isInMyWishList ? "fill-red-500 text-red-500" : ""}`}
+                    />
+                    {isInMyWishList ? "In My Wishlist" : "Add to My Wishlist"}
+                  </Button>
+                </div>
               )}
             </div>
 
@@ -596,7 +641,7 @@ export default function GameDetailPage() {
         {/* Platform badges + Genre tags */}
         <div className="flex flex-wrap gap-2">
           {game.platforms.map((p, i) => (
-            <Badge key={i} variant="secondary" className="text-xs">
+            <Badge key={i} variant="outline" className="text-xs">
               {p.abbreviation || p.name}
             </Badge>
           ))}

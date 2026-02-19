@@ -48,6 +48,16 @@ const nextConfig: NextConfig = {
         destination: "/customer/dashboard",
         permanent: false,
       },
+      {
+        source: "/community/curators/:username",
+        destination: "/community/profiles/:username",
+        permanent: true,
+      },
+      {
+        source: "/community/curators/:username/:path*",
+        destination: "/community/profiles/:username",
+        permanent: true,
+      },
     ];
   },
 };

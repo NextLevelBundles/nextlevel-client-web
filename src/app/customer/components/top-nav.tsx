@@ -35,14 +35,14 @@ import Logo from "@/app/(shared)/components/logo";
 import { MainNav } from "./main-nav";
 import { CartDrawer } from "@/app/(home)/components/cart/cart-drawer";
 import { useCustomer } from "@/hooks/queries/useCustomer";
-import { useCommunityProfileByHandle } from "@/hooks/queries/useCommunityProfile";
+import { useCustomerProfileByHandle } from "@/hooks/queries/useCustomerProfile";
 
 interface TopNavProps {
   user?: { email?: string; name?: string } | null;
 }
 export function TopNav({ user }: TopNavProps) {
   const { data: customer } = useCustomer();
-  const { data: communityProfile } = useCommunityProfileByHandle(customer?.handle ?? "");
+  const { data: customerProfile } = useCustomerProfileByHandle(customer?.handle ?? "");
   return (
     <div className="fixed lg:sticky top-0 left-0 right-0 z-50 w-full border-b bg-white dark:bg-[#1a1d2e] shadow-md transition-all lg:left-auto lg:right-auto">
       <div className="flex h-14 md:h-16 items-center gap-4 px-4">
@@ -135,14 +135,14 @@ export function TopNav({ user }: TopNavProps) {
                   <span className="flex-1">Profile</span>
                 </Link>
               </DropdownMenuItem>
-              {communityProfile?.isCurator && (
+              {customerProfile?.isCurator && (
                 <DropdownMenuItem
                   asChild
                   className="cursor-pointer rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-primary/5 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary focus:bg-primary/5 focus:text-primary dark:focus:bg-primary/10 dark:focus:text-primary"
                 >
-                  <Link href={`/community/curators/${customer?.handle ?? ""}`} className="flex items-center cursor-pointer">
+                  <Link href={`/community/profiles/${customer?.handle ?? ""}/curated-collections`} className="flex items-center cursor-pointer">
                     <StarIcon className="mr-2 h-4 w-4" />
-                    <span className="flex-1">Curator Profile</span>
+                    <span className="flex-1">Curated Collections</span>
                   </Link>
                 </DropdownMenuItem>
               )}

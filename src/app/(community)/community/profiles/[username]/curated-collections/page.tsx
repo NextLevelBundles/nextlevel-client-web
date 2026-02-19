@@ -9,7 +9,7 @@ import { Card } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useCuratorProfile } from "@/hooks/queries/useCuratorProfile";
 
-export default function CuratorCollectionsPage() {
+export default function CuratedCollectionsPage() {
   const params = useParams();
   const username = params.username as string;
   const { data: curatorProfile, isLoading } = useCuratorProfile(username);

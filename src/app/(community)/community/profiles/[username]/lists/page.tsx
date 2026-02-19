@@ -26,6 +26,7 @@ import {
   useCustomerLists,
   useCreateCustomerList,
 } from "@/hooks/queries/useCustomerLists";
+import { useCustomer } from "@/hooks/queries/useCustomer";
 import { CustomerList } from "@/lib/api/types/customer-profile";
 
 function getIgdbCoverUrl(coverImageId: string, size = "cover_big") {
@@ -89,7 +90,9 @@ function ListCard({ list, username }: { list: CustomerList; username: string }) 
 export default function ListsPage() {
   const params = useParams();
   const username = params.username as string;
-  const { data: lists, isLoading } = useCustomerLists();
+  const { data: customer } = useCustomer();
+  const isOwnProfile = customer?.handle === username;
+  const { data: lists, isLoading } = useCustomerLists(username);
   const createList = useCreateCustomerList();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -129,51 +132,53 @@ export default function ListsPage() {
   return (
     <div className="grid gap-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">My Lists</h2>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm">
-              <PlusIcon className="mr-2 h-4 w-4" />
-              Create List
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create New List</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  placeholder="My awesome list"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  maxLength={255}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="description">Description (optional)</Label>
-                <Textarea
-                  id="description"
-                  placeholder="What's this list about?"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  maxLength={1000}
-                  rows={3}
-                />
-              </div>
-            </div>
-            <div className="flex justify-end">
-              <Button
-                onClick={handleCreate}
-                disabled={!name.trim() || createList.isPending}
-              >
-                {createList.isPending ? "Creating..." : "Create"}
+        <h2 className="text-lg font-semibold">{isOwnProfile ? "My Lists" : "Lists"}</h2>
+        {isOwnProfile && (
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm">
+                <PlusIcon className="mr-2 h-4 w-4" />
+                Create List
               </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create New List</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    placeholder="My awesome list"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    maxLength={255}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="description">Description (optional)</Label>
+                  <Textarea
+                    id="description"
+                    placeholder="What's this list about?"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    maxLength={1000}
+                    rows={3}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <Button
+                  onClick={handleCreate}
+                  disabled={!name.trim() || createList.isPending}
+                >
+                  {createList.isPending ? "Creating..." : "Create"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       {/* Lists */}
@@ -187,7 +192,9 @@ export default function ListsPage() {
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
           <ListIcon className="mb-3 h-8 w-8 text-muted-foreground" />
           <p className="text-muted-foreground">
-            No lists yet. Create your first list to get started.
+            {isOwnProfile
+              ? "No lists yet. Create your first list to get started."
+              : "This user hasn't created any lists yet."}
           </p>
         </div>
       )}

@@ -24,6 +24,7 @@ export interface CustomerListItem {
   gameId: number | null;
   title: string | null;
   coverImageId: string | null;
+  slug: string | null;
   releaseYear: number | null;
   order: number;
 }
@@ -49,9 +50,10 @@ export interface AddListItemRequest {
   gameId: number;
 }
 
-export interface CommunityProfile {
+export interface CustomerProfile {
   id: string;
   handle: string;
+  name: string | null;
   title: string | null;
   headline: string | null;
   specialties: string | null;
@@ -91,7 +93,8 @@ export interface ProfileCharity {
   description: string | null;
 }
 
-export interface UpdateCommunityProfileRequest {
+export interface UpdateCustomerProfileRequest {
+  name: string | null;
   title: string | null;
   headline: string | null;
   specialties: string | null;
@@ -99,7 +102,7 @@ export interface UpdateCommunityProfileRequest {
   charities: ProfileCharity[];
 }
 
-export interface CustomerCollectionGame {
+export interface CustomerGame {
   id: string;
   steamAppId: number;
   gameId: string;
@@ -137,6 +140,11 @@ export interface ImportGamesRequest {
   statuses?: Record<number, ImportGameStatus>;
 }
 
+export interface SetGamesRemovedRequest {
+  appIds: number[];
+  isRemoved: boolean;
+}
+
 export interface ProfileStats {
   totalGames: number;
   totalPlaytimeMinutes: number;
@@ -170,6 +178,7 @@ export interface GameActivityItem {
   title: string | null;
   gameId: number | null;
   coverImageId: string | null;
+  slug: string | null;
 }
 
 export interface ProfileAchievements {
@@ -185,4 +194,18 @@ export interface GameAchievementProgress {
   earnedAchievements: number;
   completionPercentage: number;
   lastUnlockTime: string | null;
+  earnedAchievementsList: EarnedAchievement[];
+}
+
+export interface EarnedAchievement {
+  apiName: string;
+  unlockTime: string | null;
+}
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }

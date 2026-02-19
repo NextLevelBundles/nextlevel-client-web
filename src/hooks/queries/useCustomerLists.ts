@@ -14,16 +14,27 @@ export const customerWishlistQueryKey = ["customer-wishlist"] as const;
 export const customerListsQueryKey = ["customer-lists"] as const;
 export const customerListDetailQueryKey = (listId: string) =>
   ["customer-list-detail", listId] as const;
+const customerListsByHandleQueryKey = (handle: string) =>
+  ["customer-lists", "by-handle", handle] as const;
+const customerListDetailByHandleQueryKey = (handle: string, listId: string) =>
+  ["customer-list-detail", "by-handle", handle, listId] as const;
+const customerWishlistByHandleQueryKey = (handle: string) =>
+  ["customer-wishlist", "by-handle", handle] as const;
 export const gameSearchQueryKey = (query: string) =>
   ["game-search", query] as const;
 
-export function useCustomerLists() {
+export function useCustomerLists(handle?: string) {
   const { user } = useAuth();
   const isAuthenticated = !!user;
 
   return useQuery({
-    queryKey: customerListsQueryKey,
-    queryFn: (): Promise<CustomerList[]> => customerProfileApi.getLists(),
+    queryKey: handle
+      ? customerListsByHandleQueryKey(handle)
+      : customerListsQueryKey,
+    queryFn: (): Promise<CustomerList[]> =>
+      handle
+        ? customerProfileApi.getListsByHandle(handle)
+        : customerProfileApi.getLists(),
     enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -31,14 +42,18 @@ export function useCustomerLists() {
   });
 }
 
-export function useCustomerListDetail(listId: string) {
+export function useCustomerListDetail(listId: string, handle?: string) {
   const { user } = useAuth();
   const isAuthenticated = !!user;
 
   return useQuery({
-    queryKey: customerListDetailQueryKey(listId),
-    queryFn: (): Promise<CustomerListDetail> =>
-      customerProfileApi.getListDetail(listId),
+    queryKey: handle
+      ? customerListDetailByHandleQueryKey(handle, listId)
+      : customerListDetailQueryKey(listId),
+    queryFn: () =>
+      handle
+        ? customerProfileApi.getListDetailByHandle(handle, listId)
+        : customerProfileApi.getListDetail(listId),
     enabled: isAuthenticated && !!listId,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -126,13 +141,18 @@ export function useRemoveListItem(listId: string) {
   });
 }
 
-export function useWishlist() {
+export function useWishlist(handle?: string) {
   const { user } = useAuth();
   const isAuthenticated = !!user;
 
   return useQuery({
-    queryKey: customerWishlistQueryKey,
-    queryFn: () => customerProfileApi.getWishlist(),
+    queryKey: handle
+      ? customerWishlistByHandleQueryKey(handle)
+      : customerWishlistQueryKey,
+    queryFn: () =>
+      handle
+        ? customerProfileApi.getWishlistByHandle(handle)
+        : customerProfileApi.getWishlist(),
     enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

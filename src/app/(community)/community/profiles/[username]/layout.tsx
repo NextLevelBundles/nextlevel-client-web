@@ -9,6 +9,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/shared/components/ui/avatar";
+import { Badge } from "@/shared/components/ui/badge";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import {
   UserIcon,
@@ -19,9 +20,19 @@ import {
   TrophyIcon,
   SettingsIcon,
   Gamepad2,
+  StarIcon,
+  GlobeIcon,
+  QuoteIcon,
 } from "lucide-react";
+import {
+  PLATFORM_ICONS,
+  PLATFORM_STYLES,
+  DEFAULT_PLATFORM_STYLE,
+} from "@/lib/constants/social-platforms";
 import { useCustomer } from "@/hooks/queries/useCustomer";
-import { useCommunityProfileByHandle } from "@/hooks/queries/useCommunityProfile";
+import { useAuth } from "@/shared/providers/auth-provider";
+import { useCustomerProfileByHandle } from "@/hooks/queries/useCustomerProfile";
+import { useCuratorProfile } from "@/hooks/queries/useCuratorProfile";
 
 export default function ProfileLayout({
   children,
@@ -31,8 +42,12 @@ export default function ProfileLayout({
   const pathname = usePathname();
   const params = useParams();
   const username = params.username as string;
+  const { user, isLoading: authLoading } = useAuth();
   const { data: customer, isLoading } = useCustomer();
-  const { data: communityProfile } = useCommunityProfileByHandle(username);
+  const { data: customerProfile } = useCustomerProfileByHandle(username);
+  const { data: curatorProfile } = useCuratorProfile(
+    customerProfile?.isCurator ? username : ""
+  );
 
   const basePath = `/community/profiles/${username}`;
 
@@ -43,6 +58,9 @@ export default function ProfileLayout({
     { value: "wishlist", label: "Wishlist", href: `${basePath}/wishlist`, icon: HeartIcon },
     { value: "lists", label: "Lists", href: `${basePath}/lists`, icon: ListIcon },
     { value: "stats", label: "Stats", href: `${basePath}/stats`, icon: BarChart3Icon },
+    ...(customerProfile?.isCurator
+      ? [{ value: "curated-collections", label: "Curated Collections", href: `${basePath}/curated-collections`, icon: StarIcon }]
+      : []),
   ];
 
   const isOwnProfile = customer?.handle === username;
@@ -50,6 +68,7 @@ export default function ProfileLayout({
   const getCurrentTab = () => {
     if (pathname.includes("/game-imports")) return "game-imports";
     if (pathname.includes("/settings")) return "settings";
+    if (pathname.includes("/curated-collections")) return "curated-collections";
 
     if (pathname.includes("/games/")) return "collection";
     if (pathname.includes("/collection")) return "collection";
@@ -79,7 +98,25 @@ export default function ProfileLayout({
     }).format(date);
   };
 
-  const avatarUrl = communityProfile?.pictureUrl || customer?.pictureUrl;
+  const avatarUrl = customerProfile?.pictureUrl || customer?.pictureUrl;
+
+  const genreTags = curatorProfile?.genreFocusTags ?? [];
+  const specialtyTags = customerProfile?.specialties
+    ? customerProfile.specialties.split(",").map((s) => s.trim()).filter(Boolean)
+    : [];
+
+  if (!authLoading && !user) {
+    return (
+      <div className="text-center py-20">
+        <h2 className="text-xl font-semibold mb-2">Sign in required</h2>
+        <p className="text-muted-foreground">
+          You need to be signed in to view profiles.
+        </p>
+      </div>
+    );
+  }
+
+  const displayName = isOwnProfile ? customer?.name : (customerProfile?.name ?? username);
 
   return (
     <div className="grid gap-6">
@@ -100,19 +137,85 @@ export default function ProfileLayout({
                 <AvatarImage src={avatarUrl} alt={customer?.name ?? username} />
               )}
               <AvatarFallback className="bg-primary/10 text-lg font-semibold">
-                {getInitials(customer?.name)}
+                {getInitials(displayName)}
               </AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-2xl font-bold">{customer?.name}</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold">{displayName}</h1>
+                {customerProfile?.isCurator && (
+                  <Badge variant="default" className="text-[10px]">
+                    Curator
+                  </Badge>
+                )}
+              </div>
               <p className="text-sm text-muted-foreground">
                 @{username}
-                {customer?.createdAt && (
+                {isOwnProfile && customer?.createdAt && (
                   <span className="ml-2">
                     · Member since {formatMemberSince(customer.createdAt)}
                   </span>
                 )}
               </p>
+              <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                {customerProfile?.title && (
+                  <p className="text-sm text-primary font-medium">{customerProfile.title}</p>
+                )}
+                {(curatorProfile?.curatedBundlesCount ?? 0) > 0 && (
+                  <>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="text-sm text-muted-foreground">
+                      {curatorProfile!.curatedBundlesCount} Collections Curated
+                    </span>
+                  </>
+                )}
+                {(genreTags.length > 0 || specialtyTags.length > 0) && (
+                  <>
+                    <span className="text-muted-foreground">·</span>
+                    <div className="flex flex-wrap gap-1">
+                      {(genreTags.length > 0 ? genreTags : specialtyTags).map((tag) => (
+                        <Badge key={tag} variant="outline" className="text-[10px]">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+              {customerProfile?.headline && (
+                <div className="flex items-start gap-1.5 mt-1">
+                  <QuoteIcon className="h-3.5 w-3.5 flex-shrink-0 mt-0.5 text-primary/60" />
+                  <p className="text-sm text-muted-foreground italic">{customerProfile.headline}</p>
+                </div>
+              )}
+              {(customerProfile?.socialHandles?.length ?? 0) > 0 && (
+                <div className="flex gap-1.5 mt-1.5">
+                  {customerProfile!.socialHandles.map((sh) => {
+                    const Icon = PLATFORM_ICONS[sh.platform] ?? GlobeIcon;
+                    const style = PLATFORM_STYLES[sh.platform] ?? DEFAULT_PLATFORM_STYLE;
+                    return sh.url ? (
+                      <a
+                        key={sh.platform}
+                        href={sh.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={`${sh.platform}: ${sh.handle}`}
+                        className={`inline-flex items-center justify-center h-7 w-7 rounded-full border transition-opacity hover:opacity-80 ${style.bg} ${style.text} ${style.border}`}
+                      >
+                        <Icon className="h-3.5 w-3.5" />
+                      </a>
+                    ) : (
+                      <span
+                        key={sh.platform}
+                        title={`${sh.platform}: ${sh.handle}`}
+                        className={`inline-flex items-center justify-center h-7 w-7 rounded-full border ${style.bg} ${style.text} ${style.border}`}
+                      >
+                        <Icon className="h-3.5 w-3.5" />
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </>
         )}
@@ -126,7 +229,7 @@ export default function ProfileLayout({
               <Link key={tab.value} href={tab.href} className="flex">
                 <TabsTrigger
                   value={tab.value}
-                  className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                  className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
                     <tab.icon className="h-4 w-4" />
@@ -141,7 +244,7 @@ export default function ProfileLayout({
                   <Link href={`${basePath}/settings/game-imports`} className="flex">
                     <TabsTrigger
                       value="game-imports"
-                      className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                      className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none cursor-pointer"
                     >
                       <div className="flex items-center gap-2">
                         <Gamepad2 className="h-4 w-4" />
@@ -153,7 +256,7 @@ export default function ProfileLayout({
                 <Link href={`${basePath}/settings`} className="flex">
                   <TabsTrigger
                     value="settings"
-                    className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                    className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none cursor-pointer"
                   >
                     <SettingsIcon className="h-4 w-4" />
                   </TabsTrigger>

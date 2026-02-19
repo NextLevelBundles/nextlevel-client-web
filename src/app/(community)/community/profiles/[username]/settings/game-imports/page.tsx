@@ -4,21 +4,32 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/shared/components/ui/button";
-import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Skeleton } from "@/shared/components/ui/skeleton";
+import { Input } from "@/shared/components/ui/input";
 import Link from "next/link";
-import { Loader2Icon, ArrowLeftIcon, DownloadIcon, RefreshCwIcon } from "lucide-react";
+import {
+  Loader2Icon,
+  ArrowLeftIcon,
+  DownloadIcon,
+  RefreshCwIcon,
+  SearchIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  RotateCcwIcon,
+} from "lucide-react";
 import { useCustomer } from "@/hooks/queries/useCustomer";
 import { useAuth } from "@/shared/providers/auth-provider";
 import {
   useUnimportedGames,
   useImportGames,
+  useSetGamesRemoved,
   unimportedGamesQueryKey,
 } from "@/hooks/queries/useCustomerCollection";
 import { useSyncSteamLibrary } from "@/hooks/queries/useSteamKeys";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { ImportGameStatus } from "@/lib/api/types/customer-profile";
+import { Tabs, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/shared/components/ui/toggle-group";
 import {
   Select,
@@ -28,7 +39,12 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 
+type PlaytimeFilter = "all" | "has-playtime" | "no-playtime";
+type ActiveTab = "ready" | "ignored";
+const PAGE_SIZES = [25, 50, 100] as const;
+
 const PLAY_STATUSES = ["NoStatus", "Unplayed", "Playing", "Played"] as const;
+const VISIBLE_PLAY_STATUSES = ["Unplayed", "Playing", "Played"] as const;
 
 const PLAY_STATUS_LABELS: Record<string, string> = {
   NoStatus: "No Status",
@@ -58,13 +74,60 @@ export default function GameImportsPage() {
   const username = params.username as string;
   const { isLoading: authLoading } = useAuth();
   const { data: customer } = useCustomer();
-  const { data: games, isLoading } = useUnimportedGames();
   const importGames = useImportGames();
+  const setGamesRemoved = useSetGamesRemoved();
   const syncSteamLibrary = useSyncSteamLibrary();
   const queryClient = useQueryClient();
 
+  const [activeTab, setActiveTab] = useState<ActiveTab>("ready");
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [statuses, setStatuses] = useState<Record<number, ImportGameStatus>>({});
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [playtimeFilter, setPlaytimeFilter] = useState<PlaytimeFilter>("all");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(25);
+
+  const isRemoved = activeTab === "ignored";
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // Reset to page 1 when filter/pageSize changes
+  useEffect(() => {
+    setPage(1);
+  }, [playtimeFilter, pageSize]);
+
+  const serverPlaytimeFilter = playtimeFilter === "all" ? undefined : playtimeFilter;
+
+  // Active tab query (full pagination)
+  const { data, isLoading } = useUnimportedGames({
+    search: debouncedSearch || undefined,
+    playtimeFilter: serverPlaytimeFilter,
+    page,
+    pageSize,
+    isRemoved,
+  });
+
+  // Inactive tab query (just for count)
+  const { data: otherTabData } = useUnimportedGames({
+    page: 1,
+    pageSize: 1,
+    isRemoved: !isRemoved,
+  });
+
+  const games = data?.items;
+  const totalPages = data?.totalPages ?? 1;
+  const totalFiltered = data?.total ?? 0;
+
+  const readyCount = isRemoved ? (otherTabData?.total ?? 0) : totalFiltered;
+  const ignoredCount = isRemoved ? totalFiltered : (otherTabData?.total ?? 0);
 
   // Redirect if not own profile
   useEffect(() => {
@@ -72,6 +135,15 @@ export default function GameImportsPage() {
       router.replace(`/community/profiles/${username}`);
     }
   }, [customer, username, router]);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as ActiveTab);
+    setPage(1);
+    setSelected(new Set());
+    setSearch("");
+    setDebouncedSearch("");
+    setPlaytimeFilter("all");
+  };
 
   const toggleGame = (appId: number) => {
     setSelected((prev) => {
@@ -86,12 +158,19 @@ export default function GameImportsPage() {
   };
 
   const selectAll = () => {
-    if (!games) return;
-    setSelected(new Set(games.map((g) => g.appId)));
+    setSelected((prev) => {
+      const next = new Set(prev);
+      for (const g of games ?? []) next.add(g.appId);
+      return next;
+    });
   };
 
   const deselectAll = () => {
-    setSelected(new Set());
+    setSelected((prev) => {
+      const next = new Set(prev);
+      for (const g of games ?? []) next.delete(g.appId);
+      return next;
+    });
   };
 
   const handleStatusSave = useCallback((appId: number, status: ImportGameStatus) => {
@@ -125,6 +204,22 @@ export default function GameImportsPage() {
     }
   };
 
+  const handleSetRemoved = async (setRemoved: boolean) => {
+    const appIds = Array.from(selected);
+    if (appIds.length === 0) return;
+    try {
+      await setGamesRemoved.mutateAsync({ appIds, isRemoved: setRemoved });
+      setSelected(new Set());
+      toast.success(
+        setRemoved
+          ? `Removed ${appIds.length} game${appIds.length > 1 ? "s" : ""}`
+          : `Recovered ${appIds.length} game${appIds.length > 1 ? "s" : ""}`
+      );
+    } catch {
+      toast.error(setRemoved ? "Failed to remove games" : "Failed to recover games");
+    }
+  };
+
   const handleSyncSteamLibrary = () => {
     syncSteamLibrary.mutate(undefined, {
       onSuccess: () => {
@@ -135,20 +230,22 @@ export default function GameImportsPage() {
 
   if (authLoading || isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         <Skeleton className="h-8 w-48" />
-        {[...Array(5)].map((_, i) => (
-          <Skeleton key={i} className="h-14 w-full" />
-        ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          {[...Array(6)].map((_, i) => (
+            <Skeleton key={i} className="h-[113px] w-full rounded-lg" />
+          ))}
+        </div>
       </div>
     );
   }
 
-  const allSelected = games && games.length > 0 && selected.size === games.length;
+  const allSelected = !!games && games.length > 0 && games.every((g) => selected.has(g.appId));
 
   const hasSteamConnected = !!customer?.steamId;
   const hasSynced = customer?.steamLibrarySyncStatus === "SyncSucceeded";
-  const hasNoGames = !games || games.length === 0;
+  const hasNoGames = data !== undefined && data.total === 0 && !debouncedSearch && !serverPlaytimeFilter;
 
   const renderEmptyState = () => {
     if (!hasSteamConnected) {
@@ -181,6 +278,14 @@ export default function GameImportsPage() {
       );
     }
 
+    if (activeTab === "ignored") {
+      return (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">No removed games.</p>
+        </div>
+      );
+    }
+
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground">All Steam games imported!</p>
@@ -189,7 +294,7 @@ export default function GameImportsPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button
@@ -201,65 +306,147 @@ export default function GameImportsPage() {
           </Button>
           <h2 className="text-xl font-bold">Game Imports</h2>
         </div>
-        {hasSteamConnected && (
-          <Button
-            onClick={handleSyncSteamLibrary}
-            disabled={syncSteamLibrary.isPending}
-            variant="outline"
-            size="sm"
-            className="gap-2"
-          >
-            {syncSteamLibrary.isPending ? (
-              <Loader2Icon className="h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCwIcon className="h-4 w-4" />
-            )}
-            Sync Steam Library
-          </Button>
-        )}
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
+          <TabsList className="justify-start gap-4 rounded-none border-b bg-transparent p-0">
+            <TabsTrigger
+              value="ready"
+              className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+            >
+              READY TO SYNC ({readyCount})
+            </TabsTrigger>
+            <TabsTrigger
+              value="ignored"
+              className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+            >
+              REMOVED ({ignoredCount})
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
+
+      {hasSteamConnected && (
+        <Button
+          onClick={handleSyncSteamLibrary}
+          disabled={syncSteamLibrary.isPending}
+          variant="outline"
+          size="sm"
+          className="gap-2"
+        >
+          {syncSteamLibrary.isPending ? (
+            <Loader2Icon className="h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCwIcon className="h-4 w-4" />
+          )}
+          Sync Steam Library
+        </Button>
+      )}
 
       {hasNoGames ? (
         renderEmptyState()
       ) : (
         <>
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              {games.length} unimported game{games.length !== 1 ? "s" : ""}
-              {selected.size > 0 && ` · ${selected.size} selected`}
-            </p>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={allSelected ? deselectAll : selectAll}
-              >
-                {allSelected ? "Deselect All" : "Select All"}
-              </Button>
-              <Button
-                size="sm"
-                disabled={selected.size === 0 || importGames.isPending}
-                onClick={() => handleImport(Array.from(selected))}
-              >
-                {importGames.isPending ? (
-                  <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
+          {/* Search & Filters */}
+          <div className="flex flex-col gap-3">
+            <div className="relative">
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search games..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5">
+                  {(
+                    [
+                      { value: "all", label: "All" },
+                      { value: "has-playtime", label: "Has Playtime" },
+                      { value: "no-playtime", label: "Never Played" },
+                    ] as const
+                  ).map((f) => (
+                    <button
+                      key={f.value}
+                      onClick={() => setPlaytimeFilter(f.value)}
+                      className={`px-3 py-1 text-xs rounded-full border transition-colors cursor-pointer ${
+                        playtimeFilter === f.value
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-transparent text-muted-foreground border-border hover:text-foreground"
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {totalFiltered} game{totalFiltered !== 1 ? "s" : ""}
+                  {selected.size > 0 && ` · ${selected.size} selected`}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={allSelected ? deselectAll : selectAll}
+                >
+                  {allSelected ? "Deselect All" : "Select All"}
+                </Button>
+                {activeTab === "ready" ? (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={selected.size === 0 || setGamesRemoved.isPending}
+                      onClick={() => handleSetRemoved(true)}
+                    >
+                      {setGamesRemoved.isPending && (
+                        <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
+                      )}
+                      Remove Selected
+                    </Button>
+                    <Button
+                      size="sm"
+                      disabled={selected.size === 0 || importGames.isPending}
+                      onClick={() => handleImport(Array.from(selected))}
+                    >
+                      {importGames.isPending ? (
+                        <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
+                      ) : (
+                        <DownloadIcon className="h-4 w-4 mr-1" />
+                      )}
+                      Add games to collection
+                    </Button>
+                  </>
                 ) : (
-                  <DownloadIcon className="h-4 w-4 mr-1" />
+                  <Button
+                    size="sm"
+                    disabled={selected.size === 0 || setGamesRemoved.isPending}
+                    onClick={() => handleSetRemoved(false)}
+                  >
+                    {setGamesRemoved.isPending ? (
+                      <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
+                    ) : (
+                      <RotateCcwIcon className="h-4 w-4 mr-1" />
+                    )}
+                    Recover
+                  </Button>
                 )}
-                Add games to collection
-              </Button>
+              </div>
             </div>
           </div>
 
-          <div className="space-y-1">
-            {games.map((game) => {
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+            {games?.map((game) => {
               const gameStatus = statuses[game.appId];
               const playStatus = gameStatus?.playStatus || "NoStatus";
               const completionStatus = gameStatus?.completionStatus;
               const showCompletion = playStatus === "Playing" || playStatus === "Played";
+              const isSelected = selected.has(game.appId);
 
               function handlePlayStatusChange(value: string) {
                 if (!value) return;
+                if (!selected.has(game.appId)) toggleGame(game.appId);
                 let newCompletion: string | null = completionStatus ?? null;
 
                 if (value === "NoStatus" || value === "Unplayed") {
@@ -289,73 +476,129 @@ export default function GameImportsPage() {
               return (
                 <div
                   key={game.appId}
-                  className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 transition-colors"
+                  className={`group relative flex rounded-lg border transition-colors overflow-hidden cursor-pointer ${
+                    isSelected
+                      ? "border-primary bg-primary/5"
+                      : "border-border bg-card hover:border-muted-foreground/25"
+                  }`}
+                  onClick={() => toggleGame(game.appId)}
                 >
-                  <Checkbox
-                    checked={selected.has(game.appId)}
-                    onCheckedChange={() => toggleGame(game.appId)}
-                  />
-                  <div className="w-8 h-8 flex-shrink-0 rounded overflow-hidden bg-muted/50">
-                    {game.imgIconUrl ? (
+                  {/* Checkbox + Cover image */}
+                  <div className="p-2 flex-shrink-0">
+                    <div className="relative w-[50px] flex-shrink-0 aspect-[2/3] rounded overflow-hidden">
                       <Image
-                        src={`https://media.steampowered.com/steamcommunity/public/images/apps/${game.appId}/${game.imgIconUrl}.jpg`}
+                        src={`https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${game.appId}/library_600x900_2x.jpg`}
                         alt=""
-                        width={32}
-                        height={32}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
+                        unoptimized
                       />
-                    ) : (
-                      <div className="w-full h-full" />
-                    )}
+                    </div>
                   </div>
-                  <span className="text-sm font-medium flex-1 min-w-0 truncate">
-                    {game.name ?? `Steam App ${game.appId}`}
-                  </span>
-                  <div className="flex flex-col items-start gap-1.5 flex-shrink-0">
-                    <ToggleGroup
-                      type="single"
-                      value={playStatus}
-                      onValueChange={handlePlayStatusChange}
-                      className="justify-start"
-                    >
-                      {PLAY_STATUSES.map((status) => (
-                        <ToggleGroupItem
-                          key={status}
-                          value={status}
-                          variant="outline"
-                          size="sm"
-                          className="text-xs"
-                        >
-                          {PLAY_STATUS_LABELS[status]}
-                        </ToggleGroupItem>
-                      ))}
-                    </ToggleGroup>
 
-                    {showCompletion && (
-                      <Select
-                        value={completionStatus ?? ""}
-                        onValueChange={handleCompletionChange}
-                      >
-                        <SelectTrigger className="w-[130px] h-8 text-xs">
-                          <SelectValue placeholder="Completion..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {getCompletionOptions(playStatus).map((option) => (
-                            <SelectItem key={option} value={option}>
-                              {option}
-                            </SelectItem>
+                  {/* Card content */}
+                  <div className="flex-1 min-w-0 p-3 flex flex-col gap-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-sm font-medium leading-tight line-clamp-2">
+                        {game.name ?? `Steam App ${game.appId}`}
+                      </span>
+                      <span className="text-xs text-muted-foreground flex-shrink-0">
+                        {formatPlaytime(game.playtimeForever)}
+                      </span>
+                    </div>
+
+                    {activeTab === "ready" && (
+                      <div className="flex flex-col gap-1.5 mt-auto h-[68px]">
+                        <ToggleGroup
+                          type="single"
+                          value={playStatus}
+                          onValueChange={handlePlayStatusChange}
+                          className="w-full"
+                          onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                        >
+                          {VISIBLE_PLAY_STATUSES.map((status) => (
+                            <ToggleGroupItem
+                              key={status}
+                              value={status}
+                              variant="outline"
+                              size="sm"
+                              className="text-xs flex-1"
+                            >
+                              {PLAY_STATUS_LABELS[status]}
+                            </ToggleGroupItem>
                           ))}
-                        </SelectContent>
-                      </Select>
+                        </ToggleGroup>
+
+                        {showCompletion && (
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <Select
+                              value={completionStatus ?? ""}
+                              onValueChange={handleCompletionChange}
+                            >
+                              <SelectTrigger className="w-[140px] h-8 text-xs">
+                                <SelectValue placeholder="Completion..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {getCompletionOptions(playStatus).map((option) => (
+                                  <SelectItem key={option} value={option}>
+                                    {option}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
-                  <span className="text-xs text-muted-foreground flex-shrink-0 w-16 text-right">
-                    {formatPlaytime(game.playtimeForever)}
-                  </span>
                 </div>
               );
             })}
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-2">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span>Show</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                  className="bg-transparent border rounded-md px-2 py-1 text-xs"
+                >
+                  {PAGE_SIZES.map((size) => (
+                    <option key={size} value={size}>
+                      {size}
+                    </option>
+                  ))}
+                </select>
+                <span>per page</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  Page {page} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  disabled={page <= 1}
+                  onClick={() => setPage((p) => p - 1)}
+                >
+                  <ChevronLeftIcon className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  disabled={page >= totalPages}
+                  onClick={() => setPage((p) => p + 1)}
+                >
+                  <ChevronRightIcon className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>
