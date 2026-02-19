@@ -915,8 +915,10 @@ export function BundleDetail({ bundle, isPreview = false }: { bundle: Bundle; is
                 <CuratorComments content={bundle.curatorComment} compact />
               )}
 
-              {/* Charity Leaderboard */}
-              <CharityLeaderboard bundleId={bundle.id} />
+              {/* Charity Leaderboard - only show when bundle has charities */}
+              {bundle.charities && bundle.charities.length > 0 && (
+                <CharityLeaderboard bundleId={bundle.id} />
+              )}
 
               {/* Desktop Purchase Summary */}
               {/* <div className="hidden lg:block sticky top-16"> */}

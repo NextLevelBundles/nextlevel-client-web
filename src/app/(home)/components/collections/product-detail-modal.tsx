@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Button } from "@/shared/components/ui/button";
-import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/shared/components/ui/dialog";
 import { Badge } from "@/shared/components/ui/badge";
 import { ScrollArea, ScrollBar } from "@/shared/components/ui/scroll-area";
 import { cn } from "@/shared/utils/tailwind";
@@ -254,6 +254,7 @@ export function ProductDetailModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[95vw] lg:max-w-[90vw] w-full lg:w-[1400px] max-h-[95vh] lg:max-h-[900px] h-[90vh] lg:h-[85vh] p-0 overflow-hidden flex flex-col gap-0">
+        <DialogTitle className="sr-only">{product?.title ?? "Product Details"}</DialogTitle>
         {/* Header with status indicator - always present to prevent layout shift */}
         <div
           className={cn(

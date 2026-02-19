@@ -765,15 +765,17 @@ export function PurchaseSummary({
                         : "0%",
                   }}
                 />
-                <div
-                  className="bg-rose-400 dark:bg-rose-600 transition-all"
-                  style={{
-                    width:
-                      totalAmount > 0
-                        ? `${Math.max(0, (charityAmountForDisplay / totalAmount) * 100)}%`
-                        : "0%",
-                  }}
-                />
+                {charityAmountForDisplay > 0 && (
+                  <div
+                    className="bg-rose-400 dark:bg-rose-600 transition-all"
+                    style={{
+                      width:
+                        totalAmount > 0
+                          ? `${Math.max(0, (charityAmountForDisplay / totalAmount) * 100)}%`
+                          : "0%",
+                    }}
+                  />
+                )}
                 {developerSupportAmount > 0 && (
                   <div
                     className="bg-purple-400 dark:bg-purple-600 transition-all"
