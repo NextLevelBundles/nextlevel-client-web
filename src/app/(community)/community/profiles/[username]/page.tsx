@@ -104,101 +104,84 @@ function Section({
 
 // --- Playing Now Section ---
 
-function PlayingNowSection({
+function PlayingNowContent({
   games,
   isLoading,
   username,
-  listId,
 }: {
   games: CustomerListItem[];
   isLoading: boolean;
   username: string;
-  listId: string | null;
 }) {
+  const maxVisible = 6;
+
   if (isLoading) {
     return (
-      <Section title="Playing Now">
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="aspect-[3/4] rounded-md" />
-          ))}
-        </div>
-      </Section>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {[...Array(maxVisible)].map((_, i) => (
+          <Skeleton key={i} className="aspect-[3/4] rounded-md" />
+        ))}
+      </div>
     );
   }
 
-  const maxVisible = 6;
   const visibleGames = games.slice(0, maxVisible);
 
   return (
-    <Section
-      title="Playing Now"
-      action={
-        games.length > 0 && listId ? (
-          <Link
-            href={`/community/profiles/${username}/lists/${listId}`}
-            className="text-xs text-primary hover:underline"
-          >
-            View all ({games.length})
-          </Link>
-        ) : null
-      }
-    >
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {[...Array(maxVisible)].map((_, i) => {
-          const game = visibleGames[i];
-          if (!game) {
-            return (
-              <div key={`empty-${i}`}>
-                <div className="aspect-[3/4] rounded-md bg-muted/30 mb-1.5 flex items-center justify-center">
-                  <ImageIcon className="h-6 w-6 text-muted-foreground/20" />
-                </div>
-                <div className="h-4" />
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      {[...Array(maxVisible)].map((_, i) => {
+        const game = visibleGames[i];
+        if (!game) {
+          return (
+            <div key={`empty-${i}`}>
+              <div className="aspect-[3/4] rounded-md bg-muted/30 mb-1.5 flex items-center justify-center">
+                <ImageIcon className="h-6 w-6 text-muted-foreground/20" />
               </div>
-            );
-          }
-          const content = (
-            <div>
-              <div className="relative aspect-[3/4] rounded-md overflow-hidden bg-muted/50 mb-1.5">
-                {game.coverImageId ? (
-                  <Image
-                    src={getIgdbCoverUrl(game.coverImageId)}
-                    alt={game.title ?? "Game"}
-                    width={264}
-                    height={352}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <ImageIcon className="h-6 w-6 text-muted-foreground/40" />
-                  </div>
-                )}
-                {game.genre && (
-                  <span className="absolute top-1 right-1 px-1.5 py-0.5 rounded text-[9px] font-semibold text-white bg-primary/80">
-                    {game.genre}
-                  </span>
-                )}
-              </div>
-              <p className="text-xs font-medium truncate" title={game.title ?? undefined}>
-                {game.title}
-              </p>
+              <div className="h-4" />
             </div>
           );
+        }
+        const content = (
+          <div>
+            <div className="relative aspect-[3/4] rounded-md overflow-hidden bg-muted/50 mb-1.5">
+              {game.coverImageId ? (
+                <Image
+                  src={getIgdbCoverUrl(game.coverImageId)}
+                  alt={game.title ?? "Game"}
+                  width={264}
+                  height={352}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <ImageIcon className="h-6 w-6 text-muted-foreground/40" />
+                </div>
+              )}
+              {game.genre && (
+                <span className="absolute top-1 right-1 px-1.5 py-0.5 rounded text-[9px] font-semibold text-white bg-primary/80">
+                  {game.genre}
+                </span>
+              )}
+            </div>
+            <p className="text-xs font-medium truncate" title={game.title ?? undefined}>
+              {game.title}
+            </p>
+          </div>
+        );
 
-          return game.slug ? (
-            <Link
-              key={game.id}
-              href={`/community/profiles/${username}/games/${game.slug}`}
-              className="group hover:opacity-90 transition-opacity"
-            >
-              {content}
-            </Link>
-          ) : (
-            <div key={game.id}>{content}</div>
-          );
-        })}
-      </div>
-    </Section>
+        return game.slug ? (
+          <Link
+            key={game.id}
+            href={`/community/profiles/${username}/games/${game.slug}`}
+            className="group hover:opacity-90 transition-opacity"
+          >
+            {content}
+          </Link>
+        ) : (
+          <div key={game.id}>{content}</div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -283,7 +266,7 @@ const TASTE_FILTER_OPTIONS = [
   { value: "completed", label: "Games completed" },
 ];
 
-function TasteProfileSection({
+function TasteProfileContent({
   totalGames,
   filteredTotalGames,
   genres,
@@ -292,7 +275,6 @@ function TasteProfileSection({
   isLoading,
   filter,
   onFilterChange,
-  username,
 }: {
   totalGames: number;
   filteredTotalGames: number;
@@ -302,7 +284,6 @@ function TasteProfileSection({
   isLoading: boolean;
   filter: string;
   onFilterChange: (value: string) => void;
-  username: string;
 }) {
   // Top 9 genres + "Other" bucket
   const displayGenres = useMemo(() => {
@@ -361,16 +342,14 @@ function TasteProfileSection({
 
   if (isLoading) {
     return (
-      <Section title="Taste Profile">
-        <div className="flex items-center gap-8">
-          <Skeleton className="h-40 w-40 rounded-full flex-shrink-0" />
-          <div className="space-y-3 flex-1">
-            {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-4 w-full" />
-            ))}
-          </div>
+      <div className="flex items-center gap-8">
+        <Skeleton className="h-40 w-40 rounded-full flex-shrink-0" />
+        <div className="space-y-3 flex-1">
+          {[...Array(5)].map((_, i) => (
+            <Skeleton key={i} className="h-4 w-full" />
+          ))}
         </div>
-      </Section>
+      </div>
     );
   }
 
@@ -379,20 +358,7 @@ function TasteProfileSection({
   const chartTotal = displayGenres.reduce((sum, g) => sum + g.count, 0);
 
   return (
-    <Section
-      title="Taste Profile"
-      action={
-        <div className="flex items-center gap-2">
-          <Link href={`/community/profiles/${username}/stats`}>
-            <Button variant="ghost" size="sm" className="h-auto py-0">
-              View All
-              <ArrowRightIcon className="ml-1 h-3.5 w-3.5" />
-            </Button>
-          </Link>
-        </div>
-      }
-    >
-      <div className="space-y-6">
+    <div className="space-y-6">
         {/* Genre breakdown with filter */}
         <div className="rounded-lg border bg-muted/20 p-4">
           <div className="flex items-center justify-between mb-4">
@@ -601,8 +567,7 @@ function TasteProfileSection({
             </div>
           </div>
         </div>
-      </div>
-    </Section>
+    </div>
   );
 }
 
@@ -835,26 +800,52 @@ export default function ProfileOverviewPage() {
 
   return (
     <div className="grid gap-6">
-      {/* Two-column layout: left = Game Collection + Stats, right = Currently Playing */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <TasteProfileSection
-          totalGames={stats?.totalGames ?? 0}
-          filteredTotalGames={filteredStats?.filteredTotalGames ?? 0}
-          genres={filteredStats?.genreBreakdown ?? []}
-          genresLoading={filteredStatsLoading}
-          completionBreakdown={stats?.completionBreakdown ?? []}
-          isLoading={statsLoading}
-          filter={tasteFilter}
-          onFilterChange={setTasteFilter}
-          username={username}
-        />
-        <div className="flex flex-col gap-6">
-          <PlayingNowSection
+      {/* Two-column layout: left = Taste Profile (spans 2 rows), right = Playing Now + Stats */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" style={{ gridTemplateRows: "auto auto" }}>
+        <div className="lg:row-span-2">
+          <Section
+            title="Taste Profile"
+            action={
+              <Link href={`/community/profiles/${username}/stats`}>
+                <Button variant="ghost" size="sm" className="h-auto py-0">
+                  View All
+                  <ArrowRightIcon className="ml-1 h-3.5 w-3.5" />
+                </Button>
+              </Link>
+            }
+          >
+            <TasteProfileContent
+              totalGames={stats?.totalGames ?? 0}
+              filteredTotalGames={filteredStats?.filteredTotalGames ?? 0}
+              genres={filteredStats?.genreBreakdown ?? []}
+              genresLoading={filteredStatsLoading}
+              completionBreakdown={stats?.completionBreakdown ?? []}
+              isLoading={statsLoading}
+              filter={tasteFilter}
+              onFilterChange={setTasteFilter}
+            />
+          </Section>
+        </div>
+        <Section
+          title="Playing Now"
+          action={
+            (playingNowDetail?.items?.length ?? 0) > 0 && playingNowList?.id ? (
+              <Link
+                href={`/community/profiles/${username}/lists/${playingNowList.id}`}
+                className="text-xs text-primary hover:underline"
+              >
+                View all ({playingNowDetail!.items.length})
+              </Link>
+            ) : null
+          }
+        >
+          <PlayingNowContent
             games={playingNowDetail?.items ?? []}
             isLoading={listsLoading || playingNowLoading}
             username={username}
-            listId={playingNowList?.id ?? null}
           />
+        </Section>
+        <div className="lg:col-start-2">
           <StatsSection stats={stats} isLoading={statsLoading} />
         </div>
       </div>
