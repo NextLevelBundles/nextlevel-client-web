@@ -100,6 +100,10 @@ function GameAchievementRow({ game }: { game: GameAchievementProgress }) {
       {expanded && game.achievementsList?.length > 0 && (
         <div className="pb-3 pl-[4.75rem] pr-1">
           <div className="rounded-md border bg-muted/20 divide-y">
+            <div className="flex items-center justify-between px-3 py-2.5 text-xs font-semibold text-foreground bg-muted rounded-t-md">
+              <span>Achievement Name</span>
+              <span>Unlocked On</span>
+            </div>
             {game.achievementsList.map((ach) => (
               <div
                 key={ach.apiName}
@@ -115,11 +119,9 @@ function GameAchievementRow({ game }: { game: GameAchievementProgress }) {
                     {formatApiName(ach.apiName)}
                   </span>
                 </div>
-                {ach.achieved && ach.unlockTime && (
-                  <span className="text-muted-foreground flex-shrink-0 ml-3">
-                    {formatDate(ach.unlockTime)}
-                  </span>
-                )}
+                <span className="text-muted-foreground flex-shrink-0 ml-3">
+                  {ach.achieved && ach.unlockTime ? formatDate(ach.unlockTime) : "Locked"}
+                </span>
               </div>
             ))}
           </div>
