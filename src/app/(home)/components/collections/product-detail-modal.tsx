@@ -101,7 +101,7 @@ export function ProductDetailModal({
       .sort((a, b) => a.price - b.price); // Always low to high for charity
     const upsellTiers = allTiers
       .filter((t) => t.type === TierType.Upsell)
-      .sort((a, b) => a.price - b.price); // Always low to high for upsell
+      .sort((a, b) => b.price - a.price); // High to low for upsell (matches bundle view)
 
     const orderedTiers = [...baseTiers, ...charityTiers, ...upsellTiers];
 

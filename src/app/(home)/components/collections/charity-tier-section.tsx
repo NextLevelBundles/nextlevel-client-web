@@ -415,6 +415,8 @@ export function CharityTierSection({
           isOpen={!!selectedProduct}
           onClose={() => setSelectedProduct(null)}
           onNavigateToProduct={(product) => setSelectedProduct(product)}
+          allTiers={bundle.tiers}
+          baseTierDisplayOrder="desc"
         />
       )}
 
