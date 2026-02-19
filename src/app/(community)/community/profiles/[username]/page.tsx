@@ -144,55 +144,60 @@ function PlayingNowSection({
         ) : null
       }
     >
-      {games.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {visibleGames.map((game) => {
-            const content = (
-              <div>
-                <div className="relative aspect-[3/4] rounded-md overflow-hidden bg-muted/50 mb-1.5">
-                  {game.coverImageId ? (
-                    <Image
-                      src={getIgdbCoverUrl(game.coverImageId)}
-                      alt={game.title ?? "Game"}
-                      width={264}
-                      height={352}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <ImageIcon className="h-6 w-6 text-muted-foreground/40" />
-                    </div>
-                  )}
-                  {game.genre && (
-                    <span className="absolute top-1 right-1 px-1.5 py-0.5 rounded text-[9px] font-semibold text-white bg-primary/80">
-                      {game.genre}
-                    </span>
-                  )}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {[...Array(maxVisible)].map((_, i) => {
+          const game = visibleGames[i];
+          if (!game) {
+            return (
+              <div key={`empty-${i}`}>
+                <div className="aspect-[3/4] rounded-md bg-muted/30 mb-1.5 flex items-center justify-center">
+                  <ImageIcon className="h-6 w-6 text-muted-foreground/20" />
                 </div>
-                <p className="text-xs font-medium truncate" title={game.title ?? undefined}>
-                  {game.title}
-                </p>
+                <div className="h-4" />
               </div>
             );
+          }
+          const content = (
+            <div>
+              <div className="relative aspect-[3/4] rounded-md overflow-hidden bg-muted/50 mb-1.5">
+                {game.coverImageId ? (
+                  <Image
+                    src={getIgdbCoverUrl(game.coverImageId)}
+                    alt={game.title ?? "Game"}
+                    width={264}
+                    height={352}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <ImageIcon className="h-6 w-6 text-muted-foreground/40" />
+                  </div>
+                )}
+                {game.genre && (
+                  <span className="absolute top-1 right-1 px-1.5 py-0.5 rounded text-[9px] font-semibold text-white bg-primary/80">
+                    {game.genre}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs font-medium truncate" title={game.title ?? undefined}>
+                {game.title}
+              </p>
+            </div>
+          );
 
-            return game.slug ? (
-              <Link
-                key={game.id}
-                href={`/community/profiles/${username}/games/${game.slug}`}
-                className="group hover:opacity-90 transition-opacity"
-              >
-                {content}
-              </Link>
-            ) : (
-              <div key={game.id}>{content}</div>
-            );
-          })}
-        </div>
-      ) : (
-        <p className="text-muted-foreground text-sm">
-          No games in Playing Now list.
-        </p>
-      )}
+          return game.slug ? (
+            <Link
+              key={game.id}
+              href={`/community/profiles/${username}/games/${game.slug}`}
+              className="group hover:opacity-90 transition-opacity"
+            >
+              {content}
+            </Link>
+          ) : (
+            <div key={game.id}>{content}</div>
+          );
+        })}
+      </div>
     </Section>
   );
 }
@@ -465,35 +470,37 @@ function TasteProfileSection({
                 </PieChart>
               </ChartContainer>
             </div>
-            <div className="flex-1 space-y-2.5 w-full">
-              {displayGenres.map((genre, i) => (
-                <div key={genre.name} className="flex items-center gap-2.5">
-                  <div
-                    className="h-3 w-3 rounded-sm flex-shrink-0"
-                    style={{
-                      backgroundColor: GENRE_COLORS[i % GENRE_COLORS.length],
-                    }}
-                  />
-                  <span className="text-sm flex-1 min-w-0 truncate">
-                    {genre.name}
-                  </span>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <div className="w-20 h-1.5 rounded-full bg-muted overflow-hidden">
-                      <div
-                        className="h-full rounded-full"
-                        style={{
-                          width: `${genre.percentage}%`,
-                          backgroundColor:
-                            GENRE_COLORS[i % GENRE_COLORS.length],
-                        }}
-                      />
-                    </div>
-                    <span className="text-xs text-muted-foreground w-10 text-right">
-                      {genre.percentage}%
+            <div className="flex-1 w-full" style={{ minHeight: "280px" }}>
+              <div className="space-y-2.5">
+                {displayGenres.map((genre, i) => (
+                  <div key={genre.name} className="flex items-center gap-2.5">
+                    <div
+                      className="h-3 w-3 rounded-sm flex-shrink-0"
+                      style={{
+                        backgroundColor: GENRE_COLORS[i % GENRE_COLORS.length],
+                      }}
+                    />
+                    <span className="text-sm flex-1 min-w-0 truncate">
+                      {genre.name}
                     </span>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="w-20 h-1.5 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full rounded-full"
+                          style={{
+                            width: `${genre.percentage}%`,
+                            backgroundColor:
+                              GENRE_COLORS[i % GENRE_COLORS.length],
+                          }}
+                        />
+                      </div>
+                      <span className="text-xs text-muted-foreground w-10 text-right">
+                        {genre.percentage}%
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -830,26 +837,26 @@ export default function ProfileOverviewPage() {
     <div className="grid gap-6">
       {/* Two-column layout: left = Game Collection + Stats, right = Currently Playing */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TasteProfileSection
+          totalGames={stats?.totalGames ?? 0}
+          filteredTotalGames={filteredStats?.filteredTotalGames ?? 0}
+          genres={filteredStats?.genreBreakdown ?? []}
+          genresLoading={filteredStatsLoading}
+          completionBreakdown={stats?.completionBreakdown ?? []}
+          isLoading={statsLoading}
+          filter={tasteFilter}
+          onFilterChange={setTasteFilter}
+          username={username}
+        />
         <div className="flex flex-col gap-6">
-          <TasteProfileSection
-            totalGames={stats?.totalGames ?? 0}
-            filteredTotalGames={filteredStats?.filteredTotalGames ?? 0}
-            genres={filteredStats?.genreBreakdown ?? []}
-            genresLoading={filteredStatsLoading}
-            completionBreakdown={stats?.completionBreakdown ?? []}
-            isLoading={statsLoading}
-            filter={tasteFilter}
-            onFilterChange={setTasteFilter}
+          <PlayingNowSection
+            games={playingNowDetail?.items ?? []}
+            isLoading={listsLoading || playingNowLoading}
             username={username}
+            listId={playingNowList?.id ?? null}
           />
           <StatsSection stats={stats} isLoading={statsLoading} />
         </div>
-        <PlayingNowSection
-          games={playingNowDetail?.items ?? []}
-          isLoading={listsLoading || playingNowLoading}
-          username={username}
-          listId={playingNowList?.id ?? null}
-        />
       </div>
 
       {/* Achievements + Recent Lists side by side */}

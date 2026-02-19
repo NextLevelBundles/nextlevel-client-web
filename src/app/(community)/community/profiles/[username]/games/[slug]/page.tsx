@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Badge } from "@/shared/components/ui/badge";
+import { Card } from "@/shared/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -829,69 +830,79 @@ export default function GameDetailPage() {
       </div>
 
       {/* Right sidebar */}
-      <aside className="w-full lg:w-72 flex-shrink-0 space-y-5">
-        {/* Game Info */}
-        <SidebarSection title="Game Info">
-          <div className="space-y-3">
-            <InfoBlock
-              label="Developers"
-              values={game.developers.map((d) => d.name)}
-            />
-            <InfoBlock
-              label="Publishers"
-              values={game.publishers.map((p) => p.name)}
-            />
-            <InfoBlock
-              label="Game Modes"
-              values={game.gameModes.map((m) => m.name)}
-            />
-            <InfoBlock
-              label="Player Perspectives"
-              values={game.playerPerspectives.map((p) => p.name)}
-            />
-            <InfoBlock label="Series" values={[game.franchiseName]} />
-            <InfoBlock label="IGDB ID" values={[String(game.igdbId)]} />
+      <aside className="w-full lg:w-72 flex-shrink-0">
+        <Card className="border divide-y">
+          {/* Game Info */}
+          <div className="p-4">
+            <SidebarSection title="Game Info">
+              <div className="space-y-3">
+                <InfoBlock
+                  label="Developers"
+                  values={game.developers.map((d) => d.name)}
+                />
+                <InfoBlock
+                  label="Publishers"
+                  values={game.publishers.map((p) => p.name)}
+                />
+                <InfoBlock
+                  label="Game Modes"
+                  values={game.gameModes.map((m) => m.name)}
+                />
+                <InfoBlock
+                  label="Player Perspectives"
+                  values={game.playerPerspectives.map((p) => p.name)}
+                />
+                <InfoBlock label="Series" values={[game.franchiseName]} />
+                <InfoBlock label="IGDB ID" values={[String(game.igdbId)]} />
+              </div>
+            </SidebarSection>
           </div>
-        </SidebarSection>
 
-        {/* Websites */}
-        {game.websites.length > 0 && (
-          <SidebarSection title="Links">
-            <WebsiteLinks websites={game.websites} />
-          </SidebarSection>
-        )}
-
-        {/* Release Dates */}
-        {game.releaseDates.length > 0 && (
-          <SidebarSection title="Release Dates">
-            <ReleaseDatesByPlatform releaseDates={game.releaseDates} />
-          </SidebarSection>
-        )}
-
-        {/* Age Ratings */}
-        {game.ageRatings.length > 0 && (
-          <SidebarSection title="Age Rating">
-            <div className="flex flex-wrap gap-3 items-end">
-              {game.ageRatings.map((ar, i) => {
-                const imagePath = getAgeRatingImage(ar.organization, ar.rating);
-                return imagePath ? (
-                  <Image
-                    key={i}
-                    src={imagePath}
-                    alt={`${ar.organization} ${ar.rating}`}
-                    width={48}
-                    height={64}
-                    className="h-16 w-auto object-contain"
-                  />
-                ) : (
-                  <Badge key={i} variant="outline" className="text-xs">
-                    {ar.organization}: {ar.rating}
-                  </Badge>
-                );
-              })}
+          {/* Websites */}
+          {game.websites.length > 0 && (
+            <div className="p-4">
+              <SidebarSection title="Links">
+                <WebsiteLinks websites={game.websites} />
+              </SidebarSection>
             </div>
-          </SidebarSection>
-        )}
+          )}
+
+          {/* Release Dates */}
+          {game.releaseDates.length > 0 && (
+            <div className="p-4">
+              <SidebarSection title="Release Dates">
+                <ReleaseDatesByPlatform releaseDates={game.releaseDates} />
+              </SidebarSection>
+            </div>
+          )}
+
+          {/* Age Ratings */}
+          {game.ageRatings.length > 0 && (
+            <div className="p-4">
+              <SidebarSection title="Age Rating">
+                <div className="flex flex-wrap gap-3 items-end">
+                  {game.ageRatings.map((ar, i) => {
+                    const imagePath = getAgeRatingImage(ar.organization, ar.rating);
+                    return imagePath ? (
+                      <Image
+                        key={i}
+                        src={imagePath}
+                        alt={`${ar.organization} ${ar.rating}`}
+                        width={48}
+                        height={64}
+                        className="h-16 w-auto object-contain"
+                      />
+                    ) : (
+                      <Badge key={i} variant="outline" className="text-xs">
+                        {ar.organization}: {ar.rating}
+                      </Badge>
+                    );
+                  })}
+                </div>
+              </SidebarSection>
+            </div>
+          )}
+        </Card>
       </aside>
     </div>
   );
