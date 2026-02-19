@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -16,6 +16,13 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
 import {
   ChartContainer,
   ChartTooltip,
@@ -254,24 +261,53 @@ function StatsSection({
   );
 }
 
-// --- Game Collection Donut Chart ---
+// --- Taste Profile Donut Chart ---
 
-function GameCollectionSection({
+const TASTE_FILTER_OPTIONS = [
+  { value: "all", label: "All" },
+  { value: "played", label: "Games played" },
+  { value: "completed", label: "Games completed" },
+];
+
+function TasteProfileSection({
   totalGames,
   genres,
   isLoading,
+  filter,
+  onFilterChange,
+  username,
 }: {
   totalGames: number;
   genres: { name: string; count: number; percentage: number }[];
   isLoading: boolean;
+  filter: string;
+  onFilterChange: (value: string) => void;
+  username: string;
 }) {
+  // Top 9 genres + "Other" bucket
+  const displayGenres = useMemo(() => {
+    if (genres.length <= 10) return genres;
+    const top9 = genres.slice(0, 9);
+    const rest = genres.slice(9);
+    const otherCount = rest.reduce((sum, g) => sum + g.count, 0);
+    const otherPercentage = rest.reduce((sum, g) => sum + g.percentage, 0);
+    return [
+      ...top9,
+      {
+        name: "Other",
+        count: otherCount,
+        percentage: Math.round(otherPercentage * 10) / 10,
+      },
+    ];
+  }, [genres]);
+
   const chartData = useMemo(() => {
-    return genres.map((g, i) => ({
+    return displayGenres.map((g, i) => ({
       name: g.name,
       value: g.count,
       fill: GENRE_COLORS[i % GENRE_COLORS.length],
     }));
-  }, [genres]);
+  }, [displayGenres]);
 
   const chartConfig: ChartConfig = useMemo(() => {
     const config: ChartConfig = {};
@@ -283,7 +319,7 @@ function GameCollectionSection({
 
   if (isLoading) {
     return (
-      <Section title="Game Collection">
+      <Section title="Taste Profile">
         <div className="flex items-center gap-8">
           <Skeleton className="h-40 w-40 rounded-full flex-shrink-0" />
           <div className="space-y-3 flex-1">
@@ -298,10 +334,35 @@ function GameCollectionSection({
 
   if (totalGames === 0) return null;
 
-  const hasGenres = genres.length > 0;
+  const hasGenres = displayGenres.length > 0;
+  const chartTotal = displayGenres.reduce((sum, g) => sum + g.count, 0);
 
   return (
-    <Section title="Game Collection">
+    <Section
+      title="Taste Profile"
+      action={
+        <div className="flex items-center gap-2">
+          <Select value={filter} onValueChange={onFilterChange}>
+            <SelectTrigger className="h-7 w-[140px] text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {TASTE_FILTER_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Link href={`/community/profiles/${username}/stats`}>
+            <Button variant="ghost" size="sm" className="h-auto py-0">
+              View All
+              <ArrowRightIcon className="ml-1 h-3.5 w-3.5" />
+            </Button>
+          </Link>
+        </div>
+      }
+    >
       {hasGenres ? (
         <div className="flex flex-col sm:flex-row items-center gap-6">
           {/* Donut Chart */}
@@ -341,14 +402,14 @@ function GameCollectionSection({
                               y={viewBox.cy}
                               className="fill-foreground text-2xl font-bold"
                             >
-                              {totalGames.toLocaleString()}
+                              {chartTotal.toLocaleString()}
                             </tspan>
                             <tspan
                               x={viewBox.cx}
                               y={(viewBox.cy || 0) + 20}
                               className="fill-muted-foreground text-xs"
                             >
-                              Total
+                              Games
                             </tspan>
                           </text>
                         );
@@ -362,7 +423,7 @@ function GameCollectionSection({
 
           {/* Genre Legend */}
           <div className="flex-1 space-y-2.5 w-full">
-            {genres.map((genre, i) => (
+            {displayGenres.map((genre, i) => (
               <div key={genre.name} className="flex items-center gap-2.5">
                 <div
                   className="h-3 w-3 rounded-sm flex-shrink-0"
@@ -598,7 +659,11 @@ export default function ProfileOverviewPage() {
   const username = params.username as string;
   const { data: customer } = useCustomer();
   const isOwnProfile = customer?.handle === username;
-  const { data: stats, isLoading: statsLoading } = useProfileStats(username);
+  const [tasteFilter, setTasteFilter] = useState("all");
+  const { data: stats, isLoading: statsLoading } = useProfileStats(
+    username,
+    tasteFilter !== "all" ? tasteFilter : undefined
+  );
   const { data: achievements, isLoading: achievementsLoading } =
     useProfileAchievements(username);
   const { data: lists, isLoading: listsLoading } = useCustomerLists(username);
@@ -621,10 +686,13 @@ export default function ProfileOverviewPage() {
       {/* Two-column layout: left = Game Collection + Stats, right = Currently Playing */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="flex flex-col gap-6">
-          <GameCollectionSection
+          <TasteProfileSection
             totalGames={stats?.totalGames ?? 0}
             genres={stats?.genreBreakdown ?? []}
             isLoading={statsLoading}
+            filter={tasteFilter}
+            onFilterChange={setTasteFilter}
+            username={username}
           />
           <StatsSection stats={stats} isLoading={statsLoading} />
         </div>

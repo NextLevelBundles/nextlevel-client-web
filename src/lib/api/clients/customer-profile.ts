@@ -240,10 +240,11 @@ export class CustomerProfileApi {
     await this.client.delete(`/community/collection/${id}`);
   }
 
-  async getStatsByHandle(handle: string): Promise<ProfileStats | null> {
+  async getStatsByHandle(handle: string, filter?: string): Promise<ProfileStats | null> {
     try {
+      const params = filter ? `?filter=${encodeURIComponent(filter)}` : "";
       return await this.client.get<ProfileStats>(
-        `/community/stats/${encodeURIComponent(handle)}`
+        `/community/stats/${encodeURIComponent(handle)}${params}`
       );
     } catch {
       return null;
