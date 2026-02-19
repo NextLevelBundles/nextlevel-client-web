@@ -282,6 +282,7 @@ function TasteProfileSection({
   totalGames,
   filteredTotalGames,
   genres,
+  genresLoading,
   completionBreakdown,
   isLoading,
   filter,
@@ -291,6 +292,7 @@ function TasteProfileSection({
   totalGames: number;
   filteredTotalGames: number;
   genres: { name: string; count: number; percentage: number }[];
+  genresLoading: boolean;
   completionBreakdown: CompletionStat[];
   isLoading: boolean;
   filter: string;
@@ -387,7 +389,7 @@ function TasteProfileSection({
     >
       <div className="space-y-6">
         {/* Genre breakdown with filter */}
-        <div>
+        <div className="rounded-lg border bg-muted/20 p-4">
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Genres</h4>
             <Select value={filter} onValueChange={onFilterChange}>
@@ -497,7 +499,7 @@ function TasteProfileSection({
         </div>
 
         {/* Completion status breakdown */}
-        <div>
+        <div className="rounded-lg border bg-muted/20 p-4">
           <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-4">
             Completion Status
           </h4>
@@ -801,10 +803,12 @@ export default function ProfileOverviewPage() {
   const { data: customer } = useCustomer();
   const isOwnProfile = customer?.handle === username;
   const [tasteFilter, setTasteFilter] = useState("all");
-  const { data: stats, isLoading: statsLoading } = useProfileStats(
-    username,
-    tasteFilter !== "all" ? tasteFilter : undefined
-  );
+  const { data: stats, isLoading: statsLoading } = useProfileStats(username);
+  const { data: filteredStats, isLoading: filteredStatsLoading } =
+    useProfileStats(
+      username,
+      tasteFilter !== "all" ? tasteFilter : undefined
+    );
   const { data: achievements, isLoading: achievementsLoading } =
     useProfileAchievements(username);
   const { data: lists, isLoading: listsLoading } = useCustomerLists(username);
@@ -829,8 +833,9 @@ export default function ProfileOverviewPage() {
         <div className="flex flex-col gap-6">
           <TasteProfileSection
             totalGames={stats?.totalGames ?? 0}
-            filteredTotalGames={stats?.filteredTotalGames ?? 0}
-            genres={stats?.genreBreakdown ?? []}
+            filteredTotalGames={filteredStats?.filteredTotalGames ?? 0}
+            genres={filteredStats?.genreBreakdown ?? []}
+            genresLoading={filteredStatsLoading}
             completionBreakdown={stats?.completionBreakdown ?? []}
             isLoading={statsLoading}
             filter={tasteFilter}
