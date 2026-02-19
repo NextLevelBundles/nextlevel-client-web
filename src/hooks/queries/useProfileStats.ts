@@ -8,7 +8,7 @@ export function useProfileStats(handle: string, filter?: string) {
     queryFn: (): Promise<ProfileStats | null> =>
       customerProfileApi.getStatsByHandle(handle, filter),
     enabled: !!handle,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
     gcTime: 10 * 60 * 1000,
   });
 }

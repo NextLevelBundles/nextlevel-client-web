@@ -247,13 +247,24 @@ export default function CollectionPage() {
     setPage(1);
   }, [playStatusFilter, pageSize]);
 
-  const { data, isLoading } = useCollectionPaged({
+  const { data, isLoading, isFetching } = useCollectionPaged({
     search: debouncedSearch || undefined,
     playStatus: playStatusFilter || undefined,
     page,
     pageSize,
     handle: isOwnProfile ? undefined : username,
   });
+
+  // Track the last-rendered search to detect when query params have changed
+  const [renderedSearch, setRenderedSearch] = useState("");
+  useEffect(() => {
+    if (!isFetching) setRenderedSearch(debouncedSearch);
+  }, [isFetching, debouncedSearch]);
+
+  // Show skeletons only when a search/filter change is in flight
+  const isSearchPending = search.trim() !== debouncedSearch;
+  const hasParamsChanged = debouncedSearch !== renderedSearch;
+  const showSkeletons = isSearchPending || (isFetching && hasParamsChanged);
 
   const games = data?.items;
   const totalPages = data?.totalPages ?? 1;
@@ -338,7 +349,31 @@ export default function CollectionPage() {
           </div>
 
           {/* Game grid */}
-          {games && games.length > 0 ? (
+          {showSkeletons ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+              {[...Array(pageSize > 6 ? 6 : pageSize)].map((_, i) => (
+                <div
+                  key={i}
+                  className="flex rounded-lg border border-border bg-card overflow-hidden"
+                >
+                  <div className="p-2 flex-shrink-0">
+                    <Skeleton className="w-[50px] aspect-[2/3] rounded" />
+                  </div>
+                  <div className="flex-1 min-w-0 p-3 flex flex-col gap-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-3 w-10" />
+                    </div>
+                    <div className="mt-auto flex gap-1.5">
+                      <Skeleton className="h-8 flex-1 rounded" />
+                      <Skeleton className="h-8 flex-1 rounded" />
+                      <Skeleton className="h-8 flex-1 rounded" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : games && games.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
               {games.map((game) => (
                 <GameCard
