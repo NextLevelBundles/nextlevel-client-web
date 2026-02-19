@@ -169,7 +169,7 @@ export function BundleDetail({ bundle, isPreview = false }: { bundle: Bundle; is
     () =>
       tiers
         .filter((tier) => tier.type === TierType.Upsell)
-        .sort((a, b) => a.price - b.price),
+        .sort((a, b) => b.price - a.price), // Sort by price descending (higher price first)
     [tiers]
   );
 
@@ -463,105 +463,433 @@ export function BundleDetail({ bundle, isPreview = false }: { bundle: Bundle; is
                 allUnlockedProducts={unlockedProducts} // Pass all unlocked products including charity/upsell
               />
 
-              {/* Charity Tier Sections */}
-              {charityTiers.map((tier) => {
-                const isUnlocked = selectedCharityTierIds.includes(tier.id);
-                const isAvailable = tierAvailability
-                  ? tier.id in tierAvailability && tierAvailability[tier.id] > 0
-                  : true;
-                const keysCount = tierAvailability?.[tier.id];
-                return (
-                  <CharityTierSection
-                    key={tier.id}
-                    tier={tier}
-                    products={allProducts.filter(
-                      (p) => p.bundleTierId === tier.id
-                    )}
-                    isUnlocked={isUnlocked}
-                    totalAmount={totalAmount}
-                    onUnlock={() => {
-                      if (!selectedCharityTierIds.includes(tier.id)) {
-                        setSelectedCharityTierIds([
-                          ...selectedCharityTierIds,
-                          tier.id,
-                        ]);
-                      }
-                    }}
-                    onCancel={() => {
-                      setSelectedCharityTierIds(
-                        selectedCharityTierIds.filter((id) => id !== tier.id)
+              {/* Charity and Upsell Tier Sections with Smart Grouping */}
+              {(() => {
+                // Helper function to get product count for a tier
+                const getProductCount = (tier: Tier) =>
+                  allProducts.filter((p) => p.bundleTierId === tier.id).length;
+
+                // Determine if charity tier should be in compact mode
+                const charityPairedWithUpsell = (() => {
+                  if (charityTiers.length === 1 && getProductCount(charityTiers[0]) === 1) {
+                    if (upsellTiers.length === 1 && getProductCount(upsellTiers[0]) === 1) {
+                      // Scenario 1: 1 charity (1 product) + 1 upsell (1 product)
+                      return true;
+                    } else if (
+                      upsellTiers.length >= 2 &&
+                      getProductCount(upsellTiers[0]) === 1 &&
+                      getProductCount(upsellTiers[1]) > 1
+                    ) {
+                      // Scenario 2: 1 charity (1 product) + first upsell (1 product) + second upsell (>1 product)
+                      return true;
+                    }
+                  }
+                  return false;
+                })();
+
+                const charityTierGroups: (Tier | Tier[])[] = [];
+
+                // Handle charity tiers
+                if (charityPairedWithUpsell) {
+                  // Charity will be paired with first upsell, don't add to groups yet
+                } else {
+                  // Add charity tiers with their own grouping logic
+                  let i = 0;
+                  while (i < charityTiers.length) {
+                    const currentTierProducts = getProductCount(charityTiers[i]);
+                    const nextTierProducts = i + 1 < charityTiers.length
+                      ? getProductCount(charityTiers[i + 1])
+                      : 0;
+
+                    // If current and next tier both have exactly 1 product, group them
+                    if (currentTierProducts === 1 && nextTierProducts === 1) {
+                      charityTierGroups.push([charityTiers[i], charityTiers[i + 1]]);
+                      i += 2;
+                    } else {
+                      charityTierGroups.push(charityTiers[i]);
+                      i += 1;
+                    }
+                  }
+                }
+
+                const charityElements = charityTierGroups.map((group, groupIdx) => {
+                  if (Array.isArray(group)) {
+                    // Render two tiers side by side
+                    return (
+                      <div
+                        key={`charity-group-${groupIdx}`}
+                        className="grid grid-cols-1 xl:grid-cols-2 gap-8"
+                      >
+                        {group.map((tier) => {
+                          const isUnlocked = selectedCharityTierIds.includes(tier.id);
+                          const isAvailable = isPreview || (tierAvailability
+                            ? tier.id in tierAvailability && tierAvailability[tier.id] > 0
+                            : true);
+                          const keysCount = tierAvailability?.[tier.id];
+                          return (
+                            <CharityTierSection
+                              key={tier.id}
+                              tier={tier}
+                              products={allProducts.filter(
+                                (p) => p.bundleTierId === tier.id
+                              )}
+                              isUnlocked={isUnlocked}
+                              totalAmount={totalAmount}
+                              onUnlock={() => {
+                                if (!selectedCharityTierIds.includes(tier.id)) {
+                                  setSelectedCharityTierIds([
+                                    ...selectedCharityTierIds,
+                                    tier.id,
+                                  ]);
+                                }
+                              }}
+                              onCancel={() => {
+                                setSelectedCharityTierIds(
+                                  selectedCharityTierIds.filter((id) => id !== tier.id)
+                                );
+                              }}
+                              bundleType={bundle.type}
+                              isAvailable={isAvailable}
+                              keysCount={keysCount}
+                              hasAvailableBaseTiers={hasAvailableBaseTiers}
+                              bundle={bundle}
+                              allBundleProducts={allProducts}
+                              allUnlockedProducts={[
+                                ...baseUnlockedProducts,
+                                ...allProducts.filter((p) =>
+                                  selectedCharityTierIds.includes(p.bundleTierId || "")
+                                ),
+                                ...allProducts.filter((p) =>
+                                  selectedUpsellTierIds.includes(p.bundleTierId || "")
+                                ),
+                              ]}
+                              isCompact={true}
+                            />
+                          );
+                        })}
+                      </div>
+                    );
+                  } else {
+                    // Render single tier
+                    const tier = group;
+                    const isUnlocked = selectedCharityTierIds.includes(tier.id);
+                    const isAvailable = isPreview || (tierAvailability
+                      ? tier.id in tierAvailability && tierAvailability[tier.id] > 0
+                      : true);
+                    const keysCount = tierAvailability?.[tier.id];
+                    return (
+                      <CharityTierSection
+                        key={tier.id}
+                        tier={tier}
+                        products={allProducts.filter(
+                          (p) => p.bundleTierId === tier.id
+                        )}
+                        isUnlocked={isUnlocked}
+                        totalAmount={totalAmount}
+                        onUnlock={() => {
+                          if (!selectedCharityTierIds.includes(tier.id)) {
+                            setSelectedCharityTierIds([
+                              ...selectedCharityTierIds,
+                              tier.id,
+                            ]);
+                          }
+                        }}
+                        onCancel={() => {
+                          setSelectedCharityTierIds(
+                            selectedCharityTierIds.filter((id) => id !== tier.id)
+                          );
+                        }}
+                        bundleType={bundle.type}
+                        isAvailable={isAvailable}
+                        keysCount={keysCount}
+                        hasAvailableBaseTiers={hasAvailableBaseTiers}
+                        bundle={bundle}
+                        allBundleProducts={allProducts}
+                        allUnlockedProducts={[
+                          ...baseUnlockedProducts,
+                          ...allProducts.filter((p) =>
+                            selectedCharityTierIds.includes(p.bundleTierId || "")
+                          ),
+                          ...allProducts.filter((p) =>
+                            selectedUpsellTierIds.includes(p.bundleTierId || "")
+                          ),
+                        ]}
+                      />
+                    );
+                  }
+                });
+
+                // Render charity paired with first upsell if applicable
+                const pairedElement = charityPairedWithUpsell && charityTiers.length > 0 && upsellTiers.length > 0 ? (
+                  <div key="charity-upsell-pair" className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                    {/* Charity Tier */}
+                    {(() => {
+                      const tier = charityTiers[0];
+                      const isUnlocked = selectedCharityTierIds.includes(tier.id);
+                      const isAvailable = isPreview || (tierAvailability
+                        ? tier.id in tierAvailability && tierAvailability[tier.id] > 0
+                        : true);
+                      const keysCount = tierAvailability?.[tier.id];
+                      return (
+                        <CharityTierSection
+                          key={tier.id}
+                          tier={tier}
+                          products={allProducts.filter((p) => p.bundleTierId === tier.id)}
+                          isUnlocked={isUnlocked}
+                          totalAmount={totalAmount}
+                          onUnlock={() => {
+                            if (!selectedCharityTierIds.includes(tier.id)) {
+                              setSelectedCharityTierIds([...selectedCharityTierIds, tier.id]);
+                            }
+                          }}
+                          onCancel={() => {
+                            setSelectedCharityTierIds(
+                              selectedCharityTierIds.filter((id) => id !== tier.id)
+                            );
+                          }}
+                          bundleType={bundle.type}
+                          isAvailable={isAvailable}
+                          keysCount={keysCount}
+                          hasAvailableBaseTiers={hasAvailableBaseTiers}
+                          bundle={bundle}
+                          allBundleProducts={allProducts}
+                          allUnlockedProducts={[
+                            ...baseUnlockedProducts,
+                            ...allProducts.filter((p) =>
+                              selectedCharityTierIds.includes(p.bundleTierId || "")
+                            ),
+                            ...allProducts.filter((p) =>
+                              selectedUpsellTierIds.includes(p.bundleTierId || "")
+                            ),
+                          ]}
+                          isCompact={true}
+                        />
                       );
-                    }}
-                    bundleType={bundle.type}
-                    isAvailable={isAvailable}
-                    keysCount={keysCount}
-                    hasAvailableBaseTiers={hasAvailableBaseTiers}
-                    bundle={bundle}
-                    allBundleProducts={allProducts}
-                    allUnlockedProducts={[
-                      ...baseUnlockedProducts,
-                      ...allProducts.filter((p) =>
-                        selectedCharityTierIds.includes(p.bundleTierId || "")
-                      ),
-                      ...allProducts.filter((p) =>
-                        selectedUpsellTierIds.includes(p.bundleTierId || "")
-                      ),
-                    ]}
-                  />
+                    })()}
+                    {/* First Upsell Tier */}
+                    {(() => {
+                      const tier = upsellTiers[0];
+                      const isUnlocked = selectedUpsellTierIds.includes(tier.id);
+                      const isAvailable = isPreview || (tierAvailability
+                        ? tier.id in tierAvailability && tierAvailability[tier.id] > 0
+                        : true);
+                      const keysCount = tierAvailability?.[tier.id];
+                      return (
+                        <UpsellTierSection
+                          key={tier.id}
+                          tier={tier}
+                          products={allProducts.filter((p) => p.bundleTierId === tier.id)}
+                          isUnlocked={isUnlocked}
+                          totalAmount={totalAmount}
+                          onUnlock={() => {
+                            if (!selectedUpsellTierIds.includes(tier.id)) {
+                              setSelectedUpsellTierIds([...selectedUpsellTierIds, tier.id]);
+                            }
+                          }}
+                          onCancel={() => {
+                            setSelectedUpsellTierIds(
+                              selectedUpsellTierIds.filter((id) => id !== tier.id)
+                            );
+                          }}
+                          bundleType={bundle.type}
+                          highestBaseTierPrice={
+                            baseTiers.length > 0
+                              ? Math.max(...baseTiers.map((t) => t.price))
+                              : 0
+                          }
+                          isAvailable={isAvailable}
+                          keysCount={keysCount}
+                          hasAvailableBaseTiers={hasAvailableBaseTiers}
+                          bundle={bundle}
+                          allBundleProducts={allProducts}
+                          allUnlockedProducts={[
+                            ...baseUnlockedProducts,
+                            ...allProducts.filter((p) =>
+                              selectedCharityTierIds.includes(p.bundleTierId || "")
+                            ),
+                            ...allProducts.filter((p) =>
+                              selectedUpsellTierIds.includes(p.bundleTierId || "")
+                            ),
+                          ]}
+                          isCompact={true}
+                        />
+                      );
+                    })()}
+                  </div>
+                ) : null;
+
+                return (
+                  <>
+                    {charityElements}
+                    {pairedElement}
+                  </>
                 );
-              })}
+              })()}
 
               {/* Upsell Tier Sections */}
-              {upsellTiers.map((tier) => {
-                const isUnlocked = selectedUpsellTierIds.includes(tier.id);
-                const isAvailable = tierAvailability
-                  ? tier.id in tierAvailability && tierAvailability[tier.id] > 0
-                  : true;
-                const keysCount = tierAvailability?.[tier.id];
-                return (
-                  <UpsellTierSection
-                    key={tier.id}
-                    tier={tier}
-                    products={allProducts.filter(
-                      (p) => p.bundleTierId === tier.id
-                    )}
-                    isUnlocked={isUnlocked}
-                    totalAmount={totalAmount}
-                    onUnlock={() => {
-                      if (!selectedUpsellTierIds.includes(tier.id)) {
-                        setSelectedUpsellTierIds([
-                          ...selectedUpsellTierIds,
-                          tier.id,
-                        ]);
-                      }
-                    }}
-                    onCancel={() => {
-                      setSelectedUpsellTierIds(
-                        selectedUpsellTierIds.filter((id) => id !== tier.id)
-                      );
-                    }}
-                    bundleType={bundle.type}
-                    highestBaseTierPrice={
-                      baseTiersCanonical[baseTiersCanonical.length - 1]
-                        ?.price || 0
+              {(() => {
+                // Check if first upsell is paired with charity
+                const getProductCount = (tier: Tier) =>
+                  allProducts.filter((p) => p.bundleTierId === tier.id).length;
+
+                const charityPairedWithUpsell = (() => {
+                  if (charityTiers.length === 1 && getProductCount(charityTiers[0]) === 1) {
+                    if (upsellTiers.length === 1 && getProductCount(upsellTiers[0]) === 1) {
+                      return true;
+                    } else if (
+                      upsellTiers.length >= 2 &&
+                      getProductCount(upsellTiers[0]) === 1 &&
+                      getProductCount(upsellTiers[1]) > 1
+                    ) {
+                      return true;
                     }
-                    isAvailable={isAvailable}
-                    keysCount={keysCount}
-                    hasAvailableBaseTiers={hasAvailableBaseTiers}
-                    bundle={bundle}
-                    allBundleProducts={allProducts}
-                    allUnlockedProducts={[
-                      ...baseUnlockedProducts,
-                      ...allProducts.filter((p) =>
-                        selectedCharityTierIds.includes(p.bundleTierId || "")
-                      ),
-                      ...allProducts.filter((p) =>
-                        selectedUpsellTierIds.includes(p.bundleTierId || "")
-                      ),
-                    ]}
-                  />
-                );
-              })}
+                  }
+                  return false;
+                })();
+
+                const upsellTierGroups: (Tier | Tier[])[] = [];
+                // Start from index 1 if first upsell is paired with charity
+                let i = charityPairedWithUpsell ? 1 : 0;
+
+                while (i < upsellTiers.length) {
+                  const currentTierProducts = allProducts.filter(
+                    (p) => p.bundleTierId === upsellTiers[i].id
+                  );
+                  const nextTierProducts =
+                    i + 1 < upsellTiers.length
+                      ? allProducts.filter(
+                          (p) => p.bundleTierId === upsellTiers[i + 1].id
+                        )
+                      : [];
+
+                  // If current and next tier both have exactly 1 product, group them
+                  if (
+                    currentTierProducts.length === 1 &&
+                    nextTierProducts.length === 1
+                  ) {
+                    upsellTierGroups.push([upsellTiers[i], upsellTiers[i + 1]]);
+                    i += 2;
+                  } else {
+                    upsellTierGroups.push(upsellTiers[i]);
+                    i += 1;
+                  }
+                }
+
+                return upsellTierGroups.map((group, groupIdx) => {
+                  if (Array.isArray(group)) {
+                    // Render two tiers side by side
+                    return (
+                      <div
+                        key={`upsell-group-${groupIdx}`}
+                        className="grid grid-cols-1 xl:grid-cols-2 gap-8"
+                      >
+                        {group.map((tier) => {
+                          const isUnlocked = selectedUpsellTierIds.includes(tier.id);
+                          const isAvailable = isPreview || (tierAvailability
+                            ? tier.id in tierAvailability && tierAvailability[tier.id] > 0
+                            : true);
+                          const keysCount = tierAvailability?.[tier.id];
+                          return (
+                            <UpsellTierSection
+                              key={tier.id}
+                              tier={tier}
+                              products={allProducts.filter(
+                                (p) => p.bundleTierId === tier.id
+                              )}
+                              isUnlocked={isUnlocked}
+                              totalAmount={totalAmount}
+                              onUnlock={() => {
+                                if (!selectedUpsellTierIds.includes(tier.id)) {
+                                  setSelectedUpsellTierIds([
+                                    ...selectedUpsellTierIds,
+                                    tier.id,
+                                  ]);
+                                }
+                              }}
+                              onCancel={() => {
+                                setSelectedUpsellTierIds(
+                                  selectedUpsellTierIds.filter((id) => id !== tier.id)
+                                );
+                              }}
+                              bundleType={bundle.type}
+                              highestBaseTierPrice={
+                                baseTiersCanonical[baseTiersCanonical.length - 1]
+                                  ?.price || 0
+                              }
+                              isAvailable={isAvailable}
+                              keysCount={keysCount}
+                              hasAvailableBaseTiers={hasAvailableBaseTiers}
+                              bundle={bundle}
+                              allBundleProducts={allProducts}
+                              allUnlockedProducts={[
+                                ...baseUnlockedProducts,
+                                ...allProducts.filter((p) =>
+                                  selectedCharityTierIds.includes(p.bundleTierId || "")
+                                ),
+                                ...allProducts.filter((p) =>
+                                  selectedUpsellTierIds.includes(p.bundleTierId || "")
+                                ),
+                              ]}
+                              isCompact={true}
+                            />
+                          );
+                        })}
+                      </div>
+                    );
+                  } else {
+                    // Render single tier
+                    const tier = group;
+                    const isUnlocked = selectedUpsellTierIds.includes(tier.id);
+                    const isAvailable = isPreview || (tierAvailability
+                      ? tier.id in tierAvailability && tierAvailability[tier.id] > 0
+                      : true);
+                    const keysCount = tierAvailability?.[tier.id];
+                    return (
+                      <UpsellTierSection
+                        key={tier.id}
+                        tier={tier}
+                        products={allProducts.filter(
+                          (p) => p.bundleTierId === tier.id
+                        )}
+                        isUnlocked={isUnlocked}
+                        totalAmount={totalAmount}
+                        onUnlock={() => {
+                          if (!selectedUpsellTierIds.includes(tier.id)) {
+                            setSelectedUpsellTierIds([
+                              ...selectedUpsellTierIds,
+                              tier.id,
+                            ]);
+                          }
+                        }}
+                        onCancel={() => {
+                          setSelectedUpsellTierIds(
+                            selectedUpsellTierIds.filter((id) => id !== tier.id)
+                          );
+                        }}
+                        bundleType={bundle.type}
+                        highestBaseTierPrice={
+                          baseTiersCanonical[baseTiersCanonical.length - 1]
+                            ?.price || 0
+                        }
+                        isAvailable={isAvailable}
+                        keysCount={keysCount}
+                        hasAvailableBaseTiers={hasAvailableBaseTiers}
+                        bundle={bundle}
+                        allBundleProducts={allProducts}
+                        allUnlockedProducts={[
+                          ...baseUnlockedProducts,
+                          ...allProducts.filter((p) =>
+                            selectedCharityTierIds.includes(p.bundleTierId || "")
+                          ),
+                          ...allProducts.filter((p) =>
+                            selectedUpsellTierIds.includes(p.bundleTierId || "")
+                          ),
+                        ]}
+                      />
+                    );
+                  }
+                });
+              })()}
 
               {/* Curator Comments - Full version in left column */}
               {/* {bundle.curatorComment && (
@@ -617,6 +945,7 @@ export function BundleDetail({ bundle, isPreview = false }: { bundle: Bundle; is
                 userPurchase={userPurchase}
                 isLoadingPurchase={isLoadingPurchase}
                 autoOpenUpgrade={shouldAutoOpenUpgrade}
+                isPreview={isPreview}
               />
               {/* </div> */}
             </div>
@@ -672,6 +1001,7 @@ export function BundleDetail({ bundle, isPreview = false }: { bundle: Bundle; is
           isSaleActive={isSaleActive}
           userPurchase={userPurchase}
           isLoadingPurchase={isLoadingPurchase}
+          isPreview={isPreview}
         />
       </div>
     </TooltipProvider>

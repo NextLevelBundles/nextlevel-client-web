@@ -45,7 +45,10 @@ import { userApi } from "@/lib/api";
 
 // Steam Level Warning Component
 interface SteamLevelWarningProps {
-  steamLevelStatus: { isValid: boolean; reason: "unsync" | "private" | "error" | "zero" | null };
+  steamLevelStatus: {
+    isValid: boolean;
+    reason: "unsync" | "private" | "error" | "zero" | null;
+  };
   getSteamLevelWarningMessage: () => string;
   handleSyncSteamLevel: () => Promise<void>;
   isSyncingSteamLevel: boolean;
@@ -148,6 +151,7 @@ interface PurchaseSummaryProps {
   userPurchase?: CartItem | null;
   isLoadingPurchase?: boolean;
   autoOpenUpgrade?: boolean;
+  isPreview?: boolean;
 }
 
 export function PurchaseSummary({
@@ -175,6 +179,7 @@ export function PurchaseSummary({
   userPurchase,
   isLoadingPurchase = false,
   autoOpenUpgrade = false,
+  isPreview = false,
 }: PurchaseSummaryProps) {
   const [tipInputValue, setTipInputValue] = useState("");
   const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
@@ -204,7 +209,8 @@ export function PurchaseSummary({
 
   // Steam level validation helper
   const getSteamLevelStatus = () => {
-    if (!customer?.steamLevel) return { isValid: false, reason: "unsync" as const };
+    if (!customer?.steamLevel)
+      return { isValid: false, reason: "unsync" as const };
 
     const level = customer.steamLevel;
 
@@ -227,7 +233,11 @@ export function PurchaseSummary({
   };
 
   const steamLevelStatus = getSteamLevelStatus();
-  const needsSteamLevelSync = isSteamBundle && isAuthenticated && !!customer?.steamId && !steamLevelStatus.isValid;
+  const needsSteamLevelSync =
+    isSteamBundle &&
+    isAuthenticated &&
+    !!customer?.steamId &&
+    !steamLevelStatus.isValid;
 
   // Handle Steam level sync
   const handleSyncSteamLevel = async () => {
@@ -248,7 +258,7 @@ export function PurchaseSummary({
       case "unsync":
         return "Please sync your Steam profile to verify your account level.";
       case "private":
-        return "Your Steam profile is private. Please set \"My profile\" to public in your Steam privacy settings.";
+        return 'Your Steam profile is private. Please set "My profile" to public in your Steam privacy settings.';
       case "error":
         return "Unable to verify your Steam level. Please try syncing again later.";
       case "zero":
@@ -274,18 +284,18 @@ export function PurchaseSummary({
 
   // Calculate selected tier amounts
   const selectedCharityTiers = charityTiers.filter((tier) =>
-    selectedCharityTierIds.includes(tier.id)
+    selectedCharityTierIds.includes(tier.id),
   );
   const selectedUpsellTiers = upsellTiers.filter((tier) =>
-    selectedUpsellTierIds.includes(tier.id)
+    selectedUpsellTierIds.includes(tier.id),
   );
   const totalCharityAmount = selectedCharityTiers.reduce(
     (sum, tier) => sum + tier.price,
-    0
+    0,
   );
   const totalUpsellAmount = selectedUpsellTiers.reduce(
     (sum, tier) => sum + tier.price,
-    0
+    0,
   );
 
   // NEW SIMPLIFIED CALCULATION: Everything is additive
@@ -377,25 +387,22 @@ export function PurchaseSummary({
 
     // Check if all upsell tiers are purchased
     const purchasedProductIds = new Set(
-      userPurchase.snapshotProducts.map((p) => p.productId)
+      userPurchase.snapshotProducts.map((p) => p.productId),
     );
     const allUpsellTiersPurchased = upsellTiers.every((tier) => {
       const tierProducts = bundle.products.filter(
-        (p) => p.bundleTierId === tier.id
+        (p) => p.bundleTierId === tier.id,
       );
       return tierProducts.every((p) => purchasedProductIds.has(p.id));
     });
 
     const hasMaxedOut =
-      hasHighestBaseTier &&
-      allCharityTiersPurchased &&
-      allUpsellTiersPurchased;
+      hasHighestBaseTier && allCharityTiersPurchased && allUpsellTiersPurchased;
 
     if (hasMaxedOut) {
       return {
         canUpgrade: false,
-        reason:
-          "You own the complete collection with all available tiers",
+        reason: "You own the complete collection with all available tiers",
       };
     }
 
@@ -425,14 +432,14 @@ export function PurchaseSummary({
       className={cn(
         "w-full",
         !isMobileSheet &&
-          "lg:sticky lg:top-20 lg:h-fit animate-fade-up space-y-4"
+          "lg:sticky lg:top-20 lg:h-fit animate-fade-up space-y-4",
       )}
     >
       <Card
         className={cn(
           "bg-white dark:bg-card/70 backdrop-blur-xs border border-gray-100 dark:border-border shadow-xs transition-all duration-300 rounded-xl",
           !isMobileSheet && "p-6 hover:shadow-md",
-          isMobileSheet && "p-0 border-0 shadow-none bg-transparent"
+          isMobileSheet && "p-0 border-0 shadow-none bg-transparent",
         )}
       >
         <div className={cn(isMobileSheet ? "" : "")}>
@@ -468,7 +475,7 @@ export function PurchaseSummary({
                     className={cn(
                       "w-full font-mono transition-all duration-300 relative",
                       currentTier?.id === tier.id &&
-                        "bg-primary text-white font-semibold shadow-md shadow-primary/20 dark:shadow-primary/30 hover:shadow-lg hover:shadow-primary/30 dark:hover:shadow-primary/40 border-primary hover:scale-[1.02]"
+                        "bg-primary text-white font-semibold shadow-md shadow-primary/20 dark:shadow-primary/30 hover:shadow-lg hover:shadow-primary/30 dark:hover:shadow-primary/40 border-primary hover:scale-[1.02]",
                     )}
                   >
                     ${tier.price}
@@ -487,10 +494,14 @@ export function PurchaseSummary({
               <div className="space-y-2">
                 {charityTiers.map((tier) => {
                   const isSelected = selectedCharityTierIds.includes(tier.id);
-                  const isAvailable = tierAvailability
-                    ? tier.id in tierAvailability &&
-                      tierAvailability[tier.id] > 0
-                    : true;
+                  const isAvailable =
+                    isPreview ||
+                    (tierAvailability
+                      ? tier.id in tierAvailability &&
+                        tierAvailability[tier.id] > 0
+                      : true);
+                  // Allow deselection even if not available, but only if already selected
+                  const isClickable = isAvailable || isSelected;
                   return (
                     <div
                       key={tier.id}
@@ -499,17 +510,17 @@ export function PurchaseSummary({
                         isSelected
                           ? "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800"
                           : "bg-gray-50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-700",
-                        isAvailable
+                        isClickable
                           ? "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/40"
-                          : "opacity-50 cursor-not-allowed"
+                          : "opacity-50 cursor-not-allowed",
                       )}
                       onClick={() => {
-                        if (!isAvailable) return;
+                        if (!isClickable) return;
                         if (isSelected) {
                           setSelectedCharityTierIds(
                             selectedCharityTierIds.filter(
-                              (id) => id !== tier.id
-                            )
+                              (id) => id !== tier.id,
+                            ),
                           );
                         } else {
                           setSelectedCharityTierIds([
@@ -519,9 +530,9 @@ export function PurchaseSummary({
                         }
                       }}
                       role="button"
-                      tabIndex={isAvailable ? 0 : -1}
+                      tabIndex={isClickable ? 0 : -1}
                       aria-pressed={isSelected}
-                      aria-disabled={!isAvailable}
+                      aria-disabled={!isClickable}
                     >
                       <div className="flex items-start justify-between">
                         <div className="space-y-1 flex-1">
@@ -530,7 +541,7 @@ export function PurchaseSummary({
                               "text-xs font-semibold",
                               isSelected
                                 ? "text-rose-700 dark:text-rose-300"
-                                : "text-gray-600 dark:text-gray-400"
+                                : "text-gray-600 dark:text-gray-400",
                             )}
                           >
                             <Heart
@@ -538,7 +549,7 @@ export function PurchaseSummary({
                                 "inline h-3 w-3 mr-1",
                                 isSelected
                                   ? "fill-rose-500 text-rose-500"
-                                  : "text-gray-400"
+                                  : "text-gray-400",
                               )}
                             />
                             {tier.name || "Charity Tier"}
@@ -548,7 +559,7 @@ export function PurchaseSummary({
                               "text-xs",
                               isSelected
                                 ? "text-rose-600 dark:text-rose-400"
-                                : "text-gray-500 dark:text-gray-500"
+                                : "text-gray-500 dark:text-gray-500",
                             )}
                           >
                             Add ${tier.price} - 100% goes to charity
@@ -559,7 +570,7 @@ export function PurchaseSummary({
                             "ml-2 p-1 rounded-full",
                             isSelected
                               ? "bg-rose-200 dark:bg-rose-800"
-                              : "bg-gray-200 dark:bg-gray-700"
+                              : "bg-gray-200 dark:bg-gray-700",
                           )}
                         >
                           <Heart
@@ -567,7 +578,7 @@ export function PurchaseSummary({
                               "h-3 w-3",
                               isSelected
                                 ? "fill-rose-600 text-rose-600 dark:fill-rose-400 dark:text-rose-400"
-                                : "text-gray-500 dark:text-gray-400"
+                                : "text-gray-500 dark:text-gray-400",
                             )}
                           />
                         </div>
@@ -586,12 +597,12 @@ export function PurchaseSummary({
               <>
                 <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   3. Support the{" "}
-                  {bundle.type == "SteamGame" ? "Devs" : "Publishers"}
+                  {bundle.type == "SteamGame" ? "Creators" : "Partners"}
                 </h4>
                 <p className="text-xs text-muted-foreground mb-3">
                   100% of your tip goes directly to{" "}
                   <span className="font-semibold text-blue-600 dark:text-blue-400">
-                    {bundle.type == "SteamGame" ? "Developers" : "Publishers"}
+                    Partners
                   </span>
                 </p>
               </>
@@ -631,10 +642,14 @@ export function PurchaseSummary({
               <div className="space-y-2">
                 {upsellTiers.map((tier) => {
                   const isSelected = selectedUpsellTierIds.includes(tier.id);
-                  const isAvailable = tierAvailability
-                    ? tier.id in tierAvailability &&
-                      tierAvailability[tier.id] > 0
-                    : true;
+                  const isAvailable =
+                    isPreview ||
+                    (tierAvailability
+                      ? tier.id in tierAvailability &&
+                        tierAvailability[tier.id] > 0
+                      : true);
+                  // Allow deselection even if not available, but only if already selected
+                  const isClickable = isAvailable || isSelected;
                   return (
                     <div
                       key={tier.id}
@@ -643,15 +658,17 @@ export function PurchaseSummary({
                         isSelected
                           ? "bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800"
                           : "bg-gray-50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-700",
-                        isAvailable
+                        isClickable
                           ? "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/40"
-                          : "opacity-50 cursor-not-allowed"
+                          : "opacity-50 cursor-not-allowed",
                       )}
                       onClick={() => {
-                        if (!isAvailable) return;
+                        if (!isClickable) return;
                         if (isSelected) {
                           setSelectedUpsellTierIds(
-                            selectedUpsellTierIds.filter((id) => id !== tier.id)
+                            selectedUpsellTierIds.filter(
+                              (id) => id !== tier.id,
+                            ),
                           );
                         } else {
                           setSelectedUpsellTierIds([
@@ -661,9 +678,9 @@ export function PurchaseSummary({
                         }
                       }}
                       role="button"
-                      tabIndex={isAvailable ? 0 : -1}
+                      tabIndex={isClickable ? 0 : -1}
                       aria-pressed={isSelected}
-                      aria-disabled={!isAvailable}
+                      aria-disabled={!isClickable}
                     >
                       <div className="flex items-start justify-between">
                         <div className="space-y-1 flex-1">
@@ -672,13 +689,15 @@ export function PurchaseSummary({
                               "text-xs font-semibold",
                               isSelected
                                 ? "text-purple-700 dark:text-purple-300"
-                                : "text-gray-600 dark:text-gray-400"
+                                : "text-gray-600 dark:text-gray-400",
                             )}
                           >
                             <Gamepad2
                               className={cn(
                                 "inline h-3 w-3 mr-1",
-                                isSelected ? "text-purple-500" : "text-gray-400"
+                                isSelected
+                                  ? "text-purple-500"
+                                  : "text-gray-400",
                               )}
                             />
                             {tier.name || "Extra Items"}
@@ -688,10 +707,10 @@ export function PurchaseSummary({
                               "text-xs",
                               isSelected
                                 ? "text-purple-600 dark:text-purple-400"
-                                : "text-gray-500 dark:text-gray-500"
+                                : "text-gray-500 dark:text-gray-500",
                             )}
                           >
-                            Add ${tier.price} - 100% goes to publishers
+                            Add ${tier.price} - 100% goes to partners
                           </p>
                         </div>
                         <div
@@ -699,7 +718,7 @@ export function PurchaseSummary({
                             "ml-2 p-1 rounded-full",
                             isSelected
                               ? "bg-purple-200 dark:bg-purple-800"
-                              : "bg-gray-200 dark:bg-gray-700"
+                              : "bg-gray-200 dark:bg-gray-700",
                           )}
                         >
                           <Gamepad2
@@ -707,7 +726,7 @@ export function PurchaseSummary({
                               "h-3 w-3",
                               isSelected
                                 ? "text-purple-600 dark:text-purple-400"
-                                : "text-gray-500 dark:text-gray-400"
+                                : "text-gray-500 dark:text-gray-400",
                             )}
                           />
                         </div>
@@ -773,7 +792,7 @@ export function PurchaseSummary({
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-1">
                     <div className="w-3 h-3 rounded bg-yellow-400 dark:bg-yellow-600" />
-                    <span className="text-sm font-medium">Publishers</span>
+                    <span className="text-sm font-medium">Partners</span>
                   </div>
                   <span className="text-sm font-bold">
                     ${publisherAmount.toFixed(2)}
@@ -931,7 +950,9 @@ export function PurchaseSummary({
                 handleSyncSteamLevel={handleSyncSteamLevel}
                 isSyncingSteamLevel={isSyncingSteamLevel}
               />
-            ) : userPurchase && userPurchase.status === CartItemStatus.Completed && upgradeEligibility.canUpgrade ? (
+            ) : userPurchase &&
+              userPurchase.status === CartItemStatus.Completed &&
+              upgradeEligibility.canUpgrade ? (
               // User owns the bundle (completed purchase) and can upgrade
               <div className="space-y-3">
                 <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
@@ -955,7 +976,9 @@ export function PurchaseSummary({
                     <span className="w-full border-t" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">Or</span>
+                    <span className="bg-card px-2 text-muted-foreground">
+                      Or
+                    </span>
                   </div>
                 </div>
                 <AddToCartButton
@@ -974,7 +997,10 @@ export function PurchaseSummary({
                   Gift this collection
                 </AddToCartButton>
               </div>
-            ) : userPurchase && userPurchase.status === CartItemStatus.Completed && !upgradeEligibility.canUpgrade && upgradeEligibility.reason ? (
+            ) : userPurchase &&
+              userPurchase.status === CartItemStatus.Completed &&
+              !upgradeEligibility.canUpgrade &&
+              upgradeEligibility.reason ? (
               // User owns the bundle (completed purchase) but cannot upgrade (maxed out or other reason)
               <div className="space-y-3">
                 <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
@@ -1066,8 +1092,8 @@ export function PurchaseSummary({
               onClose={() => setIsUpgradeDialogOpen(false)}
               cartItem={userPurchase}
               bundle={bundle}
-              paymentSetupSuccessUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/collections/${bundle.slug}?upgrade=true&cartItemId=${userPurchase.id}&payment=success`}
-              paymentSetupCancelUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/collections/${bundle.slug}?upgrade=true&cartItemId=${userPurchase.id}&payment=cancelled`}
+              paymentSetupSuccessUrl={`${typeof window !== "undefined" ? window.location.origin : ""}/collections/${bundle.slug}?upgrade=true&cartItemId=${userPurchase.id}&payment=success`}
+              paymentSetupCancelUrl={`${typeof window !== "undefined" ? window.location.origin : ""}/collections/${bundle.slug}?upgrade=true&cartItemId=${userPurchase.id}&payment=cancelled`}
             />
           )}
         </>

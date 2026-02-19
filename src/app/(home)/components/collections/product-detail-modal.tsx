@@ -94,7 +94,7 @@ export function ProductDetailModal({
     const baseTiers = allTiers
       .filter((t) => t.type === TierType.Base)
       .sort((a, b) =>
-        baseTierDisplayOrder === "asc" ? a.price - b.price : b.price - a.price
+        baseTierDisplayOrder === "asc" ? a.price - b.price : b.price - a.price,
       );
     const charityTiers = allTiers
       .filter((t) => t.type === TierType.Charity)
@@ -183,7 +183,7 @@ export function ProductDetailModal({
 
     const handleKeyDown = (event: KeyboardEvent) => {
       const currentIndex = sortedProducts.findIndex(
-        (p) => p.id === product?.id
+        (p) => p.id === product?.id,
       );
 
       if (event.key === "ArrowLeft") {
@@ -246,7 +246,7 @@ export function ProductDetailModal({
   const getProductFormats = (): string[] => {
     if (!bookFormats || !product) return [];
     const productFormat = bookFormats.products.find(
-      (p) => p.productId === product.id
+      (p) => p.productId === product.id,
     );
     return productFormat?.availableFormats || [];
   };
@@ -260,7 +260,7 @@ export function ProductDetailModal({
             "border-b px-4 py-2 flex-shrink-0",
             isUnlocked
               ? "bg-primary/5 dark:bg-primary/10 border-primary/10 dark:border-primary/20"
-              : "bg-destructive/10 dark:bg-destructive/20 border-destructive/20 dark:border-destructive/40"
+              : "bg-destructive/10 dark:bg-destructive/20 border-destructive/20 dark:border-destructive/40",
           )}
         >
           <div className="flex items-center justify-center gap-2 text-sm">
@@ -331,7 +331,7 @@ export function ProductDetailModal({
                 <div className="flex flex-wrap items-center gap-1.5 lg:gap-2">
                   {isGame &&
                     product.steamGameMetadata?.platforms?.includes(
-                      "windows"
+                      "windows",
                     ) && (
                       <Badge variant="outline">
                         <AppWindow className="h-3 w-3 mr-1" />
@@ -413,7 +413,7 @@ export function ProductDetailModal({
                           ? "bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-700"
                           : currentTierInfo.isUpsell
                             ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-700"
-                            : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700"
+                            : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700",
                       )}
                     >
                       {currentTierInfo.isCharity ? (
@@ -434,7 +434,7 @@ export function ProductDetailModal({
                 )}
                 {isGame &&
                   getSecureTrailerUrl(
-                    product.steamGameMetadata?.trailerUrl
+                    product.steamGameMetadata?.trailerUrl,
                   ) && (
                     <Button
                       variant="default"
@@ -580,7 +580,7 @@ export function ProductDetailModal({
                         ? "border-primary ring-2 ring-primary/30"
                         : "border-transparent hover:border-primary/50",
                       !unlockedProducts.some((up) => up.id === p.id) &&
-                        "opacity-50"
+                        "opacity-50",
                     )}
                   >
                     <Image
@@ -639,7 +639,7 @@ export function ProductDetailModal({
                   onClick={() =>
                     window.open(
                       `https://store.steampowered.com/app/${product.steamGameMetadata?.steamAppId}`,
-                      "_blank"
+                      "_blank",
                     )
                   }
                 >
@@ -700,7 +700,7 @@ export function ProductDetailModal({
                     onClick={() =>
                       setModalScreenshotIndex(
                         (modalScreenshotIndex - 1 + screenshots.length) %
-                          screenshots.length
+                          screenshots.length,
                       )
                     }
                   >
@@ -712,7 +712,7 @@ export function ProductDetailModal({
                     className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white"
                     onClick={() =>
                       setModalScreenshotIndex(
-                        (modalScreenshotIndex + 1) % screenshots.length
+                        (modalScreenshotIndex + 1) % screenshots.length,
                       )
                     }
                   >
@@ -846,7 +846,7 @@ function GameDetails({
         </p>
       </div>
 
-      {/* Developers & Publishers */}
+      {/* Developers & Partners */}
       {(metadata?.developers?.length || metadata?.publishers?.length) && (
         <div className="grid grid-cols-2 gap-3 lg:gap-4">
           {metadata.developers?.length > 0 && (
@@ -862,7 +862,7 @@ function GameDetails({
           {metadata.publishers?.length > 0 && (
             <div>
               <h4 className="text-xs lg:text-sm font-medium mb-0.5 lg:mb-1">
-                Publisher
+                Partner
               </h4>
               <p className="text-xs lg:text-sm text-muted-foreground">
                 {metadata.publishers.map((p) => p.name).join(", ")}

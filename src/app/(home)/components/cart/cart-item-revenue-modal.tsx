@@ -105,7 +105,7 @@ export function CartItemRevenueModal({
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded bg-yellow-400 dark:bg-yellow-600" />
-                <span className="text-sm font-medium">Publishers</span>
+                <span className="text-sm font-medium">Partners</span>
               </div>
               <span className="text-sm font-bold">
                 ${publisherAmount.toFixed(2)}
@@ -151,7 +151,7 @@ export function CartItemRevenueModal({
           {item.tipAmount > 0 && (
             <div className="mt-6 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
               <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">
-                Your ${item.tipAmount.toFixed(2)} tip goes 100% to Publishers
+                Your ${item.tipAmount.toFixed(2)} tip goes 100% to Partners
               </p>
             </div>
           )}

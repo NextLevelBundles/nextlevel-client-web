@@ -77,13 +77,13 @@ export function CartItemModal({
   bundle,
   autoOpenUpgrade = false,
 }: CartItemModalProps) {
-  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(autoOpenUpgrade);
+  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] =
+    useState(autoOpenUpgrade);
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false);
 
   // Check upgrade eligibility - must be before early return to follow Rules of Hooks
   const upgradeEligibility = useMemo(() => {
     if (!item) return { canUpgrade: false, reason: "No item" };
-
 
     // Only for completed purchases
     if (item.status !== CartItemStatus.Completed) {
@@ -104,7 +104,7 @@ export function CartItemModal({
       .filter((t) => t.type === TierType.Base)
       .sort((a, b) => a.price - b.price);
     const charityTiers = bundle.tiers.filter(
-      (t) => t.type === TierType.Charity
+      (t) => t.type === TierType.Charity,
     );
     const upsellTiers = bundle.tiers.filter((t) => t.type === TierType.Upsell);
 
@@ -119,19 +119,17 @@ export function CartItemModal({
 
     // Check if all upsell tiers are purchased
     const purchasedProductIds = new Set(
-      item.snapshotProducts.map((p) => p.productId)
+      item.snapshotProducts.map((p) => p.productId),
     );
     const allUpsellTiersPurchased = upsellTiers.every((tier) => {
       const tierProducts = bundle.products.filter(
-        (p) => p.bundleTierId === tier.id
+        (p) => p.bundleTierId === tier.id,
       );
       return tierProducts.every((p) => purchasedProductIds.has(p.id));
     });
 
     const hasMaxedOut =
-      hasHighestBaseTier &&
-      allCharityTiersPurchased &&
-      allUpsellTiersPurchased;
+      hasHighestBaseTier && allCharityTiersPurchased && allUpsellTiersPurchased;
 
     if (hasMaxedOut) {
       return {
@@ -296,7 +294,7 @@ export function CartItemModal({
                                         <FileText className="h-3 w-3" />
                                         {format}
                                       </span>
-                                    )
+                                    ),
                                   )}
                                 </div>
                               )}
@@ -371,7 +369,7 @@ export function CartItemModal({
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 rounded bg-yellow-400 dark:bg-yellow-600" />
-                      <span className="text-sm font-medium">Publishers</span>
+                      <span className="text-sm font-medium">Partners</span>
                     </div>
                     <span className="text-sm font-bold">
                       ${publisherAmount.toFixed(2)}
@@ -419,7 +417,7 @@ export function CartItemModal({
                     <div className="mt-6 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
                       <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">
                         Your ${item.tipAmount.toFixed(2)} tip goes 100% to
-                        Publishers
+                        Partners
                       </p>
                     </div>
                   )}
@@ -451,7 +449,7 @@ export function CartItemModal({
                       <span>
                         Tip for{" "}
                         {item.snapshotExcessDistributionType === "Publishers"
-                          ? "Publishers"
+                          ? "Partners"
                           : "Charity"}
                       </span>
                       <span>${item.tipAmount.toFixed(2)}</span>
