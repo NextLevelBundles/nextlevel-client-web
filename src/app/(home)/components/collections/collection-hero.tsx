@@ -1,7 +1,7 @@
 "use client";
 
 import { Card } from "@/shared/components/ui/card";
-import { Timer, BookOpen, Gamepad2, Package } from "lucide-react";
+import { Timer, BookOpen, Gamepad2, Package, Sparkles } from "lucide-react";
 import { Bundle, BundleType, TierType } from "@/app/(shared)/types/bundle";
 import { useCountdownTimer } from "@/app/(shared)/hooks/useCountdownTimer";
 import { BundleStaticDeck } from "./collection-static-deck";
@@ -94,29 +94,20 @@ export function BundleHero({ bundle }: BundleHeroProps) {
         {/* Single dark overlay */}
         <div className="absolute inset-0 bg-black/30" />
       </div>
-      {/* Feature badges - top right */}
-      <div className="absolute right-6 top-6 flex gap-2 z-10">
-        {bundle.bundleTypeTag && (
-          <div className="text-xs font-semibold rounded-full px-3 py-1 backdrop-blur-md bg-blue-500/60 text-white shadow-md border border-white/10">
-            {bundle.bundleTypeTag.name}
+      {/* Bundle type ribbon - top right */}
+      {bundle.bundleTypeTag && (
+        <div className="absolute right-0 top-5 z-10">
+          <div
+            className="flex items-center gap-1.5 py-2 pl-5 pr-5 bg-gradient-to-r from-amber-500 to-amber-400 text-white shadow-lg shadow-black/20"
+            style={{ clipPath: "polygon(12px 0, 100% 0, 100% 100%, 12px 100%, 0 50%)" }}
+          >
+            <Sparkles className="h-3.5 w-3.5 drop-shadow-sm" />
+            <span className="text-xs font-bold uppercase tracking-wider drop-shadow-sm">{bundle.bundleTypeTag.name}</span>
           </div>
-        )}
-        {bundle.isFeatured && (
-          <div className="text-xs font-semibold rounded-full px-3 py-1 backdrop-blur-md bg-green-500/60 text-white shadow-md border border-white/10">
-            Featured
-          </div>
-        )}
-        {bundle.isEarlyAccess && (
-          <div className="text-xs font-semibold rounded-full px-3 py-1 backdrop-blur-md bg-purple-500/60 text-white shadow-md border border-white/10">
-            Early Access
-          </div>
-        )}
-        {bundle.isLimitedKeys && (
-          <div className="text-xs font-semibold rounded-full px-3 py-1 backdrop-blur-md bg-red-500/60 text-white shadow-md border border-white/10">
-            Limited Keys
-          </div>
-        )}
-      </div>
+          {/* Ribbon fold shadow */}
+          <div className="absolute right-0 -bottom-1.5 w-full h-1.5 bg-gradient-to-r from-transparent via-amber-800/40 to-amber-800/50" style={{ clipPath: "polygon(12px 0, 100% 0, 100% 100%, 14px 100%)" }} />
+        </div>
+      )}
 
       {/* Content overlay */}
       <div className="absolute inset-0 flex items-center justify-center">
