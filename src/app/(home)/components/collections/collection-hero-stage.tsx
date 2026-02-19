@@ -223,10 +223,6 @@ export function CollectionHeroStage({ bundle }: CollectionHeroStageProps) {
                   <Play className="h-6 w-6 text-gray-900 ml-0.5" />
                 </div>
               </div>
-              {/* Label */}
-              <span className="absolute bottom-3 w-full text-center text-xs text-white/70 font-medium">
-                Watch the curator&apos;s story
-              </span>
             </button>
           </div>
         ) : hasCurators && curatorQuote ? (

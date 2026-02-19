@@ -267,7 +267,7 @@ export function CollectionHeroV4({ bundle }: CollectionHeroV4Props) {
                   <Play className="h-7 w-7 text-gray-900 ml-0.5" />
                 </div>
                 <span className="text-sm text-white/70 group-hover:text-white transition-colors font-medium">
-                  Watch the curator&apos;s story
+                  Watch the curator&apos;s video
                 </span>
               </button>
             </div>
