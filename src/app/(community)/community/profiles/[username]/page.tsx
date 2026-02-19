@@ -51,7 +51,13 @@ const GENRE_COLORS = [
   "hsl(var(--chart-3))",
   "hsl(var(--chart-4))",
   "hsl(var(--chart-5))",
-  "hsl(var(--muted-foreground))",
+  "hsl(210, 70%, 55%)",
+  "hsl(340, 65%, 50%)",
+  "hsl(160, 60%, 45%)",
+  "hsl(45, 80%, 50%)",
+  "hsl(270, 55%, 55%)",
+  "hsl(190, 70%, 45%)",
+  "hsl(15, 75%, 55%)",
 ];
 
 // --- Section wrapper with border ---
@@ -277,26 +283,13 @@ function GameCollectionSection({
   genres: { name: string; count: number; percentage: number }[];
   isLoading: boolean;
 }) {
-  const topGenres = genres.slice(0, 5);
-  const otherCount = genres
-    .slice(5)
-    .reduce((sum, g) => sum + g.count, 0);
-
   const chartData = useMemo(() => {
-    const data = topGenres.map((g, i) => ({
+    return genres.map((g, i) => ({
       name: g.name,
       value: g.count,
       fill: GENRE_COLORS[i % GENRE_COLORS.length],
     }));
-    if (otherCount > 0) {
-      data.push({
-        name: "Other",
-        value: otherCount,
-        fill: GENRE_COLORS[5],
-      });
-    }
-    return data;
-  }, [topGenres, otherCount]);
+  }, [genres]);
 
   const chartConfig: ChartConfig = useMemo(() => {
     const config: ChartConfig = {};
@@ -387,7 +380,7 @@ function GameCollectionSection({
 
           {/* Genre Legend */}
           <div className="flex-1 space-y-2.5 w-full">
-            {topGenres.map((genre, i) => (
+            {genres.map((genre, i) => (
               <div key={genre.name} className="flex items-center gap-2.5">
                 <div
                   className="h-3 w-3 rounded-sm flex-shrink-0"
@@ -415,20 +408,6 @@ function GameCollectionSection({
                 </div>
               </div>
             ))}
-            {otherCount > 0 && (
-              <div className="flex items-center gap-2.5">
-                <div
-                  className="h-3 w-3 rounded-sm flex-shrink-0"
-                  style={{ backgroundColor: GENRE_COLORS[5] }}
-                />
-                <span className="text-sm flex-1 min-w-0 truncate text-muted-foreground">
-                  Other
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {otherCount}
-                </span>
-              </div>
-            )}
           </div>
         </div>
       ) : (
