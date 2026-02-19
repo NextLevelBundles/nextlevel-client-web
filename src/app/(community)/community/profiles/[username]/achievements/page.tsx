@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Card } from "@/shared/components/ui/card";
-import { TrophyIcon, ImageIcon, ChevronDownIcon } from "lucide-react";
+import { TrophyIcon, ImageIcon, ChevronDownIcon, LockIcon } from "lucide-react";
 import { useProfileAchievements } from "@/hooks/queries/useProfileAchievements";
 import type { GameAchievementProgress } from "@/lib/api/types/customer-profile";
 
@@ -96,22 +96,26 @@ function GameAchievementRow({ game }: { game: GameAchievementProgress }) {
         />
       </button>
 
-      {/* Expanded: Earned achievements list */}
-      {expanded && game.earnedAchievementsList?.length > 0 && (
+      {/* Expanded: All achievements list */}
+      {expanded && game.achievementsList?.length > 0 && (
         <div className="pb-3 pl-[4.75rem] pr-1">
           <div className="rounded-md border bg-muted/20 divide-y">
-            {game.earnedAchievementsList.map((ach) => (
+            {game.achievementsList.map((ach) => (
               <div
                 key={ach.apiName}
-                className="flex items-center justify-between px-3 py-2 text-xs"
+                className={`flex items-center justify-between px-3 py-2 text-xs ${!ach.achieved ? "opacity-40" : ""}`}
               >
                 <div className="flex items-center gap-2 min-w-0">
-                  <TrophyIcon className="h-3 w-3 text-primary flex-shrink-0" />
+                  {ach.achieved ? (
+                    <TrophyIcon className="h-3 w-3 text-primary flex-shrink-0" />
+                  ) : (
+                    <LockIcon className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                  )}
                   <span className="truncate font-medium">
                     {formatApiName(ach.apiName)}
                   </span>
                 </div>
-                {ach.unlockTime && (
+                {ach.achieved && ach.unlockTime && (
                   <span className="text-muted-foreground flex-shrink-0 ml-3">
                     {formatDate(ach.unlockTime)}
                   </span>

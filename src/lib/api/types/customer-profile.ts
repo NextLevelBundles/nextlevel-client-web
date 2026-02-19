@@ -203,11 +203,12 @@ export interface GameAchievementProgress {
   earnedAchievements: number;
   completionPercentage: number;
   lastUnlockTime: string | null;
-  earnedAchievementsList: EarnedAchievement[];
+  achievementsList: Achievement[];
 }
 
-export interface EarnedAchievement {
+export interface Achievement {
   apiName: string;
+  achieved: boolean;
   unlockTime: string | null;
 }
 
