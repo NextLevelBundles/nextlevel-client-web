@@ -638,13 +638,16 @@ export default function GameDetailPage() {
           </div>
         )}
 
-        {/* Platform badges + Genre tags */}
+        {/* Platform badges */}
         <div className="flex flex-wrap gap-2">
           {game.platforms.map((p, i) => (
             <Badge key={i} variant="outline" className="text-xs">
               {p.abbreviation || p.name}
             </Badge>
           ))}
+        </div>
+        {/* Genre tags */}
+        <div className="flex flex-wrap gap-2">
           {game.genres.map((g, i) => (
             <Badge key={`g-${i}`} variant="outline" className="text-xs">
               {g.name}
@@ -681,6 +684,10 @@ export default function GameDetailPage() {
               value={
                 game.playerPerspectives.map((p) => p.name).join(", ") || null
               }
+            />
+            <InfoRow
+              label="Genres"
+              value={game.genres.map((g) => g.name).join(", ") || null}
             />
             <InfoRow
               label="Themes"
