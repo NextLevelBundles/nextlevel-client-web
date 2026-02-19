@@ -27,7 +27,7 @@ export function useCustomerCollection(handle?: string) {
         ? customerProfileApi.getCollectionByHandle(handle)
         : customerProfileApi.getCollection(),
     enabled: isAuthenticated,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: true,
   });
@@ -53,7 +53,7 @@ export function useCollectionPaged(params?: {
         ? customerProfileApi.getCollectionPagedByHandle(handle, params)
         : customerProfileApi.getCollectionPaged(params),
     enabled: isAuthenticated,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
     gcTime: 10 * 60 * 1000,
     placeholderData: (prev) => prev,
   });
@@ -74,7 +74,7 @@ export function useUnimportedGames(params?: {
     queryFn: (): Promise<PaginatedResponse<UnimportedSteamGame>> =>
       customerProfileApi.getUnimportedGames(params),
     enabled: isAuthenticated,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
     gcTime: 10 * 60 * 1000,
     placeholderData: (prev) => prev,
   });
@@ -88,7 +88,9 @@ export function useImportGames() {
       customerProfileApi.importGames(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: customerCollectionQueryKey });
+      queryClient.invalidateQueries({ queryKey: collectionPagedQueryKey });
       queryClient.invalidateQueries({ queryKey: unimportedGamesQueryKey });
+      queryClient.invalidateQueries({ queryKey: ["profile-stats"] });
     },
   });
 }

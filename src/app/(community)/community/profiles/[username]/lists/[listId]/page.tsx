@@ -60,7 +60,7 @@ export default function ListDetailPage() {
   const [showResults, setShowResults] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
-  const { data: searchResults } = useGameSearch(searchQuery);
+  const { data: searchResults, isFetching: isSearchFetching } = useGameSearch(searchQuery);
 
   // Close search results when clicking outside
   useEffect(() => {
@@ -205,9 +205,22 @@ export default function ListDetailPage() {
               className="pl-10"
             />
           </div>
-          {showResults && searchResults && searchResults.length > 0 && (
+          {showResults && searchQuery.length >= 2 && (
             <Card className="absolute z-50 w-full mt-1 max-h-80 overflow-y-auto">
-              {searchResults.map((game) => {
+              {isSearchFetching ? (
+                <div className="p-2 space-y-2">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="flex items-center gap-3 p-3">
+                      <Skeleton className="h-10 w-8 rounded flex-shrink-0" />
+                      <div className="flex-1 space-y-1.5">
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-3 w-16" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : searchResults && searchResults.length > 0 ? (
+                searchResults.map((game) => {
                 const alreadyAdded = list.items.some(
                   (i) => i.gameId === game.igdbId
                 );
@@ -250,7 +263,12 @@ export default function ListDetailPage() {
                     )}
                   </button>
                 );
-              })}
+              })
+              ) : (
+                <div className="p-4 text-center text-sm text-muted-foreground">
+                  No games found.
+                </div>
+              )}
             </Card>
           )}
         </div>

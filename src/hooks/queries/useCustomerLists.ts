@@ -36,7 +36,7 @@ export function useCustomerLists(handle?: string) {
         ? customerProfileApi.getListsByHandle(handle)
         : customerProfileApi.getLists(),
     enabled: isAuthenticated,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: true,
   });
@@ -55,7 +55,7 @@ export function useCustomerListDetail(listId: string, handle?: string) {
         ? customerProfileApi.getListDetailByHandle(handle, listId)
         : customerProfileApi.getListDetail(listId),
     enabled: isAuthenticated && !!listId,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
     gcTime: 10 * 60 * 1000,
   });
 }
@@ -154,7 +154,7 @@ export function useWishlist(handle?: string) {
         ? customerProfileApi.getWishlistByHandle(handle)
         : customerProfileApi.getWishlist(),
     enabled: isAuthenticated,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
     gcTime: 10 * 60 * 1000,
   });
 }

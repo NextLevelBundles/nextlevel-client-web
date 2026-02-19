@@ -8,7 +8,7 @@ export function useProfileAchievements(handle: string) {
     queryFn: (): Promise<ProfileAchievements | null> =>
       customerProfileApi.getAchievementsByHandle(handle),
     enabled: !!handle,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
     gcTime: 10 * 60 * 1000,
   });
 }
