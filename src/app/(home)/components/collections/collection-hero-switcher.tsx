@@ -6,6 +6,7 @@ import { CollectionHeroStage } from "./collection-hero-stage";
 import { CollectionHeroV2 } from "./collection-hero-v2";
 import { CollectionHeroV3 } from "./collection-hero-v3";
 import { CollectionHeroV4 } from "./collection-hero-v4";
+import { CollectionHeroV5 } from "./collection-hero-v5";
 
 interface CollectionHeroSwitcherProps {
   bundle: Bundle;
@@ -22,6 +23,8 @@ export function CollectionHeroSwitcher({ bundle }: CollectionHeroSwitcherProps) 
       return <CollectionHeroV3 bundle={bundle} />;
     case "4":
       return <CollectionHeroV4 bundle={bundle} />;
+    case "5":
+      return <CollectionHeroV5 bundle={bundle} />;
     default:
       return <CollectionHeroStage bundle={bundle} />;
   }

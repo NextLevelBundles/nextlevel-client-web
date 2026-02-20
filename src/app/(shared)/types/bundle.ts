@@ -19,6 +19,17 @@ export interface BundleTypeTag {
   updatedAt: string;
 }
 
+export enum HeroMediaType {
+  ProductSlivers = "ProductSlivers",
+  Image = "Image",
+  YouTube = "YouTube",
+}
+
+export interface HeroMedia {
+  type: HeroMediaType;
+  url: string;
+}
+
 export enum CuratorType {
   Lead = "Lead",
   Guest = "Guest",
@@ -63,6 +74,7 @@ export interface BundleListItem {
   charitySplit: number;
   bundleTypeTagId?: string | null;
   bundleTypeTag?: BundleTypeTag | null;
+  heroMedia?: HeroMedia | null;
   curatorVideoLink?: string | null;
   curatorStatement?: string | null;
   curators?: Curator[];
