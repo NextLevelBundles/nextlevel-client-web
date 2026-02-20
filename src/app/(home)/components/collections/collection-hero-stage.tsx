@@ -54,6 +54,7 @@ interface CollectionHeroStageProps {
 }
 
 export function CollectionHeroStage({ bundle }: CollectionHeroStageProps) {
+  const showProducts = false;
   const [videoDialogOpen, setVideoDialogOpen] = useState(false);
 
   // --- Countdown logic (preserved from collection-hero.tsx) ---
@@ -326,35 +327,37 @@ export function CollectionHeroStage({ bundle }: CollectionHeroStageProps) {
       </div>
 
       {/* === Right column: Game art cascade (desktop only) === */}
-      <div className="absolute right-0 top-0 bottom-0 left-[50%] z-10 hidden lg:block">
-        <div className="relative w-full h-full">
-          {cascadeImages.map((image, index) => {
-            const pos = cascadePositions[index];
-            if (!pos) return null;
-            return (
-              <div
-                key={image.id}
-                className="absolute w-[200px] h-[280px] rounded-xl overflow-hidden shadow-[0_20px_40px_-12px_rgba(0,0,0,0.5)] ring-1 ring-white/10 transition-all duration-300 hover:-translate-y-2.5 hover:shadow-[0_30px_50px_-12px_rgba(0,0,0,0.6)] hover:brightness-110 animate-fade-up"
-                style={{
-                  top: pos.top,
-                  right: pos.right,
-                  transform: `rotate(${pos.rotate})`,
-                  animationDelay: pos.delay,
-                }}
-              >
-                <Image
-                  src={image.url}
-                  alt={`${bundle.title} - ${index + 1}`}
-                  fill
-                  className="object-cover"
-                  sizes="200px"
-                  priority={index <= 1}
-                />
-              </div>
-            );
-          })}
+      {showProducts && (
+        <div className="absolute right-0 top-0 bottom-0 left-[50%] z-10 hidden lg:block">
+          <div className="relative w-full h-full">
+            {cascadeImages.map((image, index) => {
+              const pos = cascadePositions[index];
+              if (!pos) return null;
+              return (
+                <div
+                  key={image.id}
+                  className="absolute w-[200px] h-[280px] rounded-xl overflow-hidden shadow-[0_20px_40px_-12px_rgba(0,0,0,0.5)] ring-1 ring-white/10 transition-all duration-300 hover:-translate-y-2.5 hover:shadow-[0_30px_50px_-12px_rgba(0,0,0,0.6)] hover:brightness-110 animate-fade-up"
+                  style={{
+                    top: pos.top,
+                    right: pos.right,
+                    transform: `rotate(${pos.rotate})`,
+                    animationDelay: pos.delay,
+                  }}
+                >
+                  <Image
+                    src={image.url}
+                    alt={`${bundle.title} - ${index + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="200px"
+                    priority={index <= 1}
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* === Bottom bar: Countdown === */}
       <div className="absolute bottom-0 left-0 right-0 z-30 px-6 lg:px-10 py-4 flex items-center justify-end bg-gradient-to-t from-black/60 via-black/30 to-transparent pointer-events-none">
