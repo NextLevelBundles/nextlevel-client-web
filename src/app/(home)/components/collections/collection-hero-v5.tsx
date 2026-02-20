@@ -372,17 +372,6 @@ export function CollectionHeroV5({ bundle }: CollectionHeroV5Props) {
                 &ldquo;{curatorQuote}&rdquo;
               </p>
             </div>
-          ) : !hasVideo && !hasCurators ? (
-            <div
-              className="flex items-center justify-center w-20 h-20 rounded-full bg-white/10 border border-white/20 animate-fade-up"
-              style={{ animationDelay: "150ms" }}
-            >
-              {bundle.type === BundleType.EBook ? (
-                <BookOpen className="h-10 w-10 text-white/50" />
-              ) : (
-                <Gamepad2 className="h-10 w-10 text-white/50" />
-              )}
-            </div>
           ) : null}
 
         </div>
