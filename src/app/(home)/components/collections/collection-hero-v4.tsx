@@ -231,7 +231,7 @@ export function CollectionHeroV4({ bundle }: CollectionHeroV4Props) {
         className={`absolute inset-0 z-30 transition-opacity duration-500 ${isPlaying ? "opacity-0 pointer-events-none" : "opacity-100"}`}
       >
         {/* === Left column: Story content === */}
-        <div className="flex flex-col justify-center px-6 pt-8 pb-20 lg:px-10 lg:py-10 lg:max-w-[55%] h-full gap-5">
+        <div className="flex flex-col justify-center px-6 py-8 lg:px-10 lg:py-10 lg:max-w-[55%] h-full gap-6">
           {/* Collection type badge + bundle type tag (mobile inline) */}
           <div
             className="flex flex-wrap items-center gap-2 animate-fade-up"
@@ -281,12 +281,10 @@ export function CollectionHeroV4({ bundle }: CollectionHeroV4Props) {
             >
               <button
                 onClick={handlePlay}
-                className="flex items-center gap-3 cursor-pointer group"
+                className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 backdrop-blur-sm transition-all duration-300 cursor-pointer group"
               >
-                <div className="w-16 h-16 rounded-full bg-white/90 group-hover:bg-white group-hover:scale-110 transition-all duration-300 flex items-center justify-center shadow-lg shadow-black/30">
-                  <Play className="h-7 w-7 text-gray-900 ml-0.5" />
-                </div>
-                <span className="text-sm text-white/70 group-hover:text-white transition-colors font-medium">
+                <Play className="h-4 w-4 text-white/80 group-hover:text-white" />
+                <span className="text-sm text-white/80 group-hover:text-white transition-colors font-medium">
                   Watch the curator&apos;s video
                 </span>
               </button>
@@ -313,80 +311,6 @@ export function CollectionHeroV4({ bundle }: CollectionHeroV4Props) {
             </div>
           ) : null}
 
-          {/* Curator identity */}
-          {hasCurators && (
-            <div
-              className="flex flex-wrap lg:flex-nowrap items-center gap-3 animate-fade-up"
-              style={{ animationDelay: "300ms" }}
-            >
-              {leadCurators.map((curator) => (
-                <Link
-                  key={curator.id}
-                  href={`/community/profiles/${curator.customerHandle}`}
-                  className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-all duration-200"
-                >
-                  <Avatar className="h-9 w-9 ring-2 ring-primary/50">
-                    {curator.customerPictureUrl ? (
-                      <AvatarImage
-                        src={curator.customerPictureUrl}
-                        alt={curator.customerName}
-                      />
-                    ) : null}
-                    <AvatarFallback className="bg-white/10">
-                      <User className="h-4 w-4 text-white/60" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-white/50 font-medium">
-                      Curated by
-                    </p>
-                    <p className="text-sm font-semibold text-white hover:text-primary transition-colors">
-                      {curator.customerName}
-                    </p>
-                  </div>
-                </Link>
-              ))}
-              {guestCurators.length > 0 && (
-                <div className="flex items-center gap-2 ml-1">
-                  <span className="text-white/30">|</span>
-                  {guestCurators.map((curator) => (
-                    <Link
-                      key={curator.id}
-                      href={`/community/profiles/${curator.customerHandle}`}
-                      className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-all duration-200"
-                    >
-                      <Avatar className="h-7 w-7 ring-1 ring-white/30">
-                        {curator.customerPictureUrl ? (
-                          <AvatarImage
-                            src={curator.customerPictureUrl}
-                            alt={curator.customerName}
-                          />
-                        ) : null}
-                        <AvatarFallback className="bg-white/10">
-                          <User className="h-3 w-3 text-white/60" />
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-xs font-medium text-white/70 hover:text-primary transition-colors">
-                        {curator.customerName}
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Curator quote (shown below identity if video is present) */}
-          {hasVideo && curatorQuote && (
-            <div
-              className="relative max-w-sm animate-fade-up"
-              style={{ animationDelay: "400ms" }}
-            >
-              <p className="text-sm italic text-white/70 leading-relaxed">
-                &ldquo;{curatorQuote}&rdquo;
-              </p>
-            </div>
-          )}
         </div>
 
         {/* === Right column: Game art cascade (desktop only) === */}
@@ -422,8 +346,81 @@ export function CollectionHeroV4({ bundle }: CollectionHeroV4Props) {
           </div>
         )}
 
-        {/* === Bottom bar: Countdown === */}
-        <div className="absolute bottom-0 left-0 right-0 z-30 px-6 lg:px-10 py-4 flex items-center justify-end bg-gradient-to-t from-black/60 via-black/30 to-transparent pointer-events-none">
+        {/* === Bottom bar: Curators + Countdown === */}
+        <div className="absolute bottom-0 left-0 right-0 z-30 px-6 lg:px-10 py-4 flex items-end justify-between bg-gradient-to-t from-black/60 via-black/30 to-transparent pointer-events-none">
+          {/* Curators (left) */}
+          {hasCurators ? (
+            <div
+              className="flex flex-col gap-2 animate-fade-up pointer-events-auto"
+              style={{ animationDelay: "300ms" }}
+            >
+              <div className="flex flex-wrap items-center gap-3">
+                {leadCurators.map((curator) => (
+                  <Link
+                    key={curator.id}
+                    href={`/community/profiles/${curator.customerHandle}`}
+                    className="flex items-center gap-2 hover:opacity-80 transition-all duration-200"
+                  >
+                    <Avatar className="h-8 w-8 ring-2 ring-primary/50">
+                      {curator.customerPictureUrl ? (
+                        <AvatarImage
+                          src={curator.customerPictureUrl}
+                          alt={curator.customerName}
+                        />
+                      ) : null}
+                      <AvatarFallback className="bg-white/10">
+                        <User className="h-3.5 w-3.5 text-white/60" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-white/50 font-medium leading-none mb-0.5">
+                        Curated by
+                      </p>
+                      <p className="text-sm font-semibold text-white hover:text-primary transition-colors leading-none">
+                        {curator.customerName}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+                {guestCurators.length > 0 && (
+                  <div className="flex items-center gap-2 ml-1">
+                    <span className="text-white/30">|</span>
+                    {guestCurators.map((curator) => (
+                      <Link
+                        key={curator.id}
+                        href={`/community/profiles/${curator.customerHandle}`}
+                        className="flex items-center gap-1.5 hover:opacity-80 transition-all duration-200"
+                      >
+                        <Avatar className="h-6 w-6 ring-1 ring-white/30">
+                          {curator.customerPictureUrl ? (
+                            <AvatarImage
+                              src={curator.customerPictureUrl}
+                              alt={curator.customerName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-white/10">
+                            <User className="h-3 w-3 text-white/60" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-xs font-medium text-white/70 hover:text-primary transition-colors">
+                          {curator.customerName}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {curatorQuote && (
+                <p className="text-xs italic text-white/60 leading-relaxed max-w-sm">
+                  &ldquo;{curatorQuote}&rdquo;
+                </p>
+              )}
+            </div>
+          ) : (
+            <div />
+          )}
+
+          {/* Countdown (right) */}
           <div
             className={`inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full backdrop-blur-md border shadow-lg animate-fade-up pointer-events-auto ${
               bundleHasEnded
