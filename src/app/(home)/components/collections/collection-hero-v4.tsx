@@ -9,6 +9,7 @@ import {
   Gamepad2,
   Sparkles,
   Play,
+  X,
   User,
 } from "lucide-react";
 import {
@@ -66,6 +67,12 @@ export function CollectionHeroV4({ bundle }: CollectionHeroV4Props) {
     setIsPlaying(true);
     sendYTCommand("unMute");
     sendYTCommand("setLoop", [false]);
+  }, [sendYTCommand]);
+
+  const handleClose = useCallback(() => {
+    setIsPlaying(false);
+    sendYTCommand("mute");
+    sendYTCommand("setLoop", [true]);
   }, [sendYTCommand]);
 
   // --- Countdown logic ---
@@ -180,6 +187,18 @@ export function CollectionHeroV4({ bundle }: CollectionHeroV4Props) {
             style={{ border: "none" }}
           />
         </div>
+      )}
+
+      {/* === Close button — visible only when playing === */}
+      {videoId && (
+        <button
+          onClick={handleClose}
+          className={`absolute top-4 right-4 z-40 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white transition-all duration-500 cursor-pointer ${
+            isPlaying ? "opacity-100 scale-100" : "opacity-0 scale-75 pointer-events-none"
+          }`}
+        >
+          <X className="h-5 w-5" />
+        </button>
       )}
 
       {/* === Layer 2: Gradient overlay — fades out when playing === */}
