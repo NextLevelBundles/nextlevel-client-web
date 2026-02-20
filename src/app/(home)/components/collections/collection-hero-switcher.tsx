@@ -2,7 +2,6 @@
 
 import { useSearchParams } from "next/navigation";
 import { Bundle } from "@/app/(shared)/types/bundle";
-import { CollectionHeroStage } from "./collection-hero-stage";
 import { CollectionHeroV2 } from "./collection-hero-v2";
 import { CollectionHeroV3 } from "./collection-hero-v3";
 import { CollectionHeroV4 } from "./collection-hero-v4";
@@ -26,6 +25,6 @@ export function CollectionHeroSwitcher({ bundle }: CollectionHeroSwitcherProps) 
     case "5":
       return <CollectionHeroV5 bundle={bundle} />;
     default:
-      return <CollectionHeroStage bundle={bundle} />;
+      return <CollectionHeroV5 bundle={bundle} />;
   }
 }
