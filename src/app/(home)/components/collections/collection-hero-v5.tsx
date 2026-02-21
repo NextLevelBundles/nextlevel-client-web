@@ -102,13 +102,11 @@ export function CollectionHeroV5({ bundle }: CollectionHeroV5Props) {
   const handlePlay = useCallback(() => {
     setIsPlaying(true);
     sendYTCommand("unMute");
-    sendYTCommand("setLoop", [false]);
   }, [sendYTCommand]);
 
   const handleClose = useCallback(() => {
     setIsPlaying(false);
     sendYTCommand("mute");
-    sendYTCommand("setLoop", [true]);
   }, [sendYTCommand]);
 
   // --- Countdown logic ---
@@ -430,10 +428,9 @@ export function CollectionHeroV5({ bundle }: CollectionHeroV5Props) {
           </div>
         )}
 
-        {/* === Bottom bar: Curators (left) + Countdown (right) === */}
-        <div className="absolute bottom-0 left-0 right-0 z-30 px-6 lg:px-10 py-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between bg-gradient-to-t from-black/60 via-black/30 to-transparent pointer-events-none">
-          {/* Curators */}
-          {hasCurators ? (
+        {/* === Bottom bar: Curators (left) === */}
+        <div className="absolute bottom-0 left-0 right-0 z-30 px-6 lg:px-10 py-4 bg-gradient-to-t from-black/60 via-black/30 to-transparent pointer-events-none">
+          {hasCurators && (
             <div
               className={`flex flex-col gap-2 animate-fade-up ${isPlaying ? "pointer-events-none" : "pointer-events-auto"}`}
               style={{ animationDelay: "300ms" }}
@@ -500,13 +497,29 @@ export function CollectionHeroV5({ bundle }: CollectionHeroV5Props) {
                 </p>
               )}
             </div>
-          ) : (
-            <div className="hidden lg:block" />
           )}
 
-          {/* Countdown */}
+          {/* Mobile countdown */}
           <div
-            className={`inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full backdrop-blur-md border shadow-lg animate-fade-up self-start lg:self-auto ${isPlaying ? "pointer-events-none" : "pointer-events-auto"} ${
+            className={`inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full backdrop-blur-md border shadow-lg animate-fade-up lg:hidden mt-3 ${isPlaying ? "pointer-events-none" : "pointer-events-auto"} ${
+              bundleHasEnded
+                ? "bg-red-500/15 border-red-500/30 text-red-300"
+                : "bg-white/10 border-white/20 text-white"
+            }`}
+            style={{ animationDelay: "250ms" }}
+          >
+            <Timer className="h-4 w-4 opacity-70" />
+            <span className="text-xs uppercase tracking-wide opacity-70">
+              {timerLabel}
+            </span>
+            <span className="font-mono font-bold text-base">{timeLeft}</span>
+          </div>
+        </div>
+
+        {/* === Countdown (centered, desktop only) === */}
+        <div className={`absolute bottom-0 left-0 right-0 z-20 hidden lg:flex justify-center py-4 pointer-events-none ${isPlaying ? "opacity-0" : "opacity-100"} transition-opacity duration-500`}>
+          <div
+            className={`inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full backdrop-blur-md border shadow-lg animate-fade-up pointer-events-auto ${
               bundleHasEnded
                 ? "bg-red-500/15 border-red-500/30 text-red-300"
                 : "bg-white/10 border-white/20 text-white"
