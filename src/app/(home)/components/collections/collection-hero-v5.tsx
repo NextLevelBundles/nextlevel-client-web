@@ -79,9 +79,10 @@ export function CollectionHeroV5({ bundle }: CollectionHeroV5Props) {
   const isYouTubeBackground = heroMediaType === HeroMediaType.YouTube;
 
   // Background YouTube video ID (from heroMedia, not curatorVideoLink)
-  const bgVideoId = isYouTubeBackground && heroMedia?.url
-    ? extractVideoId(heroMedia.url)
-    : null;
+  const bgVideoId =
+    isYouTubeBackground && heroMedia?.url
+      ? extractVideoId(heroMedia.url)
+      : null;
 
   // --- Curator video (separate from background) ---
   const hasVideo = !!bundle.curatorVideoLink;
@@ -93,7 +94,7 @@ export function CollectionHeroV5({ bundle }: CollectionHeroV5Props) {
   const sendYTCommand = useCallback((func: string, args: unknown[] = []) => {
     iframeRef.current?.contentWindow?.postMessage(
       JSON.stringify({ event: "command", func, args }),
-      "*"
+      "*",
     );
   }, []);
 
@@ -111,18 +112,15 @@ export function CollectionHeroV5({ bundle }: CollectionHeroV5Props) {
   }, [sendYTCommand]);
 
   // --- Countdown logic ---
-  const startDate = useMemo(
-    () => new Date(bundle.startsAt),
-    [bundle.startsAt]
-  );
+  const startDate = useMemo(() => new Date(bundle.startsAt), [bundle.startsAt]);
   const endDate = useMemo(() => new Date(bundle.endsAt), [bundle.endsAt]);
   const saleStartDate = useMemo(
     () => (bundle.sellFrom ? new Date(bundle.sellFrom) : startDate),
-    [bundle.sellFrom, startDate]
+    [bundle.sellFrom, startDate],
   );
   const saleEndDate = useMemo(
     () => (bundle.sellTo ? new Date(bundle.sellTo) : endDate),
-    [bundle.sellTo, endDate]
+    [bundle.sellTo, endDate],
   );
 
   const now = new Date();
@@ -239,7 +237,9 @@ export function CollectionHeroV5({ bundle }: CollectionHeroV5Props) {
       {bgVideoId && (
         <div
           className={`absolute bottom-0 left-1/2 -translate-x-1/2 z-[60] transition-all duration-500 ${
-            isPlaying ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
+            isPlaying
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-4 pointer-events-none"
           }`}
         >
           <button
@@ -265,8 +265,12 @@ export function CollectionHeroV5({ bundle }: CollectionHeroV5Props) {
       >
         {bundle.bundleTypeTag && (
           <div className="absolute top-0 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center">
-            <div className="flex items-center gap-1.5 px-6 pt-2.5 pb-3 bg-gradient-to-b from-amber-400 to-amber-500 text-white shadow-lg shadow-black/20"
-              style={{ clipPath: "polygon(0 0, 100% 0, calc(100% - 10px) 100%, 10px 100%)" }}
+            <div
+              className="flex items-center gap-1.5 px-6 pt-2.5 pb-3 bg-gradient-to-b from-amber-400 to-amber-500 text-white shadow-lg shadow-black/20"
+              style={{
+                clipPath:
+                  "polygon(0 0, 100% 0, calc(100% - 10px) 100%, 10px 100%)",
+              }}
             >
               <Sparkles className="h-3.5 w-3.5 drop-shadow-sm" />
               <span className="text-xs font-bold uppercase tracking-wider drop-shadow-sm">
@@ -373,7 +377,6 @@ export function CollectionHeroV5({ bundle }: CollectionHeroV5Props) {
               </p>
             </div>
           ) : null}
-
         </div>
 
         {/* === Right column: Watch video button (desktop, centered) === */}
