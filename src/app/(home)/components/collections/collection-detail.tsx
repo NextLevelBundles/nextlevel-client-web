@@ -3,11 +3,9 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { TooltipProvider } from "@/shared/components/ui/tooltip";
 import { CollectionHeroSwitcher } from "./collection-hero-switcher";
-import { BundleProgress } from "./collection-progress";
 import { ProductGrid } from "./product-grid";
 import { CharityHighlight } from "./charity-highlight";
 import { PurchaseSummary } from "./purchase-summary";
-import { CharityLeaderboard } from "./charity-leaderboard";
 import { CuratorComments } from "./curator-comments";
 import { CharityTierSection } from "./charity-tier-section";
 import { UpsellTierSection } from "./upsell-tier-section";
@@ -27,7 +25,7 @@ import { useBundlePurchase } from "@/hooks/queries/useBundlePurchase";
 import { BundleNotFound } from "./collection-not-found";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
 import { Card } from "@/shared/components/ui/card";
-import { AlertCircle, Eye, TrendingDown } from "lucide-react";
+import { Eye, TrendingDown } from "lucide-react";
 import { useCart } from "@/app/(shared)/contexts/cart/cart-provider";
 import { useSearchParams } from "next/navigation";
 
@@ -331,45 +329,6 @@ export function BundleDetail({ bundle, isPreview = false }: { bundle: Bundle; is
   const isCtaDisabled =
     !hasAvailableBaseTiers || !isSaleActive;
 
-  // Render status banner based on sale status
-  const renderStatusBanner = () => {
-    // Only show banner if sale is not active
-    if (isSaleActive) return null;
-
-    const bannerConfig = {
-      icon: AlertCircle,
-      bgColor: "bg-orange-50 dark:bg-orange-950/30",
-      borderColor: "border-orange-200 dark:border-orange-800",
-      textColor: "text-orange-700 dark:text-orange-300",
-      title: "Sale Not Active",
-      description: "This collection is not currently available for purchase.",
-    };
-
-    const Icon = bannerConfig.icon;
-
-    return (
-      <Card
-        className={`p-4 ${bannerConfig.bgColor} border ${bannerConfig.borderColor} my-6`}
-      >
-        <div className="flex items-start gap-3">
-          <Icon
-            className={`h-5 w-5 ${bannerConfig.textColor} mt-0.5 flex-shrink-0`}
-          />
-          <div className="flex-1">
-            <p
-              className={`text-sm font-semibold ${bannerConfig.textColor} mb-1`}
-            >
-              {bannerConfig.title}
-            </p>
-            <p className={`text-xs ${bannerConfig.textColor}`}>
-              {bannerConfig.description}
-            </p>
-          </div>
-        </div>
-      </Card>
-    );
-  };
-
   // Render low stock banner
   const renderLowStockBanner = () => {
     if (!isRunningLowOnKeys || !isSaleActive) return null;
@@ -420,21 +379,15 @@ export function BundleDetail({ bundle, isPreview = false }: { bundle: Bundle; is
         )}
         <CollectionHeroSwitcher bundle={bundle} />
 
-        {renderStatusBanner()}
         {renderLowStockBanner()}
 
         <div className="mt-8">
           <div className="grid gap-8 lg:grid-cols-[1fr_350px]">
-            <div id="bundle-progressbar" className="mb-8 space-y-8">
-              <BundleProgress
-                bundle={bundle}
-                selectedTier={currentTier}
-                totalAmount={baseAmount}
-                unlockedProducts={baseUnlockedProducts}
-                setTotalAmount={setBaseAmount}
-                baseTiersCanonical={baseTiersCanonical}
-                className="dark:ring-1 dark:ring-primary/30 dark:shadow-[0_0_30px_rgba(57,130,245,0.2)]"
-              />
+            <div className="mb-8 space-y-8">
+              {/* Curator's Corner - horizontal layout */}
+              {bundle.curatorComment && (
+                <CuratorComments content={bundle.curatorComment} />
+              )}
 
               <ProductGrid
                 bundle={bundle}
@@ -901,18 +854,7 @@ export function BundleDetail({ bundle, isPreview = false }: { bundle: Bundle; is
             </div>
 
             <div className="space-y-4" ref={purchaseSummaryRef}>
-              {/* Curator Comments - Compact version in right column */}
-              {bundle.curatorComment && (
-                <CuratorComments content={bundle.curatorComment} compact />
-              )}
-
-              {/* Charity Leaderboard - only show when bundle has charities */}
-              {bundle.charities && bundle.charities.length > 0 && (
-                <CharityLeaderboard bundleId={bundle.id} />
-              )}
-
               {/* Desktop Purchase Summary */}
-              {/* <div className="hidden lg:block sticky top-16"> */}
               <PurchaseSummary
                 bundle={bundle}
                 tiers={tiers}
@@ -934,13 +876,12 @@ export function BundleDetail({ bundle, isPreview = false }: { bundle: Bundle; is
                 bundleUnavailabilityReason={bundleUnavailabilityReason}
                 bundleState={bundleState}
                 isSaleActive={isSaleActive}
-                showCharityLeaderboard={false}
+                showCharityLeaderboard={!!(bundle.charities && bundle.charities.length > 0)}
                 userPurchase={userPurchase}
                 isLoadingPurchase={isLoadingPurchase}
                 autoOpenUpgrade={shouldAutoOpenUpgrade}
                 isPreview={isPreview}
               />
-              {/* </div> */}
             </div>
           </div>
         </div>
