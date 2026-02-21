@@ -382,7 +382,7 @@ export function CharityTierSection({
         "overflow-hidden transition-all duration-300 relative",
         isUnlocked
           ? "bg-gradient-to-br from-rose-50/50 to-pink-50/50 dark:from-rose-950/20 dark:to-pink-950/20 border-rose-200 dark:border-rose-800"
-          : "bg-card border-border",
+          : "bg-gray-50/95 dark:bg-card/70 backdrop-blur-xs border-gray-100 dark:border-border shadow-xs",
         !isAvailable && hasAvailableBaseTiers && "opacity-60",
       )}
     >

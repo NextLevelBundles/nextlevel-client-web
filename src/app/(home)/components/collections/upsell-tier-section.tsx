@@ -368,7 +368,7 @@ export function UpsellTierSection({
         "overflow-hidden transition-all duration-300 relative",
         isUnlocked
           ? "bg-gradient-to-br from-purple-50/50 to-indigo-50/50 dark:from-purple-950/20 dark:to-indigo-950/20 border-purple-200 dark:border-purple-800"
-          : "bg-card border-border",
+          : "bg-gray-50/95 dark:bg-card/70 backdrop-blur-xs border-gray-100 dark:border-border shadow-xs",
         !isAvailable && hasAvailableBaseTiers && "opacity-60",
       )}
     >
