@@ -42,7 +42,7 @@ export function GiftForm({ item, onGiftUpdate, isUpdating }: GiftFormProps) {
     item.giftRecipientName || ""
   );
   const [giftMessage, setGiftMessage] = useState(item.giftMessage || "");
-  const [isOpen, setIsOpen] = useState(item.isGift || item.canOnlyBeGifted);
+  const [isOpen, setIsOpen] = useState(item.isGift || item.giftOptions.canOnlyBeGifted);
   const [emailError, setEmailError] = useState("");
   // Default to "link" if no email is set, otherwise "email"
   const [deliveryMethod, setDeliveryMethod] = useState<"email" | "link">(
@@ -77,7 +77,7 @@ export function GiftForm({ item, onGiftUpdate, isUpdating }: GiftFormProps) {
       setRecipientEmail(item.giftRecipientEmail || "");
       setRecipientName(item.giftRecipientName || "");
       setGiftMessage(item.giftMessage || "");
-      setIsOpen(item.isGift || item.canOnlyBeGifted);
+      setIsOpen(item.isGift || item.giftOptions.canOnlyBeGifted);
       setEmailError("");
       setDeliveryMethod(item.giftRecipientEmail ? "email" : "link");
 
@@ -91,7 +91,7 @@ export function GiftForm({ item, onGiftUpdate, isUpdating }: GiftFormProps) {
       };
       isInitialMount.current = true;
     }
-  }, [item.id, item.isGift, item.giftRecipientEmail, item.giftRecipientName, item.giftMessage, item.canOnlyBeGifted]);
+  }, [item.id, item.isGift, item.giftRecipientEmail, item.giftRecipientName, item.giftMessage, item.giftOptions.canOnlyBeGifted]);
 
   // Validate email format
   const validateEmail = (email: string) => {
@@ -129,7 +129,7 @@ export function GiftForm({ item, onGiftUpdate, isUpdating }: GiftFormProps) {
 
   // Handle gift toggle
   const handleGiftToggle = async (checked: boolean) => {
-    if (item.canOnlyBeGifted && !checked) {
+    if (item.giftOptions.canOnlyBeGifted && !checked) {
       // Cannot turn off gift mode for items that can only be gifted
       return;
     }
@@ -260,7 +260,7 @@ export function GiftForm({ item, onGiftUpdate, isUpdating }: GiftFormProps) {
   return (
     <div className="space-y-3">
       {/* Auto-gift mode alert */}
-      {item.canOnlyBeGifted && (
+      {item.giftOptions.canOnlyBeGifted && (
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
@@ -277,14 +277,14 @@ export function GiftForm({ item, onGiftUpdate, isUpdating }: GiftFormProps) {
             htmlFor={`gift-toggle-${item.id}`}
             className="text-sm font-medium"
           >
-            {item.canOnlyBeGifted ? "Gift Purchase" : "Purchase as Gift"}
+            {item.giftOptions.canOnlyBeGifted ? "Gift Purchase" : "Purchase as Gift"}
           </Label>
         </div>
         <Switch
           id={`gift-toggle-${item.id}`}
           checked={isGift}
           onCheckedChange={handleGiftToggle}
-          disabled={item.canOnlyBeGifted || isUpdating}
+          disabled={item.giftOptions.canOnlyBeGifted || isUpdating}
         />
       </div>
 

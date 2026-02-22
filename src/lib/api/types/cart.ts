@@ -70,7 +70,10 @@ export interface CartItem {
   giftRecipientEmail?: string;
   giftRecipientName?: string;
   giftMessage?: string;
-  canOnlyBeGifted?: boolean;
+  giftOptions: {
+    canOnlyBeGifted: boolean;
+    canBeGifted: boolean;
+  };
   giftAccepted?: boolean | null;
   giftAcceptedAt?: string | null;
   giftExpiresAt?: string | null;
