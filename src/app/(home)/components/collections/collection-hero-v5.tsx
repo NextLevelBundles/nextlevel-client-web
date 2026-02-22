@@ -180,7 +180,7 @@ export function CollectionHeroV5({ bundle }: CollectionHeroV5Props) {
             images={bundle.imageMedia}
             title={bundle.title}
             containerClassName="w-full h-full"
-            className="blur-sm scale-105"
+            className="blur-[2px] scale-105"
           />
         ) : heroMediaType === HeroMediaType.Image && heroMedia?.url ? (
           /* Single image background (like V2) */
@@ -188,7 +188,7 @@ export function CollectionHeroV5({ bundle }: CollectionHeroV5Props) {
             src={heroMedia.url}
             alt={bundle.title}
             fill
-            className="object-cover blur-sm scale-105"
+            className="object-cover blur-[2px] scale-105"
             sizes="100vw"
             priority
           />
@@ -208,7 +208,7 @@ export function CollectionHeroV5({ bundle }: CollectionHeroV5Props) {
             src={seoImage.url}
             alt={bundle.title}
             fill
-            className="object-cover blur-sm scale-105"
+            className="object-cover blur-[2px] scale-105"
             sizes="100vw"
             priority
           />
@@ -517,7 +517,9 @@ export function CollectionHeroV5({ bundle }: CollectionHeroV5Props) {
         </div>
 
         {/* === Countdown (centered, desktop only) === */}
-        <div className={`absolute bottom-0 left-0 right-0 z-20 hidden lg:flex justify-center py-4 pointer-events-none ${isPlaying ? "opacity-0" : "opacity-100"} transition-opacity duration-500`}>
+        <div
+          className={`absolute bottom-0 left-0 right-0 z-20 hidden lg:flex justify-center py-4 pointer-events-none ${isPlaying ? "opacity-0" : "opacity-100"} transition-opacity duration-500`}
+        >
           <div
             className={`inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full backdrop-blur-md border shadow-lg animate-fade-up pointer-events-auto ${
               bundleHasEnded
