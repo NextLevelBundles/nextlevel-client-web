@@ -193,7 +193,7 @@ For users located in the EU/EEA/UK, non-essential cookies (including analytics, 
 
 ### **5.5 Do Not Track**
 
-We currently do not respond to Do Not Track (DNT) browser signals. However, you can use our cookie preferences to control tracking located at \[INSERT URL\]
+We currently do not respond to Do Not Track (DNT) browser signals. However, you can use our [cookie preferences](#cookie-settings) to control tracking.
 
 ## **6\. Data Security**
 

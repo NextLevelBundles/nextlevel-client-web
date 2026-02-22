@@ -6,6 +6,7 @@ import remarkGfm from "remark-gfm";
 import fs from "fs";
 import path from "path";
 import type { Metadata } from "next";
+import { CookieSettingsLink } from "./cookie-settings-link";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | Digiphile",
@@ -38,7 +39,7 @@ export default function PrivacyPolicy() {
     "src",
     "assets",
     "documents",
-    "Privacy Policy.md"
+    "Privacy Policy.md",
   );
   const markdownContent = fs.readFileSync(markdownPath, "utf-8");
 
@@ -57,18 +58,27 @@ export default function PrivacyPolicy() {
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
-              a: ({ node, ...props }) => (
-                <a
-                  {...props}
-                  className="text-primary hover:underline"
-                  target={props.href?.startsWith("http") ? "_blank" : undefined}
-                  rel={
-                    props.href?.startsWith("http")
-                      ? "noopener noreferrer"
-                      : undefined
-                  }
-                />
-              ),
+              a: ({ node, children, ...props }) => {
+                if (props.href === "#cookie-settings") {
+                  return <CookieSettingsLink>{children}</CookieSettingsLink>;
+                }
+                return (
+                  <a
+                    {...props}
+                    className="text-primary hover:underline"
+                    target={
+                      props.href?.startsWith("http") ? "_blank" : undefined
+                    }
+                    rel={
+                      props.href?.startsWith("http")
+                        ? "noopener noreferrer"
+                        : undefined
+                    }
+                  >
+                    {children}
+                  </a>
+                );
+              },
               h1: ({ node, ...props }) => (
                 <h1 className="text-4xl font-bold mb-4" {...props} />
               ),
@@ -92,14 +102,20 @@ export default function PrivacyPolicy() {
               em: ({ node, ...props }) => <em className="italic" {...props} />,
               table: ({ node, ...props }) => (
                 <div className="overflow-x-auto mb-4">
-                  <table className="min-w-full border-collapse border border-border" {...props} />
+                  <table
+                    className="min-w-full border-collapse border border-border"
+                    {...props}
+                  />
                 </div>
               ),
               thead: ({ node, ...props }) => (
                 <thead className="bg-muted" {...props} />
               ),
               th: ({ node, ...props }) => (
-                <th className="border border-border px-4 py-2 text-left font-semibold" {...props} />
+                <th
+                  className="border border-border px-4 py-2 text-left font-semibold"
+                  {...props}
+                />
               ),
               td: ({ node, ...props }) => (
                 <td className="border border-border px-4 py-2" {...props} />
