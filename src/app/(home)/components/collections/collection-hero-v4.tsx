@@ -76,6 +76,8 @@ export function CollectionHeroV4({ bundle }: CollectionHeroV4Props) {
   }, [sendYTCommand]);
 
   // --- Countdown logic ---
+  // sellFrom/sellTo are always set, but if they match startsAt/endsAt respectively,
+  // there is no separate exclusive access period — treat it as a standard bundle.
   const startDate = useMemo(
     () => new Date(bundle.startsAt),
     [bundle.startsAt]
@@ -90,6 +92,10 @@ export function CollectionHeroV4({ bundle }: CollectionHeroV4Props) {
     [bundle.sellTo, endDate]
   );
 
+  const hasExclusiveAccess =
+    saleStartDate.getTime() !== startDate.getTime() ||
+    saleEndDate.getTime() !== endDate.getTime();
+
   const now = new Date();
   const bundleHasStarted = now >= startDate;
   const bundleHasEnded = now > endDate;
@@ -103,13 +109,13 @@ export function CollectionHeroV4({ bundle }: CollectionHeroV4Props) {
     countdownTarget = bundle.endsAt;
     timerLabel = "Collection Ended";
   } else if (!bundleHasStarted) {
-    if (bundle.sellFrom || bundle.sellTo) {
+    if (hasExclusiveAccess) {
       if (saleHasStarted && !saleHasEnded) {
         countdownTarget = bundle.startsAt;
-        timerLabel = "Exclusive Access Ends in";
+        timerLabel = "Pre-sale Ends in";
       } else if (!saleHasStarted) {
         countdownTarget = bundle.sellFrom || bundle.startsAt;
-        timerLabel = "Exclusive Access Starts in";
+        timerLabel = "Pre-sale Starts in";
       } else {
         countdownTarget = bundle.startsAt;
         timerLabel = "Starts in";
