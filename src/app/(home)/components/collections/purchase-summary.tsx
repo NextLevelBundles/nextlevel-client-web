@@ -969,7 +969,8 @@ export function PurchaseSummary({
                 {bundle.disableGifting ? (
                   <div className="p-3 rounded-lg bg-muted border">
                     <p className="text-sm text-muted-foreground text-center">
-                      You have already purchased this collection. Gifting is not available for this collection.
+                      You have already purchased this collection and gifting is
+                      not available.
                     </p>
                   </div>
                 ) : (
@@ -980,7 +981,9 @@ export function PurchaseSummary({
                     tipAmount={tipAmount}
                     totalAmount={totalAmount}
                     selectedUpsellTierIds={selectedUpsellTierIds}
-                    isBundleExpired={bundleState === "expired" || isBundleExpired}
+                    isBundleExpired={
+                      bundleState === "expired" || isBundleExpired
+                    }
                     hasAvailableBaseTiers={hasAvailableBaseTiers}
                     bundleType={bundle.type}
                     bundleUnavailabilityReason={bundleUnavailabilityReason}
@@ -1007,7 +1010,8 @@ export function PurchaseSummary({
                 {bundle.disableGifting ? (
                   <div className="p-3 rounded-lg bg-muted border">
                     <p className="text-sm text-muted-foreground text-center">
-                      You have already purchased this collection. Gifting is not available for this collection.
+                      You have already purchased this collection and gifting is
+                      not available.
                     </p>
                   </div>
                 ) : (
@@ -1018,7 +1022,9 @@ export function PurchaseSummary({
                     tipAmount={tipAmount}
                     totalAmount={totalAmount}
                     selectedUpsellTierIds={selectedUpsellTierIds}
-                    isBundleExpired={bundleState === "expired" || isBundleExpired}
+                    isBundleExpired={
+                      bundleState === "expired" || isBundleExpired
+                    }
                     hasAvailableBaseTiers={hasAvailableBaseTiers}
                     bundleType={bundle.type}
                     bundleUnavailabilityReason={bundleUnavailabilityReason}
