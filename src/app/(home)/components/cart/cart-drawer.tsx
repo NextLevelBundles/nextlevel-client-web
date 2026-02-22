@@ -463,11 +463,13 @@ export function CartDrawer() {
                             </Button>
 
                             {/* Gift form in expanded section */}
-                            <GiftForm
-                              item={item}
-                              onGiftUpdate={updateGiftSettings}
-                              isUpdating={isLoading}
-                            />
+                            {item.giftOptions.canBeGifted && (
+                              <GiftForm
+                                item={item}
+                                onGiftUpdate={updateGiftSettings}
+                                isUpdating={isLoading}
+                              />
+                            )}
                           </div>
                         )}
                       </div>

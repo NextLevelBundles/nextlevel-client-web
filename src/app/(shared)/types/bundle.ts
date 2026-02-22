@@ -66,6 +66,7 @@ export interface BundleListItem {
   sellTo?: string | null; // ISO date string - when sales end
   upgradeFrom?: string | null; // ISO date string - when upgrades can start
   upgradeTo?: string | null; // ISO date string - when upgrades end
+  disableGifting: boolean;
   status: string;
   createdAt: string;
   updatedAt: string;

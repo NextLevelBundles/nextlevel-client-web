@@ -966,21 +966,29 @@ export function PurchaseSummary({
                     </span>
                   </div>
                 </div>
-                <AddToCartButton
-                  bundleId={bundle.id}
-                  baseTierId={currentTier?.id}
-                  charityTierId={selectedCharityTierIds[0]}
-                  tipAmount={tipAmount}
-                  totalAmount={totalAmount}
-                  selectedUpsellTierIds={selectedUpsellTierIds}
-                  isBundleExpired={bundleState === "expired" || isBundleExpired}
-                  hasAvailableBaseTiers={hasAvailableBaseTiers}
-                  bundleType={bundle.type}
-                  bundleUnavailabilityReason={bundleUnavailabilityReason}
-                  disabled={!isSaleActive}
-                >
-                  Gift this collection
-                </AddToCartButton>
+                {bundle.disableGifting ? (
+                  <div className="p-3 rounded-lg bg-muted border">
+                    <p className="text-sm text-muted-foreground text-center">
+                      You have already purchased this collection. Gifting is not available for this collection.
+                    </p>
+                  </div>
+                ) : (
+                  <AddToCartButton
+                    bundleId={bundle.id}
+                    baseTierId={currentTier?.id}
+                    charityTierId={selectedCharityTierIds[0]}
+                    tipAmount={tipAmount}
+                    totalAmount={totalAmount}
+                    selectedUpsellTierIds={selectedUpsellTierIds}
+                    isBundleExpired={bundleState === "expired" || isBundleExpired}
+                    hasAvailableBaseTiers={hasAvailableBaseTiers}
+                    bundleType={bundle.type}
+                    bundleUnavailabilityReason={bundleUnavailabilityReason}
+                    disabled={!isSaleActive}
+                  >
+                    Gift this collection
+                  </AddToCartButton>
+                )}
               </div>
             ) : userPurchase &&
               userPurchase.status === CartItemStatus.Completed &&
@@ -996,21 +1004,29 @@ export function PurchaseSummary({
                     </p>
                   </div>
                 </div>
-                <AddToCartButton
-                  bundleId={bundle.id}
-                  baseTierId={currentTier?.id}
-                  charityTierId={selectedCharityTierIds[0]}
-                  tipAmount={tipAmount}
-                  totalAmount={totalAmount}
-                  selectedUpsellTierIds={selectedUpsellTierIds}
-                  isBundleExpired={bundleState === "expired" || isBundleExpired}
-                  hasAvailableBaseTiers={hasAvailableBaseTiers}
-                  bundleType={bundle.type}
-                  bundleUnavailabilityReason={bundleUnavailabilityReason}
-                  disabled={!isSaleActive}
-                >
-                  Gift this collection
-                </AddToCartButton>
+                {bundle.disableGifting ? (
+                  <div className="p-3 rounded-lg bg-muted border">
+                    <p className="text-sm text-muted-foreground text-center">
+                      You have already purchased this collection. Gifting is not available for this collection.
+                    </p>
+                  </div>
+                ) : (
+                  <AddToCartButton
+                    bundleId={bundle.id}
+                    baseTierId={currentTier?.id}
+                    charityTierId={selectedCharityTierIds[0]}
+                    tipAmount={tipAmount}
+                    totalAmount={totalAmount}
+                    selectedUpsellTierIds={selectedUpsellTierIds}
+                    isBundleExpired={bundleState === "expired" || isBundleExpired}
+                    hasAvailableBaseTiers={hasAvailableBaseTiers}
+                    bundleType={bundle.type}
+                    bundleUnavailabilityReason={bundleUnavailabilityReason}
+                    disabled={!isSaleActive}
+                  >
+                    Gift this collection
+                  </AddToCartButton>
+                )}
               </div>
             ) : (
               // User doesn't own the bundle or not authenticated
