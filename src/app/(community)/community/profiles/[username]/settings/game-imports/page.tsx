@@ -118,16 +118,20 @@ export default function GameImportsPage() {
   // Track last-rendered params to detect when query params have changed
   const [renderedSearch, setRenderedSearch] = useState("");
   const [renderedPage, setRenderedPage] = useState(1);
+  const [renderedPlaytimeFilter, setRenderedPlaytimeFilter] = useState<PlaytimeFilter>("all");
+  const [renderedIsRemoved, setRenderedIsRemoved] = useState(false);
   useEffect(() => {
     if (!isFetching) {
       setRenderedSearch(debouncedSearch);
       setRenderedPage(page);
+      setRenderedPlaytimeFilter(playtimeFilter);
+      setRenderedIsRemoved(isRemoved);
     }
-  }, [isFetching, debouncedSearch, page]);
+  }, [isFetching, debouncedSearch, page, playtimeFilter, isRemoved]);
 
-  // Show skeletons when a search/filter/page change is in flight
+  // Show skeletons when a search/filter/page/tab change is in flight
   const isSearchPending = search.trim() !== debouncedSearch;
-  const hasParamsChanged = debouncedSearch !== renderedSearch || page !== renderedPage;
+  const hasParamsChanged = debouncedSearch !== renderedSearch || page !== renderedPage || playtimeFilter !== renderedPlaytimeFilter || isRemoved !== renderedIsRemoved;
   const showSkeletons = isSearchPending || (isFetching && hasParamsChanged);
 
   // Inactive tab query (just for count)

@@ -376,6 +376,16 @@ function TasteProfileContent({
               </SelectContent>
             </Select>
           </div>
+          {genresLoading ? (
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <Skeleton className="h-[180px] w-[180px] rounded-full flex-shrink-0" />
+              <div className="flex-1 w-full space-y-2.5">
+                {[...Array(6)].map((_, i) => (
+                  <Skeleton key={i} className="h-4 w-full" />
+                ))}
+              </div>
+            </div>
+          ) : (
           <div className="flex flex-col sm:flex-row items-center gap-6">
             <div className="flex-shrink-0">
               <ChartContainer
@@ -469,6 +479,7 @@ function TasteProfileContent({
               </div>
             </div>
           </div>
+          )}
         </div>
 
         {/* Completion status breakdown */}
@@ -776,7 +787,7 @@ export default function ProfileOverviewPage() {
   const isOwnProfile = customer?.handle === username;
   const [tasteFilter, setTasteFilter] = useState("all");
   const { data: stats, isLoading: statsLoading } = useProfileStats(username);
-  const { data: filteredStats, isLoading: filteredStatsLoading } =
+  const { data: filteredStats, isLoading: filteredStatsLoading, isFetching: filteredStatsFetching } =
     useProfileStats(
       username,
       tasteFilter !== "all" ? tasteFilter : undefined
@@ -818,7 +829,7 @@ export default function ProfileOverviewPage() {
               totalGames={stats?.totalGames ?? 0}
               filteredTotalGames={filteredStats?.filteredTotalGames ?? 0}
               genres={filteredStats?.genreBreakdown ?? []}
-              genresLoading={filteredStatsLoading}
+              genresLoading={filteredStatsLoading || filteredStatsFetching}
               completionBreakdown={stats?.completionBreakdown ?? []}
               isLoading={statsLoading}
               filter={tasteFilter}

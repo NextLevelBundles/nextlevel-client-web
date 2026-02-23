@@ -255,15 +255,21 @@ export default function CollectionPage() {
     handle: isOwnProfile ? undefined : username,
   });
 
-  // Track the last-rendered search to detect when query params have changed
+  // Track last-rendered params to detect when query params have changed
   const [renderedSearch, setRenderedSearch] = useState("");
+  const [renderedPage, setRenderedPage] = useState(1);
+  const [renderedPlayStatus, setRenderedPlayStatus] = useState("");
   useEffect(() => {
-    if (!isFetching) setRenderedSearch(debouncedSearch);
-  }, [isFetching, debouncedSearch]);
+    if (!isFetching) {
+      setRenderedSearch(debouncedSearch);
+      setRenderedPage(page);
+      setRenderedPlayStatus(playStatusFilter);
+    }
+  }, [isFetching, debouncedSearch, page, playStatusFilter]);
 
-  // Show skeletons only when a search/filter change is in flight
+  // Show skeletons when a search/filter/page change is in flight
   const isSearchPending = search.trim() !== debouncedSearch;
-  const hasParamsChanged = debouncedSearch !== renderedSearch;
+  const hasParamsChanged = debouncedSearch !== renderedSearch || page !== renderedPage || playStatusFilter !== renderedPlayStatus;
   const showSkeletons = isSearchPending || (isFetching && hasParamsChanged);
 
   const games = data?.items;
