@@ -255,9 +255,23 @@ export class AuthService {
       return { success: true, isPasswordReset, nextStep };
     } catch (error) {
       console.error("Reset password error:", error);
+
+      // Detect unverified user - Cognito can't reset password without verified email
+      const errorMessage = error instanceof Error ? error.message : "";
+      if (
+        errorMessage.includes("no registered/verified email") ||
+        (error instanceof Error && error.name === "InvalidParameterException")
+      ) {
+        return {
+          success: false,
+          isUserNotVerified: true,
+          error: errorMessage || "Password reset failed",
+        };
+      }
+
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Password reset failed",
+        error: errorMessage || "Password reset failed",
       };
     }
   }

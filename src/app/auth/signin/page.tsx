@@ -200,7 +200,11 @@ export default function SignInPage() {
         const methods = (result.nextStep as any).allowedMFATypes || [];
         setAvailableMfaMethods(methods);
         setSignInStep("MFA_SELECTION");
-      } else {
+      } else if (result.nextStep?.signInStep == "CONFIRM_SIGN_UP") {
+        await AuthService.resendConfirmationCode(email);
+        router.push(`/auth/confirm-signup?email=${encodeURIComponent(email)}`);
+      }
+       else {
         setError(result.error || "Sign in failed. Please try again.");
       }
     } catch (err) {
