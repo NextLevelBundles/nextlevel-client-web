@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Curator, CuratorType } from "@/app/(shared)/types/bundle";
 import {
   Avatar,
@@ -49,10 +48,9 @@ export function BundleCurators({
         </span>
         <div className="flex items-center gap-3">
           {curatorList.map((curator) => (
-            <Link
+            <div
               key={curator.id}
-              href={`/community/profiles/${curator.customerHandle}`}
-              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+              className="flex items-center gap-2"
             >
               <Avatar className="h-8 w-8 border-2 border-primary/20">
                 {curator.customerPictureUrl ? (
@@ -65,10 +63,10 @@ export function BundleCurators({
                   <User className="h-4 w-4 text-muted-foreground" />
                 </AvatarFallback>
               </Avatar>
-              <span className="text-sm font-semibold hover:text-primary transition-colors">
+              <span className="text-sm font-semibold">
                 {curator.customerName}
               </span>
-            </Link>
+            </div>
           ))}
         </div>
       </div>

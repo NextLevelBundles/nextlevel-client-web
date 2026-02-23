@@ -29,12 +29,13 @@ export const customerProfileByHandleQueryKey = (handle: string) =>
 export function useCustomerProfileByHandle(handle: string) {
   return useQuery({
     queryKey: customerProfileByHandleQueryKey(handle),
-    queryFn: (): Promise<CustomerProfile | null> =>
+    queryFn: (): Promise<CustomerProfile> =>
       customerProfileApi.getCustomerProfileByHandle(handle),
     enabled: !!handle,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: true,
+    retry: false,
   });
 }
 

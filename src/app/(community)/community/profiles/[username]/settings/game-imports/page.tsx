@@ -115,16 +115,34 @@ export default function GameImportsPage() {
     isRemoved,
   });
 
-  // Track the last-rendered search to detect when query params have changed
+  // Track last-rendered params to detect when query params have changed
   const [renderedSearch, setRenderedSearch] = useState("");
+  const [renderedPage, setRenderedPage] = useState(1);
+  const [renderedPlaytimeFilter, setRenderedPlaytimeFilter] = useState<PlaytimeFilter>("all");
+  const [renderedIsRemoved, setRenderedIsRemoved] = useState(false);
   useEffect(() => {
-    if (!isFetching) setRenderedSearch(debouncedSearch);
-  }, [isFetching, debouncedSearch]);
+    if (!isFetching) {
+      setRenderedSearch(debouncedSearch);
+      setRenderedPage(page);
+      setRenderedPlaytimeFilter(playtimeFilter);
+      setRenderedIsRemoved(isRemoved);
+    }
+  }, [isFetching, debouncedSearch, page, playtimeFilter, isRemoved]);
 
-  // Show skeletons only when a search/filter change is in flight
+  // Track when a mutation triggers a refetch
+  const [mutationRefetching, setMutationRefetching] = useState(false);
+  useEffect(() => {
+    if (importGames.isPending || setGamesRemoved.isPending) {
+      setMutationRefetching(true);
+    } else if (mutationRefetching && !isFetching) {
+      setMutationRefetching(false);
+    }
+  }, [importGames.isPending, setGamesRemoved.isPending, isFetching, mutationRefetching]);
+
+  // Show skeletons when a search/filter/page/tab change is in flight, or after a mutation triggers a refetch
   const isSearchPending = search.trim() !== debouncedSearch;
-  const hasParamsChanged = debouncedSearch !== renderedSearch;
-  const showSkeletons = isSearchPending || (isFetching && hasParamsChanged);
+  const hasParamsChanged = debouncedSearch !== renderedSearch || page !== renderedPage || playtimeFilter !== renderedPlaytimeFilter || isRemoved !== renderedIsRemoved;
+  const showSkeletons = isSearchPending || (isFetching && hasParamsChanged) || mutationRefetching;
 
   // Inactive tab query (just for count)
   const { data: otherTabData } = useUnimportedGames({
@@ -338,7 +356,7 @@ export default function GameImportsPage() {
       {hasSteamConnected && (
         <Button
           onClick={handleSyncSteamLibrary}
-          disabled={syncSteamLibrary.isPending}
+          disabled={syncSteamLibrary.isPending || importGames.isPending || setGamesRemoved.isPending}
           variant="outline"
           size="sm"
           className="gap-2"
@@ -399,6 +417,7 @@ export default function GameImportsPage() {
                 <Button
                   variant="outline"
                   size="sm"
+                  disabled={importGames.isPending || setGamesRemoved.isPending}
                   onClick={allSelected ? deselectAll : selectAll}
                 >
                   {allSelected ? "Deselect All" : "Select All"}
@@ -408,7 +427,7 @@ export default function GameImportsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled={selected.size === 0 || setGamesRemoved.isPending}
+                      disabled={selected.size === 0 || setGamesRemoved.isPending || importGames.isPending}
                       onClick={() => handleSetRemoved(true)}
                     >
                       {setGamesRemoved.isPending && (
@@ -418,7 +437,7 @@ export default function GameImportsPage() {
                     </Button>
                     <Button
                       size="sm"
-                      disabled={selected.size === 0 || importGames.isPending}
+                      disabled={selected.size === 0 || importGames.isPending || setGamesRemoved.isPending}
                       onClick={() => handleImport(Array.from(selected))}
                     >
                       {importGames.isPending ? (
@@ -432,7 +451,7 @@ export default function GameImportsPage() {
                 ) : (
                   <Button
                     size="sm"
-                    disabled={selected.size === 0 || setGamesRemoved.isPending}
+                    disabled={selected.size === 0 || setGamesRemoved.isPending || importGames.isPending}
                     onClick={() => handleSetRemoved(false)}
                   >
                     {setGamesRemoved.isPending ? (

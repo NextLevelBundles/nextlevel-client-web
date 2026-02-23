@@ -182,6 +182,7 @@ export default function ProfileSettingsPage() {
   const isCurator = customerProfile?.isCurator ?? false;
   const updateHandle = useUpdateHandle();
 
+  const [name, setName] = useState("");
   const [handle, setHandle] = useState("");
   const [originalHandle, setOriginalHandle] = useState("");
   const [isCheckingHandle, setIsCheckingHandle] = useState(false);
@@ -248,6 +249,7 @@ export default function ProfileSettingsPage() {
   // Initialize form from profile data
   useEffect(() => {
     if (profile) {
+      setName(profile.name ?? "");
       setTitle(profile.title ?? "");
       setHeadline(profile.headline ?? "");
       setSpecialties(profile.specialties ?? "");
@@ -407,7 +409,7 @@ export default function ProfileSettingsPage() {
       }
 
       await updateProfile.mutateAsync({
-        name: null,
+        name: name.trim() || null,
         title: title.trim() || null,
         headline: headline.trim() || null,
         specialties: specialties.trim() || null,
@@ -468,6 +470,16 @@ export default function ProfileSettingsPage() {
           {/* Profile Info */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">About Me</h3>
+
+            <div className="space-y-2">
+              <Label htmlFor="name">Display Name</Label>
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your display name"
+              />
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="handle">Handle</Label>
