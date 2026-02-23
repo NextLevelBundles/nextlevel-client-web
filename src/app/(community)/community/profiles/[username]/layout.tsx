@@ -44,7 +44,7 @@ export default function ProfileLayout({
   const username = params.username as string;
   const { user, isLoading: authLoading } = useAuth();
   const { data: customer, isLoading } = useCustomer();
-  const { data: customerProfile } = useCustomerProfileByHandle(username);
+  const { data: customerProfile, isLoading: profileLoading, isError: profileError } = useCustomerProfileByHandle(username);
   const { data: curatorProfile } = useCuratorProfile(
     customerProfile?.isCurator ? username : ""
   );
@@ -111,6 +111,34 @@ export default function ProfileLayout({
         <h2 className="text-xl font-semibold mb-2">Sign in required</h2>
         <p className="text-muted-foreground">
           You need to be signed in to view profiles.
+        </p>
+      </div>
+    );
+  }
+
+  if (profileLoading) {
+    return (
+      <div className="grid gap-6">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-16 w-16 rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+        </div>
+        <Skeleton className="h-12 w-full rounded-md" />
+        <Skeleton className="h-64 w-full rounded-md" />
+      </div>
+    );
+  }
+
+  if (profileError) {
+    return (
+      <div className="text-center py-20">
+        <UserIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+        <h2 className="text-xl font-semibold mb-2">Profile not found</h2>
+        <p className="text-muted-foreground">
+          The profile &ldquo;{username}&rdquo; does not exist or is not available.
         </p>
       </div>
     );

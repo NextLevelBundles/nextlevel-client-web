@@ -131,14 +131,10 @@ export class CustomerProfileApi {
     );
   }
 
-  async getCustomerProfileByHandle(handle: string): Promise<CustomerProfile | null> {
-    try {
-      return await this.client.get<CustomerProfile>(
-        `/community/profile/${encodeURIComponent(handle)}`
-      );
-    } catch {
-      return null;
-    }
+  async getCustomerProfileByHandle(handle: string): Promise<CustomerProfile> {
+    return await this.client.get<CustomerProfile>(
+      `/community/profile/${encodeURIComponent(handle)}`
+    );
   }
 
   async updateCustomerProfile(
