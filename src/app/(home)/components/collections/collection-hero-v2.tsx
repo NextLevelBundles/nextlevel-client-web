@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+
 import { useState, useMemo } from "react";
 import {
   Timer,
@@ -267,10 +267,9 @@ export function CollectionHeroV2({ bundle }: CollectionHeroV2Props) {
             style={{ animationDelay: "300ms" }}
           >
             {leadCurators.map((curator) => (
-              <Link
+              <div
                 key={curator.id}
-                href={`/community/profiles/${curator.customerHandle}`}
-                className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-all duration-200"
+                className="flex items-center gap-2"
               >
                 <Avatar className="h-9 w-9 ring-2 ring-primary/50">
                   {curator.customerPictureUrl ? (
@@ -287,20 +286,19 @@ export function CollectionHeroV2({ bundle }: CollectionHeroV2Props) {
                   <p className="text-xs uppercase tracking-wider text-white/50 font-medium">
                     Curated by
                   </p>
-                  <p className="text-sm font-semibold text-white hover:text-primary transition-colors">
+                  <p className="text-sm font-semibold text-white">
                     {curator.customerName}
                   </p>
                 </div>
-              </Link>
+              </div>
             ))}
             {guestCurators.length > 0 && (
               <div className="flex items-center gap-2 ml-1">
                 <span className="text-white/30">|</span>
                 {guestCurators.map((curator) => (
-                  <Link
+                  <div
                     key={curator.id}
-                    href={`/community/profiles/${curator.customerHandle}`}
-                    className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-all duration-200"
+                    className="flex items-center gap-1.5"
                   >
                     <Avatar className="h-7 w-7 ring-1 ring-white/30">
                       {curator.customerPictureUrl ? (
@@ -313,10 +311,10 @@ export function CollectionHeroV2({ bundle }: CollectionHeroV2Props) {
                         <User className="h-3 w-3 text-white/60" />
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-xs font-medium text-white/70 hover:text-primary transition-colors">
+                    <span className="text-xs font-medium text-white/70">
                       {curator.customerName}
                     </span>
-                  </Link>
+                  </div>
                 ))}
               </div>
             )}

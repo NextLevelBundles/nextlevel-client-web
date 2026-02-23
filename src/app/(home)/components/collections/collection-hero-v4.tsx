@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+
 import { useState, useMemo, useRef, useCallback } from "react";
 import {
   Timer,
@@ -362,10 +362,9 @@ export function CollectionHeroV4({ bundle }: CollectionHeroV4Props) {
             >
               <div className="flex flex-wrap items-center gap-3">
                 {leadCurators.map((curator) => (
-                  <Link
+                  <div
                     key={curator.id}
-                    href={`/community/profiles/${curator.customerHandle}`}
-                    className="flex items-center gap-2 hover:opacity-80 transition-all duration-200"
+                    className="flex items-center gap-2"
                   >
                     <Avatar className="h-8 w-8 ring-2 ring-primary/50">
                       {curator.customerPictureUrl ? (
@@ -382,20 +381,19 @@ export function CollectionHeroV4({ bundle }: CollectionHeroV4Props) {
                       <p className="text-[10px] uppercase tracking-wider text-white/50 font-medium leading-none mb-0.5">
                         Curated by
                       </p>
-                      <p className="text-sm font-semibold text-white hover:text-primary transition-colors leading-none">
+                      <p className="text-sm font-semibold text-white leading-none">
                         {curator.customerName}
                       </p>
                     </div>
-                  </Link>
+                  </div>
                 ))}
                 {guestCurators.length > 0 && (
                   <div className="flex items-center gap-2 ml-1">
                     <span className="text-white/30">|</span>
                     {guestCurators.map((curator) => (
-                      <Link
+                      <div
                         key={curator.id}
-                        href={`/community/profiles/${curator.customerHandle}`}
-                        className="flex items-center gap-1.5 hover:opacity-80 transition-all duration-200"
+                        className="flex items-center gap-1.5"
                       >
                         <Avatar className="h-6 w-6 ring-1 ring-white/30">
                           {curator.customerPictureUrl ? (
@@ -408,10 +406,10 @@ export function CollectionHeroV4({ bundle }: CollectionHeroV4Props) {
                             <User className="h-3 w-3 text-white/60" />
                           </AvatarFallback>
                         </Avatar>
-                        <span className="text-xs font-medium text-white/70 hover:text-primary transition-colors">
+                        <span className="text-xs font-medium text-white/70">
                           {curator.customerName}
                         </span>
-                      </Link>
+                      </div>
                     ))}
                   </div>
                 )}
