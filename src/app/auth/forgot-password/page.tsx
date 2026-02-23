@@ -61,7 +61,7 @@ export default function ForgotPasswordPage() {
         }, 2000);
       } else if (result.isUserNotVerified) {       
         await AuthService.resendConfirmationCode(email);
-        router.push(`/auth/reset-password?email=${encodeURIComponent(email)}`);
+        router.push(`/auth/confirm-signup?email=${encodeURIComponent(email)}`);
       } else {
         setError(
           result.error || "Failed to send reset code. Please try again."
