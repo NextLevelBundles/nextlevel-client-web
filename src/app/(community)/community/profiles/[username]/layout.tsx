@@ -144,7 +144,7 @@ export default function ProfileLayout({
     );
   }
 
-  const displayName = isOwnProfile ? customer?.name : (customerProfile?.name ?? username);
+  const displayName = customerProfile?.name ?? username;
 
   return (
     <div className="grid gap-6">
@@ -162,7 +162,7 @@ export default function ProfileLayout({
           <>
             <Avatar className="h-16 w-16">
               {avatarUrl && (
-                <AvatarImage src={avatarUrl} alt={customer?.name ?? username} />
+                <AvatarImage src={avatarUrl} alt={displayName} />
               )}
               <AvatarFallback className="bg-primary/10 text-lg font-semibold">
                 {getInitials(displayName)}
