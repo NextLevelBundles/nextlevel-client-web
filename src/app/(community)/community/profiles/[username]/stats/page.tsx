@@ -21,10 +21,6 @@ import type {
   GameActivityList,
 } from "@/lib/api/types/customer-profile";
 
-function getIgdbCoverUrl(coverImageId: string, size = "cover_big") {
-  return `https://images.igdb.com/igdb/image/upload/t_${size}/${coverImageId}.jpg`;
-}
-
 function formatPlaytime(minutes: number): string {
   if (minutes < 60) return `${minutes}m`;
   const h = Math.floor(minutes / 60);
@@ -124,9 +120,9 @@ function GameActivitySection({ list, username }: { list: GameActivityList; usern
           const content = (
             <>
               <div className="aspect-[3/4] rounded-md overflow-hidden bg-muted/50 mb-1.5">
-                {item.coverImageId ? (
+                {item.coverImageUrl ? (
                   <Image
-                    src={getIgdbCoverUrl(item.coverImageId)}
+                    src={item.coverImageUrl}
                     alt={item.title ?? "Game"}
                     width={120}
                     height={160}

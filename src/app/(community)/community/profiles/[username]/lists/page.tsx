@@ -29,12 +29,8 @@ import {
 import { useCustomer } from "@/hooks/queries/useCustomer";
 import { CustomerList } from "@/lib/api/types/customer-profile";
 
-function getIgdbCoverUrl(coverImageId: string, size = "cover_big") {
-  return `https://images.igdb.com/igdb/image/upload/t_${size}/${coverImageId}.jpg`;
-}
-
 function ListCard({ list, username }: { list: CustomerList; username: string }) {
-  const hasPreviews = list.previewCoverImageIds?.length > 0;
+  const hasPreviews = list.previewCoverImageUrls?.length > 0;
 
   return (
     <Link href={`/community/profiles/${username}/lists/${list.id}`}>
@@ -43,13 +39,13 @@ function ListCard({ list, username }: { list: CustomerList; username: string }) 
         <div className="relative w-48 h-28 flex-shrink-0 rounded-md overflow-hidden bg-muted/50">
           {hasPreviews ? (
             <div className="flex h-full">
-              {list.previewCoverImageIds.slice(0, 4).map((imageId) => (
+              {list.previewCoverImageUrls.slice(0, 4).map((url, idx) => (
                 <div
-                  key={imageId}
+                  key={idx}
                   className="relative flex-1 min-w-0 overflow-hidden"
                 >
                   <Image
-                    src={getIgdbCoverUrl(imageId, "cover_big")}
+                    src={url}
                     alt=""
                     fill
                     className="object-cover"

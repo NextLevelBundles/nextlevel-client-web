@@ -7,11 +7,6 @@ import { ImageIcon } from "lucide-react";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useWishlist } from "@/hooks/queries/useCustomerLists";
 
-function getIgdbCoverUrl(coverImageId: string | null, size = "cover_big") {
-  if (!coverImageId) return null;
-  return `https://images.igdb.com/igdb/image/upload/t_${size}/${coverImageId}.jpg`;
-}
-
 export default function WishlistPage() {
   const params = useParams();
   const username = params.username as string;
@@ -46,9 +41,9 @@ export default function WishlistPage() {
             const content = (
               <div className="group relative">
                 <div className="aspect-[3/4] rounded-lg overflow-hidden bg-muted">
-                  {item.coverImageId ? (
+                  {item.coverImageUrl ? (
                     <Image
-                      src={getIgdbCoverUrl(item.coverImageId)!}
+                      src={item.coverImageUrl}
                       alt={item.title || ""}
                       width={264}
                       height={352}

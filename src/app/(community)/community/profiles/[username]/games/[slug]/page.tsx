@@ -36,10 +36,6 @@ import type { CustomerGame } from "@/lib/api/types/customer-profile";
 
 // --- Helpers ---
 
-function getIgdbImageUrl(imageId: string, size: string) {
-  return `https://images.igdb.com/igdb/image/upload/t_${size}/${imageId}.jpg`;
-}
-
 function getYouTubeThumbnail(videoId: string) {
   return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
 }
@@ -240,8 +236,8 @@ function ExpandableText({ text, maxLength = 300 }: { text: string; maxLength?: n
 
 function MediaGrid({ game }: { game: GameDetail }) {
   const videos = game.videos.filter((v) => v.videoId);
-  const screenshots = game.screenshots.filter((s) => s.imageId);
-  const artworks = game.artworks.filter((a) => a.imageId);
+  const screenshots = game.screenshots.filter((s) => s.imageUrl);
+  const artworks = game.artworks.filter((a) => a.imageUrl);
 
   if (videos.length === 0 && screenshots.length === 0 && artworks.length === 0)
     return null;
@@ -283,7 +279,7 @@ function MediaGrid({ game }: { game: GameDetail }) {
             className="relative aspect-video rounded overflow-hidden bg-muted/50"
           >
             <Image
-              src={getIgdbImageUrl(s.imageId!, "screenshot_med")}
+              src={s.imageUrl!}
               alt={`Screenshot ${i + 1}`}
               fill
               className="object-cover"
@@ -297,7 +293,7 @@ function MediaGrid({ game }: { game: GameDetail }) {
             className="relative aspect-video rounded overflow-hidden bg-muted/50"
           >
             <Image
-              src={getIgdbImageUrl(a.imageId!, "screenshot_med")}
+              src={a.imageUrl!}
               alt={`Artwork ${i + 1}`}
               fill
               className="object-cover"
@@ -341,9 +337,9 @@ function RelatedGamesSection({ games }: { games: GameDetailRelatedGame[] }) {
               {grouped[tab].map((rg) => (
                 <div key={rg.igdbId} className="space-y-1">
                   <div className="aspect-[3/4] rounded overflow-hidden bg-muted/50 relative">
-                    {rg.coverImageId ? (
+                    {rg.coverImageUrl ? (
                       <Image
-                        src={getIgdbImageUrl(rg.coverImageId, "cover_big")}
+                        src={rg.coverImageUrl}
                         alt={rg.name || "Related game"}
                         fill
                         className="object-cover"
@@ -692,9 +688,9 @@ export default function GameDetailPage() {
           {/* Cover + status controls */}
           <div className="flex flex-col gap-3 flex-shrink-0">
             <div className="w-[170px] h-[230px] rounded-lg overflow-hidden bg-muted/50">
-              {game.coverImageId ? (
+              {game.coverImageUrl ? (
                 <Image
-                  src={getIgdbImageUrl(game.coverImageId, "cover_big")}
+                  src={game.coverImageUrl}
                   alt={game.name || "Game cover"}
                   width={170}
                   height={230}

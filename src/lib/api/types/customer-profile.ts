@@ -5,6 +5,7 @@ export interface CustomerList {
   description: string | null;
   itemCount: number;
   previewCoverImageIds: string[];
+  previewCoverImageUrls: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -24,6 +25,7 @@ export interface CustomerListItem {
   gameId: number | null;
   title: string | null;
   coverImageId: string | null;
+  coverImageUrl: string | null;
   slug: string | null;
   releaseYear: number | null;
   order: number;
@@ -34,6 +36,7 @@ export interface GameSearchResult {
   igdbId: number;
   name: string | null;
   coverImageId: string | null;
+  coverImageUrl: string | null;
   releaseYear: number | null;
 }
 
@@ -110,6 +113,7 @@ export interface CustomerGame {
   slug: string | null;
   name: string;
   coverImageId: string | null;
+  coverImageUrl: string | null;
   steamIconUrl: string | null;
   playtimeForever: number;
   playtime2Weeks: number | null;
@@ -127,6 +131,7 @@ export interface UnimportedSteamGame {
   appId: number;
   name: string | null;
   imgIconUrl: string | null;
+  coverImageUrl: string | null;
   playtimeForever: number;
   playtime2Weeks: number | null;
 }
@@ -168,6 +173,7 @@ export interface CompletionStat {
 export interface RecentlyPlayedGame {
   name: string;
   coverImageId: string | null;
+  coverImageUrl: string | null;
   playtime2Weeks: number;
 }
 
@@ -187,6 +193,7 @@ export interface GameActivityItem {
   title: string | null;
   gameId: number | null;
   coverImageId: string | null;
+  coverImageUrl: string | null;
   slug: string | null;
 }
 
@@ -199,6 +206,7 @@ export interface GameAchievementProgress {
   appId: number;
   gameName: string;
   coverImageId: string | null;
+  coverImageUrl: string | null;
   totalAchievements: number;
   earnedAchievements: number;
   completionPercentage: number;

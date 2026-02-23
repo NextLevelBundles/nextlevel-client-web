@@ -6,6 +6,7 @@ export interface GameDetail {
   summary: string | null;
   storyline: string | null;
   coverImageId: string | null;
+  coverImageUrl: string | null;
   firstReleaseDate: string | null;
   aggregatedRating: number | null;
   aggregatedRatingCount: number | null;
@@ -73,10 +74,12 @@ export interface GameDetailAgeRating {
 
 export interface GameDetailScreenshot {
   imageId: string | null;
+  imageUrl: string | null;
 }
 
 export interface GameDetailArtwork {
   imageId: string | null;
+  imageUrl: string | null;
 }
 
 export interface GameDetailVideo {
@@ -93,5 +96,6 @@ export interface GameDetailRelatedGame {
   igdbId: number;
   name: string | null;
   coverImageId: string | null;
+  coverImageUrl: string | null;
   relationship: string;
 }

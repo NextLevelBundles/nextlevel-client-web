@@ -49,14 +49,6 @@ function getCompletionOptions(playStatus: string) {
   return base;
 }
 
-function getIgdbCoverUrl(coverImageId: string, size = "cover_small") {
-  return `https://images.igdb.com/igdb/image/upload/t_${size}/${coverImageId}.jpg`;
-}
-
-function getSteamIconUrl(appId: number, iconHash: string) {
-  return `https://media.steampowered.com/steamcommunity/public/images/apps/${appId}/${iconHash}.jpg`;
-}
-
 function formatPlaytime(minutes: number): string {
   if (minutes < 60) return `${minutes}m`;
   const h = Math.floor(minutes / 60);
@@ -75,11 +67,7 @@ function GameCard({
 }) {
   const updateStatus = useUpdateCollectionGameStatus();
 
-  const coverSrc = game.coverImageId
-    ? getIgdbCoverUrl(game.coverImageId)
-    : game.steamIconUrl
-      ? getSteamIconUrl(game.steamAppId, game.steamIconUrl)
-      : null;
+  const coverSrc = game.coverImageUrl;
 
   const playStatus = game.playStatus || "NoStatus";
   const completionStatus = game.completionStatus;

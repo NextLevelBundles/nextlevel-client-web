@@ -12,10 +12,6 @@ import type { GameAchievementProgress } from "@/lib/api/types/customer-profile";
 type FilterValue = "all" | "complete" | "incomplete";
 type SortValue = "recent" | "completion" | "name";
 
-function getIgdbCoverUrl(coverImageId: string, size = "cover_big") {
-  return `https://images.igdb.com/igdb/image/upload/t_${size}/${coverImageId}.jpg`;
-}
-
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
   return new Intl.DateTimeFormat("en-US", {
@@ -44,9 +40,9 @@ function GameAchievementRow({ game }: { game: GameAchievementProgress }) {
       >
         {/* Cover Image */}
         <div className="w-14 h-14 rounded-md overflow-hidden bg-muted/50 flex-shrink-0">
-          {game.coverImageId ? (
+          {game.coverImageUrl ? (
             <Image
-              src={getIgdbCoverUrl(game.coverImageId, "cover_small")}
+              src={game.coverImageUrl}
               alt={game.gameName}
               width={56}
               height={56}

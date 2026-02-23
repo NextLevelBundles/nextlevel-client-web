@@ -16,6 +16,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   RotateCcwIcon,
+  ImageIcon,
 } from "lucide-react";
 import { useCustomer } from "@/hooks/queries/useCustomer";
 import { useAuth } from "@/shared/providers/auth-provider";
@@ -538,13 +539,18 @@ export default function GameImportsPage() {
                   {/* Checkbox + Cover image */}
                   <div className="p-2 flex-shrink-0">
                     <div className="relative w-[50px] flex-shrink-0 aspect-[2/3] rounded overflow-hidden">
-                      <Image
-                        src={`https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${game.appId}/library_600x900_2x.jpg`}
-                        alt=""
-                        fill
-                        className="object-cover"
-                        unoptimized
-                      />
+                      {game.coverImageUrl ? (
+                        <Image
+                          src={game.coverImageUrl}
+                          alt=""
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-muted/50">
+                          <ImageIcon className="h-5 w-5 text-muted-foreground/40" />
+                        </div>
+                      )}
                     </div>
                   </div>
 

@@ -42,10 +42,6 @@ import type {
   GameAchievementProgress,
 } from "@/lib/api/types/customer-profile";
 
-function getIgdbCoverUrl(coverImageId: string, size = "cover_big") {
-  return `https://images.igdb.com/igdb/image/upload/t_${size}/${coverImageId}.jpg`;
-}
-
 function formatPlaytime(minutes: number): string {
   if (minutes < 60) return `${minutes}m`;
   const h = Math.floor(minutes / 60);
@@ -144,9 +140,9 @@ function PlayingNowContent({
         const content = (
           <div>
             <div className="relative aspect-[3/4] rounded-md overflow-hidden bg-muted/50 mb-1.5">
-              {game.coverImageId ? (
+              {game.coverImageUrl ? (
                 <Image
-                  src={getIgdbCoverUrl(game.coverImageId)}
+                  src={game.coverImageUrl}
                   alt={game.title ?? "Game"}
                   width={264}
                   height={352}
@@ -692,9 +688,9 @@ function AchievementsOverviewSection({
           {recentGames.map((game) => (
             <div key={game.appId} className="flex items-center gap-3">
               <div className="w-10 h-10 rounded overflow-hidden bg-muted/50 flex-shrink-0">
-                {game.coverImageId ? (
+                {game.coverImageUrl ? (
                   <Image
-                    src={getIgdbCoverUrl(game.coverImageId, "cover_small")}
+                    src={game.coverImageUrl}
                     alt={game.gameName}
                     width={40}
                     height={40}
@@ -742,7 +738,7 @@ function RecentListCard({
   list: CustomerList;
   username: string;
 }) {
-  const hasPreviews = list.previewCoverImageIds?.length > 0;
+  const hasPreviews = list.previewCoverImageUrls?.length > 0;
 
   return (
     <Link href={`/community/profiles/${username}/lists/${list.id}`}>
@@ -750,10 +746,10 @@ function RecentListCard({
         <div className="w-20 h-14 flex-shrink-0 rounded overflow-hidden bg-muted/50">
           {hasPreviews ? (
             <div className="flex h-full">
-              {list.previewCoverImageIds.slice(0, 4).map((imageId) => (
+              {list.previewCoverImageUrls.slice(0, 4).map((url, idx) => (
                 <Image
-                  key={imageId}
-                  src={getIgdbCoverUrl(imageId, "thumb")}
+                  key={idx}
+                  src={url}
                   alt=""
                   width={40}
                   height={56}

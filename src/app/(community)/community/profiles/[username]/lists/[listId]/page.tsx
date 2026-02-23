@@ -37,11 +37,6 @@ import {
 import { useCustomer } from "@/hooks/queries/useCustomer";
 import { GameSearchResult } from "@/lib/api/types/customer-profile";
 
-function getIgdbCoverUrl(coverImageId: string | null, size = "cover_big") {
-  if (!coverImageId) return null;
-  return `https://images.igdb.com/igdb/image/upload/t_${size}/${coverImageId}.jpg`;
-}
-
 export default function ListDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -232,9 +227,9 @@ export default function ListDetailPage() {
                     className="flex items-center gap-3 w-full p-3 hover:bg-muted/50 transition-colors text-left disabled:opacity-50 cursor-pointer disabled:cursor-default"
                   >
                     <div className="h-10 w-8 flex-shrink-0 rounded overflow-hidden bg-muted">
-                      {game.coverImageId ? (
+                      {game.coverImageUrl ? (
                         <Image
-                          src={getIgdbCoverUrl(game.coverImageId, "thumb")!}
+                          src={game.coverImageUrl}
                           alt={game.name || ""}
                           width={32}
                           height={40}
@@ -284,9 +279,9 @@ export default function ListDetailPage() {
               className="flex items-center gap-3 p-3 rounded-lg border bg-card"
             >
               <div className="h-12 w-9 flex-shrink-0 rounded overflow-hidden bg-muted">
-                {item.coverImageId ? (
+                {item.coverImageUrl ? (
                   <Image
-                    src={getIgdbCoverUrl(item.coverImageId, "thumb")!}
+                    src={item.coverImageUrl}
                     alt={item.title || ""}
                     width={36}
                     height={48}
@@ -332,9 +327,9 @@ export default function ListDetailPage() {
                 const content = (
                   <div className="group relative">
                     <div className="aspect-[3/4] rounded-lg overflow-hidden bg-muted">
-                      {item.coverImageId ? (
+                      {item.coverImageUrl ? (
                         <Image
-                          src={getIgdbCoverUrl(item.coverImageId)!}
+                          src={item.coverImageUrl}
                           alt={item.title || ""}
                           width={264}
                           height={352}
