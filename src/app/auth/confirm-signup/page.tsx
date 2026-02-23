@@ -16,6 +16,7 @@ export default function ConfirmSignUpPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const emailParam = searchParams.get("email") || "";
+  const isFromForgotPassword = searchParams.get("from") === "forgot-password";
 
   const [email] = useState(emailParam);
   const [code, setCode] = useState("");
@@ -61,6 +62,15 @@ export default function ConfirmSignUpPage() {
 
       if (result.success && result.isSignUpComplete) {
         setSuccess(true);
+
+        // If user came from forgot-password, redirect back to reset their password
+        if (isFromForgotPassword) {
+          toast.success("Email verified! You can now reset your password.");
+          setTimeout(() => {
+            router.push(`/auth/forgot-password?email=${encodeURIComponent(email)}`);
+          }, 1000);
+          return;
+        }
 
         // Check the nextStep to determine what to do
         if (result.nextStep?.signUpStep === "COMPLETE_AUTO_SIGN_IN") {
@@ -161,18 +171,20 @@ export default function ConfirmSignUpPage() {
   if (success) {
     return (
       <AuthLayout
-        title="Account confirmed!"
-        subtitle="Your email has been verified successfully"
+        title={isFromForgotPassword ? "Email verified!" : "Account confirmed!"}
+        subtitle={isFromForgotPassword ? "You can now reset your password" : "Your email has been verified successfully"}
       >
         <div className="space-y-6">
           <Alert className="border-green-500 bg-green-50 dark:bg-green-950/20">
             <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
             <AlertDescription className="text-green-800 dark:text-green-200">
-              Your account has been confirmed successfully! You can now sign in.
+              {isFromForgotPassword
+                ? "Email verified! Redirecting to reset your password..."
+                : "Your account has been confirmed successfully! You can now sign in."}
             </AlertDescription>
           </Alert>
           <p className="text-sm text-muted-foreground text-center">
-            Redirecting to sign in...
+            {isFromForgotPassword ? "Redirecting to reset password..." : "Redirecting to sign in..."}
           </p>
         </div>
       </AuthLayout>
@@ -182,7 +194,9 @@ export default function ConfirmSignUpPage() {
   return (
     <AuthLayout
       title="Verify your email"
-      subtitle={`We've sent a code to ${email}`}
+      subtitle={isFromForgotPassword
+        ? "You need to verify your email before you can reset your password"
+        : `We've sent a code to ${email}`}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
