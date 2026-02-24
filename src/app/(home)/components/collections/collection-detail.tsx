@@ -15,14 +15,12 @@ import {
   Bundle,
   BundleType,
   TierType,
-  BundleStatus,
   Tier,
 } from "@/app/(shared)/types/bundle";
 import { useBundleBookFormats } from "@/hooks/queries/useBundleBookFormats";
 import { useBundleTierAvailability } from "@/hooks/queries/useBundleTierAvailability";
 import { useBundleStatistics } from "@/hooks/queries/useBundleStatistics";
 import { useBundlePurchase } from "@/hooks/queries/useBundlePurchase";
-import { BundleNotFound } from "./collection-not-found";
 import { useAuth } from "@/app/(shared)/providers/auth-provider";
 import { Card } from "@/shared/components/ui/card";
 import { Eye, TrendingDown } from "lucide-react";
@@ -70,15 +68,6 @@ export function BundleDetail({ bundle, isPreview = false }: { bundle: Bundle; is
     () => (bundle.sellTo ? new Date(bundle.sellTo) : endDate),
     [bundle.sellTo, endDate]
   );
-
-  const isBundleActive = bundle.status === BundleStatus.Active;
-
-  // Determine if bundle should be visible - only show if Active status, unless in preview mode
-  const shouldShowBundle = isBundleActive || isPreview;
-
-  if (!shouldShowBundle) {
-    return <BundleNotFound />;
-  }
 
   // Determine bundle state for UI (calculate once on mount)
   const bundleState: "not-started" | "expired" | "active" = useMemo(() => {

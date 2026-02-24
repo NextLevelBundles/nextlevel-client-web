@@ -5,6 +5,7 @@ import { BundleNotFound } from "@/home/components/collections/collection-not-fou
 import { BundleError } from "@/home/components/collections/collection-error";
 import { Footer } from "@/home/components/sections/footer";
 import { serverApiClient } from "@/lib/server-api";
+import { BundleStatus } from "@/app/(shared)/types/bundle";
 import React from "react";
 import type { Metadata } from "next";
 
@@ -76,23 +77,38 @@ export default async function BundleDetailPage({
 
   let bundle = null;
   let error = null;
-  let isNotFound = false;
 
   try {
     bundle = await serverApiClient.getBundleBySlug(slug);
-    console.log("Fetched bundle:", bundle);
-    if (!bundle) {
-      isNotFound = true;
-    }
   } catch (err: any) {
     console.error("Error fetching bundle details:", err);
-    // Check if it's a 404 error
     if (err?.message?.includes("404") || err?.status === 404) {
-      isNotFound = true;
+      bundle = null;
     } else {
       error = err;
     }
   }
+
+  // Determine if bundle should be shown:
+  // 1. Bundle must exist
+  // 2. Bundle status must be Active
+  // 3. Bundle must have started OR the pre-sale must have started
+  // Preview mode (?preview=1) overrides checks 2 and 3
+  const shouldShowBundle = (() => {
+    if (!bundle) return false;
+    if (isPreview) return true;
+
+    const isActive = bundle.status === BundleStatus.Active;
+    if (!isActive) return false;
+
+    const now = new Date();
+    const bundleHasStarted = now >= new Date(bundle.startsAt);
+    const saleHasStarted = bundle.sellFrom
+      ? now >= new Date(bundle.sellFrom)
+      : bundleHasStarted;
+
+    return bundleHasStarted || saleHasStarted;
+  })();
 
   return (
     <>
@@ -100,10 +116,8 @@ export default async function BundleDetailPage({
       <div className="pt-16">
         {error ? (
           <BundleError error={error} />
-        ) : isNotFound && !isPreview ? (
-          <BundleNotFound />
-        ) : bundle ? (
-          <BundleDetail bundle={bundle} isPreview={isPreview} />
+        ) : shouldShowBundle ? (
+          <BundleDetail bundle={bundle!} isPreview={isPreview} />
         ) : (
           <BundleNotFound />
         )}
