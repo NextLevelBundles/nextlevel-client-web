@@ -174,6 +174,7 @@ export function CollectionHeroV5({ bundle }: CollectionHeroV5Props) {
 
   // SEO image as final fallback
   const seoImage = bundle.seo?.image;
+      console.log(bgVideoId)
 
   // Game images for cascade (up to 4)
   const cascadeImages = bundle.imageMedia.slice(0, 4);
@@ -225,12 +226,13 @@ export function CollectionHeroV5({ bundle }: CollectionHeroV5Props) {
         )}
       </div>
 
+
       {/* === Layer 1: YouTube background iframe (only for YouTube heroMedia) === */}
       {bgVideoId && (
         <div className="absolute inset-0 z-10">
           <iframe
             ref={iframeRef}
-            src={`https://www.youtube.com/embed/${bgVideoId}?autoplay=1&mute=1&loop=1&playlist=${bgVideoId}&controls=1&showinfo=0&modestbranding=1&rel=0&playsinline=1&enablejsapi=1`}
+            src={`https://www.youtube.com/embed/${bgVideoId}?autoplay=1&mute=1&loop=1&controls=1&showinfo=0&modestbranding=1&rel=0&playsinline=1&enablejsapi=1`}
             className="w-full h-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
