@@ -85,8 +85,8 @@ function RegularLayout({
                   ? "book"
                   : "books"
                 : tierProducts.length === 1
-                  ? "Steam game"
-                  : "Steam games"}
+                  ? "Steam key"
+                  : "Steam keys"}
             </p>
           </div>
         </div>

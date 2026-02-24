@@ -254,8 +254,8 @@ export function CartItemModal({
                     ? "Book"
                     : "Books"
                   : item.snapshotProducts.length === 1
-                    ? "Steam Game"
-                    : "Steam Games"}{" "}
+                    ? "Steam Key"
+                    : "Steam Keys"}{" "}
                 Included
               </h4>
               <ScrollArea className="h-[500px] pr-4">

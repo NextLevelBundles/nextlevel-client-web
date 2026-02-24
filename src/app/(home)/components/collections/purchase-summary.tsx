@@ -459,7 +459,7 @@ export function PurchaseSummary({
               )}
               <span className="text-sm font-medium">
                 You&apos;re getting ${unlockedProductsValue.toFixed(2)} worth of{" "}
-                {bundle.type === BundleType.EBook ? "books" : "Steam games"}
+                {bundle.type === BundleType.EBook ? "books" : "Steam keys"}
               </span>
             </div>
             <div className="grid grid-cols-3 gap-2">

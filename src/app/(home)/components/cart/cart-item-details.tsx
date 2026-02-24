@@ -105,7 +105,7 @@ export function CartItemDetails({ item }: CartItemDetailsProps) {
 
           <div>
             <h4 className="font-semibold mb-3">
-              Included {isBookBundle(item) ? "Books" : "Steam Games"} (
+              Included {isBookBundle(item) ? "Books" : "Steam Keys"} (
               {item.snapshotProducts.length})
             </h4>
             <ScrollArea className="h-full">

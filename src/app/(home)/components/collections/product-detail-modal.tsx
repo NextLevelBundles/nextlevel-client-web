@@ -275,14 +275,14 @@ export function ProductDetailModal({
               <>
                 <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
                 <span className="font-medium text-muted-foreground dark:text-primary/90">
-                  {isBook ? "Book" : "Steam game"} included in your tier
+                  {isBook ? "Book" : "Steam key"} included in your tier
                 </span>
               </>
             ) : (
               <>
                 <Lock className="h-4 w-4 text-destructive dark:text-red-400" />
                 <span className="font-medium text-destructive dark:text-red-400">
-                  This {isBook ? "book" : "Steam game"} is locked - Unlocks at{" "}
+                  This {isBook ? "book" : "Steam key"} is locked - Unlocks at{" "}
                   {currentTierInfo?.isCharity
                     ? "Charity Tier"
                     : currentTierInfo?.isUpsell
@@ -363,7 +363,7 @@ export function ProductDetailModal({
                     <>
                       <Badge variant="default">
                         <Gamepad2 className="h-3 w-3 mr-1" />
-                        Steam Game
+                        Steam Key
                       </Badge>
                       {bundle.type === BundleType.SteamGame &&
                         product.steamGameMetadata?.steamAppId && (
