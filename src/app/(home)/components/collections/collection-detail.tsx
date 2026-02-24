@@ -155,7 +155,7 @@ export function BundleDetail({ bundle, isPreview = false }: { bundle: Bundle; is
     () =>
       tiers
         .filter((tier) => tier.type === TierType.Upsell)
-        .sort((a, b) => b.price - a.price), // Sort by price descending (higher price first)
+        .sort((a, b) => a.order - b.order), // Sort by custom order ascending
     [tiers]
   );
 

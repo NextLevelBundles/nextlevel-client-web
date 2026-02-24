@@ -129,6 +129,7 @@ export interface Tier {
   name: string;
   price: number;
   type: TierType;
+  order: number;
   bonusItems?: BonusItem[];
 }
 
