@@ -98,6 +98,7 @@ export interface ProfileCharity {
 }
 
 export interface UpdateCustomerProfileRequest {
+  handle: string | null;
   name: string | null;
   title: string | null;
   headline: string | null;

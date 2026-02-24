@@ -27,17 +27,6 @@ export function useCustomer() {
   });
 }
 
-export function useUpdateHandle() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (handle: string) => userApi.updateHandle(handle),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: customerQueryKey });
-    },
-  });
-}
-
 export function useCheckHandleAvailability() {
   return async (handle: string) => userApi.checkHandleAvailability(handle);
 }

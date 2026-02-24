@@ -15,7 +15,7 @@ import {
   PLATFORM_URL_TEMPLATES,
   PREDEFINED_PLATFORMS,
 } from "@/lib/constants/social-platforms";
-import { useCustomer, useUpdateHandle } from "@/hooks/queries/useCustomer";
+import { useCustomer } from "@/hooks/queries/useCustomer";
 import { userApi } from "@/lib/api";
 import Link from "next/link";
 import {
@@ -180,7 +180,7 @@ export default function ProfileSettingsPage() {
   const { data: customerProfile } = useCustomerProfileByHandle(username);
   const updateProfile = useUpdateCustomerProfile();
   const isCurator = customerProfile?.isCurator ?? false;
-  const updateHandle = useUpdateHandle();
+
 
   const [name, setName] = useState("");
   const [handle, setHandle] = useState("");
@@ -399,16 +399,8 @@ export default function ProfileSettingsPage() {
     );
 
     try {
-      // Update handle if changed
-      if (handleChanged && handleAvailable) {
-        await updateHandle.mutateAsync(handle);
-        setOriginalHandle(handle);
-        setHandleAvailable(null);
-        // Redirect to new handle URL
-        router.replace(`/community/profiles/${handle}/settings`);
-      }
-
       await updateProfile.mutateAsync({
+        handle: handle.trim().toLowerCase() || null,
         name: name.trim() || null,
         title: title.trim() || null,
         headline: headline.trim() || null,
@@ -436,6 +428,13 @@ export default function ProfileSettingsPage() {
           description: c.description?.trim() || null,
         })),
       });
+
+      if (handleChanged && handleAvailable) {
+        setOriginalHandle(handle);
+        setHandleAvailable(null);
+        router.replace(`/community/profiles/${handle}/settings`);
+      }
+
       toast.success("Profile updated successfully");
     } catch {
       toast.error("Failed to update profile");
@@ -713,8 +712,8 @@ export default function ProfileSettingsPage() {
       </div>
 
       {/* Save */}
-      <Button type="submit" disabled={updateProfile.isPending || updateHandle.isPending || (handleChanged && !handleAvailable) || isCheckingHandle || Object.keys(urlErrors).length > 0}>
-        {updateProfile.isPending || updateHandle.isPending ? (
+      <Button type="submit" disabled={updateProfile.isPending || (handleChanged && !handleAvailable) || isCheckingHandle || Object.keys(urlErrors).length > 0}>
+        {updateProfile.isPending ? (
           <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
         ) : (
           <SaveIcon className="h-4 w-4 mr-2" />
