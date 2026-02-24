@@ -43,18 +43,21 @@ export function BundleImageDeck({
     return (
       <div
         className={cn(
-          "relative w-full h-full flex items-center justify-center",
+          "relative w-full h-full flex items-center justify-center overflow-hidden",
           containerClassName
         )}
       >
-        <div className="relative w-full h-full">
+        <div className="relative w-full h-full group/single">
           <Image
             fill
             sizes="400px"
             quality={90}
             src={displayImages[0].url}
             alt={title}
-            className={cn("object-cover rounded", className)}
+            className={cn(
+              "object-cover transition-transform duration-300 group-hover/single:scale-105",
+              className
+            )}
           />
         </div>
       </div>
@@ -73,45 +76,38 @@ export function BundleImageDeck({
           const isHovered = hoveredIndex === index;
           const totalImages = displayImages.length;
 
-          // Create a straight stack with cards spread out more horizontally
-          // Cards are straight by default, only rotate on hover
-          const spreadFactor = 65; // Increased spread for better visibility
-          const baseTranslateX = (index - (totalImages - 1) / 2) * spreadFactor;
+          // Card dimensions as percentage of container
+          const cardWidthPercent = 38;
+          const cardHeightPercent = 95;
 
-          // No rotation by default, only on hover
-          const baseRotation = 0;
+          // Distribute cards evenly across container width using percentages
+          const maxLeft = 100 - cardWidthPercent;
+          const step = totalImages > 1 ? maxLeft / (totalImages - 1) : 0;
+          const baseLeft = index * step;
 
           // Z-index: maintain stacking order left to right
-          // Hovered card only gets higher z-index than cards to its left
           const baseZIndex = index * 10;
           const zIndex = isHovered ? baseZIndex + 5 : baseZIndex;
 
-          // Calculate hover effects - subtle lift without breaking visual hierarchy
-          const hoverRotation = isHovered ? -3 : baseRotation;
-          const hoverTranslateX = isHovered
-            ? baseTranslateX - 20
-            : baseTranslateX; // Move left when hovered
-          const hoverTranslateY = isHovered ? -15 : 0; // Lift up slightly
-          const hoverScale = isHovered ? 1.03 : 1; // Subtle scale increase
-
-          // Card dimensions to maintain aspect ratio
-          const cardWidthPercent = 38; // Width as percentage of container (narrower for better spread visibility)
-          const cardHeightPercent = 95; // Height as percentage of container
+          // Hover effects — small percentage shift keeps it fluid
+          const hoverLeftOffset = isHovered ? -3 : 0;
+          const hoverTranslateY = isHovered ? -15 : 0;
+          const hoverRotation = isHovered ? -3 : 0;
+          const hoverScale = isHovered ? 1.03 : 1;
 
           return (
             <div
               key={image.id}
               className="absolute"
               style={{
-                left: "50%",
+                left: `${baseLeft + hoverLeftOffset}%`,
                 top: "50%",
                 width: `${cardWidthPercent}%`,
                 height: `${cardHeightPercent}%`,
                 transform: `
-                  translate(-50%, -50%)
-                  translateX(${hoverTranslateX}px) 
-                  translateY(${hoverTranslateY}px) 
-                  rotate(${hoverRotation}deg) 
+                  translateY(-50%)
+                  translateY(${hoverTranslateY}px)
+                  rotate(${hoverRotation}deg)
                   scale(${hoverScale})
                 `,
                 zIndex,
@@ -125,7 +121,7 @@ export function BundleImageDeck({
               <div className="relative w-full h-full">
                 {/* Shadow effect */}
                 <div
-                  className="absolute inset-0 rounded"
+                  className="absolute inset-0 rounded-lg"
                   style={{
                     boxShadow: isHovered
                       ? "0 15px 30px -8px rgba(0, 0, 0, 0.4), 0 8px 16px -4px rgba(0, 0, 0, 0.25)"
@@ -135,7 +131,7 @@ export function BundleImageDeck({
                 />
 
                 {/* Image container with 600x900 aspect ratio (2:3) */}
-                <div className="relative w-full h-full rounded overflow-hidden bg-gray-800">
+                <div className="relative w-full h-full rounded-lg overflow-hidden bg-gray-800">
                   <Image
                     fill
                     sizes="(max-width: 768px) 200px, 300px"

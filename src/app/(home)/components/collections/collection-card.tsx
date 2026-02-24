@@ -52,19 +52,19 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
         } ${isVisible ? "animate-fade-up opacity-100" : "opacity-0"}`}
         style={{ animationDelay: isVisible ? `${index * 150}ms` : "0ms" }}
       >
-        <Card className="border-0 bg-transparent h-full">
+        <Card className="border-0 bg-transparent h-full rounded-3xl">
           <div className="relative">
-            <div className="relative aspect-4/3 rounded-2xl overflow-visible">
+            <div className={`relative aspect-4/3 rounded-3xl ${bundle.imageMedia.length > 1 ? "overflow-visible px-2" : "overflow-hidden"}`}>
               <BundleImageDeck
                 images={bundle.imageMedia}
                 title={bundle.title}
-                containerClassName="rounded-2xl"
+                containerClassName="rounded-3xl"
                 className="transition-all duration-300"
               />
             </div>
 
             {/* Status badges on image */}
-            <div className="absolute right-3 top-3 flex gap-2 z-30">
+            {/* <div className="absolute right-3 top-3 flex gap-2 z-30">
               {bundle.isFeatured && (
                 <div className="text-xs font-semibold rounded-full px-2.5 py-0.5 backdrop-blur-md transition-transform group-hover:scale-105 bg-green-500/60 text-white shadow-md border border-white/10">
                   Featured
@@ -80,7 +80,7 @@ export function BundleCard({ bundle, index }: BundleCardProps) {
                   Limited Keys
                 </div>
               )}
-            </div>
+            </div> */}
           </div>
 
           <div className="flex flex-1 flex-col p-6">
