@@ -148,7 +148,7 @@ export function BundleDetail({ bundle, isPreview = false }: { bundle: Bundle; is
     () =>
       tiers
         .filter((tier) => tier.type === TierType.Charity)
-        .sort((a, b) => a.price - b.price),
+        .sort((a, b) => a.order - b.order),
     [tiers]
   );
   const upsellTiers = useMemo(
