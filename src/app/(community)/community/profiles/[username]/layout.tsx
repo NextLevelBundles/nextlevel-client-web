@@ -116,6 +116,18 @@ export default function ProfileLayout({
     );
   }
 
+  if (!isLoading && customer && customer.handle !== username) {
+    return (
+      <div className="text-center py-20">
+        <UserIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+        <h2 className="text-xl font-semibold mb-2">Profile not found</h2>
+        <p className="text-muted-foreground">
+          The profile &ldquo;{username}&rdquo; does not exist or is not available.
+        </p>
+      </div>
+    );
+  }
+
   if (profileLoading) {
     return (
       <div className="grid gap-6">
