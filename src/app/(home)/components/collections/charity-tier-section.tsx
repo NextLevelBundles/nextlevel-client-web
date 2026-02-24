@@ -131,6 +131,7 @@ function GridItemCard({
           <p className="text-xs font-medium text-white truncate">
             {bonus.title}
           </p>
+          <p className="text-[10px] text-white/80">Free</p>
         </div>
       </div>
     </div>
