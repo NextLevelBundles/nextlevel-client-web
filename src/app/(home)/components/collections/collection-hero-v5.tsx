@@ -366,7 +366,7 @@ export function CollectionHeroV5({ bundle }: CollectionHeroV5Props) {
               >
                 <Play className="h-4 w-4 text-white/80 group-hover:text-white" />
                 <span className="text-sm text-white/80 group-hover:text-white transition-colors font-medium">
-                  Watch video
+                  {heroMedia?.buttonLabel || "Watch video"}
                 </span>
               </button>
             </div>
@@ -397,7 +397,7 @@ export function CollectionHeroV5({ bundle }: CollectionHeroV5Props) {
             >
               <Play className="h-5 w-5 text-white/80 group-hover:text-white" />
               <span className="text-base text-white/80 group-hover:text-white transition-colors font-medium">
-                Watch video
+                {heroMedia?.buttonLabel || "Watch video"}
               </span>
             </button>
           </div>

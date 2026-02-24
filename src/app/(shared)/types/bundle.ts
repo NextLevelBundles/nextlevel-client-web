@@ -28,6 +28,7 @@ export enum HeroMediaType {
 export interface HeroMedia {
   type: HeroMediaType;
   url: string;
+  buttonLabel?: string | null;
 }
 
 export enum CuratorType {
