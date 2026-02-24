@@ -115,15 +115,15 @@ export function MobilePurchaseSheet({
   const getSteamLevelWarningMessage = () => {
     switch (steamLevelStatus.reason) {
       case "unsync":
-        return "Please sync your Steam profile to verify your account level.";
+        return "Please sync your Steam profile to verify your account level and enable purchasing.";
       case "private":
-        return "Your Steam profile is private. Please set \"My profile\" to public in your Steam privacy settings.";
+        return "Your Steam profile is private. Please set \"My profile\" to public in your Steam privacy settings to enable purchasing.";
       case "error":
-        return "Unable to verify your Steam level. Please try syncing again later.";
+        return "Unable to verify your Steam level. Please try syncing again later to enable purchasing.";
       case "zero":
-        return "Your Steam level must be greater than 0 to purchase or gift this collection. Please increase your Steam level and try syncing again.";
+        return "Your Steam level must be greater than 0 to enable purchasing or gifting this collection. Please increase your Steam level and try syncing again.";
       default:
-        return "Please sync your Steam profile.";
+        return "Please sync your Steam profile to enable purchasing.";
     }
   };
 
@@ -298,6 +298,16 @@ export function MobilePurchaseSheet({
                   </>
                 )}
               </Button>
+              <p className="text-center text-xs text-muted-foreground mt-2">
+                <a
+                  href="https://sites.google.com/digiphile.co/help/steam-account-linking"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:no-underline"
+                >
+                  Learn more about our Steam Linking Requirements
+                </a>
+              </p>
             </div>
           ) : (
             <>
