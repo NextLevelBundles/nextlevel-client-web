@@ -59,9 +59,10 @@ export function ArtworkDetailModal({
               </div>
 
               {description && (
-                <div className="text-muted-foreground leading-relaxed whitespace-pre-line">
-                  {description}
-                </div>
+                <div
+                  className="text-muted-foreground leading-relaxed prose prose-sm dark:prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{ __html: description }}
+                />
               )}
 
               <div className="space-y-4">
