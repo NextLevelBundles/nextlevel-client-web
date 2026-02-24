@@ -47,10 +47,6 @@ export class UserApi {
     return await this.client.put<Customer, { countryCode: string }>("/customer/country", { countryCode });
   }
 
-  async updateHandle(handle: string): Promise<Customer> {
-    return await this.client.put<Customer, { handle: string }>("/customer/handle", { handle });
-  }
-
   async syncSteamLevel(): Promise<SteamLevelSyncResponse> {
     return await this.client.post<SteamLevelSyncResponse, void>("/customer/sync-steam-level");
   }
