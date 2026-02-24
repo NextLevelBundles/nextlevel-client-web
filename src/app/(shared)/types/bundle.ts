@@ -112,11 +112,24 @@ export enum ExcessDistributionType {
   Charity = "Charity",
 }
 
+export enum BonusItemType {
+  Image = "Image",
+}
+
+export interface BonusItem {
+  type: BonusItemType;
+  title: string;
+  description: string;
+  thumbnailUrl: string;
+  contentUrl: string;
+}
+
 export interface Tier {
   id: string;
   name: string;
   price: number;
   type: TierType;
+  bonusItems?: BonusItem[];
 }
 
 export enum ProductType {

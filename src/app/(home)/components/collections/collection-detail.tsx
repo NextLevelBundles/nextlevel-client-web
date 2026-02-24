@@ -398,9 +398,10 @@ export function BundleDetail({ bundle, isPreview = false }: { bundle: Bundle; is
 
               {/* Charity and Upsell Tier Sections with Smart Grouping */}
               {(() => {
-                // Helper function to get product count for a tier
+                // Helper function to get total item count for a tier (products + bonus items)
                 const getProductCount = (tier: Tier) =>
-                  allProducts.filter((p) => p.bundleTierId === tier.id).length;
+                  allProducts.filter((p) => p.bundleTierId === tier.id).length +
+                  (tier.bonusItems?.length ?? 0);
 
                 // Determine if charity tier should be in compact mode
                 const charityPairedWithUpsell = (() => {
@@ -663,7 +664,8 @@ export function BundleDetail({ bundle, isPreview = false }: { bundle: Bundle; is
               {(() => {
                 // Check if first upsell is paired with charity
                 const getProductCount = (tier: Tier) =>
-                  allProducts.filter((p) => p.bundleTierId === tier.id).length;
+                  allProducts.filter((p) => p.bundleTierId === tier.id).length +
+                  (tier.bonusItems?.length ?? 0);
 
                 const charityPairedWithUpsell = (() => {
                   if (charityTiers.length === 1 && getProductCount(charityTiers[0]) === 1) {
@@ -685,20 +687,16 @@ export function BundleDetail({ bundle, isPreview = false }: { bundle: Bundle; is
                 let i = charityPairedWithUpsell ? 1 : 0;
 
                 while (i < upsellTiers.length) {
-                  const currentTierProducts = allProducts.filter(
-                    (p) => p.bundleTierId === upsellTiers[i].id
-                  );
-                  const nextTierProducts =
+                  const currentTierCount = getProductCount(upsellTiers[i]);
+                  const nextTierCount =
                     i + 1 < upsellTiers.length
-                      ? allProducts.filter(
-                          (p) => p.bundleTierId === upsellTiers[i + 1].id
-                        )
-                      : [];
+                      ? getProductCount(upsellTiers[i + 1])
+                      : 0;
 
-                  // If current and next tier both have exactly 1 product, group them
+                  // If current and next tier both have exactly 1 item, group them
                   if (
-                    currentTierProducts.length === 1 &&
-                    nextTierProducts.length === 1
+                    currentTierCount === 1 &&
+                    nextTierCount === 1
                   ) {
                     upsellTierGroups.push([upsellTiers[i], upsellTiers[i + 1]]);
                     i += 2;

@@ -1,6 +1,7 @@
 "use client";
 
 import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
+import { TierType } from "@/app/(shared)/types/bundle";
 import Image from "next/image";
 
 interface ArtworkDetailModalProps {
@@ -9,6 +10,8 @@ interface ArtworkDetailModalProps {
   artworkSrc: string;
   title: string;
   description?: string;
+  tierName?: string;
+  tierType?: TierType;
 }
 
 export function ArtworkDetailModal({
@@ -17,7 +20,12 @@ export function ArtworkDetailModal({
   artworkSrc,
   title,
   description,
+  tierName,
+  tierType,
 }: ArtworkDetailModalProps) {
+  const isCharity = tierType === TierType.Charity;
+  const tierLabel = tierName || (isCharity ? "Charity Tier" : "Extra Items");
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl p-0 gap-0 overflow-hidden">
@@ -25,14 +33,20 @@ export function ArtworkDetailModal({
           {/* Left side - Artwork (2:3 aspect ratio) */}
           <div className="relative bg-muted">
             <div className="relative w-full" style={{ aspectRatio: "2/3" }}>
-              <Image
-                src={artworkSrc}
-                alt={title}
-                fill
-                className="object-contain"
-                sizes="400px"
-                priority
-              />
+              {artworkSrc ? (
+                <Image
+                  src={artworkSrc}
+                  alt={title}
+                  fill
+                  className="object-contain"
+                  sizes="400px"
+                  priority
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                  No preview available
+                </div>
+              )}
             </div>
           </div>
 
@@ -42,59 +56,13 @@ export function ArtworkDetailModal({
             <div className="space-y-6 flex-1">
               <div>
                 <h2 className="text-3xl font-bold mb-2">{title}</h2>
-                <p className="text-sm text-muted-foreground">
-                  Exclusive Charity Collection Artwork
-                </p>
               </div>
 
-              <div>
-                <h3 className="text-lg font-semibold mb-3">
-                  About This Artwork
-                </h3>
-                <div className="space-y-3 text-muted-foreground leading-relaxed">
-                  <p>
-                    We were thrilled to commission Danilo Laynes to create the
-                    artwork for our inaugural collection.
-                  </p>
-                  <p>
-                    He is the creator of the Maldito poster, illustrator for
-                    Magic: The Gathering, and storyboard & illustration lead for
-                    The Hawkeyes: The Story of Clint Barton & Kate Bishop from
-                    Marvel Entertainment.
-                  </p>
-                  <p>If you like what you see, please follow Danilo:</p>
-                  <div className="pl-4 space-y-1">
-                    <div>@danilo.laynes</div>
-                    <a
-                      href="https://www.instagram.com/danilo.laynes/reels/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline block"
-                    >
-                      https://www.instagram.com/danilo.laynes/reels/
-                    </a>
-                  </div>
-                  <p>And check out his incredible work here:</p>
-                  <div className="pl-4 space-y-1">
-                    <a
-                      href="https://malditoposter.com/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline block"
-                    >
-                      https://malditoposter.com/
-                    </a>
-                    <a
-                      href="https://danilolaynes.com/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline block"
-                    >
-                      https://danilolaynes.com/
-                    </a>
-                  </div>
+              {description && (
+                <div className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                  {description}
                 </div>
-              </div>
+              )}
 
               <div className="space-y-4">
                 <div>
@@ -111,7 +79,7 @@ export function ArtworkDetailModal({
                         Availability
                       </div>
                       <div className="font-medium">
-                        Exclusive to Charity Tier
+                        Exclusive to {tierLabel}
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
@@ -128,24 +96,29 @@ export function ArtworkDetailModal({
                       </div>
                       <div className="font-medium">
                         Custom artwork will be delivered to your default email
-                        address 2 weeks after the promotion.
+                        address 2 weeks after the promotion ends.
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="pt-4 border-t">
-                  <div className="bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 rounded-lg p-4">
+                  <div className={isCharity
+                    ? "bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 rounded-lg p-4"
+                    : "bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4"
+                  }>
                     <div className="flex items-start gap-3">
                       <div>
-                        <h4 className="font-semibold text-rose-700 dark:text-rose-300 mb-1">
-                          Supporting Charity
+                        <h4 className={isCharity
+                          ? "font-semibold text-rose-700 dark:text-rose-300 mb-1"
+                          : "font-semibold text-purple-700 dark:text-purple-300 mb-1"
+                        }>
+                          {isCharity ? "Supporting Charity" : "Bonus Content"}
                         </h4>
                         <p className="text-sm text-muted-foreground">
-                          This exclusive artwork is included when you add the
-                          Charity Tier to your purchase. 100% of the charity
-                          tier contribution goes directly to support our
-                          featured charitable cause.
+                          {isCharity
+                            ? <>This exclusive content is included when you add the <strong>{tierLabel}</strong> tier to your purchase. 100% of the charity tier contribution goes directly to support our featured charitable cause.</>
+                            : <>This exclusive content is included when you add the <strong>{tierLabel}</strong> tier to your purchase.</>}
                         </p>
                       </div>
                     </div>

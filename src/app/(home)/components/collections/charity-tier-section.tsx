@@ -4,11 +4,15 @@ import { useState } from "react";
 import { Heart, Lock, Unlock } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/shared/utils/tailwind";
-import { Tier, Product, BundleType, Bundle } from "@/app/(shared)/types/bundle";
+import { Tier, Product, BundleType, Bundle, BonusItem } from "@/app/(shared)/types/bundle";
 import { Card } from "@/shared/components/ui/card";
 import Image from "next/image";
 import { ProductDetailModal } from "./product-detail-modal";
 import { ArtworkDetailModal } from "./artwork-detail-modal";
+
+type CharityGridItem =
+  | { kind: "product"; data: Product }
+  | { kind: "bonus"; data: BonusItem };
 
 interface CharityTierSectionProps {
   tier: Tier;
@@ -30,7 +34,7 @@ interface CharityTierSectionProps {
 interface CharityTierLayoutProps {
   tier: Tier;
   tierProducts: Product[];
-  allCharityItems: Product[];
+  allCharityItems: CharityGridItem[];
   isUnlocked: boolean;
   isAvailable: boolean;
   hasAvailableBaseTiers: boolean;
@@ -39,6 +43,133 @@ interface CharityTierLayoutProps {
   onUnlock: () => void;
   onCancel: () => void;
   onProductClick: (product: Product) => void;
+  onBonusItemClick: (item: BonusItem) => void;
+}
+
+function GridItemCard({
+  item,
+  isUnlocked,
+  onProductClick,
+  onBonusItemClick,
+  compact,
+}: {
+  item: CharityGridItem;
+  isUnlocked: boolean;
+  onProductClick: (product: Product) => void;
+  onBonusItemClick: (item: BonusItem) => void;
+  compact?: boolean;
+}) {
+  if (item.kind === "product") {
+    const product = item.data;
+    return (
+      <div
+        onClick={() => onProductClick(product)}
+        className={cn(
+          "relative aspect-[2/3] rounded-lg overflow-hidden group cursor-pointer transition-all",
+          compact ? "w-48" : "w-full",
+          isUnlocked
+            ? "ring-1 ring-rose-200 dark:ring-rose-800"
+            : "ring-1 ring-border opacity-60",
+        )}
+      >
+        {product.coverImage?.url ? (
+          <Image
+            src={product.coverImage.url}
+            alt={product.title}
+            fill
+            className="object-contain group-hover:scale-105 transition-transform duration-300"
+            sizes={compact ? "192px" : "(max-width: 768px) 25vw, 150px"}
+          />
+        ) : (
+          <div className="absolute inset-0 bg-muted flex items-center justify-center">
+            <Heart className="h-8 w-8 text-muted-foreground/50" />
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-transparent">
+          <div className="absolute bottom-0 left-0 right-0 p-2">
+            <p className="text-xs font-medium text-white truncate">
+              {product.title}
+            </p>
+            {product.price > 0 && (
+              <p className="text-[10px] text-white/80">
+                ${product.price} value
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const bonus = item.data;
+  return (
+    <div
+      onClick={() => onBonusItemClick(bonus)}
+      className={cn(
+        "relative aspect-[2/3] rounded-lg overflow-hidden group cursor-pointer transition-all",
+        compact ? "w-48" : "w-full",
+        isUnlocked
+          ? "ring-1 ring-rose-200 dark:ring-rose-800"
+          : "ring-1 ring-border opacity-60",
+      )}
+    >
+      {bonus.thumbnailUrl ? (
+        <Image
+          src={bonus.thumbnailUrl}
+          alt={bonus.title}
+          fill
+          className="object-contain group-hover:scale-105 transition-transform duration-300"
+          sizes={compact ? "192px" : "(max-width: 768px) 25vw, 150px"}
+        />
+      ) : (
+        <div className="absolute inset-0 bg-muted flex items-center justify-center">
+          <Heart className="h-8 w-8 text-muted-foreground/50" />
+        </div>
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-transparent">
+        <div className="absolute bottom-0 left-0 right-0 p-2">
+          <p className="text-xs font-medium text-white truncate">
+            {bonus.title}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ItemCountLabel({
+  tierProducts,
+  bonusItemCount,
+  isBookBundle,
+}: {
+  tierProducts: Product[];
+  bonusItemCount: number;
+  isBookBundle: boolean;
+}) {
+  const productCount = tierProducts.length;
+  const productLabel = isBookBundle
+    ? productCount === 1
+      ? "book"
+      : "books"
+    : productCount === 1
+      ? "Steam key"
+      : "Steam keys";
+
+  return (
+    <>
+      {productCount > 0 && (
+        <>
+          {productCount} {productLabel}
+        </>
+      )}
+      {bonusItemCount > 0 && (
+        <>
+          {productCount > 0 && " + "}
+          {bonusItemCount} bonus {bonusItemCount === 1 ? "item" : "items"}
+        </>
+      )}
+    </>
+  );
 }
 
 // Regular (non-compact) layout
@@ -54,7 +185,10 @@ function RegularLayout({
   onUnlock,
   onCancel,
   onProductClick,
+  onBonusItemClick,
 }: CharityTierLayoutProps) {
+  const bonusItemCount = tier.bonusItems?.length ?? 0;
+
   return (
     <div className="p-6 pb-4 relative z-0">
       <div className="flex items-start justify-between mb-4">
@@ -79,14 +213,12 @@ function RegularLayout({
               {tier.name || "Charity Tier"}
             </h3>
             <p className="text-sm text-muted-foreground">
-              100% of this tier goes to charity • {tierProducts.length}{" "}
-              {isBookBundle
-                ? tierProducts.length === 1
-                  ? "book"
-                  : "books"
-                : tierProducts.length === 1
-                  ? "Steam key"
-                  : "Steam keys"}
+              100% of this tier goes to charity •{" "}
+              <ItemCountLabel
+                tierProducts={tierProducts}
+                bonusItemCount={bonusItemCount}
+                isBookBundle={isBookBundle}
+              />
             </p>
           </div>
         </div>
@@ -108,43 +240,14 @@ function RegularLayout({
 
       {/* Products Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6 mb-4">
-        {allCharityItems.map((product) => (
-          <div
-            key={product.id}
-            onClick={() => onProductClick(product)}
-            className={cn(
-              "relative aspect-[2/3] rounded-lg overflow-hidden group cursor-pointer transition-all w-full",
-              isUnlocked
-                ? "ring-1 ring-rose-200 dark:ring-rose-800"
-                : "ring-1 ring-border opacity-60",
-            )}
-          >
-            {product.coverImage?.url ? (
-              <Image
-                src={product.coverImage.url}
-                alt={product.title}
-                fill
-                className="object-contain group-hover:scale-105 transition-transform duration-300"
-                sizes="(max-width: 768px) 25vw, 150px"
-              />
-            ) : (
-              <div className="absolute inset-0 bg-muted flex items-center justify-center">
-                <Heart className="h-8 w-8 text-muted-foreground/50" />
-              </div>
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-transparent">
-              <div className="absolute bottom-0 left-0 right-0 p-2">
-                <p className="text-xs font-medium text-white truncate">
-                  {product.title}
-                </p>
-                {product.price > 0 && (
-                  <p className="text-[10px] text-white/80">
-                    ${product.price} value
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
+        {allCharityItems.map((item, index) => (
+          <GridItemCard
+            key={item.kind === "product" ? item.data.id : `bonus-${index}`}
+            item={item}
+            isUnlocked={isUnlocked}
+            onProductClick={onProductClick}
+            onBonusItemClick={onBonusItemClick}
+          />
         ))}
       </div>
 
@@ -202,6 +305,7 @@ function CompactLayout({
   onUnlock,
   onCancel,
   onProductClick,
+  onBonusItemClick,
 }: CharityTierLayoutProps) {
   return (
     <div className="p-4 pb-3 relative z-0">
@@ -249,43 +353,15 @@ function CompactLayout({
 
       {/* Products Grid */}
       <div className="grid grid-cols-1 gap-4 justify-items-center mb-3">
-        {allCharityItems.map((product) => (
-          <div
-            key={product.id}
-            onClick={() => onProductClick(product)}
-            className={cn(
-              "relative aspect-[2/3] rounded-lg overflow-hidden group cursor-pointer transition-all w-48",
-              isUnlocked
-                ? "ring-1 ring-rose-200 dark:ring-rose-800"
-                : "ring-1 ring-border opacity-60",
-            )}
-          >
-            {product.coverImage?.url ? (
-              <Image
-                src={product.coverImage.url}
-                alt={product.title}
-                fill
-                className="object-contain group-hover:scale-105 transition-transform duration-300"
-                sizes="192px"
-              />
-            ) : (
-              <div className="absolute inset-0 bg-muted flex items-center justify-center">
-                <Heart className="h-8 w-8 text-muted-foreground/50" />
-              </div>
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-transparent">
-              <div className="absolute bottom-0 left-0 right-0 p-2">
-                <p className="text-xs font-medium text-white truncate">
-                  {product.title}
-                </p>
-                {product.price > 0 && (
-                  <p className="text-[10px] text-white/80">
-                    ${product.price} value
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
+        {allCharityItems.map((item, index) => (
+          <GridItemCard
+            key={item.kind === "product" ? item.data.id : `bonus-${index}`}
+            item={item}
+            isUnlocked={isUnlocked}
+            onProductClick={onProductClick}
+            onBonusItemClick={onBonusItemClick}
+            compact
+          />
         ))}
       </div>
 
@@ -347,19 +423,24 @@ export function CharityTierSection({
   isCompact = false,
 }: CharityTierSectionProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [selectedArtwork, setSelectedArtwork] = useState<Product | null>(null);
+  const [selectedBonusItem, setSelectedBonusItem] = useState<BonusItem | null>(null);
   const tierProducts = products.filter((p) => p.bundleTierId === tier.id);
+  const bonusItems = tier.bonusItems ?? [];
   const isBookBundle = bundleType === BundleType.EBook;
-  const allCharityItems = tierProducts;
 
-  if (tierProducts.length === 0) return null;
+  const allCharityItems: CharityGridItem[] = [
+    ...tierProducts.map((p) => ({ kind: "product" as const, data: p })),
+    ...bonusItems.map((b) => ({ kind: "bonus" as const, data: b })),
+  ];
+
+  if (allCharityItems.length === 0) return null;
 
   const handleProductClick = (product: Product) => {
-    if (product.id === "charity-artwork-rotis") {
-      setSelectedArtwork(product);
-    } else {
-      setSelectedProduct(product as Product);
-    }
+    setSelectedProduct(product);
+  };
+
+  const handleBonusItemClick = (item: BonusItem) => {
+    setSelectedBonusItem(item);
   };
 
   const layoutProps: CharityTierLayoutProps = {
@@ -374,6 +455,7 @@ export function CharityTierSection({
     onUnlock,
     onCancel,
     onProductClick: handleProductClick,
+    onBonusItemClick: handleBonusItemClick,
   };
 
   return (
@@ -420,14 +502,16 @@ export function CharityTierSection({
         />
       )}
 
-      {/* Artwork Detail Modal */}
-      {selectedArtwork && (
+      {/* Bonus Item Detail Modal */}
+      {selectedBonusItem && (
         <ArtworkDetailModal
-          isOpen={!!selectedArtwork}
-          onClose={() => setSelectedArtwork(null)}
-          artworkSrc={selectedArtwork.coverImage?.url ?? ""}
-          title={selectedArtwork.title}
-          description={selectedArtwork.description || undefined}
+          isOpen={!!selectedBonusItem}
+          onClose={() => setSelectedBonusItem(null)}
+          artworkSrc={selectedBonusItem.thumbnailUrl}
+          title={selectedBonusItem.title}
+          description={selectedBonusItem.description}
+          tierName={tier.name}
+          tierType={tier.type}
         />
       )}
     </Card>

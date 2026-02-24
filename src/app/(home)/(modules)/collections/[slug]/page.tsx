@@ -22,6 +22,8 @@ export async function generateMetadata({
   try {
     const bundle = await serverApiClient.getBundleBySlug(slug);
 
+    console.log("Bundle", bundle);
+
     if (!bundle || !bundle.seo) {
       return {
         title: bundle?.title || "Collection Not Found",
