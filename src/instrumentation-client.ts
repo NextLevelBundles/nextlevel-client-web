@@ -11,6 +11,7 @@ Sentry.init({
   ignoreErrors: [
     "SteamClient is not defined",
     /Extensions\//, // Browser extension errors
+    /Failed to execute 'insertBefore' on 'Node'/, // External DOM modification (extensions, third-party scripts)
   ],
   denyUrls: [
     /\.millennium\//, // Steam Millennium mod

@@ -57,8 +57,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={funnelDisplay.className}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={funnelDisplay.className} suppressHydrationWarning>
         <Script
           id="Cookiebot"
           src="https://consent.cookiebot.com/uc.js"
@@ -99,9 +99,8 @@ export default function RootLayout({
             <QueryClientProviderWrapper>{children}</QueryClientProviderWrapper>
           </AuthProvider>
         </ThemeProvider>
+        <GoogleAnalytics gaId="G-18BN8WBRPD" />
       </body>
-
-      <GoogleAnalytics gaId="G-18BN8WBRPD" />
     </html>
   );
 }
