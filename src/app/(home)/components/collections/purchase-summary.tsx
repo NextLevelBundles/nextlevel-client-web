@@ -221,6 +221,10 @@ export function PurchaseSummary({
       return { isValid: false, reason: "error" as const };
     }
 
+    if (level === "manually_approved") {
+      return { isValid: true, reason: null };
+    }
+
     const numericLevel = parseInt(level, 10);
     if (isNaN(numericLevel) || numericLevel <= 0) {
       return { isValid: false, reason: "zero" as const };
