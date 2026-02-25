@@ -115,9 +115,9 @@ export function MobilePurchaseSheet({
   const getSteamLevelWarningMessage = () => {
     switch (steamLevelStatus.reason) {
       case "unsync":
-        return "Please sync your Steam profile to verify your account level and enable purchasing.";
+        return "One-time validation of Steam level. No other data is shared.";
       case "private":
-        return "Your Steam profile is private. Please set \"My profile\" to public in your Steam privacy settings to enable purchasing.";
+        return "One-time validation per account. In your Steam settings, set \"My profile\" to Public and retry. Game Details can remain private. You can restore to original settings once verified.";
       case "error":
         return "Unable to verify your Steam level. Please try syncing again later to enable purchasing.";
       case "zero":
@@ -244,24 +244,12 @@ export function MobilePurchaseSheet({
                   <ShieldAlert className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
                     <p className="text-sm font-medium text-amber-700 dark:text-amber-300 mb-1">
-                      Steam Level Verification Required
+                      {steamLevelStatus.reason === "private"
+                        ? "Your Steam Profile is Private"
+                        : "Steam Level Verification Required"}
                     </p>
                     <p className="text-xs text-amber-600 dark:text-amber-400">
                       {getSteamLevelWarningMessage()}
-                      {steamLevelStatus.reason === "private" && (
-                        <>
-                          {" "}
-                          <a
-                            href="https://help.steampowered.com/en/faqs/view/588C-C67D-0251-C276"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-amber-700 dark:text-amber-300 underline hover:no-underline"
-                          >
-                            Learn how to make your profile public
-                          </a>
-                          .
-                        </>
-                      )}
                       {steamLevelStatus.reason === "zero" && (
                         <>
                           {" "}
