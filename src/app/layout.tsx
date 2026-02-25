@@ -60,8 +60,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html translate="no" lang="en" suppressHydrationWarning>
-      <body className={funnelDisplay.className} suppressHydrationWarning>
+    <html translate="no" lang="en">
+      <body className={funnelDisplay.className}>
         <Script
           id="Cookiebot"
           src="https://consent.cookiebot.com/uc.js"

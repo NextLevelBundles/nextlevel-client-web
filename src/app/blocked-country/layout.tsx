@@ -16,7 +16,7 @@ export default function BlockedCountryLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html translate="no" lang="en" >
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           {children}

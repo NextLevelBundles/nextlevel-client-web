@@ -21,7 +21,7 @@ export function CartHydrationBoundary({
 
   // During SSR and initial client render, show a loading state for cart-dependent UI
   if (!isHydrated) {
-    return <div suppressHydrationWarning>{children}</div>;
+    return <div>{children}</div>;
   }
 
   return <>{children}</>;
