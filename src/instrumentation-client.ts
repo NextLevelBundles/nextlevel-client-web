@@ -12,8 +12,10 @@ Sentry.init({
     "SteamClient is not defined",
     /Failed to execute 'insertBefore' on 'Node'/, // External DOM modification (extensions, third-party scripts)
     /Invalid regular expression/, // Unsupported regex features on older browsers (iOS < 16.4)
+    /Unexpected private name/, // Private class methods unsupported on older browsers (Safari < 15)
     "invalid origin", // Third-party script origin validation (e.g., Cookiebot in privacy-focused browsers)
     /captured as promise rejection/, // Non-error promise rejections (CustomEvents from third-party scripts)
+    /Can't find variable: (CONFIG|currentInset)/, // Twitter in-app browser injected scripts
   ],
   denyUrls: [
     // Browser extensions
