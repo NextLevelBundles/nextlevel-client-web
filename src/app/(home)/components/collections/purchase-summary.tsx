@@ -87,6 +87,11 @@ function SteamLevelWarning({
                 </>
               )}
             </p>
+            {steamLevelStatus.reason !== "zero" && (
+              <p className="text-xs text-amber-600 dark:text-amber-400 mt-3">
+                <span className="font-bold">NOTE:</span> After switching your Steam profile to public, Steam may take up to 7 minutes to reflect the change.
+              </p>
+            )}
           </div>
         </div>
       </div>
