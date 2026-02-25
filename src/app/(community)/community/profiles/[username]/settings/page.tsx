@@ -259,7 +259,7 @@ export default function ProfileSettingsPage() {
       const predefined: SocialHandle[] = [];
       const custom: SocialHandle[] = [];
 
-      for (const sh of profile.socialHandles) {
+      for (const sh of profile.socialHandles ?? []) {
         if (predefinedKeys.includes(sh.platform)) {
           predefined.push(sh);
         } else {
