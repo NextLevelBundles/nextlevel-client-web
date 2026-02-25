@@ -19,6 +19,9 @@ const funnelDisplay = localFont({
 });
 
 export const metadata: Metadata = {
+  other: {
+    google: "notranslate",
+  },
   metadataBase: new URL("https://digiphile.co"),
   title: "Digiphile - Expert-Curated Game & Book Collections",
   icons: [
@@ -57,7 +60,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html translate="no" lang="en" suppressHydrationWarning>
       <body className={funnelDisplay.className} suppressHydrationWarning>
         <Script
           id="Cookiebot"
