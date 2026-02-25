@@ -1,7 +1,6 @@
 "use client";
 
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { cn } from "@/app/(shared)/utils/tailwind";
 
 interface MarkdownProps {
@@ -34,7 +33,6 @@ export function Markdown({ content, className }: MarkdownProps) {
       )}
     >
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
         components={{
           // Custom link renderer to handle external links
           a: ({ node, children, href, ...props }) => {
