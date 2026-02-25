@@ -10,18 +10,51 @@ Sentry.init({
   // Ignore errors from browser extensions and third-party scripts
   ignoreErrors: [
     "SteamClient is not defined",
-    /Extensions\//, // Browser extension errors
     /Failed to execute 'insertBefore' on 'Node'/, // External DOM modification (extensions, third-party scripts)
     /Invalid regular expression/, // Unsupported regex features on older browsers (iOS < 16.4)
     "invalid origin", // Third-party script origin validation (e.g., Cookiebot in privacy-focused browsers)
   ],
   denyUrls: [
+    // Browser extensions
+    /extensions\//i,
+    /^chrome-extension:\/\//,
+    /^moz-extension:\/\//,
+    /^safari-extension:\/\//,
+    /^safari-web-extension:\/\//,
+    /^webkit-masked-url:\/\//,
+    /userscript\.html/,
+    // Third-party scripts
     /\.millennium\//, // Steam Millennium mod
-    /extensions\//i, // Browser extensions
-    /^chrome-extension:\/\//, // Chrome extensions
-    /^moz-extension:\/\//, // Firefox extensions
-    /\/uc\.js$/, // Cookiebot script (uc.js) — internal errors not actionable
+    /\/uc\.js$/, // Cookiebot
   ],
+
+  // Drop events where all stack frames come from non-app sources (extensions, injected scripts, etc.)
+  beforeSend(event) {
+    const frames = event.exception?.values
+      ?.flatMap((v) => v.stacktrace?.frames ?? []);
+
+    if (frames && frames.length > 0) {
+      const hasAppFrame = frames.some((frame) => {
+        const filename = frame.filename ?? "";
+        return (
+          frame.in_app &&
+          !filename.startsWith("chrome-extension://") &&
+          !filename.startsWith("moz-extension://") &&
+          !filename.startsWith("safari-extension://") &&
+          !filename.startsWith("safari-web-extension://") &&
+          !filename.startsWith("webkit-masked-url://") &&
+          !filename.includes("extensions/") &&
+          !filename.includes("userscript.html")
+        );
+      });
+
+      if (!hasAppFrame) {
+        return null; // Drop — no app code in the stack trace
+      }
+    }
+
+    return event;
+  },
 
   // Add optional integrations for additional features
   integrations: [
