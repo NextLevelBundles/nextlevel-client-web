@@ -29,6 +29,8 @@ Sentry.init({
     // Third-party scripts
     /\.millennium\//, // Steam Millennium mod
     /\/uc\.js$/, // Cookiebot
+    /\/cc\.js/, // Cookiebot consent control
+    /inject_content\.js/, // Facebook in-app browser injected scripts
   ],
 
   // Drop events where the error originates from non-app sources (extensions, userscripts, etc.)
