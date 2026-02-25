@@ -13,6 +13,7 @@ Sentry.init({
     /Extensions\//, // Browser extension errors
     /Failed to execute 'insertBefore' on 'Node'/, // External DOM modification (extensions, third-party scripts)
     /Invalid regular expression/, // Unsupported regex features on older browsers (iOS < 16.4)
+    "invalid origin", // Third-party script origin validation (e.g., Cookiebot in privacy-focused browsers)
   ],
   denyUrls: [
     /\.millennium\//, // Steam Millennium mod
