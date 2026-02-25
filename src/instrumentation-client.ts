@@ -13,6 +13,7 @@ Sentry.init({
     /Failed to execute 'insertBefore' on 'Node'/, // External DOM modification (extensions, third-party scripts)
     /Invalid regular expression/, // Unsupported regex features on older browsers (iOS < 16.4)
     "invalid origin", // Third-party script origin validation (e.g., Cookiebot in privacy-focused browsers)
+    /captured as promise rejection/, // Non-error promise rejections (CustomEvents from third-party scripts)
   ],
   denyUrls: [
     // Browser extensions
