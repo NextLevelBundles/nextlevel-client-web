@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AuthService } from "@/lib/auth/auth-service";
@@ -12,6 +12,14 @@ import { Loader2, AlertCircle, CheckCircle, Mail } from "lucide-react";
 import { AuthLayout } from "../components/auth-layout";
 
 export default function ForgotPasswordPage() {
+  return (
+    <Suspense>
+      <ForgotPasswordContent />
+    </Suspense>
+  );
+}
+
+function ForgotPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 

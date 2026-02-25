@@ -1,12 +1,20 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { fetchAuthSession } from "aws-amplify/auth";
 import { AuthService } from "@/lib/auth/auth-service";
 import { Loader2 } from "lucide-react";
 
 export default function RefreshTokenPage() {
+  return (
+    <Suspense>
+      <RefreshTokenContent />
+    </Suspense>
+  );
+}
+
+function RefreshTokenContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get("returnUrl") || "/";

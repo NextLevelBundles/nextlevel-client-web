@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthService, validatePassword } from "@/lib/auth/auth-service";
 import { Button } from "@/app/(shared)/components/ui/button";
@@ -11,6 +11,14 @@ import { Loader2, AlertCircle, CheckCircle, Lock, Hash, Eye, EyeOff } from "luci
 import { AuthLayout } from "../components/auth-layout";
 
 export default function ResetPasswordPage() {
+  return (
+    <Suspense>
+      <ResetPasswordContent />
+    </Suspense>
+  );
+}
+
+function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const emailParam = searchParams.get("email") || "";

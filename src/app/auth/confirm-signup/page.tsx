@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthService } from "@/lib/auth/auth-service";
 import { Button } from "@/app/(shared)/components/ui/button";
@@ -13,6 +13,14 @@ import Link from "next/link";
 import { toast } from "sonner";
 
 export default function ConfirmSignUpPage() {
+  return (
+    <Suspense>
+      <ConfirmSignUpContent />
+    </Suspense>
+  );
+}
+
+function ConfirmSignUpContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const emailParam = searchParams.get("email") || "";
