@@ -15,7 +15,7 @@ Sentry.init({
     /Unexpected private name/, // Private class methods unsupported on older browsers (Safari < 15)
     "invalid origin", // Third-party script origin validation (e.g., Cookiebot in privacy-focused browsers)
     /captured as promise rejection/, // Non-error promise rejections (CustomEvents from third-party scripts)
-    /Can't find variable: (CONFIG|currentInset)/, // Twitter in-app browser injected scripts
+    /Can't find variable: (CONFIG|currentInset|EmptyRanges)/, // Injected scripts (Twitter in-app browser, Safari internals)
   ],
   denyUrls: [
     // Browser extensions
