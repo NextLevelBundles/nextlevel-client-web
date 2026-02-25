@@ -20,6 +20,7 @@ Sentry.init({
     /extensions\//i, // Browser extensions
     /^chrome-extension:\/\//, // Chrome extensions
     /^moz-extension:\/\//, // Firefox extensions
+    /\/uc\.js$/, // Cookiebot script (uc.js) — internal errors not actionable
   ],
 
   // Add optional integrations for additional features
