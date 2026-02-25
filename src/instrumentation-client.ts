@@ -22,35 +22,36 @@ Sentry.init({
     /^safari-extension:\/\//,
     /^safari-web-extension:\/\//,
     /^webkit-masked-url:\/\//,
-    /userscript\.html/,
+    /userscript/i, // Userscript managers (Tampermonkey, Violentmonkey, Greasemonkey)
     // Third-party scripts
     /\.millennium\//, // Steam Millennium mod
     /\/uc\.js$/, // Cookiebot
   ],
 
-  // Drop events where all stack frames come from non-app sources (extensions, injected scripts, etc.)
+  // Drop events where the error originates from non-app sources (extensions, userscripts, etc.)
   beforeSend(event) {
     const frames = event.exception?.values
       ?.flatMap((v) => v.stacktrace?.frames ?? []);
 
     if (frames && frames.length > 0) {
-      const hasAppFrame = frames.some((frame) => {
-        const filename = frame.filename ?? "";
-        return (
-          frame.in_app &&
-          !filename.startsWith("chrome-extension://") &&
-          !filename.startsWith("moz-extension://") &&
-          !filename.startsWith("safari-extension://") &&
-          !filename.startsWith("safari-web-extension://") &&
-          !filename.startsWith("webkit-masked-url://") &&
-          !filename.includes("extensions/") &&
-          !filename.includes("userscript.html")
-        );
-      });
+      const isNonAppSource = (filename: string) =>
+        filename.startsWith("chrome-extension://") ||
+        filename.startsWith("moz-extension://") ||
+        filename.startsWith("safari-extension://") ||
+        filename.startsWith("safari-web-extension://") ||
+        filename.startsWith("webkit-masked-url://") ||
+        filename.includes("extensions/") ||
+        /userscript/i.test(filename);
 
-      if (!hasAppFrame) {
-        return null; // Drop — no app code in the stack trace
-      }
+      // Drop if no app frames exist
+      const hasAppFrame = frames.some(
+        (frame) => frame.in_app && !isNonAppSource(frame.filename ?? "")
+      );
+      if (!hasAppFrame) return null;
+
+      // Drop if the error originates from a non-app source (top of stack)
+      const topFrame = frames[frames.length - 1];
+      if (topFrame && isNonAppSource(topFrame.filename ?? "")) return null;
     }
 
     return event;
