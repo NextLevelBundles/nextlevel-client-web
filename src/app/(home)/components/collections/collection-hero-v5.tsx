@@ -63,6 +63,43 @@ const cascadePositions = [
   { top: "42%", right: "10%", rotate: "-2deg", delay: "650ms" },
 ];
 
+// Isolated countdown badge — only this component re-renders every second,
+// preventing the entire hero from re-rendering on each timer tick.
+function CountdownBadge({
+  countdownTarget,
+  timerLabel,
+  bundleHasEnded,
+  isPlaying,
+  className,
+}: {
+  countdownTarget: string;
+  timerLabel: string;
+  bundleHasEnded: boolean;
+  isPlaying: boolean;
+  className?: string;
+}) {
+  const { timeLeft } = useCountdownTimer(countdownTarget);
+
+  return (
+    <div
+      className={`inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full backdrop-blur-md border shadow-lg animate-fade-up ${
+        isPlaying ? "pointer-events-none" : "pointer-events-auto"
+      } ${
+        bundleHasEnded
+          ? "bg-red-500/15 border-red-500/30 text-red-300"
+          : "bg-white/10 border-white/20 text-white"
+      } ${className ?? ""}`}
+      style={{ animationDelay: "250ms" }}
+    >
+      <Timer className="h-4 w-4 opacity-70" />
+      <span className="text-xs uppercase tracking-wide opacity-70">
+        {timerLabel}
+      </span>
+      <span className="font-mono font-bold text-base">{timeLeft}</span>
+    </div>
+  );
+}
+
 interface CollectionHeroV5Props {
   bundle: Bundle;
 }
@@ -129,40 +166,31 @@ export function CollectionHeroV5({ bundle }: CollectionHeroV5Props) {
     saleStartDate.getTime() !== startDate.getTime() ||
     saleEndDate.getTime() !== endDate.getTime();
 
-  const now = new Date();
-  const bundleHasStarted = now >= startDate;
-  const bundleHasEnded = now > endDate;
-  const saleHasStarted = now >= saleStartDate;
-  const saleHasEnded = now > saleEndDate;
+  const { countdownTarget, timerLabel, bundleHasEnded } = useMemo(() => {
+    const now = new Date();
+    const bundleHasStarted = now >= startDate;
+    const bundleHasEnded = now > endDate;
+    const saleHasStarted = now >= saleStartDate;
+    const saleHasEnded = now > saleEndDate;
 
-  let countdownTarget: string;
-  let timerLabel: string;
-
-  if (bundleHasEnded) {
-    countdownTarget = bundle.endsAt;
-    timerLabel = "Collection Ended";
-  } else if (!bundleHasStarted) {
-    if (hasExclusiveAccess) {
-      if (saleHasStarted && !saleHasEnded) {
-        countdownTarget = bundle.startsAt;
-        timerLabel = "Pre-sale Ends in";
-      } else if (!saleHasStarted) {
-        countdownTarget = bundle.sellFrom || bundle.startsAt;
-        timerLabel = "Pre-sale Starts in";
+    if (bundleHasEnded) {
+      return { countdownTarget: bundle.endsAt, timerLabel: "Collection Ended", bundleHasEnded: true };
+    } else if (!bundleHasStarted) {
+      if (hasExclusiveAccess) {
+        if (saleHasStarted && !saleHasEnded) {
+          return { countdownTarget: bundle.startsAt, timerLabel: "Pre-sale Ends in", bundleHasEnded: false };
+        } else if (!saleHasStarted) {
+          return { countdownTarget: bundle.sellFrom || bundle.startsAt, timerLabel: "Pre-sale Starts in", bundleHasEnded: false };
+        } else {
+          return { countdownTarget: bundle.startsAt, timerLabel: "Starts in", bundleHasEnded: false };
+        }
       } else {
-        countdownTarget = bundle.startsAt;
-        timerLabel = "Starts in";
+        return { countdownTarget: bundle.startsAt, timerLabel: "Starts in", bundleHasEnded: false };
       }
     } else {
-      countdownTarget = bundle.startsAt;
-      timerLabel = "Starts in";
+      return { countdownTarget: bundle.endsAt, timerLabel: "Ends in", bundleHasEnded: false };
     }
-  } else {
-    countdownTarget = bundle.endsAt;
-    timerLabel = "Ends in";
-  }
-
-  const { timeLeft } = useCountdownTimer(countdownTarget);
+  }, [startDate, endDate, saleStartDate, saleEndDate, hasExclusiveAccess, bundle.startsAt, bundle.endsAt, bundle.sellFrom]);
 
   // --- Curator data ---
   const curators = bundle.curators || [];
@@ -508,40 +536,25 @@ export function CollectionHeroV5({ bundle }: CollectionHeroV5Props) {
           )}
 
           {/* Mobile countdown */}
-          <div
-            className={`inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full backdrop-blur-md border shadow-lg animate-fade-up lg:hidden mt-3 ${isPlaying ? "pointer-events-none" : "pointer-events-auto"} ${
-              bundleHasEnded
-                ? "bg-red-500/15 border-red-500/30 text-red-300"
-                : "bg-white/10 border-white/20 text-white"
-            }`}
-            style={{ animationDelay: "250ms" }}
-          >
-            <Timer className="h-4 w-4 opacity-70" />
-            <span className="text-xs uppercase tracking-wide opacity-70">
-              {timerLabel}
-            </span>
-            <span className="font-mono font-bold text-base">{timeLeft}</span>
-          </div>
+          <CountdownBadge
+            countdownTarget={countdownTarget}
+            timerLabel={timerLabel}
+            bundleHasEnded={bundleHasEnded}
+            isPlaying={isPlaying}
+            className="lg:hidden mt-3"
+          />
         </div>
 
         {/* === Countdown (centered, desktop only) === */}
         <div
           className={`absolute bottom-0 left-0 right-0 z-20 hidden lg:flex justify-center py-4 pointer-events-none ${isPlaying ? "opacity-0" : "opacity-100"} transition-opacity duration-500`}
         >
-          <div
-            className={`inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full backdrop-blur-md border shadow-lg animate-fade-up pointer-events-auto ${
-              bundleHasEnded
-                ? "bg-red-500/15 border-red-500/30 text-red-300"
-                : "bg-white/10 border-white/20 text-white"
-            }`}
-            style={{ animationDelay: "250ms" }}
-          >
-            <Timer className="h-4 w-4 opacity-70" />
-            <span className="text-xs uppercase tracking-wide opacity-70">
-              {timerLabel}
-            </span>
-            <span className="font-mono font-bold text-base">{timeLeft}</span>
-          </div>
+          <CountdownBadge
+            countdownTarget={countdownTarget}
+            timerLabel={timerLabel}
+            bundleHasEnded={bundleHasEnded}
+            isPlaying={isPlaying}
+          />
         </div>
       </div>
 
