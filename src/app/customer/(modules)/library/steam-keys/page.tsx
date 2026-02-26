@@ -210,7 +210,7 @@ function ExchangeCreditsDisplay({ credits }: { credits?: number | null }) {
 
   return (
     <div className="flex flex-col items-end">
-      <span className="text-xs text-muted-foreground">Trade-in Exchange</span>
+      <span className="text-xs text-muted-foreground">Trade-in Value</span>
       <span className="text-sm font-semibold text-primary">
         {credits} Credits
       </span>
