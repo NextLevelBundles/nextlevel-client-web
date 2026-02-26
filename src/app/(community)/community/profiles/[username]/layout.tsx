@@ -44,7 +44,8 @@ export default function ProfileLayout({
   const username = params.username as string;
   const { user, isLoading: authLoading } = useAuth();
   const { data: customer, isLoading } = useCustomer();
-  const { data: customerProfile, isLoading: profileLoading, isError: profileError } = useCustomerProfileByHandle(username);
+  const isOwnHandle = customer?.handle === username;
+  const { data: customerProfile, isLoading: profileLoading, isError: profileError } = useCustomerProfileByHandle(isOwnHandle ? username : "");
   const { data: curatorProfile } = useCuratorProfile(
     customerProfile?.isCurator ? username : ""
   );
@@ -116,7 +117,7 @@ export default function ProfileLayout({
     );
   }
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return null;
   }
 
