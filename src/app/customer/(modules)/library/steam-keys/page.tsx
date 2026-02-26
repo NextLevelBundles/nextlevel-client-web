@@ -260,15 +260,7 @@ export default function KeysPage() {
     alreadyOwned: false,
   });
 
-  const [steamSyncWarningDialog, setSteamSyncWarningDialog] = useState<{
-    isOpen: boolean;
-    keyId: string | null;
-    productTitle: string;
-  }>({
-    isOpen: false,
-    keyId: null,
-    productTitle: "",
-  });
+  const [showSyncInfoDialog, setShowSyncInfoDialog] = useState(false);
 
   // Debounce search query
   useEffect(() => {
@@ -387,38 +379,6 @@ export default function KeysPage() {
     return { isExpiring: daysLeft >= 0 && daysLeft < 30, daysLeft };
   };
 
-  // Helper function to check if Steam library sync is needed
-  const isSteamSyncNeeded = (): boolean => {
-    console.log("Checking sync status:", steamLibraryStatus);
-
-    // If no sync status data available, assume sync is needed
-    if (!steamLibraryStatus) return true;
-
-    // If never synced, sync is needed
-    if (
-      !steamLibraryStatus.lastSyncedAt ||
-      steamLibraryStatus.steamLibrarySyncStatus === "NeverSynced"
-    )
-      return true;
-
-    // If last sync was unsuccessful, sync is needed
-    if (steamLibraryStatus.steamLibrarySyncStatus !== "SyncSucceeded")
-      return true;
-
-    // Check if last sync was more than 1 week ago
-    const lastSyncDate = dayjs(steamLibraryStatus.lastSyncedAt);
-    const oneWeekAgo = dayjs().subtract(1, "week");
-
-    const isOlderThanWeek = lastSyncDate.isBefore(oneWeekAgo);
-    console.log("Sync date check:", {
-      lastSyncDate: lastSyncDate.format(),
-      oneWeekAgo: oneWeekAgo.format(),
-      isOlderThanWeek,
-    });
-
-    return isOlderThanWeek;
-  };
-
   // Helper function to get the key value
   const getKeyValue = (key: SteamKeyAssignment): string | null => {
     return key.steamKeyValue || null;
@@ -500,17 +460,7 @@ export default function KeysPage() {
     console.log("Key found:", key);
     console.log("Already owned:", alreadyOwned);
 
-    // Check if Steam library sync is needed
-    if (isSteamSyncNeeded()) {
-      setSteamSyncWarningDialog({
-        isOpen: true,
-        keyId,
-        productTitle,
-      });
-      return;
-    }
-
-    // Always proceed to confirmation dialog (don't skip it)
+    // Always proceed to confirmation dialog
     setRedeemConfirmDialog({
       isOpen: true,
       keyId,
@@ -660,45 +610,6 @@ export default function KeysPage() {
     await giftKeyMutation.mutateAsync(giftData);
   };
 
-  const handleSyncWarningRefresh = () => {
-    // Close the warning dialog
-    setSteamSyncWarningDialog({
-      isOpen: false,
-      keyId: null,
-      productTitle: "",
-    });
-
-    // Trigger Steam library refresh
-    handleRefreshSteamLibrary();
-  };
-
-  const handleSyncWarningProceed = () => {
-    const keyId = steamSyncWarningDialog.keyId;
-    const productTitle = steamSyncWarningDialog.productTitle;
-
-    // Close the warning dialog
-    setSteamSyncWarningDialog({
-      isOpen: false,
-      keyId: null,
-      productTitle: "",
-    });
-
-    // Proceed with normal redeem flow
-    if (keyId && productTitle) {
-      // Find the key to check if already owned
-      const key = steamKeys.find((k) => k.id === keyId);
-      const alreadyOwned = key?.alreadyOwnedOnSteam || false;
-
-      setRedeemConfirmDialog({
-        isOpen: true,
-        keyId,
-        productTitle,
-        isLoading: false,
-        alreadyOwned,
-      });
-    }
-  };
-
   const handleRefreshSteamLibrary = () => {
     console.log("Button clicked, mutation state:", {
       isPending: syncSteamLibraryMutation?.isPending,
@@ -737,39 +648,6 @@ export default function KeysPage() {
   // Format sync time for display
   const formatSyncTime = (dateString: string) => {
     return dayjs(dateString).fromNow();
-  };
-
-  // Get tooltip text based on sync status
-  const getSyncTooltipText = () => {
-    if (syncSteamLibraryMutation?.isPending) {
-      return "Syncing your Steam library. This may take a few moments...";
-    }
-
-    const syncStatus = steamLibraryStatus?.steamLibrarySyncStatus;
-    const syncTime = lastSyncTime || steamLibraryStatus?.lastSyncedAt;
-
-    switch (syncStatus) {
-      case "SyncSucceeded":
-        return syncTime
-          ? `Last synced ${formatSyncTime(syncTime)}. Click to sync again.`
-          : "Steam library synced successfully. Click to sync again.";
-
-      case "SyncFailed":
-        return syncErrorMessage === "profile-private"
-          ? "Sync failed: Your Steam profile is not public. Please make your profile and game details public, then try again."
-          : syncTime
-            ? `Last sync failed ${formatSyncTime(syncTime)}. This usually happens when your Steam profile is private. Click to retry.`
-            : "Sync failed. This usually happens when your Steam profile is private. Click to retry.";
-
-      case "SyncError":
-        return syncTime
-          ? `Technical error occurred ${formatSyncTime(syncTime)}. This could be due to network issues or Steam API problems. Click to retry.`
-          : "Technical error occurred while syncing. This could be due to network issues or Steam API problems. Click to retry.";
-
-      case "NeverSynced":
-      default:
-        return "Sync your Steam library to unlock exchange options for games you already own and get better recommendations.";
-    }
   };
 
   return (
@@ -883,18 +761,12 @@ export default function KeysPage() {
                   )}
                   Sync Steam Library
                 </Button>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center justify-center w-5 h-5 rounded-full border border-muted-foreground/30 hover:border-muted-foreground/60 cursor-help transition-colors">
-                        <Info className="h-3.5 w-3.5 text-muted-foreground" />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <p>{getSyncTooltipText()}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <button
+                  onClick={() => setShowSyncInfoDialog(true)}
+                  className="flex items-center justify-center w-5 h-5 rounded-full border border-muted-foreground/30 hover:border-muted-foreground/60 cursor-pointer transition-colors"
+                >
+                  <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
               </div>
             )}
           </div>
@@ -1689,18 +1561,10 @@ export default function KeysPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Steam Sync Warning Dialog */}
+      {/* Steam Sync Info Dialog */}
       <Dialog
-        open={steamSyncWarningDialog.isOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            setSteamSyncWarningDialog({
-              isOpen: false,
-              keyId: null,
-              productTitle: "",
-            });
-          }
-        }}
+        open={showSyncInfoDialog}
+        onOpenChange={setShowSyncInfoDialog}
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader className="space-y-4">
@@ -1720,25 +1584,19 @@ export default function KeysPage() {
                 {!steamLibraryStatus?.lastSyncedAt
                   ? "You have never synced your Steam library with our system"
                   : "Your Steam library hasn't been refreshed recently (within the last week)"}
-                . We recommend refreshing it first to enable exchange options
+                . We recommend refreshing it to enable exchange options
                 for already owned games.
               </AlertDescription>
             </Alert>
 
             <div className="space-y-3 text-sm text-muted-foreground">
-              <p>You&apos;re about to redeem a Steam key for:</p>
-              <div className="rounded-lg border bg-muted/30 p-3">
-                <p className="font-medium text-foreground">
-                  {steamSyncWarningDialog.productTitle}
-                </p>
-              </div>
               <p className="text-xs">
                 {!steamLibraryStatus?.lastSyncedAt
                   ? "Syncing your Steam library for the first time helps us:"
                   : "Refreshing your Steam library helps us:"}
               </p>
               <ul className="space-y-1 text-xs list-disc list-inside ml-2">
-                <li>Check if you already own this game</li>
+                <li>Check if you already own a game</li>
                 <li>Provide better recommendations</li>
                 <li>Optimize your key assignments</li>
                 {!steamLibraryStatus?.lastSyncedAt && (
@@ -1751,7 +1609,10 @@ export default function KeysPage() {
           <DialogFooter className="gap-2 sm:gap-0">
             <Button
               variant="outline"
-              onClick={handleSyncWarningRefresh}
+              onClick={() => {
+                setShowSyncInfoDialog(false);
+                handleRefreshSteamLibrary();
+              }}
               className="gap-2"
               disabled={syncSteamLibraryMutation?.isPending}
             >
@@ -1767,8 +1628,8 @@ export default function KeysPage() {
                 </>
               )}
             </Button>
-            <Button variant="ghost" onClick={handleSyncWarningProceed}>
-              Proceed Anyway
+            <Button variant="ghost" onClick={() => setShowSyncInfoDialog(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>
