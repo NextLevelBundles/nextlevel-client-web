@@ -60,13 +60,13 @@ export function UserProfile() {
       <DropdownMenuContent className="w-56" align="end">
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
-            {user?.name && (
-              <p className="text-sm font-medium leading-none">{user.name}</p>
+            {(customer?.name || user?.name) && (
+              <p className="text-sm font-medium leading-none">{customer?.name || user?.name}</p>
             )}
 
-            {user?.email && (
+            {(customer?.email || user?.email) && (
               <p className="text-xs leading-none text-muted-foreground">
-                {user.email}
+                {customer?.email || user?.email}
               </p>
             )}
           </div>

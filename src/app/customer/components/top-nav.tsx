@@ -114,14 +114,14 @@ export function TopNav({ user }: TopNavProps) {
             >
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  {user?.name && (
+                  {(customer?.name || user?.name) && (
                     <p className="text-sm font-medium leading-none">
-                      {user?.name}
+                      {customer?.name || user?.name}
                     </p>
                   )}
 
                   <p className="text-xs leading-none text-muted-foreground">
-                    {user?.email}
+                    {customer?.email || user?.email}
                   </p>
                 </div>
               </DropdownMenuLabel>
