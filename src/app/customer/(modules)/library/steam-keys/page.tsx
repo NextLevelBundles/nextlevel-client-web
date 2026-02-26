@@ -763,9 +763,24 @@ export default function KeysPage() {
                 </Button>
                 <button
                   onClick={() => setShowSyncInfoDialog(true)}
-                  className="flex items-center justify-center w-5 h-5 rounded-full border border-muted-foreground/30 hover:border-muted-foreground/60 cursor-pointer transition-colors"
+                  className="flex items-center justify-center w-5 h-5 rounded-full cursor-pointer transition-colors"
+                  title={
+                    !(lastSyncTime || steamLibraryStatus?.lastSyncedAt)
+                      ? "Never synced"
+                      : dayjs(lastSyncTime || steamLibraryStatus?.lastSyncedAt).isBefore(dayjs().subtract(1, "month"))
+                        ? "Synced over a month ago"
+                        : "Recently synced"
+                  }
                 >
-                  <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span
+                    className={`block w-3 h-3 rounded-full ${
+                      !(lastSyncTime || steamLibraryStatus?.lastSyncedAt)
+                        ? "bg-red-500"
+                        : dayjs(lastSyncTime || steamLibraryStatus?.lastSyncedAt).isBefore(dayjs().subtract(1, "month"))
+                          ? "bg-yellow-500"
+                          : "bg-green-500"
+                    }`}
+                  />
                 </button>
               </div>
             )}
