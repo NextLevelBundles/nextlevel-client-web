@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { ScrollArea } from "@/shared/components/ui/scroll-area";
@@ -14,6 +14,8 @@ import {
   AppWindow,
   MonitorSmartphone,
   Play,
+  Volume2,
+  VolumeX,
   Calendar,
   User,
   Globe,
@@ -35,6 +37,8 @@ interface ExchangeGameContentProps {
 export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [showTrailerModal, setShowTrailerModal] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const exchangeCreditsForKeyMutation = useExchangeCreditsForKey();
   const { data: userCredits, isLoading: isLoadingCredits } = useUserCredits();
   const router = useRouter();
@@ -106,24 +110,48 @@ export function ExchangeGameContent({ game }: ExchangeGameContentProps) {
           {/* Main Media Display */}
           {allMedia.length > 0 && (
             <div className="relative aspect-video bg-muted/50 border rounded-lg overflow-hidden">
-              <Image
-                fill
-                src={
-                  getSecureUrl(allMedia[selectedImageIndex]) ||
-                  "/placeholder.jpg"
-                }
-                alt={`${steamApp.name} screenshot`}
-                className="object-contain bg-black/5"
-              />
-              {mainVideo && selectedImageIndex === 0 && (
-                <button
-                  onClick={() => setShowTrailerModal(true)}
-                  className="absolute inset-0 flex items-center justify-center bg-black/40 hover:bg-black/60 transition-colors"
-                >
-                  <div className="rounded-full bg-primary p-4">
-                    <Play className="h-8 w-8 text-primary-foreground" />
-                  </div>
-                </button>
+              {mainVideo && selectedImageIndex === 0 ? (
+                <>
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    muted={isMuted}
+                    loop
+                    playsInline
+                    className="w-full h-full object-contain bg-black/5"
+                    src={getSecureUrl(
+                      mainVideo.webm?.videoMax ||
+                        mainVideo.mp4?.videoMax ||
+                        mainVideo.webm?.video480 ||
+                        mainVideo.mp4?.video480
+                    )}
+                  />
+                  <button
+                    onClick={() => {
+                      setIsMuted((prev) => !prev);
+                      if (videoRef.current) {
+                        videoRef.current.muted = !videoRef.current.muted;
+                      }
+                    }}
+                    className="absolute bottom-4 right-4 p-2 rounded-full bg-background/80 backdrop-blur hover:bg-background/90 transition-colors"
+                  >
+                    {isMuted ? (
+                      <VolumeX className="h-5 w-5" />
+                    ) : (
+                      <Volume2 className="h-5 w-5" />
+                    )}
+                  </button>
+                </>
+              ) : (
+                <Image
+                  fill
+                  src={
+                    getSecureUrl(allMedia[selectedImageIndex]) ||
+                    "/placeholder.jpg"
+                  }
+                  alt={`${steamApp.name} screenshot`}
+                  className="object-contain bg-black/5"
+                />
               )}
               {/* Navigation */}
               {allMedia.length > 1 && (
