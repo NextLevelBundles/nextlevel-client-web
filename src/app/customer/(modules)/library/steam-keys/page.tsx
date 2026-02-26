@@ -1582,71 +1582,121 @@ export default function KeysPage() {
         onOpenChange={setShowSyncInfoDialog}
       >
         <DialogContent className="sm:max-w-md">
-          <DialogHeader className="space-y-4">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-md border bg-background shadow-sm">
-              <AlertTriangle className="h-6 w-6 text-muted-foreground" />
-            </div>
-            <DialogTitle className="text-center text-xl font-semibold">
-              Steam Library Not Refreshed
-            </DialogTitle>
-          </DialogHeader>
+          {(() => {
+            const syncTime = lastSyncTime || steamLibraryStatus?.lastSyncedAt;
+            const neverSynced = !syncTime;
+            const syncedOverMonth = !neverSynced && dayjs(syncTime).isBefore(dayjs().subtract(1, "month"));
+            const syncedRecently = !neverSynced && !syncedOverMonth;
 
-          <div className="space-y-4 py-4">
-            <Alert className="border-yellow-200 bg-yellow-50 dark:border-yellow-900/50 dark:bg-yellow-950/20">
-              <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-              <AlertDescription className="text-sm">
-                <strong>Please note:</strong>{" "}
-                {!steamLibraryStatus?.lastSyncedAt
-                  ? "You have never synced your Steam library with our system"
-                  : "Your Steam library hasn't been refreshed recently (within the last week)"}
-                . We recommend refreshing it to enable exchange options
-                for already owned games.
-              </AlertDescription>
-            </Alert>
+            return (
+              <>
+                <DialogHeader className="space-y-4">
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-md border bg-background shadow-sm">
+                    {syncedRecently ? (
+                      <CheckCircle2 className="h-6 w-6 text-green-500" />
+                    ) : (
+                      <AlertTriangle className="h-6 w-6 text-muted-foreground" />
+                    )}
+                  </div>
+                  <DialogTitle className="text-center text-xl font-semibold">
+                    {neverSynced
+                      ? "Steam Library Never Synced"
+                      : syncedOverMonth
+                        ? "Steam Library Sync Outdated"
+                        : "Steam Library Up to Date"}
+                  </DialogTitle>
+                </DialogHeader>
 
-            <div className="space-y-3 text-sm text-muted-foreground">
-              <p className="text-xs">
-                {!steamLibraryStatus?.lastSyncedAt
-                  ? "Syncing your Steam library for the first time helps us:"
-                  : "Refreshing your Steam library helps us:"}
-              </p>
-              <ul className="space-y-1 text-xs list-disc list-inside ml-2">
-                <li>Check if you already own a game</li>
-                <li>Provide better recommendations</li>
-                <li>Optimize your key assignments</li>
-                {!steamLibraryStatus?.lastSyncedAt && (
-                  <li>Enable exchange options for duplicate games</li>
-                )}
-              </ul>
-            </div>
-          </div>
+                <div className="space-y-4 py-4">
+                  <Alert
+                    className={
+                      neverSynced
+                        ? "border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/20"
+                        : syncedOverMonth
+                          ? "border-yellow-200 bg-yellow-50 dark:border-yellow-900/50 dark:bg-yellow-950/20"
+                          : "border-green-200 bg-green-50 dark:border-green-900/50 dark:bg-green-950/20"
+                    }
+                  >
+                    {neverSynced ? (
+                      <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                    ) : syncedOverMonth ? (
+                      <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                    ) : (
+                      <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                    )}
+                    <AlertDescription className="text-sm">
+                      {neverSynced ? (
+                        <>
+                          <strong>Please note:</strong> You have never synced your
+                          Steam library with our system. We recommend syncing it to
+                          enable exchange options for already owned games.
+                        </>
+                      ) : syncedOverMonth ? (
+                        <>
+                          <strong>Please note:</strong> Your Steam library was last
+                          synced{" "}
+                          <strong>more than a month ago</strong>. We
+                          recommend refreshing it to keep exchange options and
+                          recommendations up to date.
+                        </>
+                      ) : (
+                        <>
+                          Your Steam library was last synced{" "}
+                          <strong>{dayjs(syncTime).fromNow()}</strong>. Your
+                          library data is up to date.
+                        </>
+                      )}
+                    </AlertDescription>
+                  </Alert>
 
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowSyncInfoDialog(false);
-                handleRefreshSteamLibrary();
-              }}
-              className="gap-2"
-              disabled={syncSteamLibraryMutation?.isPending}
-            >
-              {syncSteamLibraryMutation?.isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Refreshing...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="h-4 w-4" />
-                  Refresh Library
-                </>
-              )}
-            </Button>
-            <Button variant="ghost" onClick={() => setShowSyncInfoDialog(false)}>
-              Close
-            </Button>
-          </DialogFooter>
+                  <div className="space-y-3 text-sm text-muted-foreground">
+                    <p className="text-xs">
+                      {neverSynced
+                        ? "Syncing your Steam library for the first time helps us:"
+                        : syncedRecently
+                          ? "Keeping your Steam library synced helps us:"
+                          : "Refreshing your Steam library helps us:"}
+                    </p>
+                    <ul className="space-y-1 text-xs list-disc list-inside ml-2">
+                      <li>Check if you already own a game</li>
+                      <li>Provide better recommendations</li>
+                      <li>Optimize your key assignments</li>
+                      {neverSynced && (
+                        <li>Enable exchange options for duplicate games</li>
+                      )}
+                    </ul>
+                  </div>
+                </div>
+
+                <DialogFooter className="gap-2 sm:gap-0">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowSyncInfoDialog(false);
+                      handleRefreshSteamLibrary();
+                    }}
+                    className="gap-2"
+                    disabled={syncSteamLibraryMutation?.isPending}
+                  >
+                    {syncSteamLibraryMutation?.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Refreshing...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="h-4 w-4" />
+                        {syncedRecently ? "Sync Again" : "Refresh Library"}
+                      </>
+                    )}
+                  </Button>
+                  <Button variant="ghost" onClick={() => setShowSyncInfoDialog(false)}>
+                    Close
+                  </Button>
+                </DialogFooter>
+              </>
+            );
+          })()}
         </DialogContent>
       </Dialog>
 
