@@ -1141,24 +1141,10 @@ export default function KeysPage() {
                             !key.giftAccepted &&
                             isGiftExpired(key))) && (
                           <>
-                            {/* Redeem on Steam button - disabled only if AlreadyOwnedOnSteam is true AND exchangeCredits > 0 */}
+                            {/* Redeem on Steam button - always enabled, warning dialog shown if already owned */}
                             <motion.div
-                              whileHover={{
-                                scale:
-                                  key.alreadyOwnedOnSteam &&
-                                  key.exchangeCredits &&
-                                  key.exchangeCredits > 0
-                                    ? 1
-                                    : 1.05,
-                              }}
-                              whileTap={{
-                                scale:
-                                  key.alreadyOwnedOnSteam &&
-                                  key.exchangeCredits &&
-                                  key.exchangeCredits > 0
-                                    ? 1
-                                    : 0.95,
-                              }}
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
                             >
                               <Button
                                 className="cursor-pointer gap-2 bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60"
