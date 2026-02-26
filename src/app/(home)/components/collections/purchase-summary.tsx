@@ -68,7 +68,7 @@ function SteamLevelWarning({
             <p className="text-sm font-medium text-amber-700 dark:text-amber-300 mb-1">
               {steamLevelStatus.reason === "private"
                 ? "Your Steam Profile is Private"
-                : "Steam Level Verification Required"}
+                : "Steam Level Verification"}
             </p>
             <p className="text-xs text-amber-600 dark:text-amber-400">
               {getSteamLevelWarningMessage()}
@@ -87,7 +87,7 @@ function SteamLevelWarning({
                 </>
               )}
             </p>
-            {steamLevelStatus.reason !== "zero" && (
+            {steamLevelStatus.reason === "private" && (
               <p className="text-xs text-amber-600 dark:text-amber-400 mt-3">
                 <span className="font-bold">NOTE:</span> After switching your Steam profile to public, Steam may take up to 7 minutes to reflect the change.
               </p>
@@ -120,7 +120,7 @@ function SteamLevelWarning({
           rel="noopener noreferrer"
           className="underline hover:no-underline"
         >
-          Learn more about our Steam Linking Requirements
+          Learn more about Steam Linking
         </a>
       </p>
     </div>
