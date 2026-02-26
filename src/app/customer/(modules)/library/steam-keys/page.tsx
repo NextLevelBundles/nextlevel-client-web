@@ -1161,26 +1161,9 @@ export default function KeysPage() {
                               }}
                             >
                               <Button
-                                className={`cursor-pointer gap-2 ${
-                                  key.alreadyOwnedOnSteam &&
-                                  key.exchangeCredits &&
-                                  key.exchangeCredits > 0
-                                    ? "opacity-50 cursor-not-allowed"
-                                    : "bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60"
-                                }`}
-                                disabled={
-                                  !!(
-                                    key.alreadyOwnedOnSteam &&
-                                    key.exchangeCredits &&
-                                    key.exchangeCredits > 0
-                                  )
-                                }
+                                className="cursor-pointer gap-2 bg-linear-to-r from-primary to-primary/90 dark:ring-1 dark:ring-blue-400/30 dark:hover:ring-blue-500/60"
                                 onClick={() =>
-                                  !(
-                                    key.alreadyOwnedOnSteam &&
-                                    key.exchangeCredits &&
-                                    key.exchangeCredits > 0
-                                  ) && handleRevealKey(key.id, key.title)
+                                  handleRevealKey(key.id, key.title)
                                 }
                               >
                                 <ExternalLinkIcon className="h-4 w-4" />
