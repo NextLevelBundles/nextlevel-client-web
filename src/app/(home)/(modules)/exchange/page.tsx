@@ -57,8 +57,29 @@ export default function ExchangePage() {
           <div className="container mx-auto px-4">
             {/* Hero Content */}
             <div className="py-6 md:py-10">
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                <div className="flex-1">
+              <div className="flex flex-wrap items-center justify-end gap-2 md:gap-3 mb-4">
+                <div className="bg-white dark:bg-white/10 backdrop-blur-sm border border-gray-300 dark:border-white/20 rounded-lg px-3 md:px-4 py-2 flex items-center gap-2">
+                  <Coins className="w-4 h-4 text-gray-600 dark:text-white/80 flex-shrink-0" />
+                  <span className="text-gray-600 dark:text-white/80 text-xs md:text-sm whitespace-nowrap">
+                    Available Credits:
+                  </span>
+                  <span className="text-gray-900 dark:text-white font-semibold text-sm md:text-base">
+                    {creditsData ?? 0}
+                  </span>
+                </div>
+                {isAuthenticated && (
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="outline"
+                    className="bg-white dark:bg-transparent text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-white/10 border-gray-300 dark:border-white/20"
+                  >
+                    <Link href="/customer/exchange-history">History</Link>
+                  </Button>
+                )}
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-center">
+                <div>
                   <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 dark:text-white">
                     The Exchange
                   </h1>
@@ -72,26 +93,15 @@ export default function ExchangePage() {
                   </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                  <div className="bg-white dark:bg-white/10 backdrop-blur-sm border border-gray-300 dark:border-white/20 rounded-lg px-3 md:px-4 py-2 flex items-center gap-2">
-                    <Coins className="w-4 h-4 text-gray-600 dark:text-white/80 flex-shrink-0" />
-                    <span className="text-gray-600 dark:text-white/80 text-xs md:text-sm whitespace-nowrap">
-                      Available Credits:
-                    </span>
-                    <span className="text-gray-900 dark:text-white font-semibold text-sm md:text-base">
-                      {creditsData ?? 0}
-                    </span>
-                  </div>
-                  {isAuthenticated && (
-                    <Button
-                      asChild
-                      size="sm"
-                      variant="outline"
-                      className="bg-white dark:bg-transparent text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-white/10 border-gray-300 dark:border-white/20"
-                    >
-                      <Link href="/customer/exchange-history">History</Link>
-                    </Button>
-                  )}
+                <div className="aspect-video w-full rounded-lg overflow-hidden border border-gray-300 dark:border-white/20">
+                  <iframe
+                    src="https://www.youtube.com/embed/S4Ah_nD--F4?rel=0&modestbranding=1"
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    style={{ border: "none" }}
+                    title="The Exchange - How it works"
+                  />
                 </div>
               </div>
             </div>
