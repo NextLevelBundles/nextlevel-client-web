@@ -17,7 +17,7 @@ export const metadata: Metadata = {
       "Read the Terms of Service for Digiphile. Expert-curated, premium game and book collections from Humble Bundle vets.",
     images: [
       {
-        url: "https://static.digiphile.co/digiphile-social.jpg",
+        url: "https://static.digiphile.co/digiphile-social-v2.jpg",
       },
     ],
     type: "website",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     title: "Terms of Service | Digiphile",
     description:
       "Read the Terms of Service for Digiphile. Expert-curated, premium game and book collections from Humble Bundle vets.",
-    images: ["https://static.digiphile.co/digiphile-social.jpg"],
+    images: ["https://static.digiphile.co/digiphile-social-v2.jpg"],
   },
 };
 

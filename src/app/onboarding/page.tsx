@@ -14,7 +14,7 @@ export const metadata: Metadata = {
       "Complete your Digiphile profile to get started with your digital game library and exclusive collections.",
     images: [
       {
-        url: "https://static.digiphile.co/digiphile-social.jpg",
+        url: "https://static.digiphile.co/digiphile-social-v2.jpg",
       },
     ],
     type: "website",
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     title: "Complete Your Profile | Digiphile",
     description:
       "Complete your Digiphile profile to get started with your digital game library and exclusive collections.",
-    images: ["https://static.digiphile.co/digiphile-social.jpg"],
+    images: ["https://static.digiphile.co/digiphile-social-v2.jpg"],
   },
 };
 

@@ -17,7 +17,7 @@ export const metadata: Metadata = {
       "Manage your Digiphile account, view your game library, track purchases, and access your Steam keys.",
     images: [
       {
-        url: "https://static.digiphile.co/digiphile-social.jpg",
+        url: "https://static.digiphile.co/digiphile-social-v2.jpg",
       },
     ],
     type: "website",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     title: "Customer Dashboard | Digiphile",
     description:
       "Manage your Digiphile account, view your game library, track purchases, and access your Steam keys.",
-    images: ["https://static.digiphile.co/digiphile-social.jpg"],
+    images: ["https://static.digiphile.co/digiphile-social-v2.jpg"],
   },
 };
 

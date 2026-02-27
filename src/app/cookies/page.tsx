@@ -13,7 +13,7 @@ export const metadata: Metadata = {
       "Learn about how Digiphile uses cookies and similar tracking technologies to provide and improve our services.",
     images: [
       {
-        url: "https://static.digiphile.co/digiphile-social.jpg",
+        url: "https://static.digiphile.co/digiphile-social-v2.jpg",
       },
     ],
     type: "website",
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     title: "Cookie Policy | Digiphile",
     description:
       "Learn about how Digiphile uses cookies and similar tracking technologies to provide and improve our services.",
-    images: ["https://static.digiphile.co/digiphile-social.jpg"],
+    images: ["https://static.digiphile.co/digiphile-social-v2.jpg"],
   },
 };
 
