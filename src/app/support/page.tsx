@@ -11,7 +11,7 @@ export const metadata: Metadata = {
       "Get help with your Digiphile account, purchases, and game keys. Contact our support team for assistance.",
     images: [
       {
-        url: "https://static.digiphile.co/digiphile-social.jpg",
+        url: "https://static.digiphile.co/digiphile-social-v2.jpg",
       },
     ],
     type: "website",
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     title: "Support | Digiphile",
     description:
       "Get help with your Digiphile account, purchases, and game keys. Contact our support team for assistance.",
-    images: ["https://static.digiphile.co/digiphile-social.jpg"],
+    images: ["https://static.digiphile.co/digiphile-social-v2.jpg"],
   },
 };
 

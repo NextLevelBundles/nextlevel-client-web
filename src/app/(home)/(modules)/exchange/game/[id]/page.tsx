@@ -41,7 +41,7 @@ export async function generateMetadata({
             url:
               game.steamApp?.headerImage ||
               game.coverImage?.url ||
-              "https://static.digiphile.co/digiphile-social.jpg",
+              "https://static.digiphile.co/digiphile-social-v2.jpg",
           },
         ],
         type: "website",
@@ -53,7 +53,7 @@ export async function generateMetadata({
         images: [
           game.steamApp?.headerImage ||
             game.coverImage?.url ||
-            "https://static.digiphile.co/digiphile-social.jpg",
+            "https://static.digiphile.co/digiphile-social-v2.jpg",
         ],
       },
     };

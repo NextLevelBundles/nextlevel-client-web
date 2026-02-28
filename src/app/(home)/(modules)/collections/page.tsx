@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     siteName: "Digiphile",
     images: [
       {
-        url: "https://static.digiphile.co/digiphile-social.jpg",
+        url: "https://static.digiphile.co/digiphile-social-v2.jpg",
       },
     ],
     type: "website",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     title: "All Collections | Digiphile",
     description:
       "Browse all available gaming collections on Digiphile. Discover curated Steam game collections that support indie developers and charities.",
-    images: ["https://static.digiphile.co/digiphile-social.jpg"],
+    images: ["https://static.digiphile.co/digiphile-social-v2.jpg"],
   },
 };
 
