@@ -95,7 +95,7 @@ export default function ExchangePage() {
 
                 <div className="aspect-video w-full rounded-lg overflow-hidden border border-gray-300 dark:border-white/20">
                   <iframe
-                    src="https://www.youtube.com/embed/S4Ah_nD--F4?rel=0&modestbranding=1&autoplay=1&mute=1"
+                    src="https://www.youtube.com/embed/w24QrbDPrRU?rel=0&modestbranding=1&autoplay=1&mute=1"
                     className="w-full h-full"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
